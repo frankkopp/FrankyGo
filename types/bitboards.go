@@ -28,6 +28,7 @@ import (
 	"FrankyGo/config"
 	"fmt"
 	"log"
+	"strings"
 )
 
 // 64 bit for each square on the board
@@ -94,12 +95,58 @@ func (b Bitboard) put(s Square) Bitboard {
 	return b | s.Bitboard()
 }
 
-// sets the corresponding bit of the bitboard_ for the square
+// removes the corresponding bit of the bitboard_ for the square
 func (b Bitboard) remove(s Square) Bitboard {
-	return b & s.Bitboard()
+	return (b | s.Bitboard()) ^ s.Bitboard()
 }
 
-// returns a string representation of the 64 bits
+// Returns a string representation of the 64 bits
 func (b Bitboard) str() string {
 	return fmt.Sprintf("%-0.64b", b)
+}
+
+// returns a string representation of the Bitboard
+// as a board off 8x8 squares
+func (b Bitboard) strBoard() string {
+	var os strings.Builder
+	os.WriteString("+---+---+---+---+---+---+---+---+\n")
+	for r := Rank8 + 1; r != Rank1; r-- {
+		for f := FileA; f <= FileH; f++ {
+			if (b & squareOf(f, r-1).Bitboard()) > 0 {
+				os.WriteString("| X ")
+			} else {
+				os.WriteString("|   ")
+			}
+		}
+		os.WriteString("|\n+---+---+---+---+---+---+---+---+\n")
+	}
+	return os.String()
+}
+
+// returns a string representation of the 64 bits grouped in 8
+func (b Bitboard) strGrp() string {
+	//  std::string print(Bitboard b) {
+	//    std::ostringstream os;
+	//    os << "+---+---+---+---+---+---+---+---+\n";
+	//    for (Rank r = RANK_8; r >= RANK_1; --r) {
+	//      for (File f = FILE_A; f <= FILE_H; ++f) {
+	//        os << (b & getSquare(f, r) ? "| X " : "|   ");
+	//      }
+	//      os << "|\n+---+---+---+---+---+---+---+---+\n";
+	//    }
+	//    return os.str();
+	//  }
+	//
+	//  std::string printFlat(Bitboard b) {
+	//    std::ostringstream os;
+	//    for (uint16_t i = 0; i < 64; i++) {
+	//      if (i > 0 && i % 8 == 0) {
+	//        os << ".";
+	//      }
+	//      os << (b & (Bitboards::ONE_BB << i) ? "1" : "0");
+	//    }
+	//    os << " (" + std::to_string(b) + ")";
+	//    return os.str();
+	//  }
+	return ""
 }

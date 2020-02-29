@@ -24,34 +24,42 @@
 
 package types
 
-import "fmt"
+import "testing"
 
-type Color uint8
-
-const (
-	White Color = 0
-	Black Color = 1
-)
-
-// flips the color
-func (c Color) flip() Color {
-	return c ^ 1
-}
-
-// Check if f represents a valid color
-func (c Color) isValid() bool {
-	return c < 2
-}
-
-// returns a string representation of color as "w" or "b"
-func (c Color) str() string {
-	switch c {
-	case White:
-		return "w"
-	case Black:
-		return "b"
-	default:
-		panic(fmt.Sprintf("Invalid color %d", c))
-
+func TestColorType(t *testing.T) {
+	tests := []struct {
+		value    Color
+		expected int
+	}{
+		{White, 0},
+		{Black, 1},
+	}
+	var got int
+	for _, test := range tests {
+		got = int(test.value)
+		if test.expected != got {
+			t.Errorf("Color %s == %d expected. Got %d", test.value.str(), test.expected, got)
+		} else {
+			t.Logf("Color %s == %d", test.value.str(), got)
+		}
 	}
 }
+
+func TestColorFlip(t *testing.T) {
+	tests := []struct {
+		value    Color
+		expected Color
+	}{
+		{White, Black},
+		{Black, White},
+	}
+	for _, test := range tests {
+		got := test.value.flip()
+		if test.expected != got {
+			t.Errorf("Color %s.flip() == %s expected. Got %s", test.value.str(), test.expected.str(), got.str())
+		} else {
+			t.Logf("Color %s.flip() == %s", test.value.str(), got.str())
+		}
+	}
+}
+

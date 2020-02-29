@@ -25,9 +25,11 @@
 package types
 
 import (
+	"fmt"
 	"log"
 	"math/bits"
 	"testing"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBitboardType(t *testing.T) {
@@ -88,6 +90,9 @@ func TestBitboardOps(t *testing.T) {
 		{BbZero.put(SqH8), "1000000000000000000000000000000000000000000000000000000000000000"},
 		{BbZero.put(SqE5), "0000000000000000000000000001000000000000000000000000000000000000"},
 		{BbZero.put(SqE4), "0000000000000000000000000000000000010000000000000000000000000000"},
+		{BbZero.put(SqE4).remove(SqE4), "0000000000000000000000000000000000000000000000000000000000000000"},
+		{BbZero.put(SqA1).remove(SqA1), "0000000000000000000000000000000000000000000000000000000000000000"},
+		{BbZero.remove(SqA1), "0000000000000000000000000000000000000000000000000000000000000000"},
 	}
 	for _, test := range tests {
 		got := test.value.str()
@@ -98,6 +103,16 @@ func TestBitboardOps(t *testing.T) {
 		}
 	}
 }
+
+func TestBitboardStrBoard(t *testing.T) {
+	Init()
+	fmt.Print(BbZero.strBoard())
+	fmt.Print(BbOne.strBoard())
+	fmt.Print(BbAll.strBoard())
+}
+
+// //////////////////////////////////////////////////////////////////////////
+// benchmarks
 
 //noinspection GoUnusedGlobalVariable
 var result Bitboard

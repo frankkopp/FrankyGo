@@ -4,6 +4,6 @@ import "fmt"
 import "FrankyGo/uci"
 
 func main() {
-	fmt.Println("Hello World")
+	fmt.Println("FrankyGo")
 	uci.Loop()
 }
