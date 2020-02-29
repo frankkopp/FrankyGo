@@ -1,6 +1,7 @@
 package uci
 
 import (
+	"FrankyGo/search"
 	"bufio"
 	"log"
 	"os"
@@ -66,39 +67,43 @@ func loop() {
 }
 
 func debugCommand() {
-
+	// TODO
 }
 
 func registerCommand() {
-
+	// TODO
 }
 
 func ponderHitCommand() {
-
+	// TODO
 }
 
 func stopCommand() {
-
+	search.Stop()
 }
 
 func goCommand(tokens []string) {
+	log.Printf("Search starting...")
+	go search.Start()
+	log.Printf("...started")
 
 }
 
 func positionCommand(tokens []string) {
-
+	// TODO
 }
 
 func uciNewGameCommand() {
-
+	search.Stop()
+	// TODO
 }
 
 func setOptionCommand(tokens []string) {
-
+	// TODO
 }
 
 func isReadyCommand() {
-
+	send("readyok")
 }
 
 func uciCommand() {
