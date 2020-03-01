@@ -27,13 +27,12 @@ package types
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"log"
 	"math/bits"
 	"testing"
 )
 
 func TestBitboardType(t *testing.T) {
-	log.Printf("Testing Bitboards")
+	Init()
 	tests := []struct {
 		value    Bitboard
 		expected int
@@ -49,13 +48,13 @@ func TestBitboardType(t *testing.T) {
 		if got != test.expected {
 			t.Errorf("Bit count of %d should be %d. Got %d", test.value, test.expected, got)
 		} else {
-			t.Logf("Bit count %d of %d is correct.", got, test.value)
+			//t.Logf("Bit count %d of %d is correct.", got, test.value)
 		}
 	}
 }
 
 func TestBitboardStr(t *testing.T) {
-	log.Printf("Testing Bitboards String conversion")
+	Init()
 	tests := []struct {
 		value    Bitboard
 		expected string
@@ -73,33 +72,33 @@ func TestBitboardStr(t *testing.T) {
 		if got != test.expected {
 			t.Errorf("Bit str of %d should be %s. Got %s", test.value, test.expected, got)
 		} else {
-			t.Logf("Bit str %s of %d is correct.", got, test.value)
+			//t.Logf("Bit str %s of %d is correct.", got, test.value)
 		}
 	}
 }
 
-func TestBitboardOps(t *testing.T) {
-	log.Printf("Testing Bitboards Operations")
+func TestBitboardPutRemove(t *testing.T) {
+	Init()
 	tests := []struct {
 		value    Bitboard
 		expected string
 	}{
 		{SqA1.bitboard_(), "0000000000000000000000000000000000000000000000000000000000000001"},
 		{SqH8.bitboard_(), "1000000000000000000000000000000000000000000000000000000000000000"},
-		{BbZero.put(SqA1), "0000000000000000000000000000000000000000000000000000000000000001"},
-		{BbZero.put(SqH8), "1000000000000000000000000000000000000000000000000000000000000000"},
-		{BbZero.put(SqE5), "0000000000000000000000000001000000000000000000000000000000000000"},
-		{BbZero.put(SqE4), "0000000000000000000000000000000000010000000000000000000000000000"},
-		{BbZero.put(SqE4).remove(SqE4), "0000000000000000000000000000000000000000000000000000000000000000"},
-		{BbZero.put(SqA1).remove(SqA1), "0000000000000000000000000000000000000000000000000000000000000000"},
-		{BbZero.remove(SqA1), "0000000000000000000000000000000000000000000000000000000000000000"},
+		{pushSquare(BbZero, SqA1), "0000000000000000000000000000000000000000000000000000000000000001"},
+		{pushSquare(BbZero, SqH8), "1000000000000000000000000000000000000000000000000000000000000000"},
+		{pushSquare(BbZero, SqE5), "0000000000000000000000000001000000000000000000000000000000000000"},
+		{pushSquare(BbZero, SqE4), "0000000000000000000000000000000000010000000000000000000000000000"},
+		{popSquare(pushSquare(BbZero, SqE4), SqE4), "0000000000000000000000000000000000000000000000000000000000000000"},
+		{popSquare(pushSquare(BbZero, SqA1), SqA1), "0000000000000000000000000000000000000000000000000000000000000000"},
+		{popSquare(BbZero, SqA1), "0000000000000000000000000000000000000000000000000000000000000000"},
 	}
 	for _, test := range tests {
 		got := test.value.str()
 		if got != test.expected {
 			t.Errorf("Bit str of %d should be %s. Got %s", test.value, test.expected, got)
 		} else {
-			t.Logf("Bit str %s of %d is correct.", got, test.value)
+			//t.Logf("Bit str %s of %d is correct.", got, test.value)
 		}
 	}
 }
@@ -186,6 +185,7 @@ func TestBitboardLsbMsb(t *testing.T) {
 		lsb      Square
 		msb      Square
 	}{
+		{BbZero, SqNone, SqNone},
 		{SqA1.Bitboard(), SqA1, SqA1},
 		{SqH8.Bitboard(), SqH8, SqH8},
 		{SqE5.Bitboard(), SqE5, SqE5},
@@ -215,7 +215,7 @@ func TestBitboardPopLsb(t *testing.T) {
 	}{
 		{SqA1.Bitboard(), BbZero, SqA1},
 		{SqH8.Bitboard(), BbZero, SqH8},
-		{DiagUpA2, DiagUpA2.remove(SqA2), SqA2},
+		{DiagUpA2, popSquare(DiagUpA2, SqA2), SqA2},
 	}
 
 	for _, test := range tests {
@@ -236,6 +236,98 @@ func TestBitboardPopLsb(t *testing.T) {
 		fmt.Printf("Bitboard %d = %s \n", i, b.str())
 	}
 	assert.Equal(t, 6, i)
+
+}
+
+func TestBitboardShift(t *testing.T) {
+	Init()
+
+	tests := []struct {
+		preShift  Bitboard
+		shift     Direction
+		postShift Bitboard
+	}{
+		//Vertical and horizontal shifts
+		{DiagUpA2, North, DiagUpA3},
+		{DiagUpA3, North, DiagUpA4},
+		{DiagUpB1, South, DiagUpC1},
+		{DiagUpC1, South, DiagUpD1},
+		{DiagUpD1, South, DiagUpE1},
+		{DiagDownH1, North, DiagDownH2},
+		{DiagDownH2, North, DiagDownH3},
+		{DiagDownH3, North, DiagDownH4},
+		{DiagDownH4, North, DiagDownH5},
+		{DiagDownH1, East, DiagDownH2},
+		{DiagDownH2, East, DiagDownH3},
+		{DiagDownH3, East, DiagDownH4},
+		{DiagDownH4, East, DiagDownH5},
+		{DiagDownH1, South, DiagDownG1},
+		{DiagDownG1, South, DiagDownF1},
+		{DiagDownF1, South, DiagDownE1},
+		{DiagDownE1, South, DiagDownD1},
+		{DiagDownH1, West, DiagDownG1},
+		{DiagDownG1, West, DiagDownF1},
+		{DiagDownF1, West, DiagDownE1},
+		{DiagDownE1, West, DiagDownD1},
+		{Rank8_Bb | FileH_Bb, East, popSquare(Rank8_Bb, SqA8)},
+
+		// diagonal shifts
+		{Rank8_Bb | FileH_Bb, Northeast, BbZero},
+		{Rank1_Bb | FileA_Bb, Northeast, Bitboard(0x20202020202fe00)},
+		{Rank1_Bb | FileA_Bb, Southwest, BbZero},
+		{Rank8_Bb | FileH_Bb, Southwest, Bitboard(0x7f404040404040)},
+		{Rank8_Bb | FileA_Bb, Northwest, BbZero},
+		{Rank1_Bb | FileH_Bb, Northwest, Bitboard(0x4040404040407f00)},
+		{Rank1_Bb | FileH_Bb, Southeast, BbZero},
+		{Rank8_Bb | FileA_Bb, Southeast, Bitboard(0xfe020202020202)},
+
+		// single square all directions
+		{SqE4.Bitboard(), North, SqE5.Bitboard()},
+		{SqE4.Bitboard(), Northeast, SqF5.Bitboard()},
+		{SqE4.Bitboard(), East, SqF4.Bitboard()},
+		{SqE4.Bitboard(), Southeast, SqF3.Bitboard()},
+		{SqE4.Bitboard(), South, SqE3.Bitboard()},
+		{SqE4.Bitboard(), Southwest, SqD3.Bitboard()},
+		{SqE4.Bitboard(), West, SqD4.Bitboard()},
+		{SqE4.Bitboard(), Northwest, SqD5.Bitboard()},
+
+		// single square at edge all directions
+		{SqA4.Bitboard(), North, SqA5.Bitboard()},
+		{SqA4.Bitboard(), Northeast, SqB5.Bitboard()},
+		{SqA4.Bitboard(), East, SqB4.Bitboard()},
+		{SqA4.Bitboard(), Southeast, SqB3.Bitboard()},
+		{SqA4.Bitboard(), South, SqA3.Bitboard()},
+		{SqA4.Bitboard(), Southwest, BbZero},
+		{SqA4.Bitboard(), West, BbZero},
+		{SqA4.Bitboard(), Northwest, BbZero},
+
+		// single square at corner all directions
+		{SqA1.Bitboard(), North, SqA2.Bitboard()},
+		{SqA1.Bitboard(), Northeast, SqB2.Bitboard()},
+		{SqA1.Bitboard(), East, SqB1.Bitboard()},
+		{SqA1.Bitboard(), Southeast, BbZero},
+		{SqA1.Bitboard(), South, BbZero},
+		{SqA1.Bitboard(), Southwest, BbZero},
+		{SqA1.Bitboard(), West, BbZero},
+		{SqA1.Bitboard(), Northwest, BbZero},
+
+		// single square at corner all directions
+		{SqH8.Bitboard(), North, BbZero},
+		{SqH8.Bitboard(), Northeast, BbZero},
+		{SqH8.Bitboard(), East, BbZero},
+		{SqH8.Bitboard(), Southeast, BbZero},
+		{SqH8.Bitboard(), South, SqH7.Bitboard()},
+		{SqH8.Bitboard(), Southwest, SqG7.Bitboard()},
+		{SqH8.Bitboard(), West, SqG8.Bitboard()},
+		{SqH8.Bitboard(), Northwest, BbZero},
+	}
+
+	for _, test := range tests {
+		got := shiftBitboard(test.preShift, test.shift)
+		fmt.Printf("Bitboard in  \n%s \n", test.preShift.strBoard())
+		fmt.Printf("Bitboard out \n%s \n", got.strBoard())
+		assert.Equal(t, test.postShift, got)
+	}
 
 }
 

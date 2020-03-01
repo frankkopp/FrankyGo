@@ -65,14 +65,81 @@ func (sq Square) Bitboard() Bitboard {
 	return sqBb[sq]
 }
 
-// sets the corresponding bit of the bitboard_ for the square
-func (b Bitboard) put(s Square) Bitboard {
+// Sets the corresponding bit of the bitboard for the square
+func pushSquare(b Bitboard, s Square) Bitboard {
 	return b | s.Bitboard()
 }
 
-// removes the corresponding bit of the bitboard_ for the square
-func (b Bitboard) remove(s Square) Bitboard {
+// Sets the corresponding bit of the bitboard for the square
+func (b *Bitboard) pushSquare(s Square) {
+	*b |= s.Bitboard()
+}
+
+// Removes the corresponding bit of the bitboard for the square
+func popSquare(b Bitboard, s Square) Bitboard {
 	return (b | s.Bitboard()) ^ s.Bitboard()
+}
+
+// Removes the corresponding bit of the bitboard for the square
+func (b *Bitboard) popSquare(s Square) {
+	*b = (*b | s.Bitboard()) ^ s.Bitboard()
+}
+
+// Shifting all bits of a bitboard in the given direction by 1 square
+func shiftBitboard(b Bitboard, d Direction) Bitboard {
+	// move the bits and clear the left our right file
+	// after the shift to erase bits jumping over
+	switch d {
+	case North:
+		return (Rank8Mask & b) << 8
+	case East:
+		return (MsbMask & b) << 1 & FileAMask
+	case South:
+		return b >> 8
+	case West:
+		return (b >> 1) & FileHMask
+	case Northeast:
+		return (Rank8Mask & b) << 9 & FileAMask
+	case Southeast:
+		return (b >> 7) & FileAMask
+	case Southwest:
+		return (b >> 9) & FileHMask
+	case Northwest:
+		return (b << 7) & FileHMask
+	}
+	return b
+}
+
+// Returns the least significant bit of the 64-bit Bitboard.
+// This translates directly to the Square which is returned.
+// If the bitboard is empty SqNone will be returned.
+// Lsb() indexes from 0-63 - 0 being the the lsb and
+// equal to SqA1
+func (b Bitboard) Lsb() Square {
+	return Square(bits.TrailingZeros64(uint64(b)))
+}
+
+// Returns the most significant bit of the 64-bit Bitboard.
+// This translates directly to the Square which is returned.
+// If the bitboard is empty SqNone will be returned.
+// Msb() indexes from 0-63 - 63 being the the msb and
+// equal to SqH8
+func (b Bitboard) Msb() Square {
+	if b == BbZero {
+		return SqNone
+	}
+	return Square(63 - bits.LeadingZeros64(uint64(b)))
+}
+
+// Returns the Lsb square and removes it from the bitboard.
+// The given bitboard is changed directly.
+func (b *Bitboard) PopLsb() Square {
+	if *b == BbZero {
+		return SqNone
+	}
+	lsb := b.Lsb()
+	*b = *b & (*b - 1)
+	return lsb
 }
 
 // Returns a string representation of the 64 bits
@@ -114,41 +181,6 @@ func (b Bitboard) strGrp() string {
 	}
 	os.WriteString(fmt.Sprintf(" (%d)", b))
 	return os.String()
-}
-
-// Returns the least significant bit of the 64-bit Bitboard.
-// This translates directly to the Square which is returned.
-// If the bitboard is empty SqNone will be returned.
-// Lsb() indexes from 0-63 - 0 being the the lsb and
-// equal to SqA1
-func (b Bitboard) Lsb() Square {
-	if b == BbZero {
-		return SqNone
-	}
-	return Square(bits.TrailingZeros64(uint64(b)))
-}
-
-// Returns the most significant bit of the 64-bit Bitboard.
-// This translates directly to the Square which is returned.
-// If the bitboard is empty SqNone will be returned.
-// Msb() indexes from 0-63 - 63 being the the msb and
-// equal to SqH8
-func (b Bitboard) Msb() Square {
-	if b == BbZero {
-		return SqNone
-	}
-	return Square(63 - bits.LeadingZeros64(uint64(b)))
-}
-
-// Returns the Lsb square and removes it from the bitboard.
-// The given bitboard is changed directly.
-func (b *Bitboard) PopLsb() Square {
-	if *b == BbZero {
-		return SqNone
-	}
-	lsb := b.Lsb()
-	*b = *b & (*b - 1)
-	return lsb
 }
 
 // various constant bitboards for convenience
