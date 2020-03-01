@@ -1,7 +1,7 @@
 package main
 
 import "fmt"
-import "FrankyGo/uci"
+import "github.com/frankkopp/FrankyGo/uci"
 
 func main() {
 	fmt.Println("FrankyGo")

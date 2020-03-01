@@ -24,42 +24,14 @@
 
 package types
 
-import "testing"
+import (
+	"github.com/stretchr/testify/assert"
+	"testing"
+)
 
-func TestColorType(t *testing.T) {
-	tests := []struct {
-		value    Color
-		expected int
-	}{
-		{White, 0},
-		{Black, 1},
-	}
-	var got int
-	for _, test := range tests {
-		got = int(test.value)
-		if test.expected != got {
-			t.Errorf("Color %s == %d expected. Got %d", test.value.str(), test.expected, got)
-		} else {
-			t.Logf("Color %s == %d", test.value.str(), got)
-		}
-	}
+func TestColor(t *testing.T) {
+	assert.EqualValues(t, White, Black.flip(), "Opposite of White should be Black")
+	assert.EqualValues(t, Black, White.flip(), "Opposite of Black should be White")
+	assert.EqualValues(t, 0, White, "White is int 0")
+	assert.EqualValues(t, 1, Black, "Black is int 1")
 }
-
-func TestColorFlip(t *testing.T) {
-	tests := []struct {
-		value    Color
-		expected Color
-	}{
-		{White, Black},
-		{Black, White},
-	}
-	for _, test := range tests {
-		got := test.value.flip()
-		if test.expected != got {
-			t.Errorf("Color %s.flip() == %s expected. Got %s", test.value.str(), test.expected.str(), got.str())
-		} else {
-			t.Logf("Color %s.flip() == %s", test.value.str(), got.str())
-		}
-	}
-}
-

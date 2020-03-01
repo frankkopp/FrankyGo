@@ -26,10 +26,10 @@ package types
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"log"
 	"math/bits"
 	"testing"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestBitboardType(t *testing.T) {
@@ -106,9 +106,18 @@ func TestBitboardOps(t *testing.T) {
 
 func TestBitboardStrBoard(t *testing.T) {
 	Init()
-	fmt.Print(BbZero.strBoard())
-	fmt.Print(BbOne.strBoard())
-	fmt.Print(BbAll.strBoard())
+	fmt.Println(BbZero.strBoard())
+	fmt.Println(BbOne.strBoard())
+	fmt.Println(BbAll.strBoard())
+}
+
+func TestBitboardStrGrp(t *testing.T) {
+	Init()
+	fmt.Println(BbZero.strGrp())
+	fmt.Println(BbOne.strGrp())
+	fmt.Println(BbAll.strGrp())
+
+	assert.Equal(t, "10000000.00000000.00000000.00000000.00000000.00000000.00000000.00000000 (1)", BbOne.strGrp())
 }
 
 // //////////////////////////////////////////////////////////////////////////

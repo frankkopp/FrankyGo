@@ -25,8 +25,8 @@
 package types
 
 import (
-	"FrankyGo/config"
 	"fmt"
+	"github.com/frankkopp/FrankyGo/config"
 	"log"
 	"strings"
 )
@@ -123,30 +123,20 @@ func (b Bitboard) strBoard() string {
 	return os.String()
 }
 
-// returns a string representation of the 64 bits grouped in 8
+// Returns a string representation of the 64 bits grouped in 8
+// Order is LSB to msb ==> A1 B1 ... G8 H8
 func (b Bitboard) strGrp() string {
-	//  std::string print(Bitboard b) {
-	//    std::ostringstream os;
-	//    os << "+---+---+---+---+---+---+---+---+\n";
-	//    for (Rank r = RANK_8; r >= RANK_1; --r) {
-	//      for (File f = FILE_A; f <= FILE_H; ++f) {
-	//        os << (b & getSquare(f, r) ? "| X " : "|   ");
-	//      }
-	//      os << "|\n+---+---+---+---+---+---+---+---+\n";
-	//    }
-	//    return os.str();
-	//  }
-	//
-	//  std::string printFlat(Bitboard b) {
-	//    std::ostringstream os;
-	//    for (uint16_t i = 0; i < 64; i++) {
-	//      if (i > 0 && i % 8 == 0) {
-	//        os << ".";
-	//      }
-	//      os << (b & (Bitboards::ONE_BB << i) ? "1" : "0");
-	//    }
-	//    os << " (" + std::to_string(b) + ")";
-	//    return os.str();
-	//  }
-	return ""
+	var os strings.Builder
+	for i := 0; i < 64; i++ {
+		if i > 0 && i%8 == 0 {
+			os.WriteString(".")
+		}
+		if (b & (BbOne << i)) != 0 {
+			os.WriteString("1")
+		} else {
+			os.WriteString("0")
+		}
+	}
+	os.WriteString(fmt.Sprintf(" (%d)", b))
+	return os.String()
 }
