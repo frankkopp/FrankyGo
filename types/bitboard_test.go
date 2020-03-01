@@ -31,6 +31,9 @@ import (
 	"testing"
 )
 
+// set to true for printing output during tests
+const verbose bool = true
+
 func TestBitboardType(t *testing.T) {
 	Init()
 	tests := []struct {
@@ -105,16 +108,28 @@ func TestBitboardPutRemove(t *testing.T) {
 
 func TestBitboardStrBoard(t *testing.T) {
 	Init()
-	fmt.Println(BbZero.strBoard())
-	fmt.Println(BbOne.strBoard())
-	fmt.Println(BbAll.strBoard())
+	if verbose {
+		fmt.Println(BbZero.strBoard())
+	}
+	if verbose {
+		fmt.Println(BbOne.strBoard())
+	}
+	if verbose {
+		fmt.Println(BbAll.strBoard())
+	}
 }
 
 func TestBitboardStrGrp(t *testing.T) {
 	Init()
-	fmt.Println(BbZero.strGrp())
-	fmt.Println(BbOne.strGrp())
-	fmt.Println(BbAll.strGrp())
+	if verbose {
+		fmt.Println(BbZero.strGrp())
+	}
+	if verbose {
+		fmt.Println(BbOne.strGrp())
+	}
+	if verbose {
+		fmt.Println(BbAll.strGrp())
+	}
 
 	assert.Equal(t, "10000000.00000000.00000000.00000000.00000000.00000000.00000000.00000000 (1)", BbOne.strGrp())
 	assert.Equal(t, "0000000000000000000000000000000000000000000000000000000000000001", BbOne.str())
@@ -122,26 +137,56 @@ func TestBitboardStrGrp(t *testing.T) {
 
 func TestBitboardDiagUp(t *testing.T) {
 	Init()
-	fmt.Println(DiagUpA1.strBoard())
-	fmt.Println(DiagUpB1.strBoard())
-	fmt.Println(DiagUpC1.strBoard())
-	fmt.Println(DiagUpD1.strBoard())
-	fmt.Println(DiagUpE1.strBoard())
-	fmt.Println(DiagUpF1.strBoard())
-	fmt.Println(DiagUpG1.strBoard())
-	fmt.Println(DiagUpH1.strBoard())
+	if verbose {
+		fmt.Println(DiagUpA1.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagUpB1.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagUpC1.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagUpD1.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagUpE1.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagUpF1.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagUpG1.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagUpH1.strBoard())
+	}
 	assert.Equal(t, "10000000.01000000.00100000.00010000."+
 		"00001000.00000100.00000010.00000001 (9241421688590303745)", DiagUpA1.strGrp())
 	assert.Equal(t, "00000010.00000001.00000000.00000000."+
 		"00000000.00000000.00000000.00000000 (32832)", DiagUpG1.strGrp())
 
-	fmt.Println(DiagUpA2.strBoard())
-	fmt.Println(DiagUpA3.strBoard())
-	fmt.Println(DiagUpA4.strBoard())
-	fmt.Println(DiagUpA5.strBoard())
-	fmt.Println(DiagUpA6.strBoard())
-	fmt.Println(DiagUpA7.strBoard())
-	fmt.Println(DiagUpA8.strBoard())
+	if verbose {
+		fmt.Println(DiagUpA2.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagUpA3.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagUpA4.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagUpA5.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagUpA6.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagUpA7.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagUpA8.strBoard())
+	}
 	assert.Equal(t, "00000000.10000000.01000000.00100000."+
 		"00010000.00001000.00000100.00000010 (4620710844295151872)", DiagUpA2.strGrp())
 	assert.Equal(t, "00000000.00000000.00000000.00000000."+
@@ -150,26 +195,56 @@ func TestBitboardDiagUp(t *testing.T) {
 
 func TestBitboardDiagDown(t *testing.T) {
 	Init()
-	fmt.Println(DiagDownH1.strBoard())
-	fmt.Println(DiagDownH2.strBoard())
-	fmt.Println(DiagDownH3.strBoard())
-	fmt.Println(DiagDownH4.strBoard())
-	fmt.Println(DiagDownH5.strBoard())
-	fmt.Println(DiagDownH6.strBoard())
-	fmt.Println(DiagDownH7.strBoard())
-	fmt.Println(DiagDownH8.strBoard())
+	if verbose {
+		fmt.Println(DiagDownH1.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagDownH2.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagDownH3.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagDownH4.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagDownH5.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagDownH6.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagDownH7.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagDownH8.strBoard())
+	}
 	assert.Equal(t, "00000001.00000010.00000100.00001000."+
 		"00010000.00100000.01000000.10000000 (72624976668147840)", DiagDownH1.strGrp())
 	assert.Equal(t, "00000000.00000000.00000000.00000000."+
 		"00000000.00000001.00000010.00000100 (2323998145211531264)", DiagDownH6.strGrp())
 
-	fmt.Println(DiagDownG1.strBoard())
-	fmt.Println(DiagDownF1.strBoard())
-	fmt.Println(DiagDownE1.strBoard())
-	fmt.Println(DiagDownD1.strBoard())
-	fmt.Println(DiagDownC1.strBoard())
-	fmt.Println(DiagDownB1.strBoard())
-	fmt.Println(DiagDownA1.strBoard())
+	if verbose {
+		fmt.Println(DiagDownG1.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagDownF1.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagDownE1.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagDownD1.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagDownC1.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagDownB1.strBoard())
+	}
+	if verbose {
+		fmt.Println(DiagDownA1.strBoard())
+	}
 	assert.Equal(t, "00000100.00001000.00010000.00100000."+
 		"01000000.10000000.00000000.00000000 (1108169199648)", DiagDownF1.strGrp())
 	assert.Equal(t, "01000000.10000000.00000000.00000000."+
@@ -198,10 +273,14 @@ func TestBitboardLsbMsb(t *testing.T) {
 	for _, test := range tests {
 		// Lsb
 		assert.Equal(t, test.lsb, test.bitboard.Lsb())
-		fmt.Printf("Lsb of %s == %s (%d)\n", test.bitboard.str(), test.bitboard.Lsb().str(), test.bitboard.Lsb())
+		if verbose {
+			fmt.Printf("Lsb of %s == %s (%d)\n", test.bitboard.str(), test.bitboard.Lsb().str(), test.bitboard.Lsb())
+		}
 		// Msb
 		assert.Equal(t, test.msb, test.bitboard.Msb())
-		fmt.Printf("Msb of %s == %s (%d)\n", test.bitboard.str(), test.bitboard.Msb().str(), test.bitboard.Msb())
+		if verbose {
+			fmt.Printf("Msb of %s == %s (%d)\n", test.bitboard.str(), test.bitboard.Msb().str(), test.bitboard.Msb())
+		}
 	}
 }
 
@@ -220,9 +299,13 @@ func TestBitboardPopLsb(t *testing.T) {
 
 	for _, test := range tests {
 		// PopLsb
-		fmt.Printf("Bitboard in %s \n", test.bbIn.str())
+		if verbose {
+			fmt.Printf("Bitboard in %s \n", test.bbIn.str())
+		}
 		got := test.bbIn.PopLsb()
-		fmt.Printf("Square is %s \nBitboard out %s \n", got.str(), test.bbIn.str())
+		if verbose {
+			fmt.Printf("Square is %s \nBitboard out %s \n", got.str(), test.bbIn.str())
+		}
 		assert.Equal(t, test.square, got)
 		assert.Equal(t, test.bbOut, test.bbIn)
 	}
@@ -230,10 +313,14 @@ func TestBitboardPopLsb(t *testing.T) {
 	i := 0
 	b := DiagDownH3
 	var sq Square
-	fmt.Printf("Bitboard %d = %s \n", i, b.str())
+	if verbose {
+		fmt.Printf("Bitboard %d = %s \n", i, b.str())
+	}
 	for sq = b.PopLsb(); sq != SqNone; sq = b.PopLsb() {
 		i++
-		fmt.Printf("Bitboard %d = %s \n", i, b.str())
+		if verbose {
+			fmt.Printf("Bitboard %d = %s \n", i, b.str())
+		}
 	}
 	assert.Equal(t, 6, i)
 
@@ -324,8 +411,12 @@ func TestBitboardShift(t *testing.T) {
 
 	for _, test := range tests {
 		got := shiftBitboard(test.preShift, test.shift)
-		fmt.Printf("Bitboard in  \n%s \n", test.preShift.strBoard())
-		fmt.Printf("Bitboard out \n%s \n", got.strBoard())
+		if verbose {
+			fmt.Printf("Bitboard in  \n%s \n", test.preShift.strBoard())
+		}
+		if verbose {
+			fmt.Printf("Bitboard out \n%s \n", got.strBoard())
+		}
 		assert.Equal(t, test.postShift, got)
 	}
 }
@@ -362,7 +453,6 @@ func TestBitboardInit(t *testing.T) {
 	assert.Equal(t, sqDiagDownBb[SqH8], DiagDownH8)
 }
 
-
 func TestBitboardFileDistance(t *testing.T) {
 	Init()
 
@@ -383,7 +473,9 @@ func TestBitboardFileDistance(t *testing.T) {
 	for _, test := range tests {
 		// PopLsb
 		got := FileDistance(test.f1, test.f2)
-		fmt.Printf("File distance between %s and %s is %d \n", test.f1.str(), test.f2.str(), got)
+		if verbose {
+			fmt.Printf("File distance between %s and %s is %d \n", test.f1.str(), test.f2.str(), got)
+		}
 		assert.Equal(t, test.dist, got)
 	}
 }
@@ -392,8 +484,8 @@ func TestBitboardSquareDistance(t *testing.T) {
 	Init()
 
 	tests := []struct {
-		s1 Square
-		s2 Square
+		s1   Square
+		s2   Square
 		dist int
 	}{
 		{SqA1, SqA1, 0},
@@ -409,10 +501,100 @@ func TestBitboardSquareDistance(t *testing.T) {
 	for _, test := range tests {
 		// PopLsb
 		got := squareDistance[test.s1][test.s2]
-		fmt.Printf("Square distance between %s and %s is %d \n", test.s1.str(), test.s2.str(), got)
+		if verbose {
+			fmt.Printf("Square distance between %s and %s is %d \n", test.s1.str(), test.s2.str(), got)
+		}
 		assert.Equal(t, test.dist, got)
 	}
 }
+
+func TestBitboardRotateBb(t *testing.T) {
+	Init()
+
+	bitboard := FileA_Bb | Rank8_Bb | DiagDownH1
+
+	rotatedBb := rotateR90(bitboard)
+	if verbose {
+		fmt.Printf("%s\n%s\n", bitboard.strBoard(), bitboard.strGrp())
+	}
+	if verbose {
+		fmt.Printf("%s\n%s\n", rotatedBb.strBoard(), rotatedBb.strGrp())
+	}
+	assert.Equal(t, Bitboard(18428906217826189953), rotatedBb)
+
+	rotatedBb = rotateL90(bitboard)
+	if verbose {
+		fmt.Printf("%s\n%s\n", bitboard.strBoard(), bitboard.strGrp())
+	}
+	if verbose {
+		fmt.Printf("%s\n%s\n", rotatedBb.strBoard(), rotatedBb.strGrp())
+	}
+	assert.Equal(t, Bitboard(9313761861428380671), rotatedBb)
+
+	bitboard = DiagUpA1
+	rotatedBb = rotateR45(bitboard)
+	if verbose {
+		fmt.Printf("%s\n%s\n", bitboard.strBoard(), bitboard.strGrp())
+	}
+	if verbose {
+		fmt.Printf("%s\n%s\n", rotatedBb.strBoard(), rotatedBb.strGrp())
+	}
+	assert.Equal(t, Bitboard(68451041280), rotatedBb)
+
+	bitboard = DiagDownH1
+	rotatedBb = rotateL45(bitboard)
+	if verbose {
+		fmt.Printf("%s\n%s\n", bitboard.strBoard(), bitboard.strGrp())
+	}
+	if verbose {
+		fmt.Printf("%s\n%s\n", rotatedBb.strBoard(), rotatedBb.strGrp())
+	}
+	assert.Equal(t, Bitboard(68451041280), rotatedBb)
+}
+
+func TestBitboardRotateSq(t *testing.T) {
+	Init()
+
+	tests := []struct {
+		rotation string
+		square   Square
+		expected Square
+	}{
+		{"R90", SqA1, SqA8},
+		{"R90", SqD8, SqH5},
+		{"L90", SqH8, SqA8},
+		{"L90", SqH2, SqG8},
+		{"R45", SqH8, SqD5},
+		{"L45", SqH1, SqD5},
+		{"R45", SqC7, SqA8},
+		{"L45", SqB3, SqH1},
+	}
+
+	for _, test := range tests {
+		bitboard := test.square.Bitboard()
+		rotated := SqNone
+		switch test.rotation {
+		case "R90":
+			rotated = rotateSquareR90(test.square)
+		case "L90":
+			rotated = rotateSquareL90(test.square)
+		case "R45":
+			rotated = rotateSquareR45(test.square)
+		case "L45":
+			rotated = rotateSquareL45(test.square)
+		}
+		rotatedBb := rotated.Bitboard()
+		if verbose {
+			fmt.Printf("Input   : %s\n%s\n%s\n", test.rotation, bitboard.strBoard(), bitboard.strGrp())
+		}
+		if verbose {
+			fmt.Printf("Rotation: %s\n%s\n%s\n", test.rotation, rotatedBb.strBoard(), rotatedBb.strGrp())
+		}
+		assert.Equal(t, test.expected, rotated)
+	}
+}
+
+// TODO implement getMoves functions and test
 
 // //////////////////////////////////////////////////////////////////////////
 // benchmarks

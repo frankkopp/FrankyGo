@@ -171,13 +171,70 @@ func FileDistance(f1 File, f2 File) int {
 	return util.Abs(int(f2) - int(f1))
 }
 
+// Returns the absolute distance in squares between two ranks
 func RankDistance(r1 Rank, r2 Rank) int {
 	return util.Abs(int(r2) - int(r1))
 }
 
+// Returns the absolute distance in squares between two squares
 func SquareDistance(s1 Square, s2 Square) int {
 	return squareDistance[s1][s2]
 }
+
+// Rotates a Bitboard using a mapping array which holds the position of
+// the square in the rotated board indexed by the square.
+// Basically the array tells bit x to move to bit y
+func rotate(b Bitboard, rotationMap *[SqLength]int) Bitboard {
+	rotated := BbZero
+	for sq := SqA1; sq < SqNone; sq++ {
+		if (b & Square(rotationMap[sq]).bitboard_()) != 0 {
+			rotated |= sq.bitboard_()
+		}
+	}
+	return rotated
+}
+
+// Rotates a Bitboard by 90 degrees clockwise
+func rotateR90(b Bitboard) Bitboard {
+	return rotate(b, &rotateMapR90)
+}
+
+// Rotates a Bitboard by 90 degrees counter clockwise
+func rotateL90(b Bitboard) Bitboard {
+	return rotate(b, &rotateMapL90)
+}
+
+// Rotates a Bitboard by 45 degrees clockwise
+// to get all upward diagonals in compact block of bits
+// This is used to create a mask to find moves for
+// quuen and bishop on the upward diagonal
+func rotateR45(b Bitboard) Bitboard {
+	return rotate(b, &rotateMapR45)
+}
+
+// Rotates a Bitboard by 45 degrees counter clockwise
+// to get all downward diagonals in compact block of bits
+// This is used to create a mask to find moves for
+// quuen and bishop on the downward diagonal
+func rotateL45(b Bitboard) Bitboard {
+	return rotate(b, &rotateMapL45)
+}
+
+// Maps squares to the sq of the rotated board. E.g. when rotating
+// clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
+func rotateSquareR90(sq Square) Square { return indexMapR90[sq] }
+
+// Maps squares to the sq of the rotated board. E.g. when rotating
+// clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
+func rotateSquareL90(sq Square) Square { return indexMapL90[sq] }
+
+// Maps squares to the sq of the rotated board. E.g. when rotating
+// clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
+func rotateSquareR45(sq Square) Square { return indexMapR45[sq] }
+
+// Maps squares to the sq of the rotated board. E.g. when rotating
+// clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
+func rotateSquareL45(sq Square) Square { return indexMapL45[sq] }
 
 // various constant bitboards for convenience
 //noinspection ALL
@@ -365,30 +422,58 @@ var (
 		15, 21, 28, 36, 43, 49, 54, 58,
 		21, 28, 36, 43, 49, 54, 58, 61,
 		28, 36, 43, 49, 54, 58, 61, 63}
+
+	// Reverse index to quickly calculate the index of a square in the rotated board
+	indexMapR90 = [SqLength]Square{}
+	// Reverse index to quickly calculate the index of a square in the rotated board
+	indexMapL90 = [SqLength]Square{}
+	// Reverse index to quickly calculate the index of a square in the rotated board
+	indexMapR45 = [SqLength]Square{}
+	// Reverse index to quickly calculate the index of a square in the rotated board
+	indexMapL45 = [SqLength]Square{}
 )
 
 // Internal pre computed square to square bitboard array.
 // Needs to be initialized with initBb()
-var sqBb [64]Bitboard
+var sqBb [SqLength]Bitboard
 
 // Internal pre computed square to file bitboard array.
 // Needs to be initialized with initBb()
-var sqToFileBb [64]Bitboard
+var sqToFileBb [SqLength]Bitboard
 
 // Internal pre computed square to rank bitboard array.
 // Needs to be initialized with initBb()
-var sqToRankBb [64]Bitboard
+var sqToRankBb [SqLength]Bitboard
 
 // Internal pre computed square to diag up bitboard array.
 // Needs to be initialized with initBb()
-var sqDiagUpBb [64]Bitboard
+var sqDiagUpBb [SqLength]Bitboard
 
 // Internal pre computed square to diag down bitboard array.
 // Needs to be initialized with initBb()
-var sqDiagDownBb [64]Bitboard
+var sqDiagDownBb [SqLength]Bitboard
 
 // Internal pre computed index for quick square distance lookup
-var squareDistance [64][64]int
+var squareDistance [SqLength][SqLength]int
+
+// Internal pre computed index to map possible moves on a rank
+// for each square and board occupation of this rank
+var movesRank [SqLength][256]Bitboard
+
+// Internal pre computed index to map possible moves on a file
+// for each square and board occupation of this file
+// (needs rotating and masking the index)
+var movesFile [SqLength][256]Bitboard
+
+// Internal pre computed index to map possible moves on a up diagonal
+// for each square and board occupation of this up diagonal
+// (needs rotating and masking the index)
+var movesDiagUp [SqLength][256]Bitboard
+
+// Internal pre computed index to map possible moves on a down diagonal
+// for each square and board occupation of this down diagonal
+// (needs rotating and masking the index)
+var movesDiagDown [SqLength][256]Bitboard
 
 // Pre computes various bitboards to avoid runtime calculation
 func initBb() {
@@ -434,6 +519,12 @@ func initBb() {
 		} else if DiagDownA1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownA1
 		}
 		// @formatter:on
+
+		// Reverse index to quickly calculate the index of a square in the rotated board
+		indexMapR90[rotateMapR90[sq]] = sq
+		indexMapL90[rotateMapL90[sq]] = sq
+		indexMapR45[rotateMapR45[sq]] = sq
+		indexMapL45[rotateMapL45[sq]] = sq
 	}
 
 	// distance between squares
@@ -446,5 +537,118 @@ func initBb() {
 		}
 	}
 
+	// Pre-compute attacks and moves on a an empty board (pseudo attacks)
+
+	// All sliding attacks with blockers - horizontal
+	// Shamefully copied from Beowulf :)
+	for file := int(FileA); file <= int(FileH); file++ {
+		for j := 0; j < 256; j++ {
+			mask := BbZero
+			for x := file - 1; x >= 0; x-- {
+				mask += BbOne << x
+				if (j & (1 << x)) != 0 {
+					break
+				}
+			}
+			for x := file + 1; x < 8; x++ {
+				mask += BbOne << x
+				if (j & (1 << x)) != 0 {
+					break
+				}
+			}
+			for rank := int(Rank1); rank <= int(Rank8); rank++ {
+				movesRank[(rank*8)+file][j] = mask << (rank * 8)
+			}
+		}
+	}
+
+	// All sliding attacks with blocker - vertical
+	// Shamefully copied from Beowulf :)
+	for rank := int(Rank1); rank <= int(Rank8); rank++ {
+		for j := 0; j < 256; j++ {
+			mask := BbZero;
+			for x := 6 - rank; x >= 0; x-- {
+				mask += BbOne << (8 * (7 - x))
+				if (j & (1 << x)) != 0 {
+					break
+				}
+			}
+			for x := 8 - rank; x < 8; x++ {
+				mask += BbOne << (8 * (7 - x))
+				if (j & (1 << x)) != 0 {
+					break
+				}
+			}
+			for file := int(FileA); file <= int(FileH); file++ {
+				movesFile[(rank * 8) + file][j] = mask << file
+			}
+		}
+	}
+
+	// All sliding attacks with blocker - up diag sliders
+	// Shamefully copied from Beowulf :)
+	for square := SqA1; square <= SqH8; square++ {
+		file := square.FileOf()
+		rank := square.RankOf()
+		// Get the far left hand square on this diagonal
+		diagstart := square - Square(9 * util.Min(int(file), int(rank)))
+		dsfile := diagstart.FileOf()
+		dl := lengthDiagUp[square]
+		// Loop through all possible occupations of this diagonal line
+		for sq := 0; sq < (1 << dl); sq++ {
+			var mask, mask2 Bitboard
+			/* Calculate possible target squares */
+			for b1 := int(file) - int(dsfile) - 1; b1 >= 0; b1-- {
+				mask += BbOne << b1
+				if (sq & (1 << b1)) != 0 {
+					break
+				}
+			}
+			for b2 := int(file) - int(dsfile) + 1; b2 < dl; b2++ {
+				mask += BbOne << b2
+				if (sq & (1 << b2)) != 0 {
+					break
+				}
+			}
+			/* Rotate target squares back */
+			for x := 0; x < dl; x++ {
+				mask2 += ((mask >> x) & 1) << (int(diagstart) + (9 * x))
+			}
+			movesDiagUp[square][sq] = mask2
+		}
+	}
+
+	// All sliding attacks with blocker - down diag sliders
+	// Shamefully copied from Beowulf :)
+	for square := SqA1; square <= SqH8; square++ {
+		file := square.FileOf()
+		rank := square.RankOf()
+		// Get the far left hand square on this diagonal
+		diagstart := Square(7 * (util.Min(int(file), 7 - int(rank))) + int(square))
+		dsfile := diagstart.FileOf()
+		dl := lengthDiagDown[square]
+		// Loop through all possible occupations of this diagonal line
+		for j := 0; j < (1 << dl); j++ {
+			var mask, mask2 Bitboard
+			// Calculate possible target squares
+			for x := int(file) - int(dsfile) - 1; x >= 0; x-- {
+				mask += BbOne << x;
+				if (j & (1 << x)) != 0 {
+					break
+				}
+			}
+			for x := int(file) - int(dsfile) + 1; x < dl; x++ {
+				mask += BbOne << x;
+				if (j & (1 << x)) != 0 {
+					break
+				}
+			}
+			/* Rotate the target line back onto the required diagonal */
+			for x := 0; x < dl; x++  {
+				mask2 += ((mask >> x) & 1) << (int(diagstart) - (7 * x))
+			}
+			movesDiagDown[square][j] = mask2
+		}
+	}
 
 }
