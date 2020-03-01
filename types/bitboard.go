@@ -28,37 +28,12 @@ import (
 	"fmt"
 	"github.com/frankkopp/FrankyGo/config"
 	"log"
+	"math/bits"
 	"strings"
 )
 
 // 64 bit for each square on the board
 type Bitboard uint64
-
-// various constant bitboards for convenience
-//noinspection ALL
-const (
-	BbZero Bitboard = Bitboard(0)
-	BbAll  Bitboard = ^BbZero
-	BbOne  Bitboard = Bitboard(1)
-
-	FileA_Bb Bitboard = 0x0101010101010101
-	FileB_Bb Bitboard = FileA_Bb << 1
-	FileC_Bb Bitboard = FileA_Bb << 2
-	FileD_Bb Bitboard = FileA_Bb << 3
-	FileE_Bb Bitboard = FileA_Bb << 4
-	FileF_Bb Bitboard = FileA_Bb << 5
-	FileG_Bb Bitboard = FileA_Bb << 6
-	FileH_Bb Bitboard = FileA_Bb << 7
-
-	Rank1_Bb Bitboard = 0xFF
-	Rank2_Bb Bitboard = Rank1_Bb << (8 * 1)
-	Rank3_Bb Bitboard = Rank1_Bb << (8 * 2)
-	Rank4_Bb Bitboard = Rank1_Bb << (8 * 3)
-	Rank5_Bb Bitboard = Rank1_Bb << (8 * 4)
-	Rank6_Bb Bitboard = Rank1_Bb << (8 * 5)
-	Rank7_Bb Bitboard = Rank1_Bb << (8 * 6)
-	Rank8_Bb Bitboard = Rank1_Bb << (8 * 7)
-)
 
 // Internal square to bitboard array. Needs to be initialized
 var sqBb [64]Bitboard
@@ -105,7 +80,7 @@ func (b Bitboard) str() string {
 	return fmt.Sprintf("%-0.64b", b)
 }
 
-// returns a string representation of the Bitboard
+// Returns a string representation of the Bitboard
 // as a board off 8x8 squares
 func (b Bitboard) strBoard() string {
 	var os strings.Builder
@@ -141,8 +116,120 @@ func (b Bitboard) strGrp() string {
 	return os.String()
 }
 
-// const helper arrays
+// Returns the least significant bit of the 64-bit Bitboard.
+// This translates directly to the Square which is returned.
+// If the bitboard is empty SqNone will be returned.
+// Lsb() indexes from 0-63 - 0 being the the lsb and
+// equal to SqA1
+func (b Bitboard) Lsb() Square {
+	if b == BbZero {
+		return SqNone
+	}
+	return Square(bits.TrailingZeros64(uint64(b)))
+}
 
+// Returns the most significant bit of the 64-bit Bitboard.
+// This translates directly to the Square which is returned.
+// If the bitboard is empty SqNone will be returned.
+// Msb() indexes from 0-63 - 63 being the the msb and
+// equal to SqH8
+func (b Bitboard) Msb() Square {
+	if b == BbZero {
+		return SqNone
+	}
+	return Square(63 - bits.LeadingZeros64(uint64(b)))
+}
+
+// Returns the Lsb square and removes it from the bitboard.
+// The given bitboard is changed directly.
+func (b *Bitboard) PopLsb() Square {
+	if *b == BbZero {
+		return SqNone
+	}
+	lsb := b.Lsb()
+	*b = *b & (*b - 1)
+	return lsb
+}
+
+// various constant bitboards for convenience
+//noinspection ALL
+const (
+	BbZero Bitboard = Bitboard(0)
+	BbAll  Bitboard = ^BbZero
+	BbOne  Bitboard = Bitboard(1)
+
+	FileA_Bb Bitboard = 0x0101010101010101
+	FileB_Bb Bitboard = FileA_Bb << 1
+	FileC_Bb Bitboard = FileA_Bb << 2
+	FileD_Bb Bitboard = FileA_Bb << 3
+	FileE_Bb Bitboard = FileA_Bb << 4
+	FileF_Bb Bitboard = FileA_Bb << 5
+	FileG_Bb Bitboard = FileA_Bb << 6
+	FileH_Bb Bitboard = FileA_Bb << 7
+
+	Rank1_Bb Bitboard = 0xFF
+	Rank2_Bb Bitboard = Rank1_Bb << (8 * 1)
+	Rank3_Bb Bitboard = Rank1_Bb << (8 * 2)
+	Rank4_Bb Bitboard = Rank1_Bb << (8 * 3)
+	Rank5_Bb Bitboard = Rank1_Bb << (8 * 4)
+	Rank6_Bb Bitboard = Rank1_Bb << (8 * 5)
+	Rank7_Bb Bitboard = Rank1_Bb << (8 * 6)
+	Rank8_Bb Bitboard = Rank1_Bb << (8 * 7)
+
+	// Go does not overflow const values when shifting a bit over msb when
+
+	MsbMask   Bitboard = ^(Bitboard(1) << 63)
+	Rank8Mask Bitboard = ^Rank8_Bb
+	FileAMask Bitboard = ^FileA_Bb
+	FileHMask Bitboard = ^FileH_Bb
+
+	DiagUpA1 Bitboard = 0b10000000_01000000_00100000_00010000_00001000_00000100_00000010_00000001
+	DiagUpB1 Bitboard = (MsbMask & DiagUpA1) << 1 & FileAMask // shift EAST
+	DiagUpC1 Bitboard = (MsbMask & DiagUpB1) << 1 & FileAMask
+	DiagUpD1 Bitboard = (MsbMask & DiagUpC1) << 1 & FileAMask
+	DiagUpE1 Bitboard = (MsbMask & DiagUpD1) << 1 & FileAMask
+	DiagUpF1 Bitboard = (MsbMask & DiagUpE1) << 1 & FileAMask
+	DiagUpG1 Bitboard = (MsbMask & DiagUpF1) << 1 & FileAMask
+	DiagUpH1 Bitboard = (MsbMask & DiagUpG1) << 1 & FileAMask
+	DiagUpA2 Bitboard = (Rank8Mask & DiagUpA1) << 8 // shift NORTH
+	DiagUpA3 Bitboard = (Rank8Mask & DiagUpA2) << 8
+	DiagUpA4 Bitboard = (Rank8Mask & DiagUpA3) << 8
+	DiagUpA5 Bitboard = (Rank8Mask & DiagUpA4) << 8
+	DiagUpA6 Bitboard = (Rank8Mask & DiagUpA5) << 8
+	DiagUpA7 Bitboard = (Rank8Mask & DiagUpA6) << 8
+	DiagUpA8 Bitboard = (Rank8Mask & DiagUpA7) << 8
+
+	DiagDownH1 Bitboard = 0b0000000100000010000001000000100000010000001000000100000010000000
+	DiagDownH2 Bitboard = (Rank8Mask & DiagDownH1) << 8 // shift NORTH
+	DiagDownH3 Bitboard = (Rank8Mask & DiagDownH2) << 8
+	DiagDownH4 Bitboard = (Rank8Mask & DiagDownH3) << 8
+	DiagDownH5 Bitboard = (Rank8Mask & DiagDownH4) << 8
+	DiagDownH6 Bitboard = (Rank8Mask & DiagDownH5) << 8
+	DiagDownH7 Bitboard = (Rank8Mask & DiagDownH6) << 8
+	DiagDownH8 Bitboard = (Rank8Mask & DiagDownH7) << 8
+	DiagDownG1 Bitboard = (DiagDownH1 >> 1) & FileHMask // shift WEST
+	DiagDownF1 Bitboard = (DiagDownG1 >> 1) & FileHMask
+	DiagDownE1 Bitboard = (DiagDownF1 >> 1) & FileHMask
+	DiagDownD1 Bitboard = (DiagDownE1 >> 1) & FileHMask
+	DiagDownC1 Bitboard = (DiagDownD1 >> 1) & FileHMask
+	DiagDownB1 Bitboard = (DiagDownC1 >> 1) & FileHMask
+	DiagDownA1 Bitboard = (DiagDownB1 >> 1) & FileHMask
+)
+
+// ////////////////////
+// Pre compute helpers
+
+// Used to pre compute an indexMap for diagonals
+func (sq Square) lengthDiagUpMask() Bitboard {
+	return (BbOne << lengthDiagUp[sq]) - 1
+}
+
+// Used to pre compute an indexMap for diagonals
+func (sq Square) lengthDiagDownMask() Bitboard {
+	return (BbOne << lengthDiagDown[sq]) - 1
+}
+
+// helper arrays
 var (
 	// Used to pre compute an indexMap for rotated boards
 	rotateMapR90 = [SqLength]int{
@@ -244,52 +331,3 @@ var (
 		21, 28, 36, 43, 49, 54, 58, 61,
 		28, 36, 43, 49, 54, 58, 61, 63}
 )
-
-// Used to pre compute an indexMap for diagonals
-func (sq Square) lengthDiagUpMask() Bitboard {
-	return (BbOne << lengthDiagUp[sq]) - 1
-}
-
-// Used to pre compute an indexMap for diagonals
-func (sq Square) lengthDiagDownMask() Bitboard {
-	return (BbOne << lengthDiagDown[sq]) - 1
-}
-
-// Go does not overflow const values when shifting a bit over msb when
-
-const MsbMask Bitboard = ^(Bitboard(1) << 63)
-const Rank8Mask Bitboard = ^Rank8_Bb
-const FileAMask Bitboard = ^FileA_Bb
-const FileHMask Bitboard = ^FileH_Bb
-
-const DiagUpA1 Bitboard = 0b10000000_01000000_00100000_00010000_00001000_00000100_00000010_00000001
-const DiagUpB1 Bitboard = (MsbMask & DiagUpA1) << 1 & FileAMask // shift EAST
-const DiagUpC1 Bitboard = (MsbMask & DiagUpB1) << 1 & FileAMask
-const DiagUpD1 Bitboard = (MsbMask & DiagUpC1) << 1 & FileAMask
-const DiagUpE1 Bitboard = (MsbMask & DiagUpD1) << 1 & FileAMask
-const DiagUpF1 Bitboard = (MsbMask & DiagUpE1) << 1 & FileAMask
-const DiagUpG1 Bitboard = (MsbMask & DiagUpF1) << 1 & FileAMask
-const DiagUpH1 Bitboard = (MsbMask & DiagUpG1) << 1 & FileAMask
-const DiagUpA2 Bitboard = (Rank8Mask & DiagUpA1) << 8 // shift NORTH
-const DiagUpA3 Bitboard = (Rank8Mask & DiagUpA2) << 8
-const DiagUpA4 Bitboard = (Rank8Mask & DiagUpA3) << 8
-const DiagUpA5 Bitboard = (Rank8Mask & DiagUpA4) << 8
-const DiagUpA6 Bitboard = (Rank8Mask & DiagUpA5) << 8
-const DiagUpA7 Bitboard = (Rank8Mask & DiagUpA6) << 8
-const DiagUpA8 Bitboard = (Rank8Mask & DiagUpA7) << 8
-
-const DiagDownH1 Bitboard = 0b0000000100000010000001000000100000010000001000000100000010000000
-const DiagDownH2 Bitboard = (Rank8Mask & DiagDownH1) << 8 // shift NORTH
-const DiagDownH3 Bitboard = (Rank8Mask & DiagDownH2) << 8
-const DiagDownH4 Bitboard = (Rank8Mask & DiagDownH3) << 8
-const DiagDownH5 Bitboard = (Rank8Mask & DiagDownH4) << 8
-const DiagDownH6 Bitboard = (Rank8Mask & DiagDownH5) << 8
-const DiagDownH7 Bitboard = (Rank8Mask & DiagDownH6) << 8
-const DiagDownH8 Bitboard = (Rank8Mask & DiagDownH7) << 8
-const DiagDownG1 Bitboard = (DiagDownH1 >> 1) & FileHMask // shift WEST
-const DiagDownF1 Bitboard = (DiagDownG1 >> 1) & FileHMask
-const DiagDownE1 Bitboard = (DiagDownF1 >> 1) & FileHMask
-const DiagDownD1 Bitboard = (DiagDownE1 >> 1) & FileHMask
-const DiagDownC1 Bitboard = (DiagDownD1 >> 1) & FileHMask
-const DiagDownB1 Bitboard = (DiagDownC1 >> 1) & FileHMask
-const DiagDownA1 Bitboard = (DiagDownB1 >> 1) & FileHMask

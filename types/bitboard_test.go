@@ -178,6 +178,67 @@ func TestBitboardDiagDown(t *testing.T) {
 
 }
 
+func TestBitboardLsbMsb(t *testing.T) {
+	Init()
+
+	tests := []struct {
+		bitboard Bitboard
+		lsb      Square
+		msb      Square
+	}{
+		{SqA1.Bitboard(), SqA1, SqA1},
+		{SqH8.Bitboard(), SqH8, SqH8},
+		{SqE5.Bitboard(), SqE5, SqE5},
+		{DiagUpA2, SqA2, SqG8},
+		{DiagDownH3, SqH3, SqC8},
+		{FileB_Bb, SqB1, SqB8},
+		{Rank3_Bb, SqA3, SqH3},
+	}
+
+	for _, test := range tests {
+		// Lsb
+		assert.Equal(t, test.lsb, test.bitboard.Lsb())
+		fmt.Printf("Lsb of %s == %s (%d)\n", test.bitboard.str(), test.bitboard.Lsb().str(), test.bitboard.Lsb())
+		// Msb
+		assert.Equal(t, test.msb, test.bitboard.Msb())
+		fmt.Printf("Msb of %s == %s (%d)\n", test.bitboard.str(), test.bitboard.Msb().str(), test.bitboard.Msb())
+	}
+}
+
+func TestBitboardPopLsb(t *testing.T) {
+	Init()
+
+	tests := []struct {
+		bbIn   Bitboard
+		bbOut  Bitboard
+		square Square
+	}{
+		{SqA1.Bitboard(), BbZero, SqA1},
+		{SqH8.Bitboard(), BbZero, SqH8},
+		{DiagUpA2, DiagUpA2.remove(SqA2), SqA2},
+	}
+
+	for _, test := range tests {
+		// PopLsb
+		fmt.Printf("Bitboard in %s \n", test.bbIn.str())
+		got := test.bbIn.PopLsb()
+		fmt.Printf("Square is %s \nBitboard out %s \n", got.str(), test.bbIn.str())
+		assert.Equal(t, test.square, got)
+		assert.Equal(t, test.bbOut, test.bbIn)
+	}
+
+	i := 0
+	b := DiagDownH3
+	var sq Square
+	fmt.Printf("Bitboard %d = %s \n", i, b.str())
+	for sq = b.PopLsb(); sq != SqNone; sq = b.PopLsb() {
+		i++
+		fmt.Printf("Bitboard %d = %s \n", i, b.str())
+	}
+	assert.Equal(t, 6, i)
+
+}
+
 // //////////////////////////////////////////////////////////////////////////
 // benchmarks
 
