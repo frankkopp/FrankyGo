@@ -27,6 +27,7 @@ package types
 import (
 	"fmt"
 	"github.com/frankkopp/FrankyGo/config"
+	"github.com/frankkopp/FrankyGo/util"
 	"log"
 	"math/bits"
 	"strings"
@@ -163,6 +164,19 @@ func (b Bitboard) strGrp() string {
 	}
 	os.WriteString(fmt.Sprintf(" (%d)", b))
 	return os.String()
+}
+
+// Returns the absolute distance in squares between two files
+func FileDistance(f1 File, f2 File) int {
+	return util.Abs(int(f2) - int(f1))
+}
+
+func RankDistance(r1 Rank, r2 Rank) int {
+	return util.Abs(int(r2) - int(r1))
+}
+
+func SquareDistance(s1 Square, s2 Square) int {
+	return squareDistance[s1][s2]
 }
 
 // various constant bitboards for convenience
@@ -373,6 +387,9 @@ var sqDiagUpBb [64]Bitboard
 // Needs to be initialized with initBb()
 var sqDiagDownBb [64]Bitboard
 
+// Internal pre computed index for quick square distance lookup
+var squareDistance [64][64]int
+
 // Pre computes various bitboards to avoid runtime calculation
 func initBb() {
 	for sq := SqA1; sq < SqNone; sq++ {
@@ -383,69 +400,51 @@ func initBb() {
 		sqToRankBb[sq] = Rank1_Bb << (8 * sq.RankOf())
 
 		// square diagonals // @formatter:off
-		if DiagUpA8&sq.bitboard_() > 0 {
-			sqDiagUpBb[sq] = DiagUpA8
-		} else if DiagUpA7&sq.bitboard_() > 0 {
-			sqDiagUpBb[sq] = DiagUpA7
-		} else if DiagUpA6&sq.bitboard_() > 0 {
-			sqDiagUpBb[sq] = DiagUpA6
-		} else if DiagUpA5&sq.bitboard_() > 0 {
-			sqDiagUpBb[sq] = DiagUpA5
-		} else if DiagUpA4&sq.bitboard_() > 0 {
-			sqDiagUpBb[sq] = DiagUpA4
-		} else if DiagUpA3&sq.bitboard_() > 0 {
-			sqDiagUpBb[sq] = DiagUpA3
-		} else if DiagUpA2&sq.bitboard_() > 0 {
-			sqDiagUpBb[sq] = DiagUpA2
-		} else if DiagUpA1&sq.bitboard_() > 0 {
-			sqDiagUpBb[sq] = DiagUpA1
-		} else if DiagUpB1&sq.bitboard_() > 0 {
-			sqDiagUpBb[sq] = DiagUpB1
-		} else if DiagUpC1&sq.bitboard_() > 0 {
-			sqDiagUpBb[sq] = DiagUpC1
-		} else if DiagUpD1&sq.bitboard_() > 0 {
-			sqDiagUpBb[sq] = DiagUpD1
-		} else if DiagUpE1&sq.bitboard_() > 0 {
-			sqDiagUpBb[sq] = DiagUpE1
-		} else if DiagUpF1&sq.bitboard_() > 0 {
-			sqDiagUpBb[sq] = DiagUpF1
-		} else if DiagUpG1&sq.bitboard_() > 0 {
-			sqDiagUpBb[sq] = DiagUpG1
-		} else if DiagUpH1&sq.bitboard_() > 0 {
-			sqDiagUpBb[sq] = DiagUpH1
+		if        DiagUpA8&sq.bitboard_() > 0 { sqDiagUpBb[sq] = DiagUpA8
+		} else if DiagUpA7&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpA7
+		} else if DiagUpA6&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpA6
+		} else if DiagUpA5&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpA5
+		} else if DiagUpA4&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpA4
+		} else if DiagUpA3&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpA3
+		} else if DiagUpA2&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpA2
+		} else if DiagUpA1&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpA1
+		} else if DiagUpB1&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpB1
+		} else if DiagUpC1&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpC1
+		} else if DiagUpD1&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpD1
+		} else if DiagUpE1&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpE1
+		} else if DiagUpF1&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpF1
+		} else if DiagUpG1&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpG1
+		} else if DiagUpH1&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpH1
 		}
 
-		if DiagDownH8&sq.bitboard_() > 0 {
-			sqDiagDownBb[sq] = DiagDownH8
-		} else if DiagDownH7&sq.bitboard_() > 0 {
-			sqDiagDownBb[sq] = DiagDownH7
-		} else if DiagDownH6&sq.bitboard_() > 0 {
-			sqDiagDownBb[sq] = DiagDownH6
-		} else if DiagDownH5&sq.bitboard_() > 0 {
-			sqDiagDownBb[sq] = DiagDownH5
-		} else if DiagDownH4&sq.bitboard_() > 0 {
-			sqDiagDownBb[sq] = DiagDownH4
-		} else if DiagDownH3&sq.bitboard_() > 0 {
-			sqDiagDownBb[sq] = DiagDownH3
-		} else if DiagDownH2&sq.bitboard_() > 0 {
-			sqDiagDownBb[sq] = DiagDownH2
-		} else if DiagDownH1&sq.bitboard_() > 0 {
-			sqDiagDownBb[sq] = DiagDownH1
-		} else if DiagDownG1&sq.bitboard_() > 0 {
-			sqDiagDownBb[sq] = DiagDownG1
-		} else if DiagDownF1&sq.bitboard_() > 0 {
-			sqDiagDownBb[sq] = DiagDownF1
-		} else if DiagDownE1&sq.bitboard_() > 0 {
-			sqDiagDownBb[sq] = DiagDownE1
-		} else if DiagDownD1&sq.bitboard_() > 0 {
-			sqDiagDownBb[sq] = DiagDownD1
-		} else if DiagDownC1&sq.bitboard_() > 0 {
-			sqDiagDownBb[sq] = DiagDownC1
-		} else if DiagDownB1&sq.bitboard_() > 0 {
-			sqDiagDownBb[sq] = DiagDownB1
-		} else if DiagDownA1&sq.bitboard_() > 0 {
-			sqDiagDownBb[sq] = DiagDownA1
+		if        DiagDownH8&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownH8
+		} else if DiagDownH7&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownH7
+		} else if DiagDownH6&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownH6
+		} else if DiagDownH5&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownH5
+		} else if DiagDownH4&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownH4
+		} else if DiagDownH3&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownH3
+		} else if DiagDownH2&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownH2
+		} else if DiagDownH1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownH1
+		} else if DiagDownG1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownG1
+		} else if DiagDownF1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownF1
+		} else if DiagDownE1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownE1
+		} else if DiagDownD1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownD1
+		} else if DiagDownC1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownC1
+		} else if DiagDownB1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownB1
+		} else if DiagDownA1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownA1
 		}
 		// @formatter:on
 	}
+
+	// distance between squares
+	for sq1 := SqA1; sq1 <= SqH8; sq1++ {
+		for sq2 := SqA1; sq2 <= SqH8; sq2++ {
+			if sq1 != sq2 {
+				squareDistance[sq1][sq2] =
+					util.Max(FileDistance(sq1.FileOf(), sq2.FileOf()), RankDistance(sq1.RankOf(), sq2.RankOf()))
+			}
+		}
+	}
+
+
 }

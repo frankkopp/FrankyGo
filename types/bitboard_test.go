@@ -360,7 +360,58 @@ func TestBitboardInit(t *testing.T) {
 	assert.Equal(t, sqDiagDownBb[SqC5], DiagDownG1)
 	assert.Equal(t, sqDiagDownBb[SqF6], DiagDownH4)
 	assert.Equal(t, sqDiagDownBb[SqH8], DiagDownH8)
+}
 
+
+func TestBitboardFileDistance(t *testing.T) {
+	Init()
+
+	tests := []struct {
+		f1   File
+		f2   File
+		dist int
+	}{
+		{FileA, FileA, 0},
+		{FileA, FileB, 1},
+		{FileB, FileA, 1},
+		{FileA, FileH, 7},
+		{FileH, FileA, 7},
+		{FileC, FileF, 3},
+		{FileF, FileC, 3},
+	}
+
+	for _, test := range tests {
+		// PopLsb
+		got := FileDistance(test.f1, test.f2)
+		fmt.Printf("File distance between %s and %s is %d \n", test.f1.str(), test.f2.str(), got)
+		assert.Equal(t, test.dist, got)
+	}
+}
+
+func TestBitboardSquareDistance(t *testing.T) {
+	Init()
+
+	tests := []struct {
+		s1 Square
+		s2 Square
+		dist int
+	}{
+		{SqA1, SqA1, 0},
+		{SqA1, SqA2, 1},
+		{SqA1, SqB1, 1},
+		{SqA1, SqB2, 1},
+		{SqA1, SqH8, 7},
+		{SqA8, SqH1, 7},
+		{SqD4, SqA1, 3},
+		{SqE5, SqD4, 1},
+	}
+
+	for _, test := range tests {
+		// PopLsb
+		got := squareDistance[test.s1][test.s2]
+		fmt.Printf("Square distance between %s and %s is %d \n", test.s1.str(), test.s2.str(), got)
+		assert.Equal(t, test.dist, got)
+	}
 }
 
 // //////////////////////////////////////////////////////////////////////////
