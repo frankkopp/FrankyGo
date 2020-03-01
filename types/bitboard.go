@@ -140,3 +140,156 @@ func (b Bitboard) strGrp() string {
 	os.WriteString(fmt.Sprintf(" (%d)", b))
 	return os.String()
 }
+
+// const helper arrays
+
+var (
+	// Used to pre compute an indexMap for rotated boards
+	rotateMapR90 = [SqLength]int{
+		7, 15, 23, 31, 39, 47, 55, 63,
+		6, 14, 22, 30, 38, 46, 54, 62,
+		5, 13, 21, 29, 37, 45, 53, 61,
+		4, 12, 20, 28, 36, 44, 52, 60,
+		3, 11, 19, 27, 35, 43, 51, 59,
+		2, 10, 18, 26, 34, 42, 50, 58,
+		1, 9, 17, 25, 33, 41, 49, 57,
+		0, 8, 16, 24, 32, 40, 48, 56}
+
+	// Used to pre compute an indexMap for rotated boards
+	rotateMapL90 = [SqLength]int{
+		56, 48, 40, 32, 24, 16, 8, 0,
+		57, 49, 41, 33, 25, 17, 9, 1,
+		58, 50, 42, 34, 26, 18, 10, 2,
+		59, 51, 43, 35, 27, 19, 11, 3,
+		60, 52, 44, 36, 28, 20, 12, 4,
+		61, 53, 45, 37, 29, 21, 13, 5,
+		62, 54, 46, 38, 30, 22, 14, 6,
+		63, 55, 47, 39, 31, 23, 15, 7}
+
+	// Used to pre compute an indexMap for rotated boards
+	rotateMapR45 = [SqLength]int{
+		7,
+		6, 15,
+		5, 14, 23,
+		4, 13, 22, 31,
+		3, 12, 21, 30, 39,
+		2, 11, 20, 29, 38, 47,
+		1, 10, 19, 28, 37, 46, 55,
+		0, 9, 18, 27, 36, 45, 54, 63,
+		8, 17, 26, 35, 44, 53, 62,
+		16, 25, 34, 43, 52, 61,
+		24, 33, 42, 51, 60,
+		32, 41, 50, 59,
+		40, 49, 58,
+		48, 57,
+		56}
+
+	// Used to pre compute an indexMap for rotated boards
+	rotateMapL45 = [SqLength]int{
+		0,
+		8, 1,
+		16, 9, 2,
+		24, 17, 10, 3,
+		32, 25, 18, 11, 4,
+		40, 33, 26, 19, 12, 5,
+		48, 41, 34, 27, 20, 13, 6,
+		56, 49, 42, 35, 28, 21, 14, 7,
+		57, 50, 43, 36, 29, 22, 15,
+		58, 51, 44, 37, 30, 23,
+		59, 52, 45, 38, 31,
+		60, 53, 46, 39,
+		61, 54, 47,
+		62, 55,
+		63}
+
+	// Used to pre compute an indexMap for diagonals
+	lengthDiagUp = [SqLength]int{
+		8, 7, 6, 5, 4, 3, 2, 1,
+		7, 8, 7, 6, 5, 4, 3, 2,
+		6, 7, 8, 7, 6, 5, 4, 3,
+		5, 6, 7, 8, 7, 6, 5, 4,
+		4, 5, 6, 7, 8, 7, 6, 5,
+		3, 4, 5, 6, 7, 8, 7, 6,
+		2, 3, 4, 5, 6, 7, 8, 7,
+		1, 2, 3, 4, 5, 6, 7, 8}
+
+	// Used to pre compute an indexMap for diagonals
+	lengthDiagDown = [SqLength]int{
+		1, 2, 3, 4, 5, 6, 7, 8,
+		2, 3, 4, 5, 6, 7, 8, 7,
+		3, 4, 5, 6, 7, 8, 7, 6,
+		4, 5, 6, 7, 8, 7, 6, 5,
+		5, 6, 7, 8, 7, 6, 5, 4,
+		6, 7, 8, 7, 6, 5, 4, 3,
+		7, 8, 7, 6, 5, 4, 3, 2,
+		8, 7, 6, 5, 4, 3, 2, 1}
+
+	shiftsDiagUp = [SqLength]int{
+		28, 21, 15, 10, 6, 3, 1, 0,
+		36, 28, 21, 15, 10, 6, 3, 1,
+		43, 36, 28, 21, 15, 10, 6, 3,
+		49, 43, 36, 28, 21, 15, 10, 6,
+		54, 49, 43, 36, 28, 21, 15, 10,
+		58, 54, 49, 43, 36, 28, 21, 15,
+		61, 58, 54, 49, 43, 36, 28, 21,
+		63, 61, 58, 54, 49, 43, 36, 28}
+
+	shiftsDiagDown = [SqLength]int{
+		0, 1, 3, 6, 10, 15, 21, 28,
+		1, 3, 6, 10, 15, 21, 28, 36,
+		3, 6, 10, 15, 21, 28, 36, 43,
+		6, 10, 15, 21, 28, 36, 43, 49,
+		10, 15, 21, 28, 36, 43, 49, 54,
+		15, 21, 28, 36, 43, 49, 54, 58,
+		21, 28, 36, 43, 49, 54, 58, 61,
+		28, 36, 43, 49, 54, 58, 61, 63}
+)
+
+// Used to pre compute an indexMap for diagonals
+func (sq Square) lengthDiagUpMask() Bitboard {
+	return (BbOne << lengthDiagUp[sq]) - 1
+}
+
+// Used to pre compute an indexMap for diagonals
+func (sq Square) lengthDiagDownMask() Bitboard {
+	return (BbOne << lengthDiagDown[sq]) - 1
+}
+
+// Go does not overflow const values when shifting a bit over msb when
+
+const MsbMask Bitboard = ^(Bitboard(1) << 63)
+const Rank8Mask Bitboard = ^Rank8_Bb
+const FileAMask Bitboard = ^FileA_Bb
+const FileHMask Bitboard = ^FileH_Bb
+
+const DiagUpA1 Bitboard = 0b10000000_01000000_00100000_00010000_00001000_00000100_00000010_00000001
+const DiagUpB1 Bitboard = (MsbMask & DiagUpA1) << 1 & FileAMask // shift EAST
+const DiagUpC1 Bitboard = (MsbMask & DiagUpB1) << 1 & FileAMask
+const DiagUpD1 Bitboard = (MsbMask & DiagUpC1) << 1 & FileAMask
+const DiagUpE1 Bitboard = (MsbMask & DiagUpD1) << 1 & FileAMask
+const DiagUpF1 Bitboard = (MsbMask & DiagUpE1) << 1 & FileAMask
+const DiagUpG1 Bitboard = (MsbMask & DiagUpF1) << 1 & FileAMask
+const DiagUpH1 Bitboard = (MsbMask & DiagUpG1) << 1 & FileAMask
+const DiagUpA2 Bitboard = (Rank8Mask & DiagUpA1) << 8 // shift NORTH
+const DiagUpA3 Bitboard = (Rank8Mask & DiagUpA2) << 8
+const DiagUpA4 Bitboard = (Rank8Mask & DiagUpA3) << 8
+const DiagUpA5 Bitboard = (Rank8Mask & DiagUpA4) << 8
+const DiagUpA6 Bitboard = (Rank8Mask & DiagUpA5) << 8
+const DiagUpA7 Bitboard = (Rank8Mask & DiagUpA6) << 8
+const DiagUpA8 Bitboard = (Rank8Mask & DiagUpA7) << 8
+
+const DiagDownH1 Bitboard = 0b0000000100000010000001000000100000010000001000000100000010000000
+const DiagDownH2 Bitboard = (Rank8Mask & DiagDownH1) << 8 // shift NORTH
+const DiagDownH3 Bitboard = (Rank8Mask & DiagDownH2) << 8
+const DiagDownH4 Bitboard = (Rank8Mask & DiagDownH3) << 8
+const DiagDownH5 Bitboard = (Rank8Mask & DiagDownH4) << 8
+const DiagDownH6 Bitboard = (Rank8Mask & DiagDownH5) << 8
+const DiagDownH7 Bitboard = (Rank8Mask & DiagDownH6) << 8
+const DiagDownH8 Bitboard = (Rank8Mask & DiagDownH7) << 8
+const DiagDownG1 Bitboard = (DiagDownH1 >> 1) & FileHMask // shift WEST
+const DiagDownF1 Bitboard = (DiagDownG1 >> 1) & FileHMask
+const DiagDownE1 Bitboard = (DiagDownF1 >> 1) & FileHMask
+const DiagDownD1 Bitboard = (DiagDownE1 >> 1) & FileHMask
+const DiagDownC1 Bitboard = (DiagDownD1 >> 1) & FileHMask
+const DiagDownB1 Bitboard = (DiagDownC1 >> 1) & FileHMask
+const DiagDownA1 Bitboard = (DiagDownB1 >> 1) & FileHMask

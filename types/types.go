@@ -30,6 +30,9 @@ type MilliSec uint64 // could be large
 type Key uint64      // zobrist key need all 64 bits for distribution
 type Move uint32     // 16 bits for move encoding - 16 bits for sort value
 
+// Global constants
+const SqLength int = 64
+
 var initialized = false
 
 // Initialize pre computed data structure e.g. bitboards, etc.

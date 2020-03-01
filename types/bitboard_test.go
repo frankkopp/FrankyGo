@@ -118,6 +118,64 @@ func TestBitboardStrGrp(t *testing.T) {
 	fmt.Println(BbAll.strGrp())
 
 	assert.Equal(t, "10000000.00000000.00000000.00000000.00000000.00000000.00000000.00000000 (1)", BbOne.strGrp())
+	assert.Equal(t, "0000000000000000000000000000000000000000000000000000000000000001", BbOne.str())
+}
+
+func TestBitboardDiagUp(t *testing.T) {
+	Init()
+	fmt.Println(DiagUpA1.strBoard())
+	fmt.Println(DiagUpB1.strBoard())
+	fmt.Println(DiagUpC1.strBoard())
+	fmt.Println(DiagUpD1.strBoard())
+	fmt.Println(DiagUpE1.strBoard())
+	fmt.Println(DiagUpF1.strBoard())
+	fmt.Println(DiagUpG1.strBoard())
+	fmt.Println(DiagUpH1.strBoard())
+	assert.Equal(t, "10000000.01000000.00100000.00010000."+
+		"00001000.00000100.00000010.00000001 (9241421688590303745)", DiagUpA1.strGrp())
+	assert.Equal(t, "00000010.00000001.00000000.00000000."+
+		"00000000.00000000.00000000.00000000 (32832)", DiagUpG1.strGrp())
+
+	fmt.Println(DiagUpA2.strBoard())
+	fmt.Println(DiagUpA3.strBoard())
+	fmt.Println(DiagUpA4.strBoard())
+	fmt.Println(DiagUpA5.strBoard())
+	fmt.Println(DiagUpA6.strBoard())
+	fmt.Println(DiagUpA7.strBoard())
+	fmt.Println(DiagUpA8.strBoard())
+	assert.Equal(t, "00000000.10000000.01000000.00100000."+
+		"00010000.00001000.00000100.00000010 (4620710844295151872)", DiagUpA2.strGrp())
+	assert.Equal(t, "00000000.00000000.00000000.00000000."+
+		"00000000.00000000.10000000.01000000 (144396663052566528)", DiagUpA7.strGrp())
+}
+
+func TestBitboardDiagDown(t *testing.T) {
+	Init()
+	fmt.Println(DiagDownH1.strBoard())
+	fmt.Println(DiagDownH2.strBoard())
+	fmt.Println(DiagDownH3.strBoard())
+	fmt.Println(DiagDownH4.strBoard())
+	fmt.Println(DiagDownH5.strBoard())
+	fmt.Println(DiagDownH6.strBoard())
+	fmt.Println(DiagDownH7.strBoard())
+	fmt.Println(DiagDownH8.strBoard())
+	assert.Equal(t, "00000001.00000010.00000100.00001000."+
+		"00010000.00100000.01000000.10000000 (72624976668147840)", DiagDownH1.strGrp())
+	assert.Equal(t, "00000000.00000000.00000000.00000000."+
+		"00000000.00000001.00000010.00000100 (2323998145211531264)", DiagDownH6.strGrp())
+
+	fmt.Println(DiagDownG1.strBoard())
+	fmt.Println(DiagDownF1.strBoard())
+	fmt.Println(DiagDownE1.strBoard())
+	fmt.Println(DiagDownD1.strBoard())
+	fmt.Println(DiagDownC1.strBoard())
+	fmt.Println(DiagDownB1.strBoard())
+	fmt.Println(DiagDownA1.strBoard())
+	assert.Equal(t, "00000100.00001000.00010000.00100000."+
+		"01000000.10000000.00000000.00000000 (1108169199648)", DiagDownF1.strGrp())
+	assert.Equal(t, "01000000.10000000.00000000.00000000."+
+		"00000000.00000000.00000000.00000000 (258)", DiagDownB1.strGrp())
+
 }
 
 // //////////////////////////////////////////////////////////////////////////
