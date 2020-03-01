@@ -35,24 +35,6 @@ import (
 // 64 bit for each square on the board
 type Bitboard uint64
 
-// Internal square to bitboard array. Needs to be initialized
-var sqBb [64]Bitboard
-
-// Pre computes various bitboards to avoid runtime calculation
-// Will only run once (checks an initialized flag)
-func initBb() {
-	for i := SqA1; i < SqNone; i++ {
-		sqBb[i] = i.bitboard_()
-	}
-}
-
-// Returns a Bitboard of the square by shifting the
-// square onto an empty bitboards.
-// Usually one would use Bitboard() after initializing with InitBb
-func (sq Square) bitboard_() Bitboard {
-	return Bitboard(uint64(1) << sq)
-}
-
 // Returns a Bitboard of the square by accessing the pre calculated
 // square to bitboard array.
 // Initialize with InitBb() before use. Throws panic otherwise.
@@ -251,6 +233,13 @@ const (
 // ////////////////////
 // Pre compute helpers
 
+// Returns a Bitboard of the square by shifting the
+// square onto an empty bitboards.
+// Usually one would use Bitboard() after initializing with InitBb
+func (sq Square) bitboard_() Bitboard {
+	return Bitboard(uint64(1) << sq)
+}
+
 // Used to pre compute an indexMap for diagonals
 func (sq Square) lengthDiagUpMask() Bitboard {
 	return (BbOne << lengthDiagUp[sq]) - 1
@@ -363,3 +352,100 @@ var (
 		21, 28, 36, 43, 49, 54, 58, 61,
 		28, 36, 43, 49, 54, 58, 61, 63}
 )
+
+// Internal pre computed square to square bitboard array.
+// Needs to be initialized with initBb()
+var sqBb [64]Bitboard
+
+// Internal pre computed square to file bitboard array.
+// Needs to be initialized with initBb()
+var sqToFileBb [64]Bitboard
+
+// Internal pre computed square to rank bitboard array.
+// Needs to be initialized with initBb()
+var sqToRankBb [64]Bitboard
+
+// Internal pre computed square to diag up bitboard array.
+// Needs to be initialized with initBb()
+var sqDiagUpBb [64]Bitboard
+
+// Internal pre computed square to diag down bitboard array.
+// Needs to be initialized with initBb()
+var sqDiagDownBb [64]Bitboard
+
+// Pre computes various bitboards to avoid runtime calculation
+func initBb() {
+	for sq := SqA1; sq < SqNone; sq++ {
+		sqBb[sq] = sq.bitboard_()
+
+		// file and rank bitboards
+		sqToFileBb[sq] = FileA_Bb << sq.FileOf()
+		sqToRankBb[sq] = Rank1_Bb << (8 * sq.RankOf())
+
+		// square diagonals // @formatter:off
+		if DiagUpA8&sq.bitboard_() > 0 {
+			sqDiagUpBb[sq] = DiagUpA8
+		} else if DiagUpA7&sq.bitboard_() > 0 {
+			sqDiagUpBb[sq] = DiagUpA7
+		} else if DiagUpA6&sq.bitboard_() > 0 {
+			sqDiagUpBb[sq] = DiagUpA6
+		} else if DiagUpA5&sq.bitboard_() > 0 {
+			sqDiagUpBb[sq] = DiagUpA5
+		} else if DiagUpA4&sq.bitboard_() > 0 {
+			sqDiagUpBb[sq] = DiagUpA4
+		} else if DiagUpA3&sq.bitboard_() > 0 {
+			sqDiagUpBb[sq] = DiagUpA3
+		} else if DiagUpA2&sq.bitboard_() > 0 {
+			sqDiagUpBb[sq] = DiagUpA2
+		} else if DiagUpA1&sq.bitboard_() > 0 {
+			sqDiagUpBb[sq] = DiagUpA1
+		} else if DiagUpB1&sq.bitboard_() > 0 {
+			sqDiagUpBb[sq] = DiagUpB1
+		} else if DiagUpC1&sq.bitboard_() > 0 {
+			sqDiagUpBb[sq] = DiagUpC1
+		} else if DiagUpD1&sq.bitboard_() > 0 {
+			sqDiagUpBb[sq] = DiagUpD1
+		} else if DiagUpE1&sq.bitboard_() > 0 {
+			sqDiagUpBb[sq] = DiagUpE1
+		} else if DiagUpF1&sq.bitboard_() > 0 {
+			sqDiagUpBb[sq] = DiagUpF1
+		} else if DiagUpG1&sq.bitboard_() > 0 {
+			sqDiagUpBb[sq] = DiagUpG1
+		} else if DiagUpH1&sq.bitboard_() > 0 {
+			sqDiagUpBb[sq] = DiagUpH1
+		}
+
+		if DiagDownH8&sq.bitboard_() > 0 {
+			sqDiagDownBb[sq] = DiagDownH8
+		} else if DiagDownH7&sq.bitboard_() > 0 {
+			sqDiagDownBb[sq] = DiagDownH7
+		} else if DiagDownH6&sq.bitboard_() > 0 {
+			sqDiagDownBb[sq] = DiagDownH6
+		} else if DiagDownH5&sq.bitboard_() > 0 {
+			sqDiagDownBb[sq] = DiagDownH5
+		} else if DiagDownH4&sq.bitboard_() > 0 {
+			sqDiagDownBb[sq] = DiagDownH4
+		} else if DiagDownH3&sq.bitboard_() > 0 {
+			sqDiagDownBb[sq] = DiagDownH3
+		} else if DiagDownH2&sq.bitboard_() > 0 {
+			sqDiagDownBb[sq] = DiagDownH2
+		} else if DiagDownH1&sq.bitboard_() > 0 {
+			sqDiagDownBb[sq] = DiagDownH1
+		} else if DiagDownG1&sq.bitboard_() > 0 {
+			sqDiagDownBb[sq] = DiagDownG1
+		} else if DiagDownF1&sq.bitboard_() > 0 {
+			sqDiagDownBb[sq] = DiagDownF1
+		} else if DiagDownE1&sq.bitboard_() > 0 {
+			sqDiagDownBb[sq] = DiagDownE1
+		} else if DiagDownD1&sq.bitboard_() > 0 {
+			sqDiagDownBb[sq] = DiagDownD1
+		} else if DiagDownC1&sq.bitboard_() > 0 {
+			sqDiagDownBb[sq] = DiagDownC1
+		} else if DiagDownB1&sq.bitboard_() > 0 {
+			sqDiagDownBb[sq] = DiagDownB1
+		} else if DiagDownA1&sq.bitboard_() > 0 {
+			sqDiagDownBb[sq] = DiagDownA1
+		}
+		// @formatter:on
+	}
+}

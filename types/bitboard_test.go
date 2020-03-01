@@ -328,6 +328,38 @@ func TestBitboardShift(t *testing.T) {
 		fmt.Printf("Bitboard out \n%s \n", got.strBoard())
 		assert.Equal(t, test.postShift, got)
 	}
+}
+
+func TestBitboardInit(t *testing.T) {
+	Init()
+
+	// Square bitboards
+	assert.Equal(t, SqA1.bitboard_().str(), "0000000000000000000000000000000000000000000000000000000000000001")
+	assert.Equal(t, SqH8.bitboard_().str(), "1000000000000000000000000000000000000000000000000000000000000000")
+
+	// square to file index
+	assert.Equal(t, sqToFileBb[SqA2], FileA_Bb)
+	assert.Equal(t, sqToFileBb[SqC5], FileC_Bb)
+	assert.Equal(t, sqToFileBb[SqF6], FileF_Bb)
+	assert.Equal(t, sqToFileBb[SqH8], FileH_Bb)
+
+	// square to rank index
+	assert.Equal(t, sqToRankBb[SqA2], Rank2_Bb)
+	assert.Equal(t, sqToRankBb[SqC5], Rank5_Bb)
+	assert.Equal(t, sqToRankBb[SqF6], Rank6_Bb)
+	assert.Equal(t, sqToRankBb[SqH8], Rank8_Bb)
+
+	// square to diag up index
+	assert.Equal(t, sqDiagUpBb[SqA2], DiagUpA2)
+	assert.Equal(t, sqDiagUpBb[SqC5], DiagUpA3)
+	assert.Equal(t, sqDiagUpBb[SqF6], DiagUpA1)
+	assert.Equal(t, sqDiagUpBb[SqH8], DiagUpA1)
+
+	// square to diag down index
+	assert.Equal(t, sqDiagDownBb[SqA2], DiagDownB1)
+	assert.Equal(t, sqDiagDownBb[SqC5], DiagDownG1)
+	assert.Equal(t, sqDiagDownBb[SqF6], DiagDownH4)
+	assert.Equal(t, sqDiagDownBb[SqH8], DiagDownH8)
 
 }
 
