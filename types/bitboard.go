@@ -714,6 +714,16 @@ func pseudoAttacksPreCompute() {
 		pseudoAttacks[Rook][square] |= movesRank[square][0]
 		pseudoAttacks[Queen][square] |= pseudoAttacks[Bishop][square] | pseudoAttacks[Rook][square]
 	}
+
+	// TODO
+	// masks for files and ranks left, right, up and down from square
+	// rays
+	// mask for passed pawns
+	// mask for intermediate squares in between two squares
+	// castle masks
+	// masks for each square color (good for bishops vs bishops or pawns)
+	// distances to center squares by quadrant
+
 }
 
 func movesDiagDownPreCompute() {
