@@ -542,60 +542,56 @@ func initBb() {
 	}
 
 	// Pre-compute attacks and moves on a an empty board (pseudo attacks)
+	movesRankPreCompute()
+	movesFilePreCompute()
+	movesDiagUpPreCompute()
+	movesDiagDownPreCompute()
 
-	// All sliding attacks with blockers - horizontal
+}
+
+func movesDiagDownPreCompute() {
+	// All sliding attacks with blocker - down diag sliders
 	// Shamefully copied from Beowulf :)
-	for file := int(FileA); file <= int(FileH); file++ {
-		for j := 0; j < 256; j++ {
-			mask := BbZero
-			for x := file - 1; x >= 0; x-- {
+	for square := SqA1; square <= SqH8; square++ {
+		file := square.FileOf()
+		rank := square.RankOf()
+		// Get the far left hand square on this diagonal
+		diagstart := Square(7*(util.Min(int(file), 7-int(rank))) + int(square))
+		dsfile := diagstart.FileOf()
+		dl := lengthDiagDown[square]
+		// Loop through all possible occupations of this diagonal line
+		for j := 0; j < (1 << dl); j++ {
+			var mask, mask2 Bitboard
+			// Calculate possible target squares
+			for x := int(file) - int(dsfile) - 1; x >= 0; x-- {
 				mask += BbOne << x
 				if (j & (1 << x)) != 0 {
 					break
 				}
 			}
-			for x := file + 1; x < 8; x++ {
+			for x := int(file) - int(dsfile) + 1; x < dl; x++ {
 				mask += BbOne << x
 				if (j & (1 << x)) != 0 {
 					break
 				}
 			}
-			for rank := int(Rank1); rank <= int(Rank8); rank++ {
-				movesRank[(rank*8)+file][j] = mask << (rank * 8)
+			/* Rotate the target line back onto the required diagonal */
+			for x := 0; x < dl; x++ {
+				mask2 += ((mask >> x) & 1) << (int(diagstart) - (7 * x))
 			}
+			movesDiagDown[square][j] = mask2
 		}
 	}
+}
 
-	// All sliding attacks with blocker - vertical
-	// Shamefully copied from Beowulf :)
-	for rank := int(Rank1); rank <= int(Rank8); rank++ {
-		for j := 0; j < 256; j++ {
-			mask := BbZero;
-			for x := 6 - rank; x >= 0; x-- {
-				mask += BbOne << (8 * (7 - x))
-				if (j & (1 << x)) != 0 {
-					break
-				}
-			}
-			for x := 8 - rank; x < 8; x++ {
-				mask += BbOne << (8 * (7 - x))
-				if (j & (1 << x)) != 0 {
-					break
-				}
-			}
-			for file := int(FileA); file <= int(FileH); file++ {
-				movesFile[(rank * 8) + file][j] = mask << file
-			}
-		}
-	}
-
+func movesDiagUpPreCompute() {
 	// All sliding attacks with blocker - up diag sliders
 	// Shamefully copied from Beowulf :)
 	for square := SqA1; square <= SqH8; square++ {
 		file := square.FileOf()
 		rank := square.RankOf()
 		// Get the far left hand square on this diagonal
-		diagstart := square - Square(9 * util.Min(int(file), int(rank)))
+		diagstart := square - Square(9*util.Min(int(file), int(rank)))
 		dsfile := diagstart.FileOf()
 		dl := lengthDiagUp[square]
 		// Loop through all possible occupations of this diagonal line
@@ -621,38 +617,54 @@ func initBb() {
 			movesDiagUp[square][sq] = mask2
 		}
 	}
+}
 
-	// All sliding attacks with blocker - down diag sliders
+func movesFilePreCompute() {
+	// All sliding attacks with blocker - vertical
 	// Shamefully copied from Beowulf :)
-	for square := SqA1; square <= SqH8; square++ {
-		file := square.FileOf()
-		rank := square.RankOf()
-		// Get the far left hand square on this diagonal
-		diagstart := Square(7 * (util.Min(int(file), 7 - int(rank))) + int(square))
-		dsfile := diagstart.FileOf()
-		dl := lengthDiagDown[square]
-		// Loop through all possible occupations of this diagonal line
-		for j := 0; j < (1 << dl); j++ {
-			var mask, mask2 Bitboard
-			// Calculate possible target squares
-			for x := int(file) - int(dsfile) - 1; x >= 0; x-- {
-				mask += BbOne << x;
+	for rank := int(Rank1); rank <= int(Rank8); rank++ {
+		for j := 0; j < 256; j++ {
+			mask := BbZero
+			for x := 6 - rank; x >= 0; x-- {
+				mask += BbOne << (8 * (7 - x))
 				if (j & (1 << x)) != 0 {
 					break
 				}
 			}
-			for x := int(file) - int(dsfile) + 1; x < dl; x++ {
-				mask += BbOne << x;
+			for x := 8 - rank; x < 8; x++ {
+				mask += BbOne << (8 * (7 - x))
 				if (j & (1 << x)) != 0 {
 					break
 				}
 			}
-			/* Rotate the target line back onto the required diagonal */
-			for x := 0; x < dl; x++  {
-				mask2 += ((mask >> x) & 1) << (int(diagstart) - (7 * x))
+			for file := int(FileA); file <= int(FileH); file++ {
+				movesFile[(rank*8)+file][j] = mask << file
 			}
-			movesDiagDown[square][j] = mask2
 		}
 	}
+}
 
+func movesRankPreCompute() {
+	// All sliding attacks with blockers - horizontal
+	// Shamefully copied from Beowulf :)
+	for file := int(FileA); file <= int(FileH); file++ {
+		for j := 0; j < 256; j++ {
+			mask := BbZero
+			for x := file - 1; x >= 0; x-- {
+				mask += BbOne << x
+				if (j & (1 << x)) != 0 {
+					break
+				}
+			}
+			for x := file + 1; x < 8; x++ {
+				mask += BbOne << x
+				if (j & (1 << x)) != 0 {
+					break
+				}
+			}
+			for rank := int(Rank1); rank <= int(Rank8); rank++ {
+				movesRank[(rank*8)+file][j] = mask << (rank * 8)
+			}
+		}
+	}
 }

@@ -35,3 +35,22 @@ func TestColor(t *testing.T) {
 	assert.EqualValues(t, 0, White, "White is int 0")
 	assert.EqualValues(t, 1, Black, "Black is int 1")
 }
+
+func TestColor_IsValid(t *testing.T) {
+	tests := []struct {
+		name string
+		c    Color
+		want bool
+	}{
+		{ "White", White, true},
+		{ "Black", Black, true},
+		{ "No Color", Color(2), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.IsValid(); got != tt.want {
+				t.Errorf("IsValid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
