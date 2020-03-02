@@ -56,3 +56,11 @@ func (c Color) Str() string {
 		panic(fmt.Sprintf("Invalid color %d", c))
 	}
 }
+
+// Color direction factor
+var dir = [2]int{1,-1}
+
+// MoveDirection returns positive 1 for White and negative 1 (-1) for Black
+func (c Color) MoveDirection() int {
+	return dir[c]
+}

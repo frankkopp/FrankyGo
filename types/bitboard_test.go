@@ -660,3 +660,49 @@ func TestGetMovesDiagDown(t *testing.T) {
 		})
 	}
 }
+
+func Test_pseudoAttacksPreCompute(t *testing.T) {
+	Init()
+	tests := []struct {
+		name string
+		piece PieceType
+		from Square
+		want Bitboard
+	}{
+		{"King E1", King, SqE1, sqBb[SqD1] | sqBb[SqD2] | sqBb[SqE2] | sqBb[SqF2] | sqBb[SqF1]},
+		{"King E8", King, SqE8, sqBb[SqD8] | sqBb[SqD7] | sqBb[SqE7] | sqBb[SqF7] | sqBb[SqF8]},
+		{"Bishop E5", Bishop, SqE5, PopSquare(DiagUpA1 | DiagDownH2, SqE5)},
+		{"Rook E5", Rook, SqE5, PopSquare(Rank5_Bb|FileE_Bb, SqE5)},
+		{"Knight E5", Knight, SqE5, sqBb[SqD7] | sqBb[SqF7] | sqBb[SqG6] | sqBb[SqG4] | sqBb[SqF3] | sqBb[SqD3] | sqBb[SqC4] | sqBb[SqC6]},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetPseudoAttacks(tt.piece, tt.from); got != tt.want {
+				t.Errorf("Moves bits = %v, want %v", got.StrBoard(), tt.want.StrBoard())
+			}
+		})
+	}
+}
+
+func Test_pawnAttacksPreCompute(t *testing.T) {
+	Init()
+	tests := []struct {
+		name string
+		color Color
+		from Square
+		want Bitboard
+	}{
+		{"White E2", White ,SqE2, sqBb[SqD3] | sqBb[SqF3]},
+		{"Black E7", Black,SqE7, sqBb[SqD6] | sqBb[SqF6]},
+		{"White A4", White, SqA4, sqBb[SqB5]},
+		{"Black H5", Black,SqH5, sqBb[SqG4]},
+		{"White H4", White, SqH4, sqBb[SqG5]},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetPawnAttacks(tt.color, tt.from); got != tt.want {
+				t.Errorf("Moves bits = %v, want %v", got.StrBoard(), tt.want.StrBoard())
+			}
+		})
+	}
+}

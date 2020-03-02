@@ -165,7 +165,7 @@ func GetMovesDiagDownRotated(sq Square, rotated Bitboard) Bitboard {
 // GetMovesDiagDown Bitboard for all possible diagonal up moves of the square with
 // the content (blocking pieces) determined from the given non rotated
 // bitboard.
-func GetMovesDiagDown(square Square , content Bitboard ) Bitboard {
+func GetMovesDiagDown(square Square, content Bitboard) Bitboard {
 	// content = the pieces currently on the board and maybe blocking the moves
 	// rotate the content of the board to get all diagonals in a row
 	return GetMovesDiagDownRotated(square, RotateL45(content))
@@ -316,6 +316,23 @@ func RotateSquareR45(sq Square) Square {
 func RotateSquareL45(sq Square) Square {
 	checkInitialization()
 	return indexMapL45[sq]
+}
+
+// GetPseudoAttacks returns a Bitboard of possible attacks of a piece
+// as if on an empty board
+func GetPseudoAttacks(pt PieceType, sq Square) Bitboard {
+	checkInitialization()
+	// assertion
+	if config.DEBUG && (pt == PtNone || pt == Pawn || pt > Queen) {
+		panic("Invalid piece type for GetPseudoAttacks()")
+	}
+	return pseudoAttacks[pt][sq]
+}
+
+// GetPawnAttacks returns a Bitboard of possible attacks of a pawn
+func GetPawnAttacks(c Color, sq Square) Bitboard {
+	checkInitialization()
+	return pawnAttacks[c][sq]
 }
 
 // Various constant bitboards
@@ -573,6 +590,12 @@ var movesDiagUp [SqLength][256]Bitboard
 // (needs rotating and masking the index)
 var movesDiagDown [SqLength][256]Bitboard
 
+// Internal Bitboard for pawn attacks for each color for each square
+var pawnAttacks[2][SqLength]Bitboard
+
+// Internal Bitboard for attacks for each piece for each square
+var pseudoAttacks[PtLength][SqLength]Bitboard
+
 // Checks if Bitboards have been initialized. If not throws
 // panic. Can be turned off by config.DEBUG = false
 func checkInitialization() {
@@ -585,13 +608,14 @@ func checkInitialization() {
 // Pre computes various bitboards To avoid runtime calculation
 func initBb() {
 	for sq := SqA1; sq < SqNone; sq++ {
+		// pre compute bitboard for a single sq
 		sqBb[sq] = sq.bitboard_()
 
 		// file and rank bitboards
 		sqToFileBb[sq] = FileA_Bb << sq.FileOf()
 		sqToRankBb[sq] = Rank1_Bb << (8 * sq.RankOf())
 
-		// square diagonals // @formatter:off
+		// sq diagonals // @formatter:off
 		//noinspection GoLinterLocal
 		if        DiagUpA8&sq.bitboard_() > 0 { sqDiagUpBb[sq] = DiagUpA8
 		} else if DiagUpA7&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpA7
@@ -628,7 +652,7 @@ func initBb() {
 		}
 		// @formatter:on
 
-		// Reverse index To quickly calculate the index of a square in the rotated board
+		// Reverse index To quickly calculate the index of a sq in the rotated board
 		indexMapR90[rotateMapR90[sq]] = sq
 		indexMapL90[rotateMapL90[sq]] = sq
 		indexMapR45[rotateMapR45[sq]] = sq
@@ -651,6 +675,45 @@ func initBb() {
 	movesDiagUpPreCompute()
 	movesDiagDownPreCompute()
 
+	// pre compute all possible attacked square per color, piece and square
+	pseudoAttacksPreCompute()
+
+}
+
+func pseudoAttacksPreCompute() {
+	// steps for kings, pawns, knight for WHITE - negate to get BLACK
+	var steps = [][]Direction{
+		{},
+		{Northwest, North, Northeast, East}, // king
+		{Northwest, Northeast},              // pawn
+		{West + Northwest, East + Northeast, North + Northwest, North + Northeast}} // knight
+
+	// non-sliding attacks
+	for c := White; c <= Black; c++ {
+		for _, pt := range []PieceType{King, Pawn, Knight} {
+			for s := SqA1; s <= SqH8; s++ {
+				for i := 0; i < len(steps[pt]); i++ {
+					to := Square(int(s) + c.MoveDirection()*int(steps[pt][i]))
+					if to.IsValid() && squareDistance[s][to] < 3 { // no wrap around board edges
+						if pt == Pawn {
+							pawnAttacks[c][s] |= sqBb[to]
+						} else {
+							pseudoAttacks[pt][s] |= sqBb[to]
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// sliding pieces pseudo attacks
+	for square := SqA1; square <= SqH8; square++ {
+		pseudoAttacks[Bishop][square] |= movesDiagUp[square][0]
+		pseudoAttacks[Bishop][square] |= movesDiagDown[square][0]
+		pseudoAttacks[Rook][square] |= movesFile[square][0]
+		pseudoAttacks[Rook][square] |= movesRank[square][0]
+		pseudoAttacks[Queen][square] |= pseudoAttacks[Bishop][square] | pseudoAttacks[Rook][square]
+	}
 }
 
 func movesDiagDownPreCompute() {
