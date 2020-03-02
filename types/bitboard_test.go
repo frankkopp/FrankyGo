@@ -448,7 +448,7 @@ func TestBitboardSquareDistance(t *testing.T) {
 
 	for _, test := range tests {
 		// PopLsb
-		got := SquareDistance(test.s1,test.s2)
+		got := SquareDistance(test.s1, test.s2)
 		if verbose {
 			fmt.Printf("Square distance between %s and %s is %d \n", test.s1.Str(), test.s2.Str(), got)
 		}
@@ -544,7 +544,6 @@ func TestBitboardRotateSq(t *testing.T) {
 
 // TODO implement getMoves functions and test
 
-
 // //////////////////////////////////////////////////////////////////////////
 // benchmarks
 
@@ -576,16 +575,16 @@ func BenchmarkSqBbArrayCache(b *testing.B) {
 func Test_GetMovesOnRank(t *testing.T) {
 	Init()
 	tests := []struct {
-		name string
-		square Square
+		name    string
+		square  Square
 		blocker Bitboard
-		want Bitboard
+		want    Bitboard
 	}{
-		{ "Empty Rank e4", SqE4, 0, PopSquare(Rank4_Bb, SqE4) },
-		{ "Rank e4 Blocker B4 G4", SqE4, sqBb[SqB4] |sqBb[SqG4] , sqBb[SqB4] |sqBb[SqC4] | sqBb[SqD4] | sqBb[SqF4] | sqBb[SqG4] },
-		{ "Rank a8 Blocker C8", SqA8, sqBb[SqC8] |sqBb[SqF8], sqBb[SqB8] |sqBb[SqC8] },
-		{ "Rank f1 Blocker -E1 G1-", SqF1, PopSquare(Rank1_Bb, SqF1), sqBb[SqE1] |sqBb[SqG1] },
-		{ "Rank f1 Blocker -E1 G1-", SqF1, Rank1_Bb, sqBb[SqE1] |sqBb[SqG1] },
+		{"Empty Rank e4", SqE4, 0, PopSquare(Rank4_Bb, SqE4)},
+		{"Rank e4 Blocker B4 G4", SqE4, sqBb[SqB4] | sqBb[SqG4], sqBb[SqB4] | sqBb[SqC4] | sqBb[SqD4] | sqBb[SqF4] | sqBb[SqG4]},
+		{"Rank a8 Blocker C8", SqA8, sqBb[SqC8] | sqBb[SqF8], sqBb[SqB8] | sqBb[SqC8]},
+		{"Rank f1 Blocker -E1 G1-", SqF1, PopSquare(Rank1_Bb, SqF1), sqBb[SqE1] | sqBb[SqG1]},
+		{"Rank f1 Blocker -E1 G1-", SqF1, Rank1_Bb, sqBb[SqE1] | sqBb[SqG1]},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -597,13 +596,17 @@ func Test_GetMovesOnRank(t *testing.T) {
 }
 
 func TestGetMovesOnFile(t *testing.T) {
+	Init()
 	tests := []struct {
-		name string
-		square Square
+		name    string
+		square  Square
 		blocker Bitboard
-		want Bitboard
+		want    Bitboard
 	}{
-		{ "Empty File e4", SqE4, 0, PopSquare(FileE_Bb, SqE4) },
+		{"Empty File e4", SqE4, 0, PopSquare(FileE_Bb, SqE4)},
+		{"Empty File e4", SqE4, sqBb[SqE2] | sqBb[SqE6], sqBb[SqE2] | sqBb[SqE3] | sqBb[SqE5] | sqBb[SqE6]},
+		{"Empty File e4", SqA2, sqBb[SqA1] | sqBb[SqA7], sqBb[SqA1] | sqBb[SqA3] | sqBb[SqA4] | sqBb[SqA5] | sqBb[SqA6] | sqBb[SqA7]},
+		{"Empty File e4", SqH4, FileH_Bb, sqBb[SqH3] | sqBb[SqH5]},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
