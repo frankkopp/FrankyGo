@@ -125,6 +125,52 @@ func GetMovesOnFile(sq Square, content Bitboard) Bitboard {
 	return GetMovesOnFileRotated(sq, RotateL90(content))
 }
 
+// GetMovesDiagUpRotated  Bitboard for all possible diagonal up moves of
+// the square with the content (blocking pieces) determined from the
+// given R45 rotated bitboard.
+func GetMovesDiagUpRotated(sq Square, rotated Bitboard) Bitboard {
+	checkInitialization()
+	// shift the correct row to the lsb
+	shifted := rotated >> shiftsDiagUp[sq]
+	// mask the content with the length of the diagonal to erase any other
+	// pieces which have not been erased by the shift
+	contentMasked := shifted & ((BbOne << lengthDiagUp[sq]) - 1)
+	// retrieve all possible moves for this square with the current content
+	return movesDiagUp[sq][contentMasked]
+}
+
+// GetMovesDiagUp Bitboard for all possible diagonal up moves of the square with
+// the content (blocking pieces) determined from the given non rotated
+// bitboard.
+func GetMovesDiagUp(sq Square, content Bitboard) Bitboard {
+	checkInitialization()
+	// content = the pieces currently on the board and maybe blocking the moves
+	// rotate the content of the board to get all diagonals in a row
+	return GetMovesDiagUpRotated(sq, RotateR45(content))
+}
+
+// GetMovesDiagDownRotated Bitboard for all possible diagonal up moves of the square with
+// the content (blocking pieces) determined from the given L45 rotated
+// bitboard.
+func GetMovesDiagDownRotated(sq Square, rotated Bitboard) Bitboard {
+	// shift the correct row to the lsb
+	shifted := rotated >> shiftsDiagDown[sq]
+	// mask the content with the length of the diagonal to erase any other
+	// pieces which have not been erased by the shift
+	contentMasked := shifted & ((BbOne << lengthDiagDown[sq]) - 1)
+	// retrieve all possible moves for this square with the current content
+	return movesDiagDown[sq][contentMasked]
+}
+
+// GetMovesDiagDown Bitboard for all possible diagonal up moves of the square with
+// the content (blocking pieces) determined from the given non rotated
+// bitboard.
+func GetMovesDiagDown(square Square , content Bitboard ) Bitboard {
+	// content = the pieces currently on the board and maybe blocking the moves
+	// rotate the content of the board to get all diagonals in a row
+	return GetMovesDiagDownRotated(square, RotateL45(content))
+}
+
 // Lsb returns the least significant bit of the 64-bit Bitboard.
 // This translates directly To the Square which is returned.
 // If the bitboard is empty SqNone will be returned.
@@ -527,8 +573,8 @@ var movesDiagUp [SqLength][256]Bitboard
 // (needs rotating and masking the index)
 var movesDiagDown [SqLength][256]Bitboard
 
-// Checks if Bitboards have been initialized. If not throughs
-// panic.
+// Checks if Bitboards have been initialized. If not throws
+// panic. Can be turned off by config.DEBUG = false
 func checkInitialization() {
 	if !config.DEBUG || initialized == true {
 		return

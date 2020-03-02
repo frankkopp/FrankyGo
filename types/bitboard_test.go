@@ -603,16 +603,59 @@ func TestGetMovesOnFile(t *testing.T) {
 		blocker Bitboard
 		want    Bitboard
 	}{
-		{"Empty File e4", SqE4, 0, PopSquare(FileE_Bb, SqE4)},
-		{"Empty File e4", SqE4, sqBb[SqE2] | sqBb[SqE6], sqBb[SqE2] | sqBb[SqE3] | sqBb[SqE5] | sqBb[SqE6]},
-		{"Empty File e4", SqA2, sqBb[SqA1] | sqBb[SqA7], sqBb[SqA1] | sqBb[SqA3] | sqBb[SqA4] | sqBb[SqA5] | sqBb[SqA6] | sqBb[SqA7]},
-		{"Empty File e4", SqH4, FileH_Bb, sqBb[SqH3] | sqBb[SqH5]},
+		{"Square e4 empty file", SqE4, 0, PopSquare(FileE_Bb, SqE4)},
+		{"Square e4 blocker e2 e6", SqE4, sqBb[SqE2] | sqBb[SqE6], sqBb[SqE2] | sqBb[SqE3] | sqBb[SqE5] | sqBb[SqE6]},
+		{"Square a2 blocker a1 a7", SqA2, sqBb[SqA1] | sqBb[SqA7], sqBb[SqA1] | sqBb[SqA3] | sqBb[SqA4] | sqBb[SqA5] | sqBb[SqA6] | sqBb[SqA7]},
+		{"Square h4 blocker file h", SqH4, FileH_Bb, sqBb[SqH3] | sqBb[SqH5]},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := GetMovesOnFile(tt.square, tt.blocker); got != tt.want {
 				t.Errorf("Moves bits = %v, want %v", got.StrGrp(), tt.want.StrGrp())
+			}
+		})
+	}
+}
 
+func TestGetMovesDiagUp(t *testing.T) {
+	Init()
+	tests := []struct {
+		name    string
+		square  Square
+		blocker Bitboard
+		want    Bitboard
+	}{
+		{"Square e4 empty diag up", SqE4, 0, PopSquare(DiagUpB1, SqE4)},
+		{"Square e4 blocker c2 g6", SqE4, sqBb[SqC2] | sqBb[SqG6], sqBb[SqC2] | sqBb[SqD3] | sqBb[SqF5] | sqBb[SqG6]},
+		{"Square a2 blocker c4", SqA2, sqBb[SqC4], sqBb[SqB3] | sqBb[SqC4] },
+		{"Square e5 blocker DiagUpA1", SqE5, DiagUpA1, sqBb[SqD4] | sqBb[SqF6]},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetMovesDiagUp(tt.square, tt.blocker); got != tt.want {
+				t.Errorf("Moves bits = %v, want %v", got.StrGrp(), tt.want.StrGrp())
+			}
+		})
+	}
+}
+
+func TestGetMovesDiagDown(t *testing.T) {
+	Init()
+	tests := []struct {
+		name    string
+		square  Square
+		blocker Bitboard
+		want    Bitboard
+	}{
+		{"Square e4 empty diag down", SqE4, 0, PopSquare(DiagDownH1, SqE4)},
+		{"Square e4 blocker c6 g2", SqE4, sqBb[SqC6] | sqBb[SqG2], sqBb[SqC6] | sqBb[SqD5] | sqBb[SqF3] | sqBb[SqG2]},
+		{"Square a5 blocker c3", SqA5, sqBb[SqC3], sqBb[SqB4] | sqBb[SqC3] },
+		{"Square e5 blocker DiagDownH1", SqE5, DiagDownH2, sqBb[SqD6] | sqBb[SqF4]},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetMovesDiagDown(tt.square, tt.blocker); got != tt.want {
+				t.Errorf("Moves bits = %v, want %v", got.StrGrp(), tt.want.StrGrp())
 			}
 		})
 	}
