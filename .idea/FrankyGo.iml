@@ -5,7 +5,6 @@
     <option name="urls">
       <list>
         <option value="file://$MODULE_DIR$/../.." />
-        <option value="file://$MODULE_DIR$/.." />
       </list>
     </option>
   </component>
