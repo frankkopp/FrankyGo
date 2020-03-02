@@ -426,16 +426,6 @@ func (sq Square) bitboard_() Bitboard {
 	return Bitboard(uint64(1) << sq)
 }
 
-// Used To pre compute an indexMap for diagonals
-func (sq Square) lengthDiagUpMask() Bitboard {
-	return (BbOne << lengthDiagUp[sq]) - 1
-}
-
-// Used To pre compute an indexMap for diagonals
-func (sq Square) lengthDiagDownMask() Bitboard {
-	return (BbOne << lengthDiagDown[sq]) - 1
-}
-
 // helper arrays
 var (
 	// Used To pre compute an indexMap for rotated boards
