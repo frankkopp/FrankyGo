@@ -139,26 +139,12 @@ func TestBitboardDiagUp(t *testing.T) {
 	Init()
 	if verbose {
 		fmt.Println(DiagUpA1.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagUpB1.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagUpC1.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagUpD1.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagUpE1.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagUpF1.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagUpG1.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagUpH1.StrBoard())
 	}
 	assert.Equal(t, "10000000.01000000.00100000.00010000."+
@@ -168,23 +154,11 @@ func TestBitboardDiagUp(t *testing.T) {
 
 	if verbose {
 		fmt.Println(DiagUpA2.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagUpA3.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagUpA4.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagUpA5.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagUpA6.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagUpA7.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagUpA8.StrBoard())
 	}
 	assert.Equal(t, "00000000.10000000.01000000.00100000."+
@@ -197,26 +171,12 @@ func TestBitboardDiagDown(t *testing.T) {
 	Init()
 	if verbose {
 		fmt.Println(DiagDownH1.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagDownH2.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagDownH3.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagDownH4.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagDownH5.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagDownH6.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagDownH7.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagDownH8.StrBoard())
 	}
 	assert.Equal(t, "00000001.00000010.00000100.00001000."+
@@ -226,23 +186,11 @@ func TestBitboardDiagDown(t *testing.T) {
 
 	if verbose {
 		fmt.Println(DiagDownG1.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagDownF1.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagDownE1.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagDownD1.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagDownC1.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagDownB1.StrBoard())
-	}
-	if verbose {
 		fmt.Println(DiagDownA1.StrBoard())
 	}
 	assert.Equal(t, "00000100.00001000.00010000.00100000."+
@@ -500,7 +448,7 @@ func TestBitboardSquareDistance(t *testing.T) {
 
 	for _, test := range tests {
 		// PopLsb
-		got := squareDistance[test.s1][test.s2]
+		got := SquareDistance(test.s1,test.s2)
 		if verbose {
 			fmt.Printf("Square distance between %s and %s is %d \n", test.s1.Str(), test.s2.Str(), got)
 		}
@@ -522,7 +470,7 @@ func TestBitboardRotateBb(t *testing.T) {
 	}
 	assert.Equal(t, Bitboard(18428906217826189953), rotatedBb)
 
-	rotatedBb = rotateL90(bitboard)
+	rotatedBb = RotateL90(bitboard)
 	if verbose {
 		fmt.Printf("%s\n%s\n", bitboard.StrBoard(), bitboard.StrGrp())
 	}
@@ -532,7 +480,7 @@ func TestBitboardRotateBb(t *testing.T) {
 	assert.Equal(t, Bitboard(9313761861428380671), rotatedBb)
 
 	bitboard = DiagUpA1
-	rotatedBb = rotateR45(bitboard)
+	rotatedBb = RotateR45(bitboard)
 	if verbose {
 		fmt.Printf("%s\n%s\n", bitboard.StrBoard(), bitboard.StrGrp())
 	}
@@ -542,7 +490,7 @@ func TestBitboardRotateBb(t *testing.T) {
 	assert.Equal(t, Bitboard(68451041280), rotatedBb)
 
 	bitboard = DiagDownH1
-	rotatedBb = rotateL45(bitboard)
+	rotatedBb = RotateL45(bitboard)
 	if verbose {
 		fmt.Printf("%s\n%s\n", bitboard.StrBoard(), bitboard.StrGrp())
 	}
@@ -625,25 +573,43 @@ func BenchmarkSqBbArrayCache(b *testing.B) {
 	result = bb
 }
 
-func Test_movesRankPreCompute(t *testing.T) {
+func Test_GetMovesOnRank(t *testing.T) {
 	Init()
 	tests := []struct {
 		name string
 		square Square
-		blocker uint8
+		blocker Bitboard
 		want Bitboard
 	}{
-		// blocker bits need to be reversed from visual board e.g. b blocker = 0b00000010
 		{ "Empty Rank e4", SqE4, 0, PopSquare(Rank4_Bb, SqE4) },
-		{ "Rank e4 Blocker B4 G4", SqE4, 0b01000010, sqBb[SqB4] |sqBb[SqC4] | sqBb[SqD4] | sqBb[SqF4] | sqBb[SqG4] },
-		{ "Rank a8 Blocker C8", SqA8, 0b00100100, sqBb[SqB8] |sqBb[SqC8] },
-		{ "Rank f1 Blocker -E1 G1-", SqF1, 0b11011111, sqBb[SqE1] |sqBb[SqG1] },
-		{ "Rank f1 Blocker -E1 G1-", SqF1, 0b11111111, sqBb[SqE1] |sqBb[SqG1] },
+		{ "Rank e4 Blocker B4 G4", SqE4, sqBb[SqB4] |sqBb[SqG4] , sqBb[SqB4] |sqBb[SqC4] | sqBb[SqD4] | sqBb[SqF4] | sqBb[SqG4] },
+		{ "Rank a8 Blocker C8", SqA8, sqBb[SqC8] |sqBb[SqF8], sqBb[SqB8] |sqBb[SqC8] },
+		{ "Rank f1 Blocker -E1 G1-", SqF1, PopSquare(Rank1_Bb, SqF1), sqBb[SqE1] |sqBb[SqG1] },
+		{ "Rank f1 Blocker -E1 G1-", SqF1, Rank1_Bb, sqBb[SqE1] |sqBb[SqG1] },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := movesRank[tt.square][tt.blocker]; got != tt.want {
+			if got := GetMovesOnRank(tt.square, tt.blocker); got != tt.want {
 				t.Errorf("Moves bits = %v, want %v", got.StrGrp(), tt.want.StrGrp())
+			}
+		})
+	}
+}
+
+func TestGetMovesOnFile(t *testing.T) {
+	tests := []struct {
+		name string
+		square Square
+		blocker Bitboard
+		want Bitboard
+	}{
+		{ "Empty File e4", SqE4, 0, PopSquare(FileE_Bb, SqE4) },
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetMovesOnFile(tt.square, tt.blocker); got != tt.want {
+				t.Errorf("Moves bits = %v, want %v", got.StrGrp(), tt.want.StrGrp())
+
 			}
 		})
 	}

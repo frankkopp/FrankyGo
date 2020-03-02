@@ -26,7 +26,7 @@ package types
 
 import "fmt"
 
-// A square represent exactly on square on a chess board.
+// Square A square represent exactly on square on a chess board.
 type Square uint8
 
 //noinspection GoUnusedConst
@@ -104,17 +104,17 @@ func (sq Square) IsValid() bool {
 	return sq < SqNone
 }
 
-// Returns the file of the square
+// FileOf returns the file of the square
 func (sq Square) FileOf() File {
 	return File(sq & 7)
 }
 
-// Returns the rank of the square
+// RankOf returns the rank of the square
 func (sq Square) RankOf() Rank {
 	return Rank(sq >> 3)
 }
 
-// returns a string of the file letter and rank number (e.g. e5)
+// Str returns a string of the file letter and rank number (e.g. e5)
 // if the sq is not a valid square returns "--"
 func (sq Square) Str() string {
 	if !sq.IsValid() {
@@ -123,7 +123,7 @@ func (sq Square) Str() string {
 	return sq.FileOf().Str() + sq.RankOf().Str()
 }
 
-// Return square from file and rank
+// SquareOf returns a square from file and rank
 // Returns SqNone for invalid files or ranks
 func SquareOf(f File, r Rank) Square {
 	if !f.IsValid() || !r.IsValid() {
@@ -132,7 +132,7 @@ func SquareOf(f File, r Rank) Square {
 	return Square((int(r) << 3) + int(f))
 }
 
-// Returns the square on the chess board in the given direction
+// To returns the square on the chess board in the given direction
 // TODO: should maybe be pre-calculated
 func (sq Square) To(d Direction) Square {
 	// overflow To south or north are easily detected <0 ot >63

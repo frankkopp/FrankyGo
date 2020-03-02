@@ -26,9 +26,11 @@ package types
 
 import "fmt"
 
+// Direction is a set of constants for moving squares within a Bitboard
 type Direction int8
 
-//noinspection ALL
+// Direction is a set of constants for moving squares within a Bitboard
+//noinspection GoVarAndConstTypeMayBeOmitted
 const (
 	North     Direction = 8
 	East      Direction = 1
@@ -40,6 +42,7 @@ const (
 	Northwest Direction = North + West
 )
 
+// Str returns a string representation of a Direction (e.g. N, E, ...,NW,...)
 func (d Direction) Str() string {
 	switch d {
 	case North:
@@ -61,5 +64,4 @@ func (d Direction) Str() string {
 	default:
 		panic(fmt.Sprintf("Invalid direction %d", d))
 	}
-	return "-"
 }

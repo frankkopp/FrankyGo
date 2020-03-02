@@ -35,6 +35,8 @@ import (
 var in *bufio.Scanner
 var out *bufio.Writer
 
+//Loop starts the main loop to receive commands through
+//input stream (pipe or user)
 func Loop() {
 	in = bufio.NewScanner(os.Stdin)
 	out = bufio.NewWriter(os.Stdout)
@@ -42,14 +44,12 @@ func Loop() {
 }
 
 func loop() {
-
 	// infinite loop until "quit" command are aborted
 	for {
 		log.Println("Waiting for command:")
 
 		// read from stdin or other in stream
 		for in.Scan() {
-
 			// get cmd line
 			cmd := in.Text()
 			strings.ToLower(cmd)

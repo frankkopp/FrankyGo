@@ -26,24 +26,26 @@ package types
 
 import "fmt"
 
+//Color represents constants for each chess color White and Black
 type Color uint8
 
+// Constants for each color
 const (
 	White Color = 0
 	Black Color = 1
 )
 
-// flips the color
+// Flip returns the opposite color
 func (c Color) Flip() Color {
 	return c ^ 1
 }
 
-// Check if f represents a valid color
+// IsValid checks if f represents a valid color
 func (c Color) IsValid() bool {
 	return c < 2
 }
 
-// returns a string representation of color as "w" or "b"
+// Str returns a string representation of color as "w" or "b"
 func (c Color) Str() string {
 	switch c {
 	case White:

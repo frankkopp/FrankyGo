@@ -24,19 +24,19 @@
 
 package util
 
-// non branching Abs function for determine the absolute value of an int64
+// Abs - non branching Abs function for determine the absolute value of an int64
 func Abs(n int) int {
 	y := n >> 63
 	return (n ^ y) - y
 }
 
-// non branching Abs function for determine the absolute value of an int64
+// Abs64 - non branching Abs function for determine the absolute value of an int64
 func Abs64(n int64) int64 {
 	y := n >> 63
 	return (n ^ y) - y
 }
 
-// Returns the smaller of the given integers
+// Min returns the smaller of the given integers
 func Min(x, y int) int {
 	if x < y {
 		return x
@@ -44,7 +44,7 @@ func Min(x, y int) int {
 	return y
 }
 
-// Returns the smaller of the given 64-bit integers
+// Min64 returns the smaller of the given 64-bit integers
 func Min64(x, y int64) int64 {
 	if x < y {
 		return x
@@ -52,7 +52,7 @@ func Min64(x, y int64) int64 {
 	return y
 }
 
-// Returns the bigger of the given integers
+// Max returns the bigger of the given integers
 func Max(x, y int) int {
 	if x > y {
 		return x
@@ -60,7 +60,7 @@ func Max(x, y int) int {
 	return y
 }
 
-// Returns the bigger of the given 64-bit integers
+// Max64 returns the bigger of the given 64-bit integers
 func Max64(x, y int64) int64 {
 	if x > y {
 		return x

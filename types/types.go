@@ -22,20 +22,27 @@
  * SOFTWARE.
  */
 
-// Types are various user defined data types and their corresponding
+// Package types contains various user defined data types and their corresponding
 // functionality we need for the chess engine.
 package types
 
-type MilliSec uint64 // could be large
-type Key uint64      // zobrist key need all 64 bits for distribution
-type Move uint32     // 16 bits for move encoding - 16 bits for sort value
+// MilliSec used for time value in milli sec
+// Could be large therefore 64-bit
+type MilliSec uint64
 
-// Global constants
+// Key is used for zobrist keys in chess positions.
+// Zobrist keys need all 64 bits for distribution
+type Key uint64
+
+//Move 16 bits for move encoding - 16 bits for sort value
+type Move uint32
+
+// SqLength number of squares on a board
 const SqLength int = 64
 
 var initialized = false
 
-// Initialize pre computed data structure e.g. bitboards, etc.
+// Init initializes pre computed data structures e.g. bitboards, etc.
 // Keeps an initialized flag To avoid multiple executions.
 func Init() {
 	if initialized {

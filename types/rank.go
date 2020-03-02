@@ -24,9 +24,10 @@
 
 package types
 
-// A rank represents a chess board rank 1-8
+// Rank represents a chess board rank 1-8
 type Rank uint8
 
+// Rank represents a chess board rank 1-8
 //noinspection GoUnusedConst
 const (
 	Rank1    Rank = iota
@@ -40,14 +41,14 @@ const (
 	RankNone Rank = iota
 )
 
-// Check if f represents a valid file
+// IsValid checks if f represents a valid file
 func (r Rank) IsValid() bool {
 	return r < RankNone
 }
 
 const rankLabels string = "12345678"
 
-// return a string letter for the file (e.g. a - h)
+// Str returns a string letter for the file (e.g. a - h)
 // if r is not a valid rank returns "-"
 func (r Rank) Str() string {
 	if r > Rank8 {

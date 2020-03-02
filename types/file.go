@@ -24,9 +24,10 @@
 
 package types
 
-// A file represents a chess board file a-h
+// File represents a chess board file a-h
 type File uint8
 
+// File represents a chess board file a-h
 //noinspection GoUnusedConst
 const (
 	FileA    File = iota
@@ -40,14 +41,14 @@ const (
 	FileNone File = iota
 )
 
-// Check if f represents a valid file
+// IsValid checks if f represents a valid file
 func (f File) IsValid() bool {
 	return f < FileNone
 }
 
 const fileLabels string = "abcdefgh"
 
-// return a string letter for the file (e.g. a - h)
+// Str returns a string letter for the file (e.g. a - h)
 // if f is not a valid file returns "-"
 func (f File) Str() string {
 	if f > FileH {
