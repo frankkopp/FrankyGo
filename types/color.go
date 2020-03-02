@@ -52,6 +52,5 @@ func (c Color) Str() string {
 		return "b"
 	default:
 		panic(fmt.Sprintf("Invalid color %d", c))
-
 	}
 }

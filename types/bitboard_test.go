@@ -596,13 +596,14 @@ func TestBitboardRotateSq(t *testing.T) {
 
 // TODO implement getMoves functions and test
 
+
 // //////////////////////////////////////////////////////////////////////////
 // benchmarks
 
 //noinspection GoUnusedGlobalVariable
 var result Bitboard
 
-func BenchmarkSqBb1(b *testing.B) {
+func BenchmarkSqBbBitshift(b *testing.B) {
 	Init()
 	var bb Bitboard
 	for i := 0; i < b.N; i++ {
@@ -613,7 +614,7 @@ func BenchmarkSqBb1(b *testing.B) {
 	result = bb
 }
 
-func BenchmarkSqBb2(b *testing.B) {
+func BenchmarkSqBbArrayCache(b *testing.B) {
 	Init()
 	var bb Bitboard
 	for i := 0; i < b.N; i++ {
@@ -622,4 +623,28 @@ func BenchmarkSqBb2(b *testing.B) {
 		}
 	}
 	result = bb
+}
+
+func Test_movesRankPreCompute(t *testing.T) {
+	Init()
+	tests := []struct {
+		name string
+		square Square
+		blocker uint8
+		want Bitboard
+	}{
+		// blocker bits need to be reversed from visual board e.g. b blocker = 0b00000010
+		{ "Empty Rank e4", SqE4, 0, PopSquare(Rank4_Bb, SqE4) },
+		{ "Rank e4 Blocker B4 G4", SqE4, 0b01000010, sqBb[SqB4] |sqBb[SqC4] | sqBb[SqD4] | sqBb[SqF4] | sqBb[SqG4] },
+		{ "Rank a8 Blocker C8", SqA8, 0b00100100, sqBb[SqB8] |sqBb[SqC8] },
+		{ "Rank f1 Blocker -E1 G1-", SqF1, 0b11011111, sqBb[SqE1] |sqBb[SqG1] },
+		{ "Rank f1 Blocker -E1 G1-", SqF1, 0b11111111, sqBb[SqE1] |sqBb[SqG1] },
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := movesRank[tt.square][tt.blocker]; got != tt.want {
+				t.Errorf("Moves bits = %v, want %v", got.StrGrp(), tt.want.StrGrp())
+			}
+		})
+	}
 }
