@@ -3,12 +3,12 @@
  *
  * Copyright (c) 2018-2020 Frank Kopp
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
+ * Permission is hereby granted, free of charge, To any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), To deal
  * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * To use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and To permit persons To whom the Software is
+ * furnished To do so, subject To the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
@@ -98,9 +98,9 @@ const (
 	SqNone Square = iota // 64
 )
 
-// isValid checks a value of type square if it represents a valid
+// IsValid checks a value of type square if it represents a valid
 // square on a chess board (e.q. sq < 63).
-func (sq Square) isValid() bool {
+func (sq Square) IsValid() bool {
 	return sq < SqNone
 }
 
@@ -116,17 +116,17 @@ func (sq Square) RankOf() Rank {
 
 // returns a string of the file letter and rank number (e.g. e5)
 // if the sq is not a valid square returns "--"
-func (sq Square) str() string {
-	if !sq.isValid() {
+func (sq Square) Str() string {
+	if !sq.IsValid() {
 		return "--"
 	}
-	return sq.FileOf().str() + sq.RankOf().str()
+	return sq.FileOf().Str() + sq.RankOf().Str()
 }
 
 // Return square from file and rank
 // Returns SqNone for invalid files or ranks
-func squareOf(f File, r Rank) Square {
-	if !f.isValid() || !r.isValid() {
+func SquareOf(f File, r Rank) Square {
+	if !f.IsValid() || !r.IsValid() {
 		return SqNone
 	}
 	return Square((int(r) << 3) + int(f))
@@ -134,8 +134,8 @@ func squareOf(f File, r Rank) Square {
 
 // Returns the square on the chess board in the given direction
 // TODO: should maybe pre-calculated
-func (sq Square) to(d Direction) Square {
-	// overflow to south or north are easily detected <0 ot >63
+func (sq Square) To(d Direction) Square {
+	// overflow To south or north are easily detected <0 ot >63
 	// east and west need check
 	switch d {
 	case North:
@@ -181,7 +181,7 @@ func (sq Square) to(d Direction) Square {
 	default:
 		panic(fmt.Sprintf("Invalid direction %d", d))
 	}
-	if sq.isValid() {
+	if sq.IsValid() {
 		return sq
 	} else {
 		return SqNone

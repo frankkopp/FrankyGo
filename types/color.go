@@ -3,12 +3,12 @@
  *
  * Copyright (c) 2018-2020 Frank Kopp
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
+ * Permission is hereby granted, free of charge, To any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), To deal
  * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * To use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and To permit persons To whom the Software is
+ * furnished To do so, subject To the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
@@ -34,17 +34,17 @@ const (
 )
 
 // flips the color
-func (c Color) flip() Color {
+func (c Color) Flip() Color {
 	return c ^ 1
 }
 
 // Check if f represents a valid color
-func (c Color) isValid() bool {
+func (c Color) IsValid() bool {
 	return c < 2
 }
 
 // returns a string representation of color as "w" or "b"
-func (c Color) str() string {
+func (c Color) Str() string {
 	switch c {
 	case White:
 		return "w"

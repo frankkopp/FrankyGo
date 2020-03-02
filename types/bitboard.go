@@ -3,12 +3,12 @@
  *
  * Copyright (c) 2018-2020 Frank Kopp
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
+ * Permission is hereby granted, free of charge, To any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), To deal
  * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * To use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and To permit persons To whom the Software is
+ * furnished To do so, subject To the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
@@ -37,7 +37,7 @@ import (
 type Bitboard uint64
 
 // Returns a Bitboard of the square by accessing the pre calculated
-// square to bitboard array.
+// square To bitboard array.
 // Initialize with InitBb() before use. Throws panic otherwise.
 func (sq Square) Bitboard() Bitboard {
 	// assertion
@@ -49,29 +49,29 @@ func (sq Square) Bitboard() Bitboard {
 }
 
 // Sets the corresponding bit of the bitboard for the square
-func pushSquare(b Bitboard, s Square) Bitboard {
+func PushSquare(b Bitboard, s Square) Bitboard {
 	return b | s.Bitboard()
 }
 
 // Sets the corresponding bit of the bitboard for the square
-func (b *Bitboard) pushSquare(s Square) {
+func (b *Bitboard) PushSquare(s Square) {
 	*b |= s.Bitboard()
 }
 
 // Removes the corresponding bit of the bitboard for the square
-func popSquare(b Bitboard, s Square) Bitboard {
+func PopSquare(b Bitboard, s Square) Bitboard {
 	return (b | s.Bitboard()) ^ s.Bitboard()
 }
 
 // Removes the corresponding bit of the bitboard for the square
-func (b *Bitboard) popSquare(s Square) {
+func (b *Bitboard) PopSquare(s Square) {
 	*b = (*b | s.Bitboard()) ^ s.Bitboard()
 }
 
 // Shifting all bits of a bitboard in the given direction by 1 square
-func shiftBitboard(b Bitboard, d Direction) Bitboard {
+func ShiftBitboard(b Bitboard, d Direction) Bitboard {
 	// move the bits and clear the left our right file
-	// after the shift to erase bits jumping over
+	// after the shift To erase bits jumping over
 	switch d {
 	case North:
 		return (Rank8Mask & b) << 8
@@ -94,19 +94,19 @@ func shiftBitboard(b Bitboard, d Direction) Bitboard {
 }
 
 // Returns the least significant bit of the 64-bit Bitboard.
-// This translates directly to the Square which is returned.
+// This translates directly To the Square which is returned.
 // If the bitboard is empty SqNone will be returned.
 // Lsb() indexes from 0-63 - 0 being the the lsb and
-// equal to SqA1
+// equal To SqA1
 func (b Bitboard) Lsb() Square {
 	return Square(bits.TrailingZeros64(uint64(b)))
 }
 
 // Returns the most significant bit of the 64-bit Bitboard.
-// This translates directly to the Square which is returned.
+// This translates directly To the Square which is returned.
 // If the bitboard is empty SqNone will be returned.
 // Msb() indexes from 0-63 - 63 being the the msb and
-// equal to SqH8
+// equal To SqH8
 func (b Bitboard) Msb() Square {
 	if b == BbZero {
 		return SqNone
@@ -126,18 +126,18 @@ func (b *Bitboard) PopLsb() Square {
 }
 
 // Returns a string representation of the 64 bits
-func (b Bitboard) str() string {
+func (b Bitboard) Str() string {
 	return fmt.Sprintf("%-0.64b", b)
 }
 
 // Returns a string representation of the Bitboard
 // as a board off 8x8 squares
-func (b Bitboard) strBoard() string {
+func (b Bitboard) StrBoard() string {
 	var os strings.Builder
 	os.WriteString("+---+---+---+---+---+---+---+---+\n")
 	for r := Rank8 + 1; r != Rank1; r-- {
 		for f := FileA; f <= FileH; f++ {
-			if (b & squareOf(f, r-1).Bitboard()) > 0 {
+			if (b & SquareOf(f, r-1).Bitboard()) > 0 {
 				os.WriteString("| X ")
 			} else {
 				os.WriteString("|   ")
@@ -149,8 +149,8 @@ func (b Bitboard) strBoard() string {
 }
 
 // Returns a string representation of the 64 bits grouped in 8
-// Order is LSB to msb ==> A1 B1 ... G8 H8
-func (b Bitboard) strGrp() string {
+// Order is LSB To msb ==> A1 B1 ... G8 H8
+func (b Bitboard) StrGrp() string {
 	var os strings.Builder
 	for i := 0; i < 64; i++ {
 		if i > 0 && i%8 == 0 {
@@ -181,21 +181,9 @@ func SquareDistance(s1 Square, s2 Square) int {
 	return squareDistance[s1][s2]
 }
 
-// Rotates a Bitboard using a mapping array which holds the position of
-// the square in the rotated board indexed by the square.
-// Basically the array tells bit x to move to bit y
-func rotate(b Bitboard, rotationMap *[SqLength]int) Bitboard {
-	rotated := BbZero
-	for sq := SqA1; sq < SqNone; sq++ {
-		if (b & Square(rotationMap[sq]).bitboard_()) != 0 {
-			rotated |= sq.bitboard_()
-		}
-	}
-	return rotated
-}
 
 // Rotates a Bitboard by 90 degrees clockwise
-func rotateR90(b Bitboard) Bitboard {
+func RotateR90(b Bitboard) Bitboard {
 	return rotate(b, &rotateMapR90)
 }
 
@@ -205,36 +193,36 @@ func rotateL90(b Bitboard) Bitboard {
 }
 
 // Rotates a Bitboard by 45 degrees clockwise
-// to get all upward diagonals in compact block of bits
-// This is used to create a mask to find moves for
+// To get all upward diagonals in compact block of bits
+// This is used To create a mask To find moves for
 // quuen and bishop on the upward diagonal
 func rotateR45(b Bitboard) Bitboard {
 	return rotate(b, &rotateMapR45)
 }
 
 // Rotates a Bitboard by 45 degrees counter clockwise
-// to get all downward diagonals in compact block of bits
-// This is used to create a mask to find moves for
+// To get all downward diagonals in compact block of bits
+// This is used To create a mask To find moves for
 // quuen and bishop on the downward diagonal
 func rotateL45(b Bitboard) Bitboard {
 	return rotate(b, &rotateMapL45)
 }
 
-// Maps squares to the sq of the rotated board. E.g. when rotating
+// Maps squares To the sq of the rotated board. E.g. when rotating
 // clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
-func rotateSquareR90(sq Square) Square { return indexMapR90[sq] }
+func RotateSquareR90(sq Square) Square { return indexMapR90[sq] }
 
-// Maps squares to the sq of the rotated board. E.g. when rotating
+// Maps squares To the sq of the rotated board. E.g. when rotating
 // clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
-func rotateSquareL90(sq Square) Square { return indexMapL90[sq] }
+func RotateSquareL90(sq Square) Square { return indexMapL90[sq] }
 
-// Maps squares to the sq of the rotated board. E.g. when rotating
+// Maps squares To the sq of the rotated board. E.g. when rotating
 // clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
-func rotateSquareR45(sq Square) Square { return indexMapR45[sq] }
+func RotateSquareR45(sq Square) Square { return indexMapR45[sq] }
 
-// Maps squares to the sq of the rotated board. E.g. when rotating
+// Maps squares To the sq of the rotated board. E.g. when rotating
 // clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
-func rotateSquareL45(sq Square) Square { return indexMapL45[sq] }
+func RotateSquareL45(sq Square) Square { return indexMapL45[sq] }
 
 // various constant bitboards for convenience
 //noinspection ALL
@@ -302,6 +290,22 @@ const (
 )
 
 // ////////////////////
+// Private
+
+// Rotates a Bitboard using a mapping array which holds the position of
+// the square in the rotated board indexed by the square.
+// Basically the array tells bit x To move To bit y
+func rotate(b Bitboard, rotationMap *[SqLength]int) Bitboard {
+	rotated := BbZero
+	for sq := SqA1; sq < SqNone; sq++ {
+		if (b & Square(rotationMap[sq]).bitboard_()) != 0 {
+			rotated |= sq.bitboard_()
+		}
+	}
+	return rotated
+}
+
+// ////////////////////
 // Pre compute helpers
 
 // Returns a Bitboard of the square by shifting the
@@ -311,19 +315,19 @@ func (sq Square) bitboard_() Bitboard {
 	return Bitboard(uint64(1) << sq)
 }
 
-// Used to pre compute an indexMap for diagonals
+// Used To pre compute an indexMap for diagonals
 func (sq Square) lengthDiagUpMask() Bitboard {
 	return (BbOne << lengthDiagUp[sq]) - 1
 }
 
-// Used to pre compute an indexMap for diagonals
+// Used To pre compute an indexMap for diagonals
 func (sq Square) lengthDiagDownMask() Bitboard {
 	return (BbOne << lengthDiagDown[sq]) - 1
 }
 
 // helper arrays
 var (
-	// Used to pre compute an indexMap for rotated boards
+	// Used To pre compute an indexMap for rotated boards
 	rotateMapR90 = [SqLength]int{
 		7, 15, 23, 31, 39, 47, 55, 63,
 		6, 14, 22, 30, 38, 46, 54, 62,
@@ -334,7 +338,7 @@ var (
 		1, 9, 17, 25, 33, 41, 49, 57,
 		0, 8, 16, 24, 32, 40, 48, 56}
 
-	// Used to pre compute an indexMap for rotated boards
+	// Used To pre compute an indexMap for rotated boards
 	rotateMapL90 = [SqLength]int{
 		56, 48, 40, 32, 24, 16, 8, 0,
 		57, 49, 41, 33, 25, 17, 9, 1,
@@ -345,7 +349,7 @@ var (
 		62, 54, 46, 38, 30, 22, 14, 6,
 		63, 55, 47, 39, 31, 23, 15, 7}
 
-	// Used to pre compute an indexMap for rotated boards
+	// Used To pre compute an indexMap for rotated boards
 	rotateMapR45 = [SqLength]int{
 		7,
 		6, 15,
@@ -363,7 +367,7 @@ var (
 		48, 57,
 		56}
 
-	// Used to pre compute an indexMap for rotated boards
+	// Used To pre compute an indexMap for rotated boards
 	rotateMapL45 = [SqLength]int{
 		0,
 		8, 1,
@@ -381,7 +385,7 @@ var (
 		62, 55,
 		63}
 
-	// Used to pre compute an indexMap for diagonals
+	// Used To pre compute an indexMap for diagonals
 	lengthDiagUp = [SqLength]int{
 		8, 7, 6, 5, 4, 3, 2, 1,
 		7, 8, 7, 6, 5, 4, 3, 2,
@@ -392,7 +396,7 @@ var (
 		2, 3, 4, 5, 6, 7, 8, 7,
 		1, 2, 3, 4, 5, 6, 7, 8}
 
-	// Used to pre compute an indexMap for diagonals
+	// Used To pre compute an indexMap for diagonals
 	lengthDiagDown = [SqLength]int{
 		1, 2, 3, 4, 5, 6, 7, 8,
 		2, 3, 4, 5, 6, 7, 8, 7,
@@ -423,59 +427,59 @@ var (
 		21, 28, 36, 43, 49, 54, 58, 61,
 		28, 36, 43, 49, 54, 58, 61, 63}
 
-	// Reverse index to quickly calculate the index of a square in the rotated board
+	// Reverse index To quickly calculate the index of a square in the rotated board
 	indexMapR90 = [SqLength]Square{}
-	// Reverse index to quickly calculate the index of a square in the rotated board
+	// Reverse index To quickly calculate the index of a square in the rotated board
 	indexMapL90 = [SqLength]Square{}
-	// Reverse index to quickly calculate the index of a square in the rotated board
+	// Reverse index To quickly calculate the index of a square in the rotated board
 	indexMapR45 = [SqLength]Square{}
-	// Reverse index to quickly calculate the index of a square in the rotated board
+	// Reverse index To quickly calculate the index of a square in the rotated board
 	indexMapL45 = [SqLength]Square{}
 )
 
-// Internal pre computed square to square bitboard array.
-// Needs to be initialized with initBb()
+// Internal pre computed square To square bitboard array.
+// Needs To be initialized with initBb()
 var sqBb [SqLength]Bitboard
 
-// Internal pre computed square to file bitboard array.
-// Needs to be initialized with initBb()
+// Internal pre computed square To file bitboard array.
+// Needs To be initialized with initBb()
 var sqToFileBb [SqLength]Bitboard
 
-// Internal pre computed square to rank bitboard array.
-// Needs to be initialized with initBb()
+// Internal pre computed square To rank bitboard array.
+// Needs To be initialized with initBb()
 var sqToRankBb [SqLength]Bitboard
 
-// Internal pre computed square to diag up bitboard array.
-// Needs to be initialized with initBb()
+// Internal pre computed square To diag up bitboard array.
+// Needs To be initialized with initBb()
 var sqDiagUpBb [SqLength]Bitboard
 
-// Internal pre computed square to diag down bitboard array.
-// Needs to be initialized with initBb()
+// Internal pre computed square To diag down bitboard array.
+// Needs To be initialized with initBb()
 var sqDiagDownBb [SqLength]Bitboard
 
 // Internal pre computed index for quick square distance lookup
 var squareDistance [SqLength][SqLength]int
 
-// Internal pre computed index to map possible moves on a rank
+// Internal pre computed index To map possible moves on a rank
 // for each square and board occupation of this rank
 var movesRank [SqLength][256]Bitboard
 
-// Internal pre computed index to map possible moves on a file
+// Internal pre computed index To map possible moves on a file
 // for each square and board occupation of this file
 // (needs rotating and masking the index)
 var movesFile [SqLength][256]Bitboard
 
-// Internal pre computed index to map possible moves on a up diagonal
+// Internal pre computed index To map possible moves on a up diagonal
 // for each square and board occupation of this up diagonal
 // (needs rotating and masking the index)
 var movesDiagUp [SqLength][256]Bitboard
 
-// Internal pre computed index to map possible moves on a down diagonal
+// Internal pre computed index To map possible moves on a down diagonal
 // for each square and board occupation of this down diagonal
 // (needs rotating and masking the index)
 var movesDiagDown [SqLength][256]Bitboard
 
-// Pre computes various bitboards to avoid runtime calculation
+// Pre computes various bitboards To avoid runtime calculation
 func initBb() {
 	for sq := SqA1; sq < SqNone; sq++ {
 		sqBb[sq] = sq.bitboard_()
@@ -520,14 +524,14 @@ func initBb() {
 		}
 		// @formatter:on
 
-		// Reverse index to quickly calculate the index of a square in the rotated board
+		// Reverse index To quickly calculate the index of a square in the rotated board
 		indexMapR90[rotateMapR90[sq]] = sq
 		indexMapL90[rotateMapL90[sq]] = sq
 		indexMapR45[rotateMapR45[sq]] = sq
 		indexMapL45[rotateMapL45[sq]] = sq
 	}
 
-	// distance between squares
+	// Distance between squares index
 	for sq1 := SqA1; sq1 <= SqH8; sq1++ {
 		for sq2 := SqA1; sq2 <= SqH8; sq2++ {
 			if sq1 != sq2 {
