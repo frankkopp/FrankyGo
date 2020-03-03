@@ -792,3 +792,25 @@ func TestSquare_Intermediate(t *testing.T) {
 		})
 	}
 }
+
+func TestSquare_CenterDistance(t *testing.T) {
+	Init()
+	tests := []struct {
+		name string
+		sq   Square
+		want int
+	}{
+		{"a1", SqA1, 3},
+		{"d2", SqD2, 2},
+		{"c3", SqC3, 1},
+		{"h1", SqH1, 3},
+		{"f6", SqF6, 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.sq.CenterDistance(); got != tt.want {
+				t.Errorf("CenterDistance() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

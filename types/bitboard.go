@@ -260,6 +260,12 @@ func SquareDistance(s1 Square, s2 Square) int {
 	return squareDistance[s1][s2]
 }
 
+// CenterDistance returns the distance to the nearest center square
+func (sq Square) CenterDistance() int {
+	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
+	return centerDistance[sq]
+}
+
 // RotateR90 rotates a Bitboard by 90 degrees clockwise
 func RotateR90(b Bitboard) Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
@@ -334,55 +340,95 @@ func GetPawnAttacks(c Color, sq Square) Bitboard {
 
 // FilesWestMask returns a Bitboard of the files west of the square
 func (sq Square) FilesWestMask() Bitboard {
+	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return filesWestMask[sq]
 }
 
 // FilesEastMask returns a Bitboard of the files east of the square
 func (sq Square) FilesEastMask() Bitboard {
+	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return filesEastMask[sq]
 }
 
 //FileWestMask returns a Bitboaard of the file west of the square
 func (sq Square) FileWestMask() Bitboard {
+	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return fileWestMask[sq]
 }
 
 // FileEastMask returns a Bitboaard of the file east of the square
 func (sq Square) FileEastMask() Bitboard {
+	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return fileEastMask[sq]
 }
 
 // RanksNorthMask returns a Bitboaard of the ranks north of the square
 func (sq Square) RanksNorthMask() Bitboard {
+	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return ranksNorthMask[sq]
 }
 
 // RanksSouthMask returns a Bitboard of the ranks south of the square
 func (sq Square) RanksSouthMask() Bitboard {
+	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return ranksSouthMask[sq]
 }
 
 // NeighbourFilesMask returns a Bitboard of the file east and west of the square
 func (sq Square) NeighbourFilesMask() Bitboard {
+	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return neighbourFilesMask[sq]
 }
 
 // Ray returns a Bitboard of quares outgoing from the
 // square in direction of the orientation
 func (sq Square) Ray(o Orientation) Bitboard {
+	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return rays[o][sq]
 }
 
 // Intermediate returns a Bitboard of squares between
 // the given two squares
 func Intermediate(sq1 Square, sq2 Square) Bitboard {
+	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return intermediate[sq1][sq2]
 }
 
 // Intermediate returns a Bitboard of squares between
 // the given two squares
 func (sq Square) Intermediate(sqTo Square) Bitboard {
+	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return intermediate[sq][sqTo]
+}
+
+// PassedPawnMask returns a Bitboards with all possible squares
+// which have an opponents pawn which could stop this pawn.
+// Use this mask and AND it with the opponents pawns bitboards
+// to see if a pawn has passed.
+func (sq Square) PassedPawnMask(c Color) Bitboard {
+	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
+	return passedPawnMask[c][sq]
+}
+
+// KingSideCastleMask returns a Bitboard with the kings side
+// squares used in castling without the king square
+func KingSideCastleMask(c Color) Bitboard {
+	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
+	return kingSideCastleMask[c]
+}
+
+// QueenSideCastMask returns a Bitboard with the queen side
+// squares used in castling without the king square
+func QueenSideCastMask(c Color) Bitboard {
+	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
+	return queenSideCastleMask[c]
+}
+
+// SquaresBb returns a Bitboard of all squares of the given color.
+// E.g. can be used to find bishops of the same "color" for draw detection.
+func SquaresBb(c Color) Bitboard {
+	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
+	return squaresBb[c]
 }
 
 // Various constant bitboards
@@ -649,6 +695,22 @@ var (
 	// intermediate holds bitboards for the squares between
 	// to squares
 	intermediate [SqLength][SqLength]Bitboard
+
+	// mask to determine of pawn is passed e.g. has no
+	// opponent pawns on the same file or the neighbour
+	// files
+	passedPawnMask [2][SqLength]Bitboard
+
+	// helper mask for supporting castling moves
+	kingSideCastleMask [2]Bitboard
+	// helper mask for supporting castling moves
+	queenSideCastleMask [2]Bitboard
+
+	// mask for all white  and black squares
+	squaresBb [2]Bitboard
+
+	// array with distance of a square to the center
+	centerDistance [SqLength]int
 )
 
 // Pre computes various bitboards To avoid runtime calculation
@@ -704,6 +766,11 @@ func initBb() {
 		indexMapR45[rotateMapR45[sq]] = sq
 		indexMapL45[rotateMapL45[sq]] = sq
 	}
+
+	kingSideCastleMask[White] = sqBb[SqF1] | sqBb[SqG1] | sqBb[SqH1]
+	kingSideCastleMask[Black] = sqBb[SqF8] | sqBb[SqG8] | sqBb[SqH8]
+	queenSideCastleMask[White] = sqBb[SqD1] | sqBb[SqC1] | sqBb[SqB1] | sqBb[SqA1]
+	queenSideCastleMask[Black] = sqBb[SqD8] | sqBb[SqC8] | sqBb[SqB8] | sqBb[SqA8]
 
 	// Distance between squares index
 	for sq1 := SqA1; sq1 <= SqH8; sq1++ {
@@ -779,12 +846,55 @@ func initBb() {
 		}
 	}
 
-	// TODO
-	// mask for intermediate squares in between two squares
 	// mask for passed pawns
-	// castle masks
-	// masks for each sq color (good for bishops vs bishops or pawns)
+	for square := SqA1; square <= SqH8; square++ {
+		f := square.FileOf()
+		r := square.RankOf()
+		// white pawn - ignore that pawns can'*t be on all squares
+		passedPawnMask[White][square] |= rays[N][square]
+		if f < 7 && r < 7 {
+			passedPawnMask[White][square] |= rays[N][square.To(East)]
+		}
+		if f > 0 && r < 7 {
+			passedPawnMask[White][square] |= rays[N][square.To(West)]
+		}
+		// black pawn - ignore that pawns can'*t be on all squares
+		passedPawnMask[Black][square] |= rays[S][square]
+		if f < 7 && r > 0 {
+			passedPawnMask[Black][square] |= rays[S][square.To(East)]
+		}
+		if f > 0 && r > 0 {
+			passedPawnMask[Black][square] |= rays[S][square.To(West)]
+		}
+	}
+
+	// masks for each square color (good for bishops vs bishops or pawns)
+	for square := SqA1; square <= SqH8; square++ {
+		f := square.FileOf()
+		r := square.RankOf()
+		if (int(f)+int(r))%2 == 0 {
+			squaresBb[Black] |= BbOne << square
+		} else {
+			squaresBb[White] |= BbOne << square
+		}
+	}
+
 	// distances to center squares by quadrant
+	for square := SqA1; square <= SqH8; square++ {
+		// left upper quadrant
+		if (sqBb[square] & ranksNorthMask[27] & filesWestMask[36]) != 0 {
+			centerDistance[square] = squareDistance[square][SqD5]
+			// right upper quadrant
+		} else if (sqBb[square] & ranksNorthMask[28] & filesEastMask[35]) != 0 {
+			centerDistance[square] = squareDistance[square][SqE5]
+			// left lower quadrant
+		} else if (sqBb[square] & ranksSouthMask[35] & filesWestMask[28]) != 0 {
+			centerDistance[square] = squareDistance[square][SqD4]
+			// right lower quadrant
+		} else if (sqBb[square] & ranksSouthMask[36] & filesEastMask[27]) != 0 {
+			centerDistance[square] = squareDistance[square][SqE4]
+		}
+	}
 
 }
 
