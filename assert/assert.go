@@ -22,6 +22,13 @@
  * SOFTWARE.
  */
 
-package config
+package assert
 
+// DEBUG if this is set to true asserts are evaluated
 const DEBUG = true
+
+func Assert(test bool, msg string) {
+	if DEBUG && !test {
+		panic(msg)
+	}
+}

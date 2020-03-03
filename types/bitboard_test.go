@@ -627,7 +627,7 @@ func TestGetMovesDiagUp(t *testing.T) {
 	}{
 		{"Square e4 empty diag up", SqE4, 0, PopSquare(DiagUpB1, SqE4)},
 		{"Square e4 blocker c2 g6", SqE4, sqBb[SqC2] | sqBb[SqG6], sqBb[SqC2] | sqBb[SqD3] | sqBb[SqF5] | sqBb[SqG6]},
-		{"Square a2 blocker c4", SqA2, sqBb[SqC4], sqBb[SqB3] | sqBb[SqC4] },
+		{"Square a2 blocker c4", SqA2, sqBb[SqC4], sqBb[SqB3] | sqBb[SqC4]},
 		{"Square e5 blocker DiagUpA1", SqE5, DiagUpA1, sqBb[SqD4] | sqBb[SqF6]},
 	}
 	for _, tt := range tests {
@@ -649,7 +649,7 @@ func TestGetMovesDiagDown(t *testing.T) {
 	}{
 		{"Square e4 empty diag down", SqE4, 0, PopSquare(DiagDownH1, SqE4)},
 		{"Square e4 blocker c6 g2", SqE4, sqBb[SqC6] | sqBb[SqG2], sqBb[SqC6] | sqBb[SqD5] | sqBb[SqF3] | sqBb[SqG2]},
-		{"Square a5 blocker c3", SqA5, sqBb[SqC3], sqBb[SqB4] | sqBb[SqC3] },
+		{"Square a5 blocker c3", SqA5, sqBb[SqC3], sqBb[SqB4] | sqBb[SqC3]},
 		{"Square e5 blocker DiagDownH1", SqE5, DiagDownH2, sqBb[SqD6] | sqBb[SqF4]},
 	}
 	for _, tt := range tests {
@@ -664,14 +664,14 @@ func TestGetMovesDiagDown(t *testing.T) {
 func Test_pseudoAttacksPreCompute(t *testing.T) {
 	Init()
 	tests := []struct {
-		name string
+		name  string
 		piece PieceType
-		from Square
-		want Bitboard
+		from  Square
+		want  Bitboard
 	}{
 		{"King E1", King, SqE1, sqBb[SqD1] | sqBb[SqD2] | sqBb[SqE2] | sqBb[SqF2] | sqBb[SqF1]},
 		{"King E8", King, SqE8, sqBb[SqD8] | sqBb[SqD7] | sqBb[SqE7] | sqBb[SqF7] | sqBb[SqF8]},
-		{"Bishop E5", Bishop, SqE5, PopSquare(DiagUpA1 | DiagDownH2, SqE5)},
+		{"Bishop E5", Bishop, SqE5, PopSquare(DiagUpA1|DiagDownH2, SqE5)},
 		{"Rook E5", Rook, SqE5, PopSquare(Rank5_Bb|FileE_Bb, SqE5)},
 		{"Knight E5", Knight, SqE5, sqBb[SqD7] | sqBb[SqF7] | sqBb[SqG6] | sqBb[SqG4] | sqBb[SqF3] | sqBb[SqD3] | sqBb[SqC4] | sqBb[SqC6]},
 	}
@@ -687,21 +687,107 @@ func Test_pseudoAttacksPreCompute(t *testing.T) {
 func Test_pawnAttacksPreCompute(t *testing.T) {
 	Init()
 	tests := []struct {
-		name string
+		name  string
 		color Color
-		from Square
-		want Bitboard
+		from  Square
+		want  Bitboard
 	}{
-		{"White E2", White ,SqE2, sqBb[SqD3] | sqBb[SqF3]},
-		{"Black E7", Black,SqE7, sqBb[SqD6] | sqBb[SqF6]},
+		{"White E2", White, SqE2, sqBb[SqD3] | sqBb[SqF3]},
+		{"Black E7", Black, SqE7, sqBb[SqD6] | sqBb[SqF6]},
 		{"White A4", White, SqA4, sqBb[SqB5]},
-		{"Black H5", Black,SqH5, sqBb[SqG4]},
+		{"Black H5", Black, SqH5, sqBb[SqG4]},
 		{"White H4", White, SqH4, sqBb[SqG5]},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := GetPawnAttacks(tt.color, tt.from); got != tt.want {
 				t.Errorf("Moves bits = %v, want %v", got.StrBoard(), tt.want.StrBoard())
+			}
+		})
+	}
+}
+
+func TestSquare_VariousMasks(t *testing.T) {
+	Init()
+	tests := []struct {
+		name string
+		sq   Square
+		is   Bitboard
+		want Bitboard
+	}{
+		{"FilesWestMask e4", SqE4, SqE4.FilesWestMask(), FileA_Bb | FileB_Bb | FileC_Bb | FileD_Bb},
+		{"FilesEastMask e4", SqE4, SqE4.FilesEastMask(), FileF_Bb | FileG_Bb | FileH_Bb},
+		{"FileWestMask e4", SqE4, SqE4.FileWestMask(), FileD_Bb},
+		{"FileEastMask e4", SqE4, SqE4.FileEastMask(), FileF_Bb},
+		{"FilesWestMask a4", SqA4, SqA4.FilesWestMask(), BbZero},
+		{"FilesEastMask a4", SqA4, SqA4.FilesEastMask(), BbAll & ^FileA_Bb},
+		{"FileWestMask a4", SqA4, SqA4.FileWestMask(), BbZero},
+		{"FileEastMask a4", SqA4, SqA4.FileEastMask(), FileB_Bb},
+		{"FilesWestMask h4", SqH4, SqH4.FilesWestMask(), BbAll & ^FileH_Bb},
+		{"FilesEastMask h4", SqH4, SqH4.FilesEastMask(), BbZero},
+		{"FileWestMask h4", SqH4, SqH4.FileWestMask(), FileG_Bb},
+		{"FileEastMask h4", SqH4, SqH4.FileEastMask(), BbZero},
+		{"RanksNorthMask h4", SqH4, SqH4.RanksNorthMask(), Rank5_Bb | Rank6_Bb | Rank7_Bb | Rank8_Bb},
+		{"RanksSouthMask h4", SqH4, SqH4.RanksSouthMask(), Rank1_Bb | Rank2_Bb | Rank3_Bb},
+		{"NeighbourFilesMask h4", SqH4, SqH4.NeighbourFilesMask(), FileG_Bb},
+		{"NeighbourFilesMask a4", SqA4, SqA4.NeighbourFilesMask(), FileB_Bb},
+		{"NeighbourFilesMask e4", SqE4, SqE4.NeighbourFilesMask(), FileD_Bb | FileF_Bb},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.is != tt.want {
+				t.Errorf("Mask() = \n%v, want \n%v", tt.is.StrBoard(), tt.want.StrBoard())
+			}
+		})
+	}
+}
+
+func TestSquare_Ray(t *testing.T) {
+	Init()
+	type args struct {
+		o Orientation
+	}
+	tests := []struct {
+		name string
+		sq   Square
+		args args
+		want Bitboard
+	}{
+		{"Ray a1 e", SqA1, args{E}, Rank1_Bb & ^sqBb[SqA1]},
+		{"Ray a8 e", SqA8, args{E}, Rank8_Bb & ^sqBb[SqA8]},
+		{"Ray a1 n", SqA1, args{N}, FileA_Bb & ^sqBb[SqA1]},
+		{"Ray a1 ne", SqA1, args{NE}, DiagUpA1 & ^sqBb[SqA1]},
+		{"Ray g7 sw", SqG7, args{SW}, DiagUpA1 & ^sqBb[SqH8] & ^sqBb[SqG7]},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.sq.Ray(tt.args.o); got != tt.want {
+				t.Errorf("Ray() = %v, want %v", got.StrBoard(), tt.want.StrBoard())
+			}
+		})
+	}
+}
+
+func TestSquare_Intermediate(t *testing.T) {
+	Init()
+	type args struct {
+		sqTo Square
+	}
+	tests := []struct {
+		name string
+		sq   Square
+		args args
+		want Bitboard
+	}{
+		{"Intermediate a1 h8", SqA1, args{SqH8}, DiagUpA1 & ^sqBb[SqA1] & ^sqBb[SqH8]},
+		{"Intermediate a1 c1", SqA1, args{SqC1}, sqBb[SqB1]},
+		{"Intermediate h4 h2", SqH4, args{SqH2}, sqBb[SqH3]},
+		{"Intermediate b2 d5", SqB2, args{SqD5}, BbZero},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.sq.Intermediate(tt.args.sqTo); got != tt.want {
+				t.Errorf("Intermediate() = %v, want %v", got.StrBoard(), tt.want.StrBoard())
 			}
 		})
 	}

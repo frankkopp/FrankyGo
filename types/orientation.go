@@ -32,14 +32,14 @@ type Orientation int8
 // Orientation is a set of constants for moving squares within a Bitboard
 //noinspection GoVarAndConstTypeMayBeOmitted
 const (
-	NW Orientation = iota
-	N  Orientation = iota
-	NE Orientation = iota
-	E  Orientation = iota
-	SE Orientation = iota
-	S  Orientation = iota
-	SW Orientation = iota
-	W  Orientation = iota
+	NW Orientation = 0
+	N  Orientation = 1
+	NE Orientation = 2
+	E  Orientation = 3
+	SE Orientation = 4
+	S  Orientation = 5
+	SW Orientation = 6
+	W  Orientation = 7
 )
 
 // Str returns a string representation of a Orientation (e.g. N, E, ...,NW,...)
