@@ -25,6 +25,9 @@
 package types
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/gammazero/deque"
 )
 
@@ -33,12 +36,36 @@ type MoveList struct {
 	deque.Deque
 }
 
-func (m MoveList) String() string {
-
+func (ml MoveList) String() string {
+	var os strings.Builder
+	size := ml.Len()
+	os.WriteString(fmt.Sprintf("MoveList: [%d] { ", size))
+	for i := 0; i < size; i++ {
+		if i > 0 {
+			os.WriteString(", ")
+		}
+		m := ml.At(i)
+		os.WriteString(m.(Move).String())
+	}
+	os.WriteString(" }")
+	return os.String()
 	return ""
 }
 
-
+// StringUci returns a string with a sapce seperated list
+// of all moves i the list in UCI protocol format
+func (ml MoveList) StringUci() string {
+	var os strings.Builder
+	size := ml.Len()
+	for i := 0; i < size; i++ {
+		if i > 0 {
+			os.WriteString(" ")
+		}
+		m := ml.At(i)
+		os.WriteString(m.(Move).StringUci())
+	}
+	return os.String()
+}
 
 
 

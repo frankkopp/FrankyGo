@@ -39,3 +39,16 @@ func Test_Deque(t *testing.T) {
 	moveList.PushFront(CreateMove(SqE2, SqE4, Normal, PtNone))
 	assert.Equal(t, 4, moveList.Len())
 }
+
+func TestMoveList_String(t *testing.T) {
+	var moveList = MoveList{}
+	moveList.SetMinCapacity(8)
+	moveList.PushBack(CreateMove(SqG1, SqF3, Normal, PtNone))
+	moveList.PushBack(CreateMove(SqB8, SqC6, Normal, PtNone))
+	moveList.PushFront(CreateMove(SqE7, SqE5, Normal, PtNone))
+	moveList.PushFront(CreateMove(SqE2, SqE4, Normal, PtNone))
+	assert.Equal(t, 4, moveList.Len())
+	assert.Equal(t,"e2e4 e7e5 g1f3 b8c6", moveList.StringUci())
+	assert.Equal(t,"MoveList: [4] { Move: { e2e4 type:n prom:N (796) }, Move: { e7e5 type:n prom:N (3364) }, Move: { g1f3 type:n prom:N (405) }, Move: { b8c6 type:n prom:N (3690) } }",
+		moveList.String())
+}

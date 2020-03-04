@@ -114,6 +114,12 @@ func (m Move) IsValid() bool {
 
 // String string representation of a move which is UCI compatible
 func (m Move) String() string {
+	return fmt.Sprintf("Move: { %s type:%s prom:%s (%d) }",
+		m.StringUci(), m.MoveType().String(), m.PromotionType().Char(), m)
+}
+
+// StringUci string representation of a move which is UCI compatible
+func (m Move) StringUci() string {
 	var os strings.Builder
 	os.WriteString(m.From().String())
 	os.WriteString(m.To().String())
