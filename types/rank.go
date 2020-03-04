@@ -48,9 +48,9 @@ func (r Rank) IsValid() bool {
 
 const rankLabels string = "12345678"
 
-// Str returns a string letter for the file (e.g. a - h)
+// String returns a string letter for the file (e.g. a - h)
 // if r is not a valid rank returns "-"
-func (r Rank) Str() string {
+func (r Rank) String() string {
 	if r > Rank8 {
 		return "-"
 	}

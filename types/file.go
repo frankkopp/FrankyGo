@@ -48,9 +48,9 @@ func (f File) IsValid() bool {
 
 const fileLabels string = "abcdefgh"
 
-// Str returns a string letter for the file (e.g. a - h)
+// String returns a string letter for the file (e.g. a - h)
 // if f is not a valid file returns "-"
-func (f File) Str() string {
+func (f File) String() string {
 	if f > FileH {
 		return "-"
 	}

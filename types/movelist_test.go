@@ -24,30 +24,18 @@
 
 package types
 
-// MoveType is used for the different move types we use to encode moves.
-// Values are Normal, Promotion, EnPassant, Castling
-type MoveType uint
+import (
+	"testing"
 
-// MoveType constants
-const (
-	Normal    MoveType = 0
-	Promotion MoveType = 1
-	EnPassant MoveType = 2
-	Castling  MoveType = 3
+	"github.com/stretchr/testify/assert"
 )
 
-// String returns a string representing the move type
-func (t MoveType) String() string {
-	switch t {
-	case Normal: return "n"
-	case Promotion: return "p"
-	case EnPassant: return "e"
-	case Castling: return "c"
-	default: return "-"
-	}
-}
-
-// IsValid checks if t is a valid move type
-func (t MoveType) IsValid() bool {
-	return t < 4
+func Test_Deque(t *testing.T) {
+	var moveList = MoveList{}
+	moveList.SetMinCapacity(8)
+	moveList.PushBack(CreateMove(SqG1, SqF3, Normal, PtNone))
+	moveList.PushBack(CreateMove(SqB8, SqC6, Normal, PtNone))
+	moveList.PushFront(CreateMove(SqE7, SqE5, Normal, PtNone))
+	moveList.PushFront(CreateMove(SqE2, SqE4, Normal, PtNone))
+	assert.Equal(t, 4, moveList.Len())
 }

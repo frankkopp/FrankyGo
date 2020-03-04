@@ -112,26 +112,26 @@ func (m Move) IsValid() bool {
 		(m.ValueOf() == ValueNA || m.ValueOf().IsValid())
 }
 
-// Str string representation of a move which is UCI compatible
-func (m Move) Str() string {
+// String string representation of a move which is UCI compatible
+func (m Move) String() string {
 	var os strings.Builder
-	os.WriteString(m.From().Str())
-	os.WriteString(m.To().Str())
+	os.WriteString(m.From().String())
+	os.WriteString(m.To().String())
 	if m.MoveType() == Promotion {
 		os.WriteString(m.PromotionType().Char())
 	}
 	return os.String()
 }
 
-// StrBits returns a string with details of a Move
+// StringBits returns a string with details of a Move
 // E.g. Move { From[001100](e2) To[011100](e4) Prom[11](N) Type[00](n) Value[0000000000000000](0) (796)}
-func (m Move) StrBits() string {
+func (m Move) StringBits() string {
 	return fmt.Sprintf(
 		"Move { From[%-0.6b](%s) To[%-0.6b](%s) Prom[%-0.2b](%s) Type[%-0.2b](%s) Value[%-0.16b](%d) (%d)}",
-		m.From(), m.From().Str(),
-		m.To(), m.To().Str(),
+		m.From(), m.From().String(),
+		m.To(), m.To().String(),
 		m.PromotionType(), (m.PromotionType()).Char(),
-		m.MoveType(), m.MoveType().Str(),
+		m.MoveType(), m.MoveType().String(),
 		m.ValueOf(), m.ValueOf(),
 		m)
 }

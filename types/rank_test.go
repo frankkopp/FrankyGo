@@ -40,9 +40,9 @@ func TestRankType(t *testing.T) {
 	for _, test := range tests {
 		got = int(test.value)
 		if test.expected != got {
-			t.Errorf("rank %s == %d expected. Got %d", test.value.Str(), test.expected, got)
+			t.Errorf("rank %s == %d expected. Got %d", test.value.String(), test.expected, got)
 		} else {
-			t.Logf("rank %s == %d", test.value.Str(), got)
+			t.Logf("rank %s == %d", test.value.String(), got)
 		}
 	}
 }
@@ -61,9 +61,9 @@ func TestValidRank(t *testing.T) {
 	for _, test := range tests {
 		got = test.value.IsValid()
 		if test.expected != got {
-			t.Errorf("rank.valid(%s) %t expected. Got %t", test.value.Str(), test.expected, got)
+			t.Errorf("rank.valid(%s) %t expected. Got %t", test.value.String(), test.expected, got)
 		} else {
-			t.Logf("rank.valid(%s) == %t", test.value.Str(), got)
+			t.Logf("rank.valid(%s) == %t", test.value.String(), got)
 		}
 	}
 }
@@ -80,11 +80,11 @@ func TestRankStr(t *testing.T) {
 	}
 	var got string
 	for _, test := range tests {
-		got = test.value.Str()
+		got = test.value.String()
 		if test.expected != got {
 			t.Errorf("rank label %s is expected. Got %s", test.expected, got)
 		} else {
-			t.Logf("rank label %s is %s", test.value.Str(), got)
+			t.Logf("rank label %s is %s", test.value.String(), got)
 		}
 	}
 }

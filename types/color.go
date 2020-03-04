@@ -45,8 +45,8 @@ func (c Color) IsValid() bool {
 	return c < 2
 }
 
-// Str returns a string representation of color as "w" or "b"
-func (c Color) Str() string {
+// String returns a string representation of color as "w" or "b"
+func (c Color) String() string {
 	switch c {
 	case White:
 		return "w"

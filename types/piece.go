@@ -49,8 +49,8 @@ const (
 // array of string labels for piece types
 var pieceToString = string("-KPNBRQ--kpnbrq-")
 
-// Str returns a string representation of a piece type
-func (p Piece) Str() string {
+// String returns a string representation of a piece type
+func (p Piece) String() string {
 	return string(pieceToString[p])
 }
 

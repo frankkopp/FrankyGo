@@ -42,8 +42,8 @@ const (
 	W  Orientation = 7
 )
 
-// Str returns a string representation of a Orientation (e.g. N, E, ...,NW,...)
-func (d Orientation) Str() string {
+// String returns a string representation of a Orientation (e.g. N, E, ...,NW,...)
+func (d Orientation) String() string {
 	switch d {
 	case N:
 		return "N"

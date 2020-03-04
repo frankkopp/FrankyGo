@@ -203,14 +203,14 @@ func (b *Bitboard) PopLsb() Square {
 	return lsb
 }
 
-// Str returns a string representation of the 64 bits
-func (b Bitboard) Str() string {
+// String returns a string representation of the 64 bits
+func (b Bitboard) String() string {
 	return fmt.Sprintf("%-0.64b", b)
 }
 
-// StrBoard returns a string representation of the Bitboard
+// StringBoard returns a string representation of the Bitboard
 // as a board off 8x8 squares
-func (b Bitboard) StrBoard() string {
+func (b Bitboard) StringBoard() string {
 	var os strings.Builder
 	os.WriteString("+---+---+---+---+---+---+---+---+\n")
 	for r := Rank8 + 1; r != Rank1; r-- {
@@ -226,9 +226,9 @@ func (b Bitboard) StrBoard() string {
 	return os.String()
 }
 
-// StrGrp returns a string representation of the 64 bits grouped in 8.
+// StringGrouped returns a string representation of the 64 bits grouped in 8.
 // Order is LSB To msb ==> A1 B1 ... G8 H8
-func (b Bitboard) StrGrp() string {
+func (b Bitboard) StringGrouped() string {
 	var os strings.Builder
 	for i := 0; i < 64; i++ {
 		if i > 0 && i%8 == 0 {

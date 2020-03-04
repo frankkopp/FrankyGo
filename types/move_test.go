@@ -49,9 +49,9 @@ func TestCreateMove(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := CreateMove(tt.args.from, tt.args.to, tt.args.t, tt.args.promType)
-			fmt.Printf("%s\n", got.StrBits())
+			fmt.Printf("%s\n", got.StringBits())
 			if got != tt.want {
-				t.Errorf("CreateMove() = \n%v, want \n%v", got.StrBits(), tt.want.StrBits())
+				t.Errorf("CreateMove() = \n%v, want \n%v", got.StringBits(), tt.want.StringBits())
 			}
 		})
 	}
@@ -68,7 +68,7 @@ func TestMove_SetValue(t *testing.T) {
 }
 
 func Test_Str(t *testing.T) {
-	assert.Equal(t,"e2e4", CreateMove(SqE2, SqE4, Normal, PtNone).Str())
-	assert.Equal(t,"e7e5", CreateMove(SqE7, SqE5, Normal, PtNone).Str())
-	assert.Equal(t,"a2a1Q", CreateMove(SqA2, SqA1, Promotion, Queen).Str())
+	assert.Equal(t,"e2e4", CreateMove(SqE2, SqE4, Normal, PtNone).String())
+	assert.Equal(t,"e7e5", CreateMove(SqE7, SqE5, Normal, PtNone).String())
+	assert.Equal(t,"a2a1Q", CreateMove(SqA2, SqA1, Promotion, Queen).String())
 }

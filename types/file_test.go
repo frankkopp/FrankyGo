@@ -40,9 +40,9 @@ func TestFileType(t *testing.T) {
 	for _, test := range tests {
 		got = int(test.value)
 		if test.expected != got {
-			t.Errorf("file %s == %d expected. Got %d", test.value.Str(), test.expected, got)
+			t.Errorf("file %s == %d expected. Got %d", test.value.String(), test.expected, got)
 		} else {
-			t.Logf("file %s == %d", test.value.Str(), got)
+			t.Logf("file %s == %d", test.value.String(), got)
 		}
 	}
 }
@@ -61,9 +61,9 @@ func TestValidFile(t *testing.T) {
 	for _, test := range tests {
 		got = test.value.IsValid()
 		if test.expected != got {
-			t.Errorf("file.valid(%s) %t expected. Got %t", test.value.Str(), test.expected, got)
+			t.Errorf("file.valid(%s) %t expected. Got %t", test.value.String(), test.expected, got)
 		} else {
-			t.Logf("file.valid(%s) == %t", test.value.Str(), got)
+			t.Logf("file.valid(%s) == %t", test.value.String(), got)
 		}
 	}
 }
@@ -80,11 +80,11 @@ func TestFileStr(t *testing.T) {
 	}
 	var got string
 	for _, test := range tests {
-		got = test.value.Str()
+		got = test.value.String()
 		if test.expected != got {
 			t.Errorf("file label %s is expected. Got %s", test.expected, got)
 		} else {
-			t.Logf("file label %s is %s", test.value.Str(), got)
+			t.Logf("file label %s is %s", test.value.String(), got)
 		}
 	}
 }

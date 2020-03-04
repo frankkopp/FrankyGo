@@ -40,9 +40,9 @@ func TestSquareType(t *testing.T) {
 	for _, test := range tests {
 		got = int(test.value)
 		if test.expected != got {
-			t.Errorf("square %s == %d expected. Got %d", test.value.Str(), test.expected, got)
+			t.Errorf("square %s == %d expected. Got %d", test.value.String(), test.expected, got)
 		} else {
-			t.Logf("square %s == %d", test.value.Str(), got)
+			t.Logf("square %s == %d", test.value.String(), got)
 		}
 	}
 }
@@ -61,9 +61,9 @@ func TestValidSquare(t *testing.T) {
 	for _, test := range tests {
 		got = test.value.IsValid()
 		if test.expected != got {
-			t.Errorf("square.valid(%s) %t expected. Got %t", test.value.Str(), test.expected, got)
+			t.Errorf("square.valid(%s) %t expected. Got %t", test.value.String(), test.expected, got)
 		} else {
-			t.Logf("square.valid(%s) == %t", test.value.Str(), got)
+			t.Logf("square.valid(%s) == %t", test.value.String(), got)
 		}
 	}
 }
@@ -80,11 +80,11 @@ func TestSquareStr(t *testing.T) {
 	}
 	var got string
 	for _, test := range tests {
-		got = test.value.Str()
+		got = test.value.String()
 		if test.expected != got {
 			t.Errorf("square label %s is expected. Got %s", test.expected, got)
 		} else {
-			t.Logf("square label %s is %s", test.value.Str(), got)
+			t.Logf("square label %s is %s", test.value.String(), got)
 		}
 	}
 }
@@ -104,9 +104,9 @@ func TestSquareFromFileRank(t *testing.T) {
 	for _, test := range tests {
 		got = SquareOf(test.file, test.rank)
 		if test.square != got {
-			t.Errorf("SquareOf(%s, %s) == %s is expected. Got %s", test.file.Str(), test.rank.Str(), test.square.Str(), got.Str())
+			t.Errorf("SquareOf(%s, %s) == %s is expected. Got %s", test.file.String(), test.rank.String(), test.square.String(), got.String())
 		} else {
-			t.Logf("SquareOf(%s, %s) == %s", test.file.Str(), test.rank.Str(), got.Str())
+			t.Logf("SquareOf(%s, %s) == %s", test.file.String(), test.rank.String(), got.String())
 		}
 	}
 }
@@ -131,9 +131,9 @@ func TestSquareDir(t *testing.T) {
 		got = test.square.To(test.dir)
 		if test.expected != got {
 			t.Errorf("Square To %s of %s should be %s. Is %s",
-				test.dir.Str(), test.square.Str(), test.expected.Str(), got.Str())
+				test.dir.String(), test.square.String(), test.expected.String(), got.String())
 		} else {
-			t.Logf("Square To %s of %s is %s.", test.dir.Str(), test.square.Str(), got.Str())
+			t.Logf("Square To %s of %s is %s.", test.dir.String(), test.square.String(), got.String())
 		}
 	}
 }

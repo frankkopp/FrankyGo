@@ -114,13 +114,13 @@ func (sq Square) RankOf() Rank {
 	return Rank(sq >> 3)
 }
 
-// Str returns a string of the file letter and rank number (e.g. e5)
+// String returns a string of the file letter and rank number (e.g. e5)
 // if the sq is not a valid square returns "--"
-func (sq Square) Str() string {
+func (sq Square) String() string {
 	if !sq.IsValid() {
 		return "--"
 	}
-	return sq.FileOf().Str() + sq.RankOf().Str()
+	return sq.FileOf().String() + sq.RankOf().String()
 }
 
 // SquareOf returns a square from file and rank

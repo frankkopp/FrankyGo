@@ -43,15 +43,15 @@ const (
 // array of string labels for piece types
 var pieceTypeToString = [PtLength]string{"NOPIECE", "King", "Pawn", "Knight", "Bishop", "Rook", "Queen"}
 
-// Str returns a string representation of a piece type
-func (pt PieceType) Str() string {
+// String returns a string representation of a piece type
+func (pt PieceType) String() string {
 	return pieceTypeToString[pt]
 }
 
 // array of string labels for piece types
 var pieceTypeToChar = string("-KPNBRQ")
 
-// Str returns a single char string representation of a piece type
+// String returns a single char string representation of a piece type
 func (pt PieceType) Char() string {
 	return string(pieceTypeToChar[pt])
 }

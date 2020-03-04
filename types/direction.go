@@ -42,8 +42,8 @@ const (
 	Northwest Direction = North + West
 )
 
-// Str returns a string representation of a Direction (e.g. N, E, ...,NW,...)
-func (d Direction) Str() string {
+// String returns a string representation of a Direction (e.g. N, E, ...,NW,...)
+func (d Direction) String() string {
 	switch d {
 	case North:
 		return "N"

@@ -24,30 +24,22 @@
 
 package types
 
-// MoveType is used for the different move types we use to encode moves.
-// Values are Normal, Promotion, EnPassant, Castling
-type MoveType uint
-
-// MoveType constants
-const (
-	Normal    MoveType = 0
-	Promotion MoveType = 1
-	EnPassant MoveType = 2
-	Castling  MoveType = 3
+import (
+	"github.com/gammazero/deque"
 )
 
-// String returns a string representing the move type
-func (t MoveType) String() string {
-	switch t {
-	case Normal: return "n"
-	case Promotion: return "p"
-	case EnPassant: return "e"
-	case Castling: return "c"
-	default: return "-"
-	}
+// MoveList a list of moves based on a deque data structure
+type MoveList struct {
+	deque.Deque
 }
 
-// IsValid checks if t is a valid move type
-func (t MoveType) IsValid() bool {
-	return t < 4
+func (m MoveList) String() string {
+
+	return ""
 }
+
+
+
+
+
+
