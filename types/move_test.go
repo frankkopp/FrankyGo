@@ -68,7 +68,7 @@ func TestMove_SetValue(t *testing.T) {
 }
 
 func Test_Str(t *testing.T) {
-	assert.Equal(t,"e2e4", CreateMove(SqE2, SqE4, Normal, PtNone).String())
-	assert.Equal(t,"e7e5", CreateMove(SqE7, SqE5, Normal, PtNone).String())
-	assert.Equal(t,"a2a1Q", CreateMove(SqA2, SqA1, Promotion, Queen).String())
+	assert.Equal(t,"e2e4", CreateMove(SqE2, SqE4, Normal, PtNone).StringUci())
+	assert.Equal(t,"e7e5", CreateMove(SqE7, SqE5, Normal, PtNone).StringUci())
+	assert.Equal(t,"a2a1Q", CreateMove(SqA2, SqA1, Promotion, Queen).StringUci())
 }
