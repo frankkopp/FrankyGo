@@ -26,11 +26,12 @@ package types
 
 import (
 	"fmt"
-	"github.com/frankkopp/FrankyGo/assert"
 	"strings"
+
+	"github.com/frankkopp/FrankyGo/assert"
 )
 
-//Move 16 bits for move encoding - 16 bits for sort value
+// Move 16 bits for move encoding - 16 bits for sort value
 type Move uint32
 
 const (
