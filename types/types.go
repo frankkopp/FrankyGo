@@ -34,11 +34,23 @@ type MilliSec uint64
 // Zobrist keys need all 64 bits for distribution
 type Key uint64
 
-//Move 16 bits for move encoding - 16 bits for sort value
-type Move uint32
+const (
+	// SqLength number of squares on a board
+	SqLength int = 64
 
-// SqLength number of squares on a board
-const SqLength int = 64
+	// StartFen is a string with the fen position for a standard chess game
+	StartFen string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
+	// MaxDepth max search depth
+	MaxDepth = 128
+
+	// KB = 1.024 bytes
+	KB uint64 = 1024
+	// MB = KB * KB
+	MB uint64 = KB * KB
+	// GB = KB * MB
+	GB uint64 = KB * MB
+)
 
 var initialized = false
 

@@ -30,14 +30,14 @@ type PieceType int8
 // Orientation is a set of constants for moving squares within a Bitboard
 //noinspection GoVarAndConstTypeMayBeOmitted
 const (
-	PtNone   = 0 //
-	King     = 1 // Non sliding
-	Pawn     = 2 // Non sliding
-	Knight   = 3 // Non sliding 0x0011
-	Bishop   = 4 // Sliding     0x0100
-	Rook     = 5 // Sliding
-	Queen    = 6 // Sliding
-	PtLength = 7
+	PtNone   PieceType = 0 //
+	King     PieceType = 1 // Non sliding
+	Pawn     PieceType = 2 // Non sliding
+	Knight   PieceType = 3 // Non sliding 0x0011
+	Bishop   PieceType = 4 // Sliding     0x0100
+	Rook     PieceType = 5 // Sliding
+	Queen    PieceType = 6 // Sliding
+	PtLength PieceType = 7
 )
 
 // array of string labels for piece types
@@ -51,7 +51,7 @@ func (pt PieceType) Str() string {
 // array of string labels for piece types
 var pieceTypeToChar = string("-KPNBRQ")
 
-// Char returns a single char string representation of a piece type
+// Str returns a single char string representation of a piece type
 func (pt PieceType) Char() string {
 	return string(pieceTypeToChar[pt])
 }
@@ -72,4 +72,9 @@ var pieceTypeValue = [PtLength]int{0, 2000, 100, 320, 330, 500, 900}
 // by adding the number of certain piece type times this value
 func (pt PieceType) ValueOf() int {
 	return pieceTypeValue[pt]
+}
+
+// IsValid check if pt is a valid piece type
+func (pt PieceType) IsValid() bool {
+	return pt > 0 && pt < 7
 }

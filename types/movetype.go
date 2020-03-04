@@ -22,15 +22,30 @@
  * SOFTWARE.
  */
 
-package assert
+package types
 
-// DEBUG if this is set to true asserts are evaluated
-const DEBUG = true
+type MoveType uint
 
-// Assert checks if DEBUG is set and then tests bool. Throws
-// panic with message if bool is false
-func Assert(test bool, msg string) {
-	if DEBUG && !test {
-		panic(msg)
+// MoveType constants
+const (
+	Normal    MoveType = 0
+	Promotion MoveType = 1
+	EnPassant MoveType = 2
+	Castling  MoveType = 3
+)
+
+// Str returns a string representing the move type
+func (t MoveType) Str() string {
+	switch t {
+	case Normal: return "n"
+	case Promotion: return "p"
+	case EnPassant: return "e"
+	case Castling: return "c"
+	default: return "-"
 	}
+}
+
+// IsValid checks if t is a valid move type
+func (t MoveType) IsValid() bool {
+	return t < 4
 }

@@ -503,8 +503,8 @@ const (
 func rotate(b Bitboard, rotationMap *[SqLength]int) Bitboard {
 	rotated := BbZero
 	for sq := SqA1; sq < SqNone; sq++ {
-		if (b & Square(rotationMap[sq]).bitboard_()) != 0 {
-			rotated |= sq.bitboard_()
+		if (b & sqBb[Square(rotationMap[sq])]) != 0 {
+			rotated |= sqBb[sq]
 		}
 	}
 	return rotated
@@ -713,8 +713,36 @@ var (
 	centerDistance [SqLength]int
 )
 
+// ///////////////////////////////////////
+// Initialization
+// ///////////////////////////////////////
+
 // Pre computes various bitboards To avoid runtime calculation
 func initBb() {
+	squareBitboardsPreCompute()
+	castleMasksPreCompute()
+	squareDistancePreCompute()
+	movesRankPreCompute()
+	movesFilePreCompute()
+	movesDiagUpPreCompute()
+	movesDiagDownPreCompute()
+	pseudoAttacksPreCompute()
+	neighbourMasksPreCompute()
+	raysPreCompute()
+	intermediatePreCompute()
+	maskPassedPawnsPreCompute()
+	squareColorsPreCompute()
+	centerDistancePreCompute()
+}
+
+func castleMasksPreCompute() {
+	kingSideCastleMask[White] = sqBb[SqF1] | sqBb[SqG1] | sqBb[SqH1]
+	kingSideCastleMask[Black] = sqBb[SqF8] | sqBb[SqG8] | sqBb[SqH8]
+	queenSideCastleMask[White] = sqBb[SqD1] | sqBb[SqC1] | sqBb[SqB1] | sqBb[SqA1]
+	queenSideCastleMask[Black] = sqBb[SqD8] | sqBb[SqC8] | sqBb[SqB8] | sqBb[SqA8]
+}
+
+func squareBitboardsPreCompute() {
 	for sq := SqA1; sq < SqNone; sq++ {
 		// pre compute bitboard for a single sq
 		sqBb[sq] = sq.bitboard_()
@@ -766,32 +794,95 @@ func initBb() {
 		indexMapR45[rotateMapR45[sq]] = sq
 		indexMapL45[rotateMapL45[sq]] = sq
 	}
+}
 
-	kingSideCastleMask[White] = sqBb[SqF1] | sqBb[SqG1] | sqBb[SqH1]
-	kingSideCastleMask[Black] = sqBb[SqF8] | sqBb[SqG8] | sqBb[SqH8]
-	queenSideCastleMask[White] = sqBb[SqD1] | sqBb[SqC1] | sqBb[SqB1] | sqBb[SqA1]
-	queenSideCastleMask[Black] = sqBb[SqD8] | sqBb[SqC8] | sqBb[SqB8] | sqBb[SqA8]
+// pre computes distances to center squares by quadrant
+func centerDistancePreCompute() {
+	for square := SqA1; square <= SqH8; square++ {
+		// left upper quadrant
+		if (sqBb[square] & ranksNorthMask[27] & filesWestMask[36]) != 0 {
+			centerDistance[square] = squareDistance[square][SqD5]
+			// right upper quadrant
+		} else if (sqBb[square] & ranksNorthMask[28] & filesEastMask[35]) != 0 {
+			centerDistance[square] = squareDistance[square][SqE5]
+			// left lower quadrant
+		} else if (sqBb[square] & ranksSouthMask[35] & filesWestMask[28]) != 0 {
+			centerDistance[square] = squareDistance[square][SqD4]
+			// right lower quadrant
+		} else if (sqBb[square] & ranksSouthMask[36] & filesEastMask[27]) != 0 {
+			centerDistance[square] = squareDistance[square][SqE4]
+		}
+	}
+}
 
-	// Distance between squares index
-	for sq1 := SqA1; sq1 <= SqH8; sq1++ {
-		for sq2 := SqA1; sq2 <= SqH8; sq2++ {
-			if sq1 != sq2 {
-				squareDistance[sq1][sq2] =
-					util.Max(FileDistance(sq1.FileOf(), sq2.FileOf()), RankDistance(sq1.RankOf(), sq2.RankOf()))
+// masks for each square color (good for bishops vs bishops or pawns)
+func squareColorsPreCompute() {
+	for square := SqA1; square <= SqH8; square++ {
+		f := square.FileOf()
+		r := square.RankOf()
+		if (int(f)+int(r))%2 == 0 {
+			squaresBb[Black] |= BbOne << square
+		} else {
+			squaresBb[White] |= BbOne << square
+		}
+	}
+}
+
+// pre computes passed pawn masks
+func maskPassedPawnsPreCompute() {
+	for square := SqA1; square <= SqH8; square++ {
+		f := square.FileOf()
+		r := square.RankOf()
+		// white pawn - ignore that pawns can'*t be on all squares
+		passedPawnMask[White][square] |= rays[N][square]
+		if f < 7 && r < 7 {
+			passedPawnMask[White][square] |= rays[N][square.To(East)]
+		}
+		if f > 0 && r < 7 {
+			passedPawnMask[White][square] |= rays[N][square.To(West)]
+		}
+		// black pawn - ignore that pawns can'*t be on all squares
+		passedPawnMask[Black][square] |= rays[S][square]
+		if f < 7 && r > 0 {
+			passedPawnMask[Black][square] |= rays[S][square.To(East)]
+		}
+		if f > 0 && r > 0 {
+			passedPawnMask[Black][square] |= rays[S][square.To(West)]
+		}
+	}
+}
+
+// mask for intermediate squares in between two squares
+func intermediatePreCompute() {
+	for from := SqA1; from <= SqH8; from++ {
+		for to := SqA1; to <= SqH8; to++ {
+			toBB := sqBb[to]
+			for o := 0; o < 8; o++ {
+				if rays[Orientation(o)][from]&toBB != BbZero {
+					intermediate[from][to] |=
+						rays[Orientation(o)][from] & ^rays[Orientation(o)][to] & ^toBB
+				}
 			}
 		}
 	}
+}
 
-	// Pre-compute attacks and moves on a an empty board (pseudo attacks)
-	movesRankPreCompute()
-	movesFilePreCompute()
-	movesDiagUpPreCompute()
-	movesDiagDownPreCompute()
+func raysPreCompute() {
+	for sq := SqA1; sq <= SqH8; sq++ {
+		rays[N][sq] = pseudoAttacks[Rook][sq] & ranksNorthMask[sq]
+		rays[E][sq] = pseudoAttacks[Rook][sq] & filesEastMask[sq]
+		rays[S][sq] = pseudoAttacks[Rook][sq] & ranksSouthMask[sq]
+		rays[W][sq] = pseudoAttacks[Rook][sq] & filesWestMask[sq]
 
-	// pre compute all possible attacked sq per color, piece and sq
-	pseudoAttacksPreCompute()
+		rays[NW][sq] = pseudoAttacks[Bishop][sq] & filesWestMask[sq] & ranksNorthMask[sq]
+		rays[NE][sq] = pseudoAttacks[Bishop][sq] & filesEastMask[sq] & ranksNorthMask[sq]
+		rays[SE][sq] = pseudoAttacks[Bishop][sq] & filesEastMask[sq] & ranksSouthMask[sq]
+		rays[SW][sq] = pseudoAttacks[Bishop][sq] & filesWestMask[sq] & ranksSouthMask[sq]
+	}
+}
 
-	// masks for ¥files and ranks left, right, up and down from sq
+// masks for files and ranks left, right, up and down from sq
+func neighbourMasksPreCompute() {
 	for square := SqA1; square <= SqH8; square++ {
 		f := int(square.FileOf())
 		r := int(square.RankOf())
@@ -819,85 +910,21 @@ func initBb() {
 		}
 		neighbourFilesMask[square] = fileEastMask[square] | fileWestMask[square]
 	}
+}
 
-	// rays
-	for sq := SqA1; sq <= SqH8; sq++ {
-		rays[N][sq] = pseudoAttacks[Rook][sq] & ranksNorthMask[sq]
-		rays[E][sq] = pseudoAttacks[Rook][sq] & filesEastMask[sq]
-		rays[S][sq] = pseudoAttacks[Rook][sq] & ranksSouthMask[sq]
-		rays[W][sq] = pseudoAttacks[Rook][sq] & filesWestMask[sq]
-
-		rays[NW][sq] = pseudoAttacks[Bishop][sq] & filesWestMask[sq] & ranksNorthMask[sq]
-		rays[NE][sq] = pseudoAttacks[Bishop][sq] & filesEastMask[sq] & ranksNorthMask[sq]
-		rays[SE][sq] = pseudoAttacks[Bishop][sq] & filesEastMask[sq] & ranksSouthMask[sq]
-		rays[SW][sq] = pseudoAttacks[Bishop][sq] & filesWestMask[sq] & ranksSouthMask[sq]
-	}
-
-	// mask for intermediate squares in between two squares
-	for from := SqA1; from <= SqH8; from++ {
-		for to := SqA1; to <= SqH8; to++ {
-			toBB := sqBb[to]
-			for o := 0; o < 8; o++ {
-				if rays[Orientation(o)][from]&toBB != BbZero {
-					intermediate[from][to] |=
-						rays[Orientation(o)][from] & ^rays[Orientation(o)][to] & ^toBB
-				}
+// Distance between squares index
+func squareDistancePreCompute() {
+	for sq1 := SqA1; sq1 <= SqH8; sq1++ {
+		for sq2 := SqA1; sq2 <= SqH8; sq2++ {
+			if sq1 != sq2 {
+				squareDistance[sq1][sq2] =
+					util.Max(FileDistance(sq1.FileOf(), sq2.FileOf()), RankDistance(sq1.RankOf(), sq2.RankOf()))
 			}
 		}
 	}
-
-	// mask for passed pawns
-	for square := SqA1; square <= SqH8; square++ {
-		f := square.FileOf()
-		r := square.RankOf()
-		// white pawn - ignore that pawns can'*t be on all squares
-		passedPawnMask[White][square] |= rays[N][square]
-		if f < 7 && r < 7 {
-			passedPawnMask[White][square] |= rays[N][square.To(East)]
-		}
-		if f > 0 && r < 7 {
-			passedPawnMask[White][square] |= rays[N][square.To(West)]
-		}
-		// black pawn - ignore that pawns can'*t be on all squares
-		passedPawnMask[Black][square] |= rays[S][square]
-		if f < 7 && r > 0 {
-			passedPawnMask[Black][square] |= rays[S][square.To(East)]
-		}
-		if f > 0 && r > 0 {
-			passedPawnMask[Black][square] |= rays[S][square.To(West)]
-		}
-	}
-
-	// masks for each square color (good for bishops vs bishops or pawns)
-	for square := SqA1; square <= SqH8; square++ {
-		f := square.FileOf()
-		r := square.RankOf()
-		if (int(f)+int(r))%2 == 0 {
-			squaresBb[Black] |= BbOne << square
-		} else {
-			squaresBb[White] |= BbOne << square
-		}
-	}
-
-	// distances to center squares by quadrant
-	for square := SqA1; square <= SqH8; square++ {
-		// left upper quadrant
-		if (sqBb[square] & ranksNorthMask[27] & filesWestMask[36]) != 0 {
-			centerDistance[square] = squareDistance[square][SqD5]
-			// right upper quadrant
-		} else if (sqBb[square] & ranksNorthMask[28] & filesEastMask[35]) != 0 {
-			centerDistance[square] = squareDistance[square][SqE5]
-			// left lower quadrant
-		} else if (sqBb[square] & ranksSouthMask[35] & filesWestMask[28]) != 0 {
-			centerDistance[square] = squareDistance[square][SqD4]
-			// right lower quadrant
-		} else if (sqBb[square] & ranksSouthMask[36] & filesEastMask[27]) != 0 {
-			centerDistance[square] = squareDistance[square][SqE4]
-		}
-	}
-
 }
 
+// pre compute all possible attacked sq per color, piece and sq
 func pseudoAttacksPreCompute() {
 	// steps for kings, pawns, knight for WHITE - negate to get BLACK
 	var steps = [][]Direction{
@@ -934,6 +961,7 @@ func pseudoAttacksPreCompute() {
 	}
 }
 
+// Pre-compute attacks and moves on a an empty board (pseudo attacks)
 func movesDiagDownPreCompute() {
 	// All sliding attacks with blocker - down diag sliders
 	// Shamefully copied from Beowulf :)
@@ -969,6 +997,7 @@ func movesDiagDownPreCompute() {
 	}
 }
 
+// Pre-compute attacks and moves on a an empty board (pseudo attacks)
 func movesDiagUpPreCompute() {
 	// All sliding attacks with blocker - up diag sliders
 	// Shamefully copied from Beowulf :)
@@ -1004,6 +1033,7 @@ func movesDiagUpPreCompute() {
 	}
 }
 
+// Pre-compute attacks and moves on a an empty board (pseudo attacks)
 func movesFilePreCompute() {
 	// All sliding attacks with blocker - vertical
 	// Shamefully copied from Beowulf :)
@@ -1029,6 +1059,7 @@ func movesFilePreCompute() {
 	}
 }
 
+// Pre-compute attacks and moves on a an empty board (pseudo attacks)
 func movesRankPreCompute() {
 	// All sliding attacks with blockers - horizontal
 	// Shamefully copied from Beowulf :)

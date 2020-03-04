@@ -22,15 +22,25 @@
  * SOFTWARE.
  */
 
-package assert
+package types
 
-// DEBUG if this is set to true asserts are evaluated
-const DEBUG = true
+// Value represents the positional value of a chess position
+type Value int16
 
-// Assert checks if DEBUG is set and then tests bool. Throws
-// panic with message if bool is false
-func Assert(test bool, msg string) {
-	if DEBUG && !test {
-		panic(msg)
-	}
+// Constants for values
+const (
+	ValueZero               Value = 0
+	ValueDraw               Value = 0
+	ValueOne                Value = 1
+	ValueInf                Value = 15_000
+	ValueNA                 Value = -ValueInf - 1
+	ValueMax                Value = 10_000
+	ValueMin                Value = - ValueMax
+	ValueCheckMate          Value = ValueMax
+	ValueCheckMateThreshold Value = ValueCheckMate - MaxDepth - 1
+)
+
+// IsValid checks if value is within valid range (between Min and Max)
+func (v Value) IsValid() bool {
+	return v >= ValueMin && v <= ValueMax
 }
