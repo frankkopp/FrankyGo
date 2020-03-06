@@ -26,13 +26,14 @@ package types
 
 import "fmt"
 
-//Color represents constants for each chess color White and Black
+// Color represents constants for each chess color White and Black
 type Color uint8
 
 // Constants for each color
 const (
 	White Color = 0
 	Black Color = 1
+	ColorLength int = 2
 )
 
 // Flip returns the opposite color

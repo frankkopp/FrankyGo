@@ -22,50 +22,38 @@
  * SOFTWARE.
  */
 
-package types
+package position
 
-import (
-	"fmt"
-	"strings"
-
-	"github.com/gammazero/deque"
-)
-
-// MoveList a list of moves based on a deque data structure
-type MoveList struct {
-	deque.Deque
+// Random
+// xorshift64star Pseudo-Random Number Generator
+// This class is based on original code written and dedicated
+// to the public domain by Sebastiano Vigna (2014).
+// It has the following characteristics:
+//  -  Outputs 64-bit numbers
+//  -  Passes Dieharder and SmallCrush test batteries
+//  -  Does not require warm-up, no zeroland to escape
+//  -  Internal state is a single 64-bit integer
+//  -  Period is 2^64 - 1
+//  -  Speed: 1.60 ns/call (Core i7 @3.40GHz)
+// For further analysis see
+//   <http://vigna.di.unimi.it/ftp/papers/xorshift.pdf>
+// Taken directly from Stockfish
+type random struct {
+	s uint64
 }
 
-func (ml MoveList) String() string {
-	var os strings.Builder
-	size := ml.Len()
-	os.WriteString(fmt.Sprintf("MoveList: [%d] { ", size))
-	for i := 0; i < size; i++ {
-		if i > 0 {
-			os.WriteString(", ")
-		}
-		m := ml.At(i)
-		os.WriteString(m.(Move).String())
+// NewRandom creates a random object with a seed. Seed must not be negative or zero.
+func NewRandom( seed uint64) random {
+	if seed == 0 {
+		panic("Seed of random cannot be 0")
 	}
-	os.WriteString(" }")
-	return os.String()
+	r := random{seed}
+	return r
 }
 
-// StringUci returns a string with a sapce seperated list
-// of all moves i the list in UCI protocol format
-func (ml MoveList) StringUci() string {
-	var os strings.Builder
-	size := ml.Len()
-	for i := 0; i < size; i++ {
-		if i > 0 {
-			os.WriteString(" ")
-		}
-		m := ml.At(i)
-		os.WriteString(m.(Move).StringUci())
-	}
-	return os.String()
+func (r *random) rand64() uint64 {
+	r.s ^= r.s << 25
+	r.s ^= r.s >> 27
+	r.s ^= r.s >> 12
+	return r.s * uint64(2685821657736338717)
 }
-
-
-
-

@@ -30,7 +30,7 @@ type CastlingRights uint8
 
 // Constants for Castling
 const (
-	CastlingNone = 0 // 0000
+	CastlingNone CastlingRights = 0 // 0000
 
 	CastlingWhiteOO  CastlingRights = 1                                  // 0001
 	CastlingWhiteOOO CastlingRights = CastlingWhiteOO << 1               // 0010
@@ -40,20 +40,20 @@ const (
 	CastlingBlackOOO CastlingRights = CastlingBlackOO << 1               // 1000
 	CastlingBlack    CastlingRights = CastlingBlackOO | CastlingBlackOOO // 1100
 
-	CastlingAny    CastlingRights = CastlingWhite | CastlingBlack // 1111
-	CastlingLength CastlingRights = 16
+	CastlingAny          CastlingRights = CastlingWhite | CastlingBlack // 1111
+	CastlingRightsLength CastlingRights = 16
 )
 
 // Has checks if the state has the bit for the Castling right set and
 // therefore this castling is available
 func (lhs CastlingRights) Has(rhs CastlingRights) bool {
-	return lhs & rhs > 0
+	return lhs&rhs != 0
 }
 
 // Remove removes a castling right from the input state (deletes right)
 func (lhs *CastlingRights) Remove(rhs CastlingRights) CastlingRights {
-	*lhs = *lhs & ^rhs
-	return	*lhs
+	*lhs = *lhs &^ rhs
+	return *lhs
 }
 
 // Add adds a castling right ti the state

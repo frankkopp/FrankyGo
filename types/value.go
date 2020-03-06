@@ -35,7 +35,7 @@ const (
 	ValueInf                Value = 15_000
 	ValueNA                 Value = -ValueInf - 1
 	ValueMax                Value = 10_000
-	ValueMin                Value = - ValueMax
+	ValueMin                Value = -ValueMax
 	ValueCheckMate          Value = ValueMax
 	ValueCheckMateThreshold Value = ValueCheckMate - MaxDepth - 1
 )

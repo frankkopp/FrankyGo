@@ -24,7 +24,7 @@
 
 package assert
 
-// DEBUG if this is set to true asserts are evaluated
+// DEBUG if this is set to "true" asserts are evaluated
 const DEBUG = true
 
 // Assert checks if DEBUG is set and then tests bool. Throws

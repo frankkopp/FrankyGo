@@ -30,27 +30,26 @@ package types
 // Could be large therefore 64-bit
 type MilliSec uint64
 
-// Key is used for zobrist keys in chess positions.
-// Zobrist keys need all 64 bits for distribution
-type Key uint64
+// SqLength number of squares on a board
+const SqLength int = 64
 
-const (
-	// SqLength number of squares on a board
-	SqLength int = 64
+// StartFen is a string with the fen position for a standard chess game
+const StartFen string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-	// StartFen is a string with the fen position for a standard chess game
-	StartFen string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+// MaxDepth max search depth
+const MaxDepth = 128
 
-	// MaxDepth max search depth
-	MaxDepth = 128
+// MaxMoves max number of moves for a game
+const MaxMoves = 512
 
-	// KB = 1.024 bytes
-	KB uint64 = 1024
-	// MB = KB * KB
-	MB uint64 = KB * KB
-	// GB = KB * MB
-	GB uint64 = KB * MB
-)
+// KB = 1.024 bytes
+const KB uint64 = 1024
+
+// MB = KB * KB
+const MB uint64 = KB * KB
+
+// GB = KB * MB
+const GB uint64 = KB * MB
 
 var initialized = false
 

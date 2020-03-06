@@ -27,7 +27,7 @@ package types
 import "fmt"
 
 // Orientation is a set of constants for directions from a squares
-type Orientation int8
+type Orientation uint8
 
 // Orientation is a set of constants for moving squares within a Bitboard
 //noinspection GoVarAndConstTypeMayBeOmitted
@@ -41,6 +41,11 @@ const (
 	SW Orientation = 6
 	W  Orientation = 7
 )
+
+// IsValid tests if o is a valid Orientation value
+func (o Orientation) IsValid() bool {
+	return o < 8
+}
 
 // String returns a string representation of a Orientation (e.g. N, E, ...,NW,...)
 func (d Orientation) String() string {

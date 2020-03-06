@@ -22,50 +22,34 @@
  * SOFTWARE.
  */
 
-package types
+package position
 
 import (
-	"fmt"
-	"strings"
-
-	"github.com/gammazero/deque"
+	. "github.com/frankkopp/FrankyGo/types"
 )
 
-// MoveList a list of moves based on a deque data structure
-type MoveList struct {
-	deque.Deque
+type zobrist struct {
+	pieces         [PieceLength][SqLength]Key
+	castlingRights [CastlingRightsLength]Key
+	enPassantFile  [8]Key
+	nextPlayer     Key
 }
 
-func (ml MoveList) String() string {
-	var os strings.Builder
-	size := ml.Len()
-	os.WriteString(fmt.Sprintf("MoveList: [%d] { ", size))
-	for i := 0; i < size; i++ {
-		if i > 0 {
-			os.WriteString(", ")
+var zobristBase = zobrist{}
+
+func initZobrist() {
+	// Zobrist Key initialization
+	r := NewRandom(1070372)
+	for pc := PieceNone; pc < PieceLength; pc++ {
+		for sq := SqA1; sq <= SqH8; sq++ {
+			zobristBase.pieces[pc][sq] = Key(r.rand64())
 		}
-		m := ml.At(i)
-		os.WriteString(m.(Move).String())
 	}
-	os.WriteString(" }")
-	return os.String()
-}
-
-// StringUci returns a string with a sapce seperated list
-// of all moves i the list in UCI protocol format
-func (ml MoveList) StringUci() string {
-	var os strings.Builder
-	size := ml.Len()
-	for i := 0; i < size; i++ {
-		if i > 0 {
-			os.WriteString(" ")
-		}
-		m := ml.At(i)
-		os.WriteString(m.(Move).StringUci())
+	for cr := CastlingNone; cr <= CastlingAny; cr++ {
+		zobristBase.castlingRights[cr] = Key(r.rand64())
 	}
-	return os.String()
+	for f := FileA; f <= FileH; f++ {
+		zobristBase.enPassantFile[f] = Key(r.rand64())
+	}
+	zobristBase.nextPlayer = Key(r.rand64())
 }
-
-
-
-

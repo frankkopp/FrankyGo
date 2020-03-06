@@ -3,12 +3,12 @@
  *
  * Copyright (c) 2018-2020 Frank Kopp
  *
- * Permission is hereby granted, free of charge, To any person obtaining a copy
- * of this software and associated documentation files (the "Software"), To deal
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
- * To use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and To permit persons To whom the Software is
- * furnished To do so, subject To the following conditions:
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
@@ -26,17 +26,18 @@ package types
 
 import (
 	"fmt"
-	"github.com/frankkopp/FrankyGo/assert"
-	"github.com/frankkopp/FrankyGo/util"
 	"math/bits"
 	"strings"
+
+	"github.com/frankkopp/FrankyGo/assert"
+	"github.com/frankkopp/FrankyGo/util"
 )
 
 // Bitboard is a 64 bit int with 1 bit for each square on the board
 type Bitboard uint64
 
 // Bitboard returns a Bitboard of the square by accessing the pre calculated
-// square To bitboard array.
+// square to bitboard array.
 // Initialize with InitBb() before use. Throws panic otherwise.
 func (sq Square) Bitboard() Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
@@ -49,24 +50,26 @@ func PushSquare(b Bitboard, s Square) Bitboard {
 }
 
 // PushSquare sets the corresponding bit of the bitboard for the square
-func (b *Bitboard) PushSquare(s Square) {
+func (b *Bitboard) PushSquare(s Square) Bitboard {
 	*b |= s.Bitboard()
+	return *b
 }
 
 // PopSquare removes the corresponding bit of the bitboard for the square
 func PopSquare(b Bitboard, s Square) Bitboard {
-	return (b | s.Bitboard()) ^ s.Bitboard()
+	return b &^ s.Bitboard()
 }
 
 // PopSquare removes the corresponding bit of the bitboard for the square
-func (b *Bitboard) PopSquare(s Square) {
-	*b = (*b | s.Bitboard()) ^ s.Bitboard()
+func (b *Bitboard) PopSquare(s Square) Bitboard {
+	*b = *b &^ s.Bitboard()
+	return *b
 }
 
 // ShiftBitboard shifting all bits of a bitboard in the given direction by 1 square
 func ShiftBitboard(b Bitboard, d Direction) Bitboard {
 	// move the bits and clear the left our right file
-	// after the shift To erase bits jumping over
+	// after the shift to erase bits jumping over
 	switch d {
 	case North:
 		return (Rank8Mask & b) << 8
@@ -172,19 +175,19 @@ func GetMovesDiagDown(square Square, content Bitboard) Bitboard {
 }
 
 // Lsb returns the least significant bit of the 64-bit Bitboard.
-// This translates directly To the Square which is returned.
+// This translates directly to the Square which is returned.
 // If the bitboard is empty SqNone will be returned.
 // Lsb() indexes from 0-63 - 0 being the the lsb and
-// equal To SqA1
+// equal to SqA1
 func (b Bitboard) Lsb() Square {
 	return Square(bits.TrailingZeros64(uint64(b)))
 }
 
 // Msb returns the most significant bit of the 64-bit Bitboard.
-// This translates directly To the Square which is returned.
+// This translates directly to the Square which is returned.
 // If the bitboard is empty SqNone will be returned.
 // Msb() indexes from 0-63 - 63 being the the msb and
-// equal To SqH8
+// equal to SqH8
 func (b Bitboard) Msb() Square {
 	if b == BbZero {
 		return SqNone
@@ -227,7 +230,7 @@ func (b Bitboard) StringBoard() string {
 }
 
 // StringGrouped returns a string representation of the 64 bits grouped in 8.
-// Order is LSB To msb ==> A1 B1 ... G8 H8
+// Order is LSB to msb ==> A1 B1 ... G8 H8
 func (b Bitboard) StringGrouped() string {
 	var os strings.Builder
 	for i := 0; i < 64; i++ {
@@ -279,8 +282,8 @@ func RotateL90(b Bitboard) Bitboard {
 }
 
 // RotateR45 rotates a Bitboard by 45 degrees clockwise
-// To get all upward diagonals in compact block of bits
-// This is used To create a mask To find moves for
+// to get all upward diagonals in compact block of bits
+// This is used to create a mask to find moves for
 // quuen and bishop on the upward diagonal
 func RotateR45(b Bitboard) Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
@@ -288,36 +291,36 @@ func RotateR45(b Bitboard) Bitboard {
 }
 
 // RotateL45 rotates a Bitboard by 45 degrees counter clockwise
-// To get all downward diagonals in compact block of bits
-// This is used To create a mask To find moves for
-// quuen and bishop on the downward diagonal
+// to get all downward diagonals in compact block of bits
+// This is used to create a mask to find moves for
+// queen and bishop on the downward diagonal
 func RotateL45(b Bitboard) Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return rotate(b, &rotateMapL45)
 }
 
-// RotateSquareR90 maps squares To the sq of the rotated board. E.g. when rotating
+// RotateSquareR90 maps squares to the sq of the rotated board. E.g. when rotating
 // clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
 func RotateSquareR90(sq Square) Square {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return indexMapR90[sq]
 }
 
-// RotateSquareL90 maps squares To the sq of the rotated board. E.g. when rotating
+// RotateSquareL90 maps squares to the sq of the rotated board. E.g. when rotating
 // clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
 func RotateSquareL90(sq Square) Square {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return indexMapL90[sq]
 }
 
-// RotateSquareR45 maps squares To the sq of the rotated board. E.g. when rotating
+// RotateSquareR45 maps squares to the sq of the rotated board. E.g. when rotating
 // clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
 func RotateSquareR45(sq Square) Square {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return indexMapR45[sq]
 }
 
-// RotateSquareL45 maps squares To the sq of the rotated board. E.g. when rotating
+// RotateSquareL45 maps squares to the sq of the rotated board. E.g. when rotating
 // clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
 func RotateSquareL45(sq Square) Square {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
@@ -350,19 +353,19 @@ func (sq Square) FilesEastMask() Bitboard {
 	return filesEastMask[sq]
 }
 
-//FileWestMask returns a Bitboaard of the file west of the square
+// FileWestMask returns a Bitboard of the file west of the square
 func (sq Square) FileWestMask() Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return fileWestMask[sq]
 }
 
-// FileEastMask returns a Bitboaard of the file east of the square
+// FileEastMask returns a Bitboard of the file east of the square
 func (sq Square) FileEastMask() Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return fileEastMask[sq]
 }
 
-// RanksNorthMask returns a Bitboaard of the ranks north of the square
+// RanksNorthMask returns a Bitboard of the ranks north of the square
 func (sq Square) RanksNorthMask() Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return ranksNorthMask[sq]
@@ -380,7 +383,7 @@ func (sq Square) NeighbourFilesMask() Bitboard {
 	return neighbourFilesMask[sq]
 }
 
-// Ray returns a Bitboard of quares outgoing from the
+// Ray returns a Bitboard of squares outgoing from the
 // square in direction of the orientation
 func (sq Square) Ray(o Orientation) Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
@@ -499,7 +502,7 @@ const (
 
 // Rotates a Bitboard using a mapping array which holds the position of
 // the square in the rotated board indexed by the square.
-// Basically the array tells bit x To move To bit y
+// Basically the array tells bit x to move to bit y
 func rotate(b Bitboard, rotationMap *[SqLength]int) Bitboard {
 	rotated := BbZero
 	for sq := SqA1; sq < SqNone; sq++ {
@@ -516,13 +519,13 @@ func rotate(b Bitboard, rotationMap *[SqLength]int) Bitboard {
 // Returns a Bitboard of the square by shifting the
 // square onto an empty bitboards.
 // Usually one would use Bitboard() after initializing with InitBb
-func (sq Square) bitboard_() Bitboard {
+func (sq Square) bitboard() Bitboard {
 	return Bitboard(uint64(1) << sq)
 }
 
 // helper arrays
 var (
-	// Used To pre compute an indexMap for rotated boards
+	// Used to pre compute an indexMap for rotated boards
 	rotateMapR90 = [SqLength]int{
 		7, 15, 23, 31, 39, 47, 55, 63,
 		6, 14, 22, 30, 38, 46, 54, 62,
@@ -533,7 +536,7 @@ var (
 		1, 9, 17, 25, 33, 41, 49, 57,
 		0, 8, 16, 24, 32, 40, 48, 56}
 
-	// Used To pre compute an indexMap for rotated boards
+	// Used to pre compute an indexMap for rotated boards
 	rotateMapL90 = [SqLength]int{
 		56, 48, 40, 32, 24, 16, 8, 0,
 		57, 49, 41, 33, 25, 17, 9, 1,
@@ -544,7 +547,7 @@ var (
 		62, 54, 46, 38, 30, 22, 14, 6,
 		63, 55, 47, 39, 31, 23, 15, 7}
 
-	// Used To pre compute an indexMap for rotated boards
+	// Used to pre compute an indexMap for rotated boards
 	rotateMapR45 = [SqLength]int{
 		7,
 		6, 15,
@@ -562,7 +565,7 @@ var (
 		48, 57,
 		56}
 
-	// Used To pre compute an indexMap for rotated boards
+	// Used to pre compute an indexMap for rotated boards
 	rotateMapL45 = [SqLength]int{
 		0,
 		8, 1,
@@ -580,7 +583,7 @@ var (
 		62, 55,
 		63}
 
-	// Used To pre compute an indexMap for diagonals
+	// Used to pre compute an indexMap for diagonals
 	lengthDiagUp = [SqLength]int{
 		8, 7, 6, 5, 4, 3, 2, 1,
 		7, 8, 7, 6, 5, 4, 3, 2,
@@ -591,7 +594,7 @@ var (
 		2, 3, 4, 5, 6, 7, 8, 7,
 		1, 2, 3, 4, 5, 6, 7, 8}
 
-	// Used To pre compute an indexMap for diagonals
+	// Used to pre compute an indexMap for diagonals
 	lengthDiagDown = [SqLength]int{
 		1, 2, 3, 4, 5, 6, 7, 8,
 		2, 3, 4, 5, 6, 7, 8, 7,
@@ -622,53 +625,53 @@ var (
 		21, 28, 36, 43, 49, 54, 58, 61,
 		28, 36, 43, 49, 54, 58, 61, 63}
 
-	// Reverse index To quickly calculate the index of a square in the rotated board
+	// Reverse index to quickly calculate the index of a square in the rotated board
 	indexMapR90 = [SqLength]Square{}
-	// Reverse index To quickly calculate the index of a square in the rotated board
+	// Reverse index to quickly calculate the index of a square in the rotated board
 	indexMapL90 = [SqLength]Square{}
-	// Reverse index To quickly calculate the index of a square in the rotated board
+	// Reverse index to quickly calculate the index of a square in the rotated board
 	indexMapR45 = [SqLength]Square{}
-	// Reverse index To quickly calculate the index of a square in the rotated board
+	// Reverse index to quickly calculate the index of a square in the rotated board
 	indexMapL45 = [SqLength]Square{}
 
-	// Internal pre computed square To square bitboard array.
-	// Needs To be initialized with initBb()
+	// Internal pre computed square to square bitboard array.
+	// Needs to be initialized with initBb()
 	sqBb [SqLength]Bitboard
 
-	// Internal pre computed square To file bitboard array.
-	// Needs To be initialized with initBb()
+	// Internal pre computed square to file bitboard array.
+	// Needs to be initialized with initBb()
 	sqToFileBb [SqLength]Bitboard
 
-	// Internal pre computed square To rank bitboard array.
-	// Needs To be initialized with initBb()
+	// Internal pre computed square to rank bitboard array.
+	// Needs to be initialized with initBb()
 	sqToRankBb [SqLength]Bitboard
 
-	// Internal pre computed square To diag up bitboard array.
-	// Needs To be initialized with initBb()
+	// Internal pre computed square to diag up bitboard array.
+	// Needs to be initialized with initBb()
 	sqDiagUpBb [SqLength]Bitboard
 
-	// Internal pre computed square To diag down bitboard array.
-	// Needs To be initialized with initBb()
+	// Internal pre computed square to diag down bitboard array.
+	// Needs to be initialized with initBb()
 	sqDiagDownBb [SqLength]Bitboard
 
 	// Internal pre computed index for quick square distance lookup
 	squareDistance [SqLength][SqLength]int
 
-	// Internal pre computed index To map possible moves on a rank
+	// Internal pre computed index to map possible moves on a rank
 	// for each square and board occupation of this rank
 	movesRank [SqLength][256]Bitboard
 
-	// Internal pre computed index To map possible moves on a file
+	// Internal pre computed index to map possible moves on a file
 	// for each square and board occupation of this file
 	// (needs rotating and masking the index)
 	movesFile [SqLength][256]Bitboard
 
-	// Internal pre computed index To map possible moves on a up diagonal
+	// Internal pre computed index to map possible moves on a up diagonal
 	// for each square and board occupation of this up diagonal
 	// (needs rotating and masking the index)
 	movesDiagUp [SqLength][256]Bitboard
 
-	// Internal pre computed index To map possible moves on a down diagonal
+	// Internal pre computed index to map possible moves on a down diagonal
 	// for each square and board occupation of this down diagonal
 	// (needs rotating and masking the index)
 	movesDiagDown [SqLength][256]Bitboard
@@ -717,7 +720,7 @@ var (
 // Initialization
 // ///////////////////////////////////////
 
-// Pre computes various bitboards To avoid runtime calculation
+// Pre computes various bitboards to avoid runtime calculation
 func initBb() {
 	squareBitboardsPreCompute()
 	castleMasksPreCompute()
@@ -745,7 +748,7 @@ func castleMasksPreCompute() {
 func squareBitboardsPreCompute() {
 	for sq := SqA1; sq < SqNone; sq++ {
 		// pre compute bitboard for a single sq
-		sqBb[sq] = sq.bitboard_()
+		sqBb[sq] = sq.bitboard()
 
 		// file and rank bitboards
 		sqToFileBb[sq] = FileA_Bb << sq.FileOf()
@@ -753,42 +756,42 @@ func squareBitboardsPreCompute() {
 
 		// sq diagonals // @formatter:off
 		//noinspection GoLinterLocal
-		if        DiagUpA8&sq.bitboard_() > 0 { sqDiagUpBb[sq] = DiagUpA8
-		} else if DiagUpA7&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpA7
-		} else if DiagUpA6&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpA6
-		} else if DiagUpA5&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpA5
-		} else if DiagUpA4&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpA4
-		} else if DiagUpA3&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpA3
-		} else if DiagUpA2&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpA2
-		} else if DiagUpA1&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpA1
-		} else if DiagUpB1&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpB1
-		} else if DiagUpC1&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpC1
-		} else if DiagUpD1&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpD1
-		} else if DiagUpE1&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpE1
-		} else if DiagUpF1&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpF1
-		} else if DiagUpG1&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpG1
-		} else if DiagUpH1&sq.bitboard_() > 0 {	sqDiagUpBb[sq] = DiagUpH1
+		if        DiagUpA8&sq.bitboard() > 0 { sqDiagUpBb[sq] = DiagUpA8
+		} else if DiagUpA7&sq.bitboard() > 0 {	sqDiagUpBb[sq] = DiagUpA7
+		} else if DiagUpA6&sq.bitboard() > 0 {	sqDiagUpBb[sq] = DiagUpA6
+		} else if DiagUpA5&sq.bitboard() > 0 {	sqDiagUpBb[sq] = DiagUpA5
+		} else if DiagUpA4&sq.bitboard() > 0 {	sqDiagUpBb[sq] = DiagUpA4
+		} else if DiagUpA3&sq.bitboard() > 0 {	sqDiagUpBb[sq] = DiagUpA3
+		} else if DiagUpA2&sq.bitboard() > 0 {	sqDiagUpBb[sq] = DiagUpA2
+		} else if DiagUpA1&sq.bitboard() > 0 {	sqDiagUpBb[sq] = DiagUpA1
+		} else if DiagUpB1&sq.bitboard() > 0 {	sqDiagUpBb[sq] = DiagUpB1
+		} else if DiagUpC1&sq.bitboard() > 0 {	sqDiagUpBb[sq] = DiagUpC1
+		} else if DiagUpD1&sq.bitboard() > 0 {	sqDiagUpBb[sq] = DiagUpD1
+		} else if DiagUpE1&sq.bitboard() > 0 {	sqDiagUpBb[sq] = DiagUpE1
+		} else if DiagUpF1&sq.bitboard() > 0 {	sqDiagUpBb[sq] = DiagUpF1
+		} else if DiagUpG1&sq.bitboard() > 0 {	sqDiagUpBb[sq] = DiagUpG1
+		} else if DiagUpH1&sq.bitboard() > 0 {	sqDiagUpBb[sq] = DiagUpH1
 		}
 
-		if        DiagDownH8&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownH8
-		} else if DiagDownH7&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownH7
-		} else if DiagDownH6&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownH6
-		} else if DiagDownH5&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownH5
-		} else if DiagDownH4&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownH4
-		} else if DiagDownH3&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownH3
-		} else if DiagDownH2&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownH2
-		} else if DiagDownH1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownH1
-		} else if DiagDownG1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownG1
-		} else if DiagDownF1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownF1
-		} else if DiagDownE1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownE1
-		} else if DiagDownD1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownD1
-		} else if DiagDownC1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownC1
-		} else if DiagDownB1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownB1
-		} else if DiagDownA1&sq.bitboard_() > 0 { sqDiagDownBb[sq] = DiagDownA1
+		if        DiagDownH8&sq.bitboard() > 0 { sqDiagDownBb[sq] = DiagDownH8
+		} else if DiagDownH7&sq.bitboard() > 0 { sqDiagDownBb[sq] = DiagDownH7
+		} else if DiagDownH6&sq.bitboard() > 0 { sqDiagDownBb[sq] = DiagDownH6
+		} else if DiagDownH5&sq.bitboard() > 0 { sqDiagDownBb[sq] = DiagDownH5
+		} else if DiagDownH4&sq.bitboard() > 0 { sqDiagDownBb[sq] = DiagDownH4
+		} else if DiagDownH3&sq.bitboard() > 0 { sqDiagDownBb[sq] = DiagDownH3
+		} else if DiagDownH2&sq.bitboard() > 0 { sqDiagDownBb[sq] = DiagDownH2
+		} else if DiagDownH1&sq.bitboard() > 0 { sqDiagDownBb[sq] = DiagDownH1
+		} else if DiagDownG1&sq.bitboard() > 0 { sqDiagDownBb[sq] = DiagDownG1
+		} else if DiagDownF1&sq.bitboard() > 0 { sqDiagDownBb[sq] = DiagDownF1
+		} else if DiagDownE1&sq.bitboard() > 0 { sqDiagDownBb[sq] = DiagDownE1
+		} else if DiagDownD1&sq.bitboard() > 0 { sqDiagDownBb[sq] = DiagDownD1
+		} else if DiagDownC1&sq.bitboard() > 0 { sqDiagDownBb[sq] = DiagDownC1
+		} else if DiagDownB1&sq.bitboard() > 0 { sqDiagDownBb[sq] = DiagDownB1
+		} else if DiagDownA1&sq.bitboard() > 0 { sqDiagDownBb[sq] = DiagDownA1
 		}
 		// @formatter:on
 
-		// Reverse index To quickly calculate the index of a sq in the rotated board
+		// Reverse index to quickly calculate the index of a sq in the rotated board
 		indexMapR90[rotateMapR90[sq]] = sq
 		indexMapL90[rotateMapL90[sq]] = sq
 		indexMapR45[rotateMapR45[sq]] = sq
