@@ -22,19 +22,19 @@
  * SOFTWARE.
  */
 
-package assert
+package types
 
 import (
-	"fmt"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-// DEBUG if this is set to "true" asserts are evaluated
-const DEBUG = true
-
-// Assert checks if DEBUG is set and then tests bool. Throws
-// panic with message if bool is false
-func Assert(test bool, msg string, a ...interface{}) {
-	if DEBUG && !test {
-		panic(fmt.Sprintf(msg, a))
-	}
+func Test(t *testing.T) {
+	Init()
+	assert.Equal(t, -30, PosMidValue(WhitePawn, SqE2))
+	assert.Equal(t, 10, PosEndValue(WhitePawn, SqE2))
+	assert.Equal(t, -30, PosValue(WhitePawn, SqE2, 24))
+	assert.Equal(t, 10, PosValue(WhitePawn, SqE2, 0))
+	assert.Equal(t, -10, PosValue(WhitePawn, SqE2, 12))
 }

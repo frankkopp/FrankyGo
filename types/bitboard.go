@@ -36,34 +36,39 @@ import (
 // Bitboard is a 64 bit int with 1 bit for each square on the board
 type Bitboard uint64
 
-// Bitboard returns a Bitboard of the square by accessing the pre calculated
+// Bb returns a Bitboard of the square by accessing the pre calculated
 // square to bitboard array.
 // Initialize with InitBb() before use. Throws panic otherwise.
-func (sq Square) Bitboard() Bitboard {
+func (sq Square) Bb() Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return sqBb[sq]
 }
 
 // PushSquare sets the corresponding bit of the bitboard for the square
 func PushSquare(b Bitboard, s Square) Bitboard {
-	return b | s.Bitboard()
+	return b | s.Bb()
 }
 
 // PushSquare sets the corresponding bit of the bitboard for the square
 func (b *Bitboard) PushSquare(s Square) Bitboard {
-	*b |= s.Bitboard()
+	*b |= s.Bb()
 	return *b
 }
 
 // PopSquare removes the corresponding bit of the bitboard for the square
 func PopSquare(b Bitboard, s Square) Bitboard {
-	return b &^ s.Bitboard()
+	return b &^ s.Bb()
 }
 
 // PopSquare removes the corresponding bit of the bitboard for the square
 func (b *Bitboard) PopSquare(s Square) Bitboard {
-	*b = *b &^ s.Bitboard()
+	*b = *b &^ s.Bb()
 	return *b
+}
+
+// Has tests if a square (bit) is set
+func (b Bitboard) Has(s Square) bool {
+	return b & sqBb[s] != 0
 }
 
 // ShiftBitboard shifting all bits of a bitboard in the given direction by 1 square
@@ -91,7 +96,7 @@ func ShiftBitboard(b Bitboard, d Direction) Bitboard {
 	return b
 }
 
-// GetMovesOnRank returns a Bitboard for all possible horizontal moves
+// GetMovesOnRank returns a Bb for all possible horizontal moves
 // on the rank of the square with the rank content (blocking pieces)
 // determined from the given pieces bitboard.
 func GetMovesOnRank(sq Square, content Bitboard) Bitboard {
@@ -105,7 +110,7 @@ func GetMovesOnRank(sq Square, content Bitboard) Bitboard {
 	return movesRank[sq][contentIdx&255]
 }
 
-// GetMovesOnFileRotated Bitboard for all possible horizontal moves on the
+// GetMovesOnFileRotated Bb for all possible horizontal moves on the
 // rank of the square with the rank content (blocking pieces) determined
 // from the given L90 rotated bitboard.
 func GetMovesOnFileRotated(sq Square, rotated Bitboard) Bitboard {
@@ -117,7 +122,7 @@ func GetMovesOnFileRotated(sq Square, rotated Bitboard) Bitboard {
 	return movesFile[sq][contentIdx&255]
 }
 
-// GetMovesOnFile Bitboard for all possible horizontal moves on the rank of
+// GetMovesOnFile Bb for all possible horizontal moves on the rank of
 // the square with the rank content (blocking pieces) determined from the
 // given bitboard (not rotated - use GetMovesOnFileRotated for already rotated
 // bitboards)
@@ -128,7 +133,7 @@ func GetMovesOnFile(sq Square, content Bitboard) Bitboard {
 	return GetMovesOnFileRotated(sq, RotateL90(content))
 }
 
-// GetMovesDiagUpRotated  Bitboard for all possible diagonal up moves of
+// GetMovesDiagUpRotated  Bb for all possible diagonal up moves of
 // the square with the content (blocking pieces) determined from the
 // given R45 rotated bitboard.
 func GetMovesDiagUpRotated(sq Square, rotated Bitboard) Bitboard {
@@ -142,7 +147,7 @@ func GetMovesDiagUpRotated(sq Square, rotated Bitboard) Bitboard {
 	return movesDiagUp[sq][contentMasked]
 }
 
-// GetMovesDiagUp Bitboard for all possible diagonal up moves of the square with
+// GetMovesDiagUp Bb for all possible diagonal up moves of the square with
 // the content (blocking pieces) determined from the given non rotated
 // bitboard.
 func GetMovesDiagUp(sq Square, content Bitboard) Bitboard {
@@ -152,7 +157,7 @@ func GetMovesDiagUp(sq Square, content Bitboard) Bitboard {
 	return GetMovesDiagUpRotated(sq, RotateR45(content))
 }
 
-// GetMovesDiagDownRotated Bitboard for all possible diagonal up moves of the square with
+// GetMovesDiagDownRotated Bb for all possible diagonal up moves of the square with
 // the content (blocking pieces) determined from the given L45 rotated
 // bitboard.
 func GetMovesDiagDownRotated(sq Square, rotated Bitboard) Bitboard {
@@ -165,7 +170,7 @@ func GetMovesDiagDownRotated(sq Square, rotated Bitboard) Bitboard {
 	return movesDiagDown[sq][contentMasked]
 }
 
-// GetMovesDiagDown Bitboard for all possible diagonal up moves of the square with
+// GetMovesDiagDown Bb for all possible diagonal up moves of the square with
 // the content (blocking pieces) determined from the given non rotated
 // bitboard.
 func GetMovesDiagDown(square Square, content Bitboard) Bitboard {
@@ -174,7 +179,7 @@ func GetMovesDiagDown(square Square, content Bitboard) Bitboard {
 	return GetMovesDiagDownRotated(square, RotateL45(content))
 }
 
-// Lsb returns the least significant bit of the 64-bit Bitboard.
+// Lsb returns the least significant bit of the 64-bit Bb.
 // This translates directly to the Square which is returned.
 // If the bitboard is empty SqNone will be returned.
 // Lsb() indexes from 0-63 - 0 being the the lsb and
@@ -183,7 +188,7 @@ func (b Bitboard) Lsb() Square {
 	return Square(bits.TrailingZeros64(uint64(b)))
 }
 
-// Msb returns the most significant bit of the 64-bit Bitboard.
+// Msb returns the most significant bit of the 64-bit Bb.
 // This translates directly to the Square which is returned.
 // If the bitboard is empty SqNone will be returned.
 // Msb() indexes from 0-63 - 63 being the the msb and
@@ -211,14 +216,14 @@ func (b Bitboard) String() string {
 	return fmt.Sprintf("%-0.64b", b)
 }
 
-// StringBoard returns a string representation of the Bitboard
+// StringBoard returns a string representation of the Bb
 // as a board off 8x8 squares
 func (b Bitboard) StringBoard() string {
 	var os strings.Builder
 	os.WriteString("+---+---+---+---+---+---+---+---+\n")
-	for r := Rank8 + 1; r != Rank1; r-- {
+	for r := Rank1; r <= Rank8; r++ {
 		for f := FileA; f <= FileH; f++ {
-			if (b & SquareOf(f, r-1).Bitboard()) > 0 {
+			if (b & SquareOf(f, Rank8-r).Bb()) > 0 {
 				os.WriteString("| X ")
 			} else {
 				os.WriteString("|   ")
@@ -269,19 +274,19 @@ func (sq Square) CenterDistance() int {
 	return centerDistance[sq]
 }
 
-// RotateR90 rotates a Bitboard by 90 degrees clockwise
+// RotateR90 rotates a Bb by 90 degrees clockwise
 func RotateR90(b Bitboard) Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return rotate(b, &rotateMapR90)
 }
 
-// RotateL90 rotates a Bitboard by 90 degrees counter clockwise
+// RotateL90 rotates a Bb by 90 degrees counter clockwise
 func RotateL90(b Bitboard) Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return rotate(b, &rotateMapL90)
 }
 
-// RotateR45 rotates a Bitboard by 45 degrees clockwise
+// RotateR45 rotates a Bb by 45 degrees clockwise
 // to get all upward diagonals in compact block of bits
 // This is used to create a mask to find moves for
 // quuen and bishop on the upward diagonal
@@ -290,7 +295,7 @@ func RotateR45(b Bitboard) Bitboard {
 	return rotate(b, &rotateMapR45)
 }
 
-// RotateL45 rotates a Bitboard by 45 degrees counter clockwise
+// RotateL45 rotates a Bb by 45 degrees counter clockwise
 // to get all downward diagonals in compact block of bits
 // This is used to create a mask to find moves for
 // queen and bishop on the downward diagonal
@@ -327,7 +332,7 @@ func RotateSquareL45(sq Square) Square {
 	return indexMapL45[sq]
 }
 
-// GetPseudoAttacks returns a Bitboard of possible attacks of a piece
+// GetPseudoAttacks returns a Bb of possible attacks of a piece
 // as if on an empty board
 func GetPseudoAttacks(pt PieceType, sq Square) Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
@@ -335,69 +340,69 @@ func GetPseudoAttacks(pt PieceType, sq Square) Bitboard {
 	return pseudoAttacks[pt][sq]
 }
 
-// GetPawnAttacks returns a Bitboard of possible attacks of a pawn
+// GetPawnAttacks returns a Bb of possible attacks of a pawn
 func GetPawnAttacks(c Color, sq Square) Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return pawnAttacks[c][sq]
 }
 
-// FilesWestMask returns a Bitboard of the files west of the square
+// FilesWestMask returns a Bb of the files west of the square
 func (sq Square) FilesWestMask() Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return filesWestMask[sq]
 }
 
-// FilesEastMask returns a Bitboard of the files east of the square
+// FilesEastMask returns a Bb of the files east of the square
 func (sq Square) FilesEastMask() Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return filesEastMask[sq]
 }
 
-// FileWestMask returns a Bitboard of the file west of the square
+// FileWestMask returns a Bb of the file west of the square
 func (sq Square) FileWestMask() Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return fileWestMask[sq]
 }
 
-// FileEastMask returns a Bitboard of the file east of the square
+// FileEastMask returns a Bb of the file east of the square
 func (sq Square) FileEastMask() Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return fileEastMask[sq]
 }
 
-// RanksNorthMask returns a Bitboard of the ranks north of the square
+// RanksNorthMask returns a Bb of the ranks north of the square
 func (sq Square) RanksNorthMask() Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return ranksNorthMask[sq]
 }
 
-// RanksSouthMask returns a Bitboard of the ranks south of the square
+// RanksSouthMask returns a Bb of the ranks south of the square
 func (sq Square) RanksSouthMask() Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return ranksSouthMask[sq]
 }
 
-// NeighbourFilesMask returns a Bitboard of the file east and west of the square
+// NeighbourFilesMask returns a Bb of the file east and west of the square
 func (sq Square) NeighbourFilesMask() Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return neighbourFilesMask[sq]
 }
 
-// Ray returns a Bitboard of squares outgoing from the
+// Ray returns a Bb of squares outgoing from the
 // square in direction of the orientation
 func (sq Square) Ray(o Orientation) Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return rays[o][sq]
 }
 
-// Intermediate returns a Bitboard of squares between
+// Intermediate returns a Bb of squares between
 // the given two squares
 func Intermediate(sq1 Square, sq2 Square) Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return intermediate[sq1][sq2]
 }
 
-// Intermediate returns a Bitboard of squares between
+// Intermediate returns a Bb of squares between
 // the given two squares
 func (sq Square) Intermediate(sqTo Square) Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
@@ -413,21 +418,21 @@ func (sq Square) PassedPawnMask(c Color) Bitboard {
 	return passedPawnMask[c][sq]
 }
 
-// KingSideCastleMask returns a Bitboard with the kings side
+// KingSideCastleMask returns a Bb with the kings side
 // squares used in castling without the king square
 func KingSideCastleMask(c Color) Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return kingSideCastleMask[c]
 }
 
-// QueenSideCastMask returns a Bitboard with the queen side
+// QueenSideCastMask returns a Bb with the queen side
 // squares used in castling without the king square
 func QueenSideCastMask(c Color) Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
 	return queenSideCastleMask[c]
 }
 
-// SquaresBb returns a Bitboard of all squares of the given color.
+// SquaresBb returns a Bb of all squares of the given color.
 // E.g. can be used to find bishops of the same "color" for draw detection.
 func SquaresBb(c Color) Bitboard {
 	assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
@@ -500,7 +505,7 @@ const (
 // ////////////////////
 // Private
 
-// Rotates a Bitboard using a mapping array which holds the position of
+// Rotates a Bb using a mapping array which holds the position of
 // the square in the rotated board indexed by the square.
 // Basically the array tells bit x to move to bit y
 func rotate(b Bitboard, rotationMap *[SqLength]int) Bitboard {
@@ -516,9 +521,9 @@ func rotate(b Bitboard, rotationMap *[SqLength]int) Bitboard {
 // ////////////////////
 // Pre compute helpers
 
-// Returns a Bitboard of the square by shifting the
+// Returns a Bb of the square by shifting the
 // square onto an empty bitboards.
-// Usually one would use Bitboard() after initializing with InitBb
+// Usually one would use Bb() after initializing with InitBb
 func (sq Square) bitboard() Bitboard {
 	return Bitboard(uint64(1) << sq)
 }
@@ -676,10 +681,10 @@ var (
 	// (needs rotating and masking the index)
 	movesDiagDown [SqLength][256]Bitboard
 
-	// Internal Bitboard for pawn attacks for each color for each square
+	// Internal Bb for pawn attacks for each color for each square
 	pawnAttacks [2][SqLength]Bitboard
 
-	// Internal Bitboard for attacks for each piece for each square
+	// Internal Bb for attacks for each piece for each square
 	pseudoAttacks [PtLength][SqLength]Bitboard
 
 	// Internal pre computed bitboards

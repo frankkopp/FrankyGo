@@ -27,7 +27,7 @@ package types
 // PieceType is a set of constants for piece types in chess
 type PieceType int8
 
-// Orientation is a set of constants for moving squares within a Bitboard
+// Orientation is a set of constants for moving squares within a Bb
 //noinspection GoVarAndConstTypeMayBeOmitted
 const (
 	PtNone   PieceType = 0 //
@@ -51,7 +51,7 @@ func (pt PieceType) String() string {
 // array of string labels for piece types
 var pieceTypeToChar = string("-KPNBRQ")
 
-// String returns a single char string representation of a piece type
+// Char returns a single char string representation of a piece type
 func (pt PieceType) Char() string {
 	return string(pieceTypeToChar[pt])
 }

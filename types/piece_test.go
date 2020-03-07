@@ -24,7 +24,11 @@
 
 package types
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestMakePiece(t *testing.T) {
 	type args struct {
@@ -68,4 +72,14 @@ func TestPiece_ValueOf(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPieceFromChar(t *testing.T) {
+	assert.Equal(t, PieceNone, PieceFromChar(""))
+	assert.Equal(t, PieceNone, PieceFromChar("nnn"))
+	assert.Equal(t, PieceNone, PieceFromChar("-"))
+	assert.Equal(t, WhiteKing, PieceFromChar("K"))
+	assert.Equal(t, BlackKing, PieceFromChar("k"))
+	assert.Equal(t, WhiteKnight, PieceFromChar("N"))
+	assert.Equal(t, BlackKnight, PieceFromChar("n"))
 }

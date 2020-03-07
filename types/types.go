@@ -63,5 +63,8 @@ func Init() {
 	// bitboards
 	initBb()
 
+	// pos values
+	initPosValues()
+
 	initialized = true
 }

@@ -29,7 +29,7 @@ import "fmt"
 // Orientation is a set of constants for directions from a squares
 type Orientation uint8
 
-// Orientation is a set of constants for moving squares within a Bitboard
+// Orientation is a set of constants for moving squares within a Bb
 //noinspection GoVarAndConstTypeMayBeOmitted
 const (
 	NW Orientation = 0

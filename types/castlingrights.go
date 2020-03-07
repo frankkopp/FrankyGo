@@ -24,6 +24,10 @@
 
 package types
 
+import (
+	"strings"
+)
+
 // CastlingRights encodes the castling state e.g. available castling
 // and defines functions to change this state
 type CastlingRights uint8
@@ -60,4 +64,26 @@ func (lhs *CastlingRights) Remove(rhs CastlingRights) CastlingRights {
 func (lhs *CastlingRights) Add(rhs CastlingRights) CastlingRights {
 	*lhs = *lhs | rhs
 	return *lhs
+}
+
+// String returns a string representation for the castling right instance
+// which can be used directly in a fen (e.g. "KQkq")
+func (c CastlingRights) String() string {
+	if c == CastlingNone {
+		return "-"
+	}
+	var os strings.Builder
+	if c.Has(CastlingWhiteOO) {
+		os.WriteString("K")
+	}
+	if c.Has(CastlingWhiteOOO) {
+		os.WriteString("Q")
+	}
+	if c.Has(CastlingBlackOO) {
+		os.WriteString("k")
+	}
+	if c.Has(CastlingBlackOOO) {
+		os.WriteString("q")
+	}
+	return os.String()
 }

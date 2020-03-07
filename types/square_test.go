@@ -24,7 +24,11 @@
 
 package types
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestSquareType(t *testing.T) {
 	tests := []struct {
@@ -136,4 +140,12 @@ func TestSquareDir(t *testing.T) {
 			t.Logf("Square To %s of %s is %s.", test.dir.String(), test.square.String(), got.String())
 		}
 	}
+}
+
+func TestMakeSquare(t *testing.T) {
+	assert.Equal(t, SqA1, MakeSquare("a1"))
+	assert.Equal(t, SqH8, MakeSquare("h8"))
+	assert.Equal(t, SqNone, MakeSquare("i1"))
+	assert.Equal(t, SqNone, MakeSquare("a9"))
+	assert.Equal(t, SqNone, MakeSquare("aa"))
 }

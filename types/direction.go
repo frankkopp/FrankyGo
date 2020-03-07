@@ -26,10 +26,10 @@ package types
 
 import "fmt"
 
-// Direction is a set of constants for moving squares within a Bitboard
+// Direction is a set of constants for moving squares within a Bb
 type Direction int8
 
-// Direction is a set of constants for moving squares within a Bitboard
+// Direction is a set of constants for moving squares within a Bb
 //noinspection GoVarAndConstTypeMayBeOmitted
 const (
 	North     Direction = 8
