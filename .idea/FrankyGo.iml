@@ -5,6 +5,8 @@
     <option name="urls">
       <list>
         <option value="file://$MODULE_DIR$/../.." />
+        <option value="file://$MODULE_DIR$/../../../pkg/mod/golang.org" />
+        <option value="file://$MODULE_DIR$/../../../pkg/mod/github.com" />
       </list>
     </option>
   </component>

@@ -65,3 +65,10 @@ var dir = [2]int{1,-1}
 func (c Color) MoveDirection() int {
 	return dir[c]
 }
+
+var promRank = [2]Rank{Rank8, Rank1}
+
+// PromotionRank returns the rank on which the given color promotes
+func (c Color) PromotionRank() Rank {
+	return promRank[c]
+}

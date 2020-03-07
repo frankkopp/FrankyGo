@@ -22,19 +22,4 @@
  * SOFTWARE.
  */
 
-package assert
-
-import (
-	"fmt"
-)
-
-// DEBUG if this is set to "true" asserts are evaluated
-const DEBUG = false
-
-// Assert checks if DEBUG is set and then tests bool. Throws
-// panic with message if bool is false
-func Assert(test bool, msg string, a ...interface{}) {
-	if DEBUG && !test {
-		panic(fmt.Sprintf(msg, a))
-	}
-}
+package search

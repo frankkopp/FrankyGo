@@ -68,7 +68,7 @@ func (b *Bitboard) PopSquare(s Square) Bitboard {
 
 // Has tests if a square (bit) is set
 func (b Bitboard) Has(s Square) bool {
-	return b & sqBb[s] != 0
+	return b&sqBb[s] != 0
 }
 
 // ShiftBitboard shifting all bits of a bitboard in the given direction by 1 square
@@ -500,6 +500,10 @@ const (
 	DiagDownC1 Bitboard = (DiagDownD1 >> 1) & FileHMask
 	DiagDownB1 Bitboard = (DiagDownC1 >> 1) & FileHMask
 	DiagDownA1 Bitboard = (DiagDownB1 >> 1) & FileHMask
+
+	CastlingMask Bitboard = (BbOne << SqE1) | (BbOne << SqA1) |
+		(BbOne << SqH1) | (BbOne << SqE8) |
+		(BbOne << SqA8) | (BbOne << SqH8)
 )
 
 // ////////////////////
