@@ -26,6 +26,12 @@
 // functionality we need for the chess engine.
 package types
 
+import (
+	"time"
+
+	"github.com/frankkopp/FrankyGo/util"
+)
+
 // MilliSec used for time value in milli sec
 // Could be large therefore 64-bit
 type MilliSec uint64
@@ -56,6 +62,7 @@ var initialized = false
 // Init initializes pre computed data structures e.g. bitboards, etc.
 // Keeps an initialized flag To avoid multiple executions.
 func Init() {
+	defer util.TimeTrack(time.Now(), "Init")
 	if initialized {
 		return
 	}

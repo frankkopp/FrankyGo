@@ -24,6 +24,13 @@
 
 package util
 
+import (
+	"time"
+
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
+)
+
 // Abs - non branching Abs function for determine the absolute value of an int64
 func Abs(n int) int {
 	y := n >> 63
@@ -68,3 +75,10 @@ func Max64(x, y int64) int64 {
 	return y
 }
 
+// TimeTrack is convenient way to measure timings of function.
+// Usage: defer util.TimeTrack(time.Now(), "some text")
+func TimeTrack(start time.Time, name string) {
+	elapsed := time.Since(start)
+	_, _ = out.Printf("%s took %d ns\n", name, elapsed.Nanoseconds())
+}
+var out = message.NewPrinter(language.German)

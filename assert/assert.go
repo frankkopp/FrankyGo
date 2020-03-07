@@ -29,7 +29,7 @@ import (
 )
 
 // DEBUG if this is set to "true" asserts are evaluated
-const DEBUG = false
+const DEBUG = true
 
 // Assert checks if DEBUG is set and then tests bool. Throws
 // panic with message if bool is false

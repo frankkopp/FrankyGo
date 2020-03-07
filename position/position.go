@@ -158,7 +158,8 @@ func (p *Position) DoMove(m Move) {
 	fromPt := fromPc.TypeOf()
 	myColor := fromPc.ColorOf()
 	if assert.DEBUG {
-		assert.Assert(myColor == p.nextPlayer, "Position DoMove: Piece to move does not belong to next player %s", fromPc.String())
+		assert.Assert(myColor == p.nextPlayer,
+			"Position DoMove: Piece to move does not belong to next player %s", fromPc.String())
 	}
 	toSq := m.To()
 	targetPc := p.board[toSq]
@@ -361,18 +362,12 @@ func (p *Position) String() string {
 	os.WriteString("\n")
 	os.WriteString(p.StringBoard())
 	os.WriteString("\n")
-	os.WriteString(fmt.Sprintf("Next Player    : %s", p.nextPlayer.String()))
-	os.WriteString("\n")
-	os.WriteString(fmt.Sprintf("Game Phase     : %d", p.gamePhase))
-	os.WriteString("\n")
-	os.WriteString(fmt.Sprintf("Material White : %d", p.material[White]))
-	os.WriteString("\n")
-	os.WriteString(fmt.Sprintf("Material Black : %d", p.material[Black]))
-	os.WriteString("\n")
-	os.WriteString(fmt.Sprintf("Pos Value White: %d/%d", p.psqMidValue[White], p.psqEndValue[White]))
-	os.WriteString("\n")
-	os.WriteString(fmt.Sprintf("Pos Value Black: %d/%d", p.psqMidValue[Black], p.psqEndValue[Black]))
-	os.WriteString("\n")
+	os.WriteString(fmt.Sprintf("Next Player    : %s\n", p.nextPlayer.String()))
+	os.WriteString(fmt.Sprintf("Game Phase     : %d\n", p.gamePhase))
+	os.WriteString(fmt.Sprintf("Material White : %d\n", p.material[White]))
+	os.WriteString(fmt.Sprintf("Material Black : %d\n", p.material[Black]))
+	os.WriteString(fmt.Sprintf("Pos Value White: %d/%d\n", p.psqMidValue[White], p.psqEndValue[White]))
+	os.WriteString(fmt.Sprintf("Pos Value Black: %d/%d\n", p.psqMidValue[Black], p.psqEndValue[Black]))
 	return os.String()
 }
 
