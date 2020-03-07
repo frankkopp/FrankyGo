@@ -41,13 +41,15 @@ const (
 
 // CreateMove creates a move
 func CreateMove(from Square, to Square, t MoveType, promType PieceType) Move {
-	assert.Assert(from.IsValid(), "Invalid From square")
-	assert.Assert(to.IsValid(), "Invalid To square")
-	assert.Assert(t.IsValid(), "Invalid MoveType")
 	if promType < Knight {
 		promType = Knight
 	}
-	assert.Assert(promType.IsValid(), "Invalid promotion PieceType")
+	if assert.DEBUG {
+		assert.Assert(from.IsValid(), "Invalid From square")
+		assert.Assert(to.IsValid(), "Invalid To square")
+		assert.Assert(t.IsValid(), "Invalid MoveType")
+		assert.Assert(promType.IsValid(), "Invalid promotion PieceType")
+	}
 	// promType will be reduced to 2 bits (4 values) Knight, Bishop, Rook, Queen
 	// therefore we subtract the Knight value from the promType to get
 	// value between 0 and 3 (0b00 - 0b11)
@@ -84,12 +86,14 @@ func (m Move) MoveOf() Move {
 
 // ValueOf returns the sort value for the move used in the move generator
 func (m Move) ValueOf() Value {
-	return Value((m & valueMask) >> valueShift) + ValueNA
+	return Value((m&valueMask)>>valueShift) + ValueNA
 }
 
 // SetValue encodes the given value into the high 16-bit of the move
 func (m *Move) SetValue(v Value) Move {
-	assert.Assert(v == ValueNA || v.IsValid(), "Invalid Value value.")
+	if assert.DEBUG {
+		assert.Assert(v == ValueNA || v.IsValid(), "Invalid Value value.")
+	}
 	// can't store a value on MoveNone
 	if *m == MoveNone {
 		return *m
@@ -97,7 +101,7 @@ func (m *Move) SetValue(v Value) Move {
 	// when saving a value to a move we shift value to a positive integer
 	// (0-VALUE_NONE) and encode it into the move. For retrieving we then shift
 	// the value back to a range from VALUE_NONE to VALUE_INF
-	*m = *m & moveMask | Move(v - ValueNA) << valueShift
+	*m = *m&moveMask | Move(v-ValueNA)<<valueShift
 	return *m
 }
 
@@ -107,7 +111,7 @@ func (m Move) IsValid() bool {
 	return m != MoveNone &&
 		m.From().IsValid() &&
 		m.To().IsValid() &&
-		m.PromotionType().IsValid()	&&
+		m.PromotionType().IsValid() &&
 		m.MoveType().IsValid() &&
 		(m.ValueOf() == ValueNA || m.ValueOf().IsValid())
 }

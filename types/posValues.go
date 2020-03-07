@@ -31,21 +31,21 @@ import (
 // PosMidValue returns the pre computed positional value
 // for the piece on the given square in mid game
 func PosMidValue(p Piece, sq Square) int {
-	assert.Assert(initialized, "Pos values have not been initialized. Please call types.Init() first.")
+	if assert.DEBUG { assert.Assert(initialized, "Pos values have not been initialized. Please call types.Init() first.") }
 	return posMidValue[p][sq]
 }
 
 // PosEndValue returns the pre computed positional value
 // for the piece on the given square in end game
 func PosEndValue(p Piece, sq Square) int {
-	assert.Assert(initialized, "Pos values have not been initialized. Please call types.Init() first.")
+	if assert.DEBUG { assert.Assert(initialized, "Pos values have not been initialized. Please call types.Init() first.") }
 	return posEndValue[p][sq]
 }
 
 // PosValue returns the pre computed positional value
 // for the piece on the given square and given game phase
 func PosValue(p Piece, sq Square, gp int) int {
-	assert.Assert(initialized, "Pos values have not been initialized. Please call types.Init() first.")
+	if assert.DEBUG { assert.Assert(initialized, "Pos values have not been initialized. Please call types.Init() first.") }
 	return posValue[p][sq][gp]
 }
 

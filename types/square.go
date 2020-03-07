@@ -121,7 +121,9 @@ func (sq Square) RankOf() Rank {
 // MakeSquare returns a square based on the string given or SqNone if
 // no valid square could be read from the string
 func MakeSquare(s string) Square {
-	assert.Assert(len(s)==2, "square string is not 2 characters long")
+	if assert.DEBUG {
+		assert.Assert(len(s) == 2, "square string is not 2 characters long")
+	}
 	file := File(s[0] - 'a')
 	rank := Rank(s[1] - '1')
 	if !file.IsValid() || !rank.IsValid() {

@@ -138,7 +138,7 @@ func Test_TimingDoUndo(t *testing.T) {
 	out := message.NewPrinter(language.German)
 	Init()
 	const rounds = 5
-	const iterations uint64 = 5_000_000
+	const iterations uint64 = 10_000_000
 
 	// prepare moves
 	e2e4 := CreateMove(SqE2, SqE4, Normal, PtNone)
