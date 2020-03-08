@@ -223,6 +223,12 @@ func (b *Bitboard) PopLsb() Square {
 	return lsb
 }
 
+// PopCount returns the number of one bits ("population count") in b.
+// This equals the number of squares set in a Bitboard
+func (b Bitboard) PopCount() int {
+	return bits.OnesCount64(uint64(b))
+}
+
 // String returns a string representation of the 64 bits
 func (b Bitboard) String() string {
 	return fmt.Sprintf("%-0.64b", b)

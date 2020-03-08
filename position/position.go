@@ -734,3 +734,13 @@ func (p *Position) GamePhase() int {
 func (p *Position) GetEnPassantSquare() Square {
 	return p.enPassantSquare
 }
+
+// CastlingRights returns the castling rights instance of the position
+func (p *Position) CastlingRights() CastlingRights {
+	return p.castlingRights
+}
+
+// KingSquare return the current square of the king of color c
+func (p *Position) KingSquare(c Color) Square {
+	return p.kingSquare[c]
+}
