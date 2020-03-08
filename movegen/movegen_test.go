@@ -27,6 +27,7 @@ package movegen
 import (
 	"log"
 	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/frankkopp/FrankyGo/position"
@@ -45,5 +46,6 @@ func Test_movegen_generatePawnMoves(t *testing.T) {
 	pos := position.NewFen("1kr3nr/pp1pP1P1/2p1p3/3P1p2/1n1bP3/2P5/PP3PPP/RNBQKBNR w KQ -")
 	moves := MoveList{}
 	mg.generatePawnMoves(&pos, GenAll, &moves)
+	sort.Stable(&moves)
 	log.Printf("Moves: %s", moves.String())
 }

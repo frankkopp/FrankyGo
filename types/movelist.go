@@ -66,6 +66,12 @@ func (ml MoveList) StringUci() string {
 	return os.String()
 }
 
+// Less sorts elements in ascending order (so not less but more)
+func (ml *MoveList) Less(i, j int) bool {
+	return i < j
+}
 
-
-
+// Swap swaps the elements with indexes i and j.
+func (ml *MoveList) Swap(i, j int) {
+	ml.Swap(i, j)
+}
