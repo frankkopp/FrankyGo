@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Andrew J. Gillis (original deque)
+ * Copyright (c) 2018 Andrew J. Gillis (original deque - also MIT license)
  * Copyright (c) 2018-2020 Frank Kopp
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -153,6 +153,30 @@ func (ml *MoveList) At(i int) Move {
 	return ml.buf[(ml.head+i)&(len(ml.buf)-1)]
 }
 
+// Set puts the element at index i in the queue. Set shares the same purpose
+// than At() but perform the opposite operation. The index i is the same
+// index defined by At(). If the index is invalid, the call panics.
+func (ml *MoveList) Set(i int, elem Move) {
+	if i < 0 || i >= ml.count {
+		panic("MoveList: Set() called with index out of range")
+	}
+	// bitwise modulus
+	ml.buf[(ml.head+i)&(len(ml.buf)-1)] = elem
+}
+
+// Copy takes the indices of two elements and copies the element at index i
+// into index j. Copy is a shortcut for q.Set(j) = q.At(i). The indices i and j
+// are the same indices defined by At(). If one of the indices is invalid, the
+// call panics.
+func (ml *MoveList) Copy(i int, j int) {
+	if i < 0 || i >= ml.count || j < 0 || j >= ml.count {
+		panic("MoveList: Copy() called with index out of range")
+	}
+	// bitwise modulus
+	ml.buf[(ml.head+j)&(len(ml.buf)-1)] = ml.buf[(ml.head+i)&(len(ml.buf)-1)]
+}
+
+
 // Clear removes all elements from the queue, but retains the current capacity.
 // This is useful when repeatedly reusing the queue at high frequency to avoid
 // GC during reuse. The queue will not be resized smaller as long as items are
@@ -230,16 +254,17 @@ func (ml *MoveList) SetMinCapacity(minCapacityExp uint) {
 	}
 }
 
-// Less sorts elements in ascending order (so not less but more)
+// Less for MoveList sorts elements in descending order (so not less but more)
 func (ml *MoveList) Less(i, j int) bool {
 	return ml.buf[(ml.head+i)&(len(ml.buf)-1)] > ml.buf[(ml.head+j)&(len(ml.buf)-1)]
 }
 
 // Swap swaps the elements with indexes i and j.
 func (ml *MoveList) Swap(i, j int) {
-	tmp := ml.buf[(ml.head+i)&(len(ml.buf)-1)]
-	ml.buf[(ml.head+i)&(len(ml.buf)-1)] = ml.buf[(ml.head+j)&(len(ml.buf)-1)]
-	ml.buf[(ml.head+j)&(len(ml.buf)-1)] = tmp
+	l := len(ml.buf) - 1
+	tmp := ml.buf[(ml.head+i)&l]
+	ml.buf[(ml.head+i)&l] = ml.buf[(ml.head+j)&l]
+	ml.buf[(ml.head+j)&l] = tmp
 }
 
 // String returns a string representation of a move list

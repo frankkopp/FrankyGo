@@ -425,6 +425,9 @@ func (p *Position) putPiece(piece Piece, square Square) {
 	p.zobristKey ^= zobristBase.pieces[piece][square]
 	// game phase
 	p.gamePhase += pieceType.GamePhaseValue()
+	if p.gamePhase > 24 {
+		p.gamePhase = 24
+	}
 	// material
 	p.material[color] += pieceType.ValueOf()
 	if pieceType > Pawn {
@@ -459,6 +462,9 @@ func (p *Position) removePiece(square Square) Piece {
 	p.zobristKey ^= zobristBase.pieces[removed][square]
 	// game phase
 	p.gamePhase -= pieceType.GamePhaseValue()
+	if p.gamePhase < 0 {
+		p.gamePhase = 0
+	}
 	// material
 	p.material[color] -= pieceType.ValueOf()
 	if pieceType > Pawn {

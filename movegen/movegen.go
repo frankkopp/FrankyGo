@@ -29,6 +29,8 @@
 package movegen
 
 import (
+	"sort"
+
 	"github.com/frankkopp/FrankyGo/assert"
 	"github.com/frankkopp/FrankyGo/movelist"
 	"github.com/frankkopp/FrankyGo/position"
@@ -102,11 +104,13 @@ func (mg *movegen) GeneratePseudoLegalMoves(position *position.Position, mode Ge
 	mg.generatePawnMoves(position, mode, &mg.pseudoLegalMoves)
 	mg.generateCastling(position, mode, &mg.pseudoLegalMoves)
 	mg.generateKingMoves(position, mode, &mg.pseudoLegalMoves)
-	// mg.generateMoves<GM>(position, mode, &mg.pseudoLegalMoves);
-	// stable_sort(pseudoLegalMoves.begin(), pseudoLegalMoves.end());
+	mg.generateMoves(position, mode, &mg.pseudoLegalMoves)
+	sort.Stable(&mg.pseudoLegalMoves)
 	// remove internal sort value
-	// std::transform(pseudoLegalMoves.begin(), pseudoLegalMoves.end(),
-	// 	pseudoLegalMoves.begin(), [](Move m) { return moveOf(m); });
+	l := mg.pseudoLegalMoves.Len()
+	for i := 0; i < l; i++ {
+		mg.pseudoLegalMoves.Set(i, mg.pseudoLegalMoves.At(i).MoveOf())
+	}
 	return &mg.pseudoLegalMoves
 }
 
@@ -164,7 +168,7 @@ func (mg *movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 			for tmpCaptures != 0 {
 				toSquare := tmpCaptures.PopLsb()
 				fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection())*North - dir)
-				// value is the delta of values from the two pieces involved
+				// value is the delta of values from the two pieces involved plus the positional value
 				value := position.GetPiece(toSquare).ValueOf() - position.GetPiece(fromSquare).ValueOf() +
 					PosValue(piece, toSquare, gamePhase)
 				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
@@ -220,7 +224,6 @@ func (mg *movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 			toSquare := tmpMovesDouble.PopLsb()
 			fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection()) * North).
 				To(Direction(nextPlayer.Flip().MoveDirection()) * North)
-			// value is the positional value of the piece at this game phase
 			value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
 			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 		}
@@ -229,7 +232,6 @@ func (mg *movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 		for tmpMoves != 0 {
 			toSquare := tmpMoves.PopLsb()
 			fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection()) * North)
-			// value is the positional value of the piece at this game phase
 			value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
 			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 		}
@@ -251,14 +253,14 @@ func (mg *movegen) generateCastling(position *position.Position, mode GenMode, m
 					assert.Assert(position.KingSquare(White) == SqE1, "MoveGen Castling: White King not on e1")
 					assert.Assert(position.GetPiece(SqH1) == WhiteRook, "MoveGen Castling: White Rook not on h1")
 				}
-				ml.PushBack(CreateMoveValue(SqE1, SqG1, Castling, PtNone, Value(8000)))
+				ml.PushBack(CreateMoveValue(SqE1, SqG1, Castling, PtNone, Value(-5000)))
 			}
 			if cr.Has(CastlingWhiteOOO) && Intermediate(SqE1, SqA1)&occupiedBB == 0 {
 				if assert.DEBUG {
 					assert.Assert(position.KingSquare(White) == SqE1, "MoveGen Castling: White King not on e1")
 					assert.Assert(position.GetPiece(SqA1) == WhiteRook, "MoveGen Castling: White Rook not on a1")
 				}
-				ml.PushBack(CreateMoveValue(SqE1, SqC1, Castling, PtNone, Value(8000)))
+				ml.PushBack(CreateMoveValue(SqE1, SqC1, Castling, PtNone, Value(-5000)))
 			}
 		} else { // black
 			if cr.Has(CastlingBlackOO) && Intermediate(SqE8, SqH8)&occupiedBB == 0 {
@@ -266,14 +268,14 @@ func (mg *movegen) generateCastling(position *position.Position, mode GenMode, m
 					assert.Assert(position.KingSquare(Black) == SqE8, "MoveGen Castling: Black King not on e8")
 					assert.Assert(position.GetPiece(SqH8) == BlackRook, "MoveGen Castling: Black Rook not on h8")
 				}
-				ml.PushBack(CreateMoveValue(SqE8, SqG8, Castling, PtNone, Value(8000)))
+				ml.PushBack(CreateMoveValue(SqE8, SqG8, Castling, PtNone, Value(-5000)))
 			}
 			if cr.Has(CastlingBlackOOO) && Intermediate(SqE8, SqA8)&occupiedBB == 0 {
 				if assert.DEBUG {
 					assert.Assert(position.KingSquare(Black) == SqE8, "MoveGen Castling: Black King not on e8")
 					assert.Assert(position.GetPiece(SqA8) == BlackRook, "MoveGen Castling: Black Rook not on a8")
 				}
-				ml.PushBack(CreateMoveValue(SqE8, SqC8, Castling, PtNone, Value(8000)))
+				ml.PushBack(CreateMoveValue(SqE8, SqC8, Castling, PtNone, Value(-5000)))
 			}
 		}
 	}
@@ -298,11 +300,8 @@ func (mg *movegen) generateKingMoves(position *position.Position, mode GenMode, 
 		captures := pseudoMoves & position.OccupiedBb(nextPlayer.Flip())
 		for captures != 0 {
 			toSquare := captures.PopLsb()
-			// value is the positional value of the piece at this game phase minus the
-			// value of the captured piece
 			value := position.GetPiece(toSquare).ValueOf() - position.GetPiece(fromSquare).ValueOf() +
 				PosValue(piece, toSquare, gamePhase)
-			// add the possible promotion moves to the move list and also add value of the promoted piece type
 			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 		}
 	}
@@ -312,11 +311,60 @@ func (mg *movegen) generateKingMoves(position *position.Position, mode GenMode, 
 		nonCaptures := pseudoMoves &^ position.OccupiedAll()
 		for nonCaptures != 0 {
 			toSquare := nonCaptures.PopLsb()
-			// value is the positional value of the piece at this game phase minus the
-			// value of the captured piece
 			value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
-			// add the possible promotion moves to the move list and also add value of the promoted piece type
 			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
+		}
+	}
+}
+
+func (mg *movegen) generateMoves(position *position.Position, mode GenMode, ml *movelist.MoveList) {
+	nextPlayer := position.NextPlayer()
+	gamePhase := position.GamePhase()
+	occupiedBb := position.OccupiedAll()
+
+	for pt := Knight; pt <= Queen; pt++ {
+		pieces := position.PiecesBb(nextPlayer, pt)
+		piece := MakePiece(nextPlayer, pt)
+
+		for pieces != 0 {
+			fromSquare := pieces.PopLsb()
+			pseudoMoves := GetPseudoAttacks(pt, fromSquare)
+
+			// captures
+			if mode&GenCap != 0 {
+				captures := pseudoMoves & position.OccupiedBb(nextPlayer.Flip())
+				for captures != 0 {
+					toSquare := captures.PopLsb()
+					if pt > Knight { // sliding pieces
+						if Intermediate(fromSquare, toSquare)&occupiedBb == 0 {
+							value := position.GetPiece(toSquare).ValueOf() - position.GetPiece(fromSquare).ValueOf() +
+								PosValue(piece, toSquare, gamePhase)
+							ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
+						}
+					} else { // king and knight cannot be blocked
+						value := position.GetPiece(toSquare).ValueOf() - position.GetPiece(fromSquare).ValueOf() +
+							PosValue(piece, toSquare, gamePhase)
+						ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
+					}
+				}
+			}
+
+			// non captures
+			if mode&GenNonCap != 0 {
+				nonCaptures := pseudoMoves &^ occupiedBb
+				for nonCaptures != 0 {
+					toSquare := nonCaptures.PopLsb()
+					if pt > Knight { // sliding pieces
+						if Intermediate(fromSquare, toSquare)&occupiedBb == 0 {
+							value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
+							ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
+						}
+					} else { // king and knight cannot be blocked
+						value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
+						ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
+					}
+				}
+			}
 		}
 	}
 }
