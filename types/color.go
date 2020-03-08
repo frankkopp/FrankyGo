@@ -59,16 +59,24 @@ func (c Color) String() string {
 }
 
 // Color direction factor
-var dir = [2]int{1,-1}
+var moveDirection = [2]int{1,-1}
 
 // MoveDirection returns positive 1 for White and negative 1 (-1) for Black
 func (c Color) MoveDirection() int {
-	return dir[c]
+	return moveDirection[c]
 }
 
-var promRank = [2]Rank{Rank8, Rank1}
+var promRankBb = [2]Bitboard{Rank8_Bb, Rank1_Bb}
 
-// PromotionRank returns the rank on which the given color promotes
-func (c Color) PromotionRank() Rank {
-	return promRank[c]
+// PromotionRankBb returns the rank on which the given color promotes
+func (c Color) PromotionRankBb() Bitboard {
+	return promRankBb[c]
+}
+
+var pawnDoubleRankBb = [2]Bitboard{Rank3_Bb, Rank6_Bb}
+
+// PawnDoubleRank returns the rank from which the given color
+// might make a second pawn push to achieve a pawn double move
+func (c Color) PawnDoubleRank() Bitboard {
+	return pawnDoubleRankBb[c]
 }

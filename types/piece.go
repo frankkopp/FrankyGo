@@ -84,7 +84,7 @@ func (p Piece) TypeOf() PieceType {
 
 // ValueOf returns a value for calculating game phase
 // by adding the number of certain piece type times this value
-func (p Piece) ValueOf() int {
+func (p Piece) ValueOf() Value {
 	return pieceTypeValue[p.TypeOf()]
 }
 

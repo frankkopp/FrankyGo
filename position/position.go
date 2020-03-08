@@ -82,11 +82,11 @@ type Position struct {
 	// Calculated by doMove/undoMove
 
 	// Material value will always be up to date
-	material        [ColorLength]int
-	materialNonPawn [ColorLength]int
+	material        [ColorLength]Value
+	materialNonPawn [ColorLength]Value
 	// Positional value will always be up to date
-	psqMidValue [ColorLength]int
-	psqEndValue [ColorLength]int
+	psqMidValue [ColorLength]Value
+	psqEndValue [ColorLength]Value
 	// Game phase value
 	gamePhase int
 
@@ -202,7 +202,7 @@ func (p *Position) DoMove(m Move) {
 	case Promotion:
 		if assert.DEBUG {
 			assert.Assert(fromPc == MakePiece(myColor, King), "Position DoMove: Move type promotion but From piece not king")
-			assert.Assert(toSq.RankOf() == myColor.PromotionRank(), "Position DoMove: Promotion move but wrong Rank")
+			assert.Assert(myColor.PromotionRankBb().Has(toSq), "Position DoMove: Promotion move but wrong Rank")
 		}
 		if targetPc != PieceNone { // capture
 			p.removePiece(toSq)
@@ -236,7 +236,7 @@ func (p *Position) DoMove(m Move) {
 				assert.Assert(fromSq == SqE1, "Position DoMove: Castling from square not correct")
 				assert.Assert(p.board[SqE1] != WhiteKing, "Position DoMove: SqE1 has no king for castling")
 				assert.Assert(p.board[SqH1] != WhiteRook, "Position DoMove: SqH1 has no rook for castling")
-				assert.Assert(p.getOccupied()&Intermediate(SqE1, SqH1) == 0, "Position DoMove: Castling king side blocked")
+				assert.Assert(p.OccupiedAll()&Intermediate(SqE1, SqH1) == 0, "Position DoMove: Castling king side blocked")
 			}
 			p.movePiece(fromSq, toSq)                                    // King
 			p.movePiece(SqH1, SqF1)                                      // Rook
@@ -249,7 +249,7 @@ func (p *Position) DoMove(m Move) {
 				assert.Assert(fromSq == SqE1, "Position DoMove: Castling from square not correct")
 				assert.Assert(p.board[SqE1] != WhiteKing, "Position DoMove: SqE1 has no king for castling")
 				assert.Assert(p.board[SqA1] != WhiteRook, "Position DoMove: SqA1 has no rook for castling")
-				assert.Assert(p.getOccupied()&Intermediate(SqE1, SqA1) == 0, "Position DoMove: Castling queen side blocked")
+				assert.Assert(p.OccupiedAll()&Intermediate(SqE1, SqA1) == 0, "Position DoMove: Castling queen side blocked")
 			}
 			p.movePiece(fromSq, toSq)                                    // King
 			p.movePiece(SqA1, SqD1)                                      // Rook
@@ -262,7 +262,7 @@ func (p *Position) DoMove(m Move) {
 				assert.Assert(fromSq == SqE8, "Position DoMove: Castling from square not correct")
 				assert.Assert(p.board[SqE8] != BlackKing, "Position DoMove: SqE8 has no king for castling")
 				assert.Assert(p.board[SqH8] != BlackRook, "Position DoMove: SqH8 has no rook for castling")
-				assert.Assert(p.getOccupied()&Intermediate(SqE8, SqH8) == 0, "Position DoMove: Castling king side blocked")
+				assert.Assert(p.OccupiedAll()&Intermediate(SqE8, SqH8) == 0, "Position DoMove: Castling king side blocked")
 			}
 			p.movePiece(fromSq, toSq)                                    // King
 			p.movePiece(SqH8, SqF8)                                      // Rook
@@ -275,7 +275,7 @@ func (p *Position) DoMove(m Move) {
 				assert.Assert(fromSq == SqE8, "Position DoMove: Castling from square not correct")
 				assert.Assert(p.board[SqE8] != BlackKing, "Position DoMove: SqE8 has no king for castling")
 				assert.Assert(p.board[SqA8] != BlackRook, "Position DoMove: SqA8 has no rook for castling")
-				assert.Assert(p.getOccupied()&Intermediate(SqE8, SqA8) == 0, "Position DoMove: Castling queen side blocked")
+				assert.Assert(p.OccupiedAll()&Intermediate(SqE8, SqA8) == 0, "Position DoMove: Castling queen side blocked")
 			}
 			p.movePiece(fromSq, toSq)                                    // King
 			p.movePiece(SqA8, SqD8)                                      // Rook
@@ -515,10 +515,6 @@ func (p *Position) clearEnPassant() {
 	}
 }
 
-func (p *Position) getOccupied() Bitboard {
-	return p.occupiedBb[White] | p.occupiedBb[Black]
-}
-
 func (p *Position) fen() string {
 	var fen strings.Builder
 	// pieces
@@ -695,4 +691,46 @@ func (p *Position) setupBoard(fen string) error {
 
 	// return without error
 	return nil
+}
+
+// //////////////////////////////////////////////////////
+// // Getter and Setter functions
+// //////////////////////////////////////////////////////
+
+// NextPlayer returns the next player as Color for the position
+func (p *Position) NextPlayer() Color {
+	return p.nextPlayer
+}
+
+// GetPiece returns the piece on the given square. Empty
+// squares are initialized with PieceNone and return the same.
+func (p * Position) GetPiece(sq Square) Piece {
+	return p.board[sq]
+}
+
+// PiecesBb return the Bitboard for the given piece type of the given color
+func (p *Position) PiecesBb(c Color, pt PieceType) Bitboard {
+	return p.piecesBb[c][pt]
+}
+
+// OccupiedAll returns a Bitboard of all pieces currently on the board
+func (p *Position) OccupiedAll() Bitboard {
+	return p.occupiedBb[White] | p.occupiedBb[Black]
+}
+
+// OccupiedBb returns a Bitboard f all pieces of Color c
+func (p *Position) OccupiedBb(c Color) Bitboard {
+	return p.occupiedBb[c]
+}
+
+// GamePhase returns the current game phase value of the position.
+// GamePhase is 24 at the start of the game (24 is also the max).
+// End games when no officers are left have a GamePhase value of 0.
+func (p *Position) GamePhase() int {
+	return p.gamePhase
+}
+
+// GetEnPassantSquare returns the en passant square or SqNone if not set
+func (p *Position) GetEnPassantSquare() Square {
+	return p.enPassantSquare
 }

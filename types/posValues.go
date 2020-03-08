@@ -30,21 +30,21 @@ import (
 
 // PosMidValue returns the pre computed positional value
 // for the piece on the given square in mid game
-func PosMidValue(p Piece, sq Square) int {
+func PosMidValue(p Piece, sq Square) Value {
 	if assert.DEBUG { assert.Assert(initialized, "Pos values have not been initialized. Please call types.Init() first.") }
 	return posMidValue[p][sq]
 }
 
 // PosEndValue returns the pre computed positional value
 // for the piece on the given square in end game
-func PosEndValue(p Piece, sq Square) int {
+func PosEndValue(p Piece, sq Square) Value {
 	if assert.DEBUG { assert.Assert(initialized, "Pos values have not been initialized. Please call types.Init() first.") }
 	return posEndValue[p][sq]
 }
 
 // PosValue returns the pre computed positional value
 // for the piece on the given square and given game phase
-func PosValue(p Piece, sq Square, gp int) int {
+func PosValue(p Piece, sq Square, gp int) Value {
 	if assert.DEBUG { assert.Assert(initialized, "Pos values have not been initialized. Please call types.Init() first.") }
 	return posValue[p][sq][gp]
 }
@@ -112,12 +112,12 @@ func initPosValues() {
 	}
 }
 
-func calcPosValueBlack(sq Square, gamePhase int, posMidTable *[SqLength]int, posEndTable *[SqLength]int) int {
-	return (gamePhase*posMidTable[sq] + (1-gamePhase*posEndTable[sq])) / GamePhaseMax
+func calcPosValueBlack(sq Square, gamePhase int, posMidTable *[SqLength]Value, posEndTable *[SqLength]Value) Value {
+	return (Value(gamePhase)*posMidTable[sq] + (Value(1-gamePhase)*posEndTable[sq])) / GamePhaseMax
 }
 
-func calcPosValueWhite(sq Square, gamePhase int, posMidTable *[SqLength]int, posEndTable *[SqLength]int) int {
-	return (gamePhase*posMidTable[63-sq] + (GamePhaseMax-gamePhase)*posEndTable[63-sq]) / GamePhaseMax
+func calcPosValueWhite(sq Square, gamePhase int, posMidTable *[SqLength]Value, posEndTable *[SqLength]Value) Value {
+	return (Value(gamePhase)*posMidTable[63-sq] + (Value(GamePhaseMax-gamePhase))*posEndTable[63-sq]) / GamePhaseMax
 }
 
 const (
@@ -129,14 +129,14 @@ const (
 )
 
 var (
-	posMidValue = [PieceLength][SqLength]int{}
-	posEndValue = [PieceLength][SqLength]int{}
-	posValue    = [PieceLength][SqLength][GamePhaseMax + 1]int{}
+	posMidValue = [PieceLength][SqLength]Value{}
+	posEndValue = [PieceLength][SqLength]Value{}
+	posValue    = [PieceLength][SqLength][GamePhaseMax + 1]Value{}
 
 	// positional values for pieces
 	// @formatter:off
 	// PAWN Tables
-	pawnsMidGame = [SqLength]int {
+		pawnsMidGame = [SqLength]Value {
 	0,  0,  0,  0,  0,  0,  0,  0,
 	0,  0,  0,  0,  0,  0,  0,  0,
 	0,  5,  5,  5,  5,  5,  5,  0,
@@ -146,7 +146,7 @@ var (
 	5, 10, 10,-30,-30, 10, 10,  5,
 	0,  0,  0,  0,  0,  0,  0,  0}
 
-	pawnsEndGame = [SqLength]int {
+	pawnsEndGame = [SqLength]Value {
 	0,  0,  0,  0,  0,  0,  0,  0,
 	90, 90, 90, 90, 90, 90, 90, 90,
 	40, 50, 50, 60, 60, 50, 50, 40,
@@ -157,7 +157,7 @@ var (
 	0,  0,  0,  0,  0,  0,  0,  0}
 
 	// KNIGHT Tables
-	knightMidGame = [SqLength]int {
+	knightMidGame = [SqLength]Value {
 	-50,-40,-30,-30,-30,-30,-40,-50,
 	-40,-20,  0,  0,  0,  0,-20,-40,
 	-30,  0, 10, 15, 15, 10,  0,-30,
@@ -167,7 +167,7 @@ var (
 	-40,-20,  0,  5,  5,  0,-20,-40,
 	-50,-40,-20,-30,-30,-20,-40,-50}
 
-	knightEndGame = [SqLength]int {
+	knightEndGame = [SqLength]Value {
 	-50,-40,-30,-30,-30,-30,-40,-50,
 	-40,-20,  0,  0,  0,  0,-20,-40,
 	-30,  0, 10, 15, 15, 10,  0,-30,
@@ -178,7 +178,7 @@ var (
 	-50,-40,-20,-30,-30,-20,-40,-50}
 
 	// BISHOP Tables
-	bishopMidGame = [SqLength]int {
+	bishopMidGame = [SqLength]Value {
 	-20,-10,-10,-10,-10,-10,-10,-20,
 	-10,  0,  0,  0,  0,  0,  0,-10,
 	-10,  0,  5, 10, 10,  5,  0,-10,
@@ -188,7 +188,7 @@ var (
 	-10,  5,  0,  0,  0,  0,  5,-10,
 	-20,-10,-40,-10,-10,-40,-10,-20}
 
-	bishopEndGame = [SqLength]int {
+	bishopEndGame = [SqLength]Value {
 	-20,-10,-10,-10,-10,-10,-10,-20,
 	-10,  0,  0,  0,  0,  0,  0,-10,
 	-10,  0,  5,  5,  5,  5,  0,-10,
@@ -199,7 +199,7 @@ var (
 	-20,-10,-10,-10,-10,-10,-10,-20}
 
 	// ROOK Tables
-	rookMidGame  = [SqLength]int {
+	rookMidGame  = [SqLength]Value {
 	5,  5,  5,  5,  5,  5,  5,  5,
 	10, 10, 10, 10, 10, 10, 10, 10,
 	0,  0,  0,  0,  0,  0,  0,  0,
@@ -209,7 +209,7 @@ var (
 	0,  0,  0,  0,  0,  0,  0,  0,
 	-15,-10, 15, 15, 15, 15,-10,-15}
 
-	rookEndGame  = [SqLength]int {
+	rookEndGame  = [SqLength]Value {
 	5,  5,  5,  5,  5,  5,  5,  5,
 	0,  0,  0,  0,  0,  0,  0,  0,
 	0,  0,  0,  0,  0,  0,  0,  0,
@@ -220,7 +220,7 @@ var (
 	0,  0,  0,  0,  0,  0,  0,  0}
 
 	// Queen Tables
-	queenMidGame = [SqLength]int {
+	queenMidGame = [SqLength]Value {
 	-20,-10,-10, -5, -5,-10,-10,-20,
 	-10,  0,  0,  0,  0,  0,  0,-10,
 	-10,  0,  0,  0,  0,  0,  0,-10,
@@ -230,7 +230,7 @@ var (
 	-10,  0,  5,  5,  5,  5,  0,-10,
 	-20,-10,-10, -5, -5,-10,-10,-20}
 
-	queenEndGame = [SqLength]int {
+	queenEndGame = [SqLength]Value {
 	-20,-10,-10, -5, -5,-10,-10,-20,
 	-10,  0,  0,  0,  0,  0,  0,-10,
 	-10,  0,  5,  5,  5,  5,  0,-10,
@@ -241,7 +241,7 @@ var (
 	-20,-10,-10, -5, -5,-10,-10,-20}
 
 	// King Tables
-	kingMidGame  = [SqLength]int {
+	kingMidGame  = [SqLength]Value {
 	-30,-40,-40,-50,-50,-40,-40,-30,
 	-30,-40,-40,-50,-50,-40,-40,-30,
 	-30,-40,-40,-50,-50,-40,-40,-30,
@@ -251,7 +251,7 @@ var (
 	0,  0,-20,-20,-20,-20,  0,  0,
 	20, 50,  0,-20,-20,  0, 50, 20}
 
-	kingEndGame  = [SqLength]int {
+	kingEndGame  = [SqLength]Value {
 	-50,-30,-30,-20,-20,-30,-30,-50,
 	-30,-20,-10,  0,  0,-10,-20,-30,
 	-30,-10, 20, 30, 30, 20,-10,-30,

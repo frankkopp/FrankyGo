@@ -46,6 +46,11 @@ func (r Rank) IsValid() bool {
 	return r < RankNone
 }
 
+// Bb returns a Bitboard of the given rank
+func (r Rank) Bb() Bitboard {
+	return rankBb[r]
+}
+
 const rankLabels string = "12345678"
 
 // String returns a string letter for the file (e.g. a - h)

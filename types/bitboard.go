@@ -729,6 +729,10 @@ var (
 	// Needs to be initialized with initBb()
 	sqDiagDownBb [SqLength]Bitboard
 
+	// Internal pre computed rank bitboard array.
+	// Needs to be initialized with initBb()
+	rankBb [8]Bitboard
+
 	// Internal pre computed index for quick square distance lookup
 	squareDistance [SqLength][SqLength]int
 
@@ -798,6 +802,7 @@ var (
 // Pre computes various bitboards to avoid runtime calculation
 func initBb() {
 	squareBitboardsPreCompute()
+	rankBbPreCompute()
 	castleMasksPreCompute()
 	squareDistancePreCompute()
 	movesRankPreCompute()
@@ -811,6 +816,12 @@ func initBb() {
 	maskPassedPawnsPreCompute()
 	squareColorsPreCompute()
 	centerDistancePreCompute()
+}
+
+func rankBbPreCompute() {
+	for i := Rank1; i <= Rank8; i++ {
+		rankBb[i] = Rank1_Bb << (8 * i)
+	}
 }
 
 func castleMasksPreCompute() {

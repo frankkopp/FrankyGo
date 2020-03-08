@@ -58,7 +58,7 @@ func TestPiece_ValueOf(t *testing.T) {
 	tests := []struct {
 		name string
 		p    Piece
-		want int
+		want Value
 	}{
 		{ "White King", WhiteKing, 2000},
 		{ "White King", BlackKing, 2000},

@@ -53,7 +53,31 @@ func CreateMove(from Square, to Square, t MoveType, promType PieceType) Move {
 	// promType will be reduced to 2 bits (4 values) Knight, Bishop, Rook, Queen
 	// therefore we subtract the Knight value from the promType to get
 	// value between 0 and 3 (0b00 - 0b11)
-	return Move(to) | Move(from)<<fromShift | Move(promType-Knight)<<promTypeShift | Move(t)<<typeShift
+	return Move(to) |
+		Move(from)<<fromShift |
+		Move(promType-Knight)<<promTypeShift |
+		Move(t)<<typeShift
+}
+
+// CreateMoveValue creates a move with a sort value
+func CreateMoveValue(from Square, to Square, t MoveType, promType PieceType, value Value) Move {
+	if promType < Knight {
+		promType = Knight
+	}
+	if assert.DEBUG {
+		assert.Assert(from.IsValid(), "Invalid From square")
+		assert.Assert(to.IsValid(), "Invalid To square")
+		assert.Assert(t.IsValid(), "Invalid MoveType")
+		assert.Assert(promType.IsValid(), "Invalid promotion PieceType")
+	}
+	// promType will be reduced to 2 bits (4 values) Knight, Bishop, Rook, Queen
+	// therefore we subtract the Knight value from the promType to get
+	// value between 0 and 3 (0b00 - 0b11)
+	return Move(value-ValueNA)<<valueShift |
+		Move(to) |
+		Move(from)<<fromShift |
+		Move(promType-Knight)<<promTypeShift |
+		Move(t)<<typeShift
 }
 
 // MoveType is the type of the move as defined in MoveType
@@ -118,8 +142,8 @@ func (m Move) IsValid() bool {
 
 // String string representation of a move which is UCI compatible
 func (m Move) String() string {
-	return fmt.Sprintf("Move: { %s type:%s prom:%s (%d) }",
-		m.StringUci(), m.MoveType().String(), m.PromotionType().Char(), m)
+	return fmt.Sprintf("Move: { %s type:%s prom:%s value:%d (%d) }",
+		m.StringUci(), m.MoveType().String(), m.PromotionType().Char(),m.ValueOf(), m)
 }
 
 // StringUci string representation of a move which is UCI compatible

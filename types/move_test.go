@@ -57,6 +57,34 @@ func TestCreateMove(t *testing.T) {
 	}
 }
 
+func TestCreateMoveValue(t *testing.T) {
+	type args struct {
+		from     Square
+		to       Square
+		t        MoveType
+		promType PieceType
+		value    Value
+	}
+	tests := []struct {
+		name string
+		args args
+		want Move
+	}{
+		{"e2e4", args{SqE2, SqE4, Normal, PtNone, Value(111)}, Move(990380828)},
+		{"e1g1 castling", args{SqE1, SqG1, Castling, PtNone, Value(222)}, Move(997703942)},
+		{"a2a1Q", args{SqA2, SqA1, Promotion, Queen,  Value(999)}, Move(1048605184)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := CreateMoveValue(tt.args.from, tt.args.to, tt.args.t, tt.args.promType, tt.args.value)
+			fmt.Printf("%s\n", got.StringBits())
+			if got != tt.want {
+				t.Errorf("CreateMove() = \n%v, want \n%v", got.StringBits(), tt.want.StringBits())
+			}
+		})
+	}
+}
+
 func TestMove_SetValue(t *testing.T) {
 	m := CreateMove(SqE2, SqE4, Normal, PtNone)
 	m.SetValue(999)
@@ -68,7 +96,7 @@ func TestMove_SetValue(t *testing.T) {
 }
 
 func Test_Str(t *testing.T) {
-	assert.Equal(t,"e2e4", CreateMove(SqE2, SqE4, Normal, PtNone).StringUci())
-	assert.Equal(t,"e7e5", CreateMove(SqE7, SqE5, Normal, PtNone).StringUci())
-	assert.Equal(t,"a2a1Q", CreateMove(SqA2, SqA1, Promotion, Queen).StringUci())
+	assert.Equal(t, "e2e4", CreateMove(SqE2, SqE4, Normal, PtNone).StringUci())
+	assert.Equal(t, "e7e5", CreateMove(SqE7, SqE5, Normal, PtNone).StringUci())
+	assert.Equal(t, "a2a1Q", CreateMove(SqA2, SqA1, Promotion, Queen).StringUci())
 }

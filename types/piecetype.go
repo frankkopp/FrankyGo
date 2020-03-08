@@ -66,11 +66,11 @@ func (pt PieceType) GamePhaseValue() int {
 }
 
 // array of string labels for piece types
-var pieceTypeValue = [PtLength]int{0, 2000, 100, 320, 330, 500, 900}
+var pieceTypeValue = [PtLength]Value{0, 2000, 100, 320, 330, 500, 900}
 
 // ValueOf returns a value for calculating game phase
 // by adding the number of certain piece type times this value
-func (pt PieceType) ValueOf() int {
+func (pt PieceType) ValueOf() Value {
 	return pieceTypeValue[pt]
 }
 

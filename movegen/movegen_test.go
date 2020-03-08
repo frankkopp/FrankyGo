@@ -22,19 +22,28 @@
  * SOFTWARE.
  */
 
-package types
+package movegen
 
 import (
+	"log"
+	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/frankkopp/FrankyGo/position"
+	. "github.com/frankkopp/FrankyGo/types"
 )
 
-func Test(t *testing.T) {
+func TestConstruction(t *testing.T) {
 	Init()
-	assert.Equal(t, Value(-30), PosMidValue(WhitePawn, SqE2))
-	assert.Equal(t, Value(10), PosEndValue(WhitePawn, SqE2))
-	assert.Equal(t, Value(-30), PosValue(WhitePawn, SqE2, 24))
-	assert.Equal(t, Value(10), PosValue(WhitePawn, SqE2, 0))
-	assert.Equal(t, Value(-10), PosValue(WhitePawn, SqE2, 12))
+	mg := New()
+	log.Printf("%s type of %s", mg.String(), reflect.TypeOf(mg))
+}
+
+func Test_movegen_generatePawnMoves(t *testing.T) {
+	Init()
+	mg := New()
+	pos := position.NewFen("1kr3nr/pp1pP1P1/2p1p3/3P1p2/1n1bP3/2P5/PP3PPP/RNBQKBNR w KQ -")
+	moves := MoveList{}
+	mg.generatePawnMoves(&pos, GenAll, &moves)
+	log.Printf("Moves: %s", moves.String())
 }

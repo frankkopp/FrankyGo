@@ -814,3 +814,11 @@ func TestSquare_CenterDistance(t *testing.T) {
 		})
 	}
 }
+
+func Test_rankBbPreCompute(t *testing.T) {
+	Init()
+	assert.Equal(t, Rank1_Bb, rankBb[Rank1])
+	assert.Equal(t, Rank2_Bb, rankBb[Rank2])
+	assert.Equal(t, Rank7_Bb, rankBb[Rank7])
+	assert.Equal(t, Rank8_Bb, rankBb[Rank8])
+}

@@ -44,3 +44,4 @@ const (
 func (v Value) IsValid() bool {
 	return v >= ValueMin && v <= ValueMax
 }
+
