@@ -128,7 +128,7 @@ func (mg *movegen) GeneratePseudoLegalMoves(position *position.Position, mode Ge
 func (mg *movegen) GenerateLegalMoves(position *position.Position, mode GenMode) *movearray.MoveArray {
 	mg.legalMoves.Clear()
 	mg.GeneratePseudoLegalMoves(position, mode)
-	mg.legalMoves = *mg.pseudoLegalMoves.FilterCopy(func(i int) bool {
+	mg.pseudoLegalMoves.FilterCopy(&mg.legalMoves, func(i int) bool {
 		return position.IsLegalMove(mg.pseudoLegalMoves.At(i))
 	})
 	return &mg.legalMoves

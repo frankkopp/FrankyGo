@@ -181,25 +181,32 @@ func Test_movegen_GenerateLegalMoves(t *testing.T) {
 
 	pos = position.NewFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -")
 	moves = mg.GenerateLegalMoves(&pos, GenAll)
-	assert.Equal(t, 40, moves.Len())
-	assert.Equal(t, "c3b4 d7f6 f3d2 b5c6 d7e5 f3e5 d7b6 e2d2 e1d2 e1g1 e1c1 d3d4 f3d4 d7c5 h1f1 a1d1 a1c1 b5c4 f3g5 h2h3 e2e3 a2a3 c3c4 h2h4 g2g4 a2a4 e1f1 g2g3 e2d1 b2b3 b5a6 b5a4 e2f1 h1g1 a1b1 e1d1 d7f8 f3h4 d7b8 f3g1", moves.StringUci())
+	assert.Equal(t, 38, moves.Len())
+	assert.Equal(t, "c3b4 d7f6 f3d2 b5c6 d7e5 f3e5 d7b6 e2d2 e1d2 e1c1 d3d4 f3d4 d7c5 h1f1 a1d1 a1c1 b5c4 " +
+		"f3g5 h2h3 e2e3 a2a3 c3c4 h2h4 g2g4 a2a4 g2g3 e2d1 b2b3 b5a6 b5a4 e2f1 h1g1 a1b1 e1d1 d7f8 f3h4 d7b8 f3g1",
+		moves.StringUci())
 	// l = mg.pseudoLegalMoves.Len()
 	// for i := 0; i < l; i++ {
 	// 	log.Printf("%d. %s\n", i+1, moves.At(i).String())
 	// }
 	moves.Clear()
 
-	// // 86 moves
-	// pos = position.NewFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
-	// moves = mg.GenerateLegalMoves(&pos, GenAll)
-	// assert.Equal(t, 86, moves.Len())
-	// moves.Clear()
-	//
-	// // 218 moves
-	// pos = position.NewFen("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - -")
-	// moves = mg.GenerateLegalMoves(&pos, GenAll)
-	// assert.Equal(t, 218, moves.Len())
-	// moves.Clear()
+	// 86 moves
+	pos = position.NewFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
+	moves = mg.GenerateLegalMoves(&pos, GenAll)
+	assert.Equal(t, 83, moves.Len())
+	assert.Equal(t, "c2b1Q a2b1Q c2b1N a2b1N f4g3 b2a3 f4e3 a8a3 d7e5 g6e5 b2e5 e6e5 c6e4 c4e4 c2b1R a2b1R " +
+		"c2b1B a2b1B e8c8 c2c1Q a2a1Q c2c1N a2a1N h8f8 a8d8 a8c8 e8d8 d7b6 g6e7 e6f7 e6e7 a8a7 a8a6 a8a5 a8a4 h7h6 " +
+		"d7f8 d7f6 d7c5 g6f8 e6g8 e6f6 e6d6 e6f5 e6d5 e6g4 e6h3 c6d6 c6b6 c6a6 c6d5 c6c5 c6b5 c6a4 c4a6 c4d5 c4c5 " +
+		"c4b5 c4b4 c4a4 c4b3 c4e2 c4f1 b2d4 b2c3 b2c1 b2a1 d7b8 g6h4 c4d4 c4d3 c4c3 h7h5 b7b5 h8g8 a8b8 b7b6 e8f7 " +
+		"f4f3 c2c1R a2a1R c2c1B a2a1B", moves.StringUci())
+	moves.Clear()
+
+	// 218 moves
+	pos = position.NewFen("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - -")
+	moves = mg.GenerateLegalMoves(&pos, GenAll)
+	assert.Equal(t, 218, moves.Len())
+	moves.Clear()
 }
 
 

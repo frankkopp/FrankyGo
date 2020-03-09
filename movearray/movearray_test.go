@@ -258,7 +258,8 @@ func TestMoveArray_FilterCopy(t *testing.T) {
 	assert.Equal(t, MaxMoves, ma.Cap())
 	assert.Equal(t, "e2e4 d7d5 e4d5 d8d5 b1c3", ma.StringUci())
 
-	ma2 := ma.FilterCopy(func(i int) bool {
+	ma2 := New(ma.Cap())
+	ma.FilterCopy(&ma2, func(i int) bool {
 		return ma.At(i) != e4d5
 	})
 
