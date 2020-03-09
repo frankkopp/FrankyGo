@@ -143,6 +143,19 @@ func (ma *MoveArray) Filter(f func (index int) bool) {
 	ma.data = b
 }
 
+// FilterCopy copies the MoveArray into a new MoveArray
+// without the filtered elements. AN element is filtered when
+// the given call to func will return false for the element.
+func (ma *MoveArray) FilterCopy(f func (index int) bool) *MoveArray {
+	newArray := New(cap(ma.data))
+	for i, x := range ma.data {
+		if f(i) {
+			newArray.data = append(newArray.data, x)
+		}
+	}
+	return &newArray
+}
+
 // ForEach simple range loop calling the given function on each element
 // in stored order
 func (ma *MoveArray) ForEach(f func (index int)) {

@@ -354,6 +354,60 @@ func (p *Position) UndoMove() {
 	p.zobristKey = p.history[p.historyCounter].zobristKey
 }
 
+// IsLegalMove test a move if it is legal on the current position.
+// Basically tests if
+func (p *Position) IsLegalMove(move Move) bool {
+	panic("Not implemented yet")
+	// king is not allowed to pass a square which is attacked by opponent
+	// if (typeOf(move) == CASTLING) {
+	// 	switch (getToSquare(move)) {
+	// 	case SQ_G1:
+	// 		if (isAttacked(SQ_E1, ~nextPlayer)) {
+	// 			return false;
+	// 		}
+	// 		if (isAttacked(SQ_F1, ~nextPlayer)) {
+	// 			return false;
+	// 		}
+	// 		break;
+	// 	case SQ_C1:
+	// 		if (isAttacked(SQ_E1, ~nextPlayer)) {
+	// 			return false;
+	// 		}
+	// 		if (isAttacked(SQ_D1, ~nextPlayer)) {
+	// 			return false;
+	// 		}
+	// 		break;
+	// 	case SQ_G8:
+	// 		if (isAttacked(SQ_E8, ~nextPlayer)) {
+	// 			return false;
+	// 		}
+	// 		if (isAttacked(SQ_F8, ~nextPlayer)) {
+	// 			return false;
+	// 		}
+	// 		break;
+	// 	case SQ_C8:
+	// 		if (isAttacked(SQ_E8, ~nextPlayer)) {
+	// 			return false;
+	// 		}
+	// 		if (isAttacked(SQ_D8, ~nextPlayer)) {
+	// 			return false;
+	// 		}
+	// 		break;
+	// 	default:
+	// 		break;
+	// 	}
+	// }
+	// // make the move on the position
+	// // then check if the move leaves the king in check
+	// // TODO: isLegalMove: can we make this more efficient??
+	// //  this forces this const function to use a const_cast
+	// const_cast<Position*>(this)->doMove(move);
+	// bool legal = !isAttacked(kingSquare[~nextPlayer], nextPlayer);
+	// const_cast<Position*>(this)->undoMove();
+	// return legal;
+	return false
+}
+
 // String returns a string representing the board instance. This
 // includes the fen, a board matrix, game phase, material and pos values.
 func (p *Position) String() string {

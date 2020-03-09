@@ -127,8 +127,11 @@ func (mg *movegen) GeneratePseudoLegalMoves(position *position.Position, mode Ge
 // after the returned MoveList. Or just use the OnDemand Generator.
 func (mg *movegen) GenerateLegalMoves(position *position.Position, mode GenMode) *movearray.MoveArray {
 	mg.legalMoves.Clear()
-
-
+	mg.GeneratePseudoLegalMoves(position, mode)
+	mg.legalMoves = *mg.pseudoLegalMoves.FilterCopy(func(i int) bool {
+		return position.IsLegalMove(mg.pseudoLegalMoves.At(i))
+	})
+	return &mg.legalMoves
 }
 
 func (mg *movegen) String() string {

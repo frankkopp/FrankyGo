@@ -246,6 +246,31 @@ func TestMoveArray_Filter(t *testing.T) {
 	assert.Equal(t, "e2e4 d7d5 d8d5 b1c3", ma.StringUci())
 }
 
+func TestMoveArray_FilterCopy(t *testing.T) {
+	ma := New(MaxMoves)
+	ma.PushBack(e2e4)
+	ma.PushBack(d7d5)
+	ma.PushBack(e4d5)
+	ma.PushBack(d8d5)
+	ma.PushBack(b1c3)
+
+	assert.Equal(t, 5, ma.Len())
+	assert.Equal(t, MaxMoves, ma.Cap())
+	assert.Equal(t, "e2e4 d7d5 e4d5 d8d5 b1c3", ma.StringUci())
+
+	ma2 := ma.FilterCopy(func(i int) bool {
+		return ma.At(i) != e4d5
+	})
+
+	assert.Equal(t, 5, ma.Len())
+	assert.Equal(t, MaxMoves, ma.Cap())
+	assert.Equal(t, "e2e4 d7d5 e4d5 d8d5 b1c3", ma.StringUci())
+
+	assert.Equal(t, 4, ma2.Len())
+	assert.Equal(t, MaxMoves, ma2.Cap())
+	assert.Equal(t, "e2e4 d7d5 d8d5 b1c3", ma2.StringUci())
+}
+
 func TestForEach(t *testing.T) {
 	// fill array
 	noOfItems := 1_000
