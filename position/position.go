@@ -354,6 +354,71 @@ func (p *Position) UndoMove() {
 	p.zobristKey = p.history[p.historyCounter].zobristKey
 }
 
+// IsAttacked checks if the given square is attacked by a piece
+// of the given color.
+func (p *Position) IsAttacked(sq Square, by Color) bool {
+	if assert.DEBUG {
+		assert.Assert(sq != SqNone, "Position IsAttacked: SqNone is invalid")
+	}
+
+	// non sliding
+	if (GetPawnAttacks(by.Flip(), sq)&p.piecesBb[by][Pawn] != 0) || // check pawns
+		(GetPseudoAttacks(Knight, sq)&p.piecesBb[by][Knight] != 0) || // check knights
+		(GetPseudoAttacks(King, sq)&p.piecesBb[by][King] != 0) { // check king
+		return true
+	}
+
+	// sliding rooks and queens
+	if (GetPseudoAttacks(Rook, sq)&p.piecesBb[by][Rook] != 0 || (GetPseudoAttacks(Queen, sq)&p.piecesBb[by][Queen] != 0)) &&
+		(((GetMovesOnRank(sq, p.OccupiedAll()) |
+			GetMovesOnFileRotated(sq, p.occupiedBbL90[White]|p.occupiedBbL90[Black])) &
+			(p.piecesBb[by][Rook]|p.piecesBb[by][Queen])) != 0) {
+		return true
+	}
+
+	// sliding bishop and queens
+	if (GetPseudoAttacks(Bishop, sq)&p.piecesBb[by][Bishop] != 0 || (GetPseudoAttacks(Queen, sq)&p.piecesBb[by][Queen] != 0)) &&
+		(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[White]|p.occupiedBbR45[Black])|
+			GetMovesDiagDownRotated(sq, p.occupiedBbL45[White]|p.occupiedBbL45[Black]))&
+			(p.piecesBb[by][Bishop]|p.piecesBb[by][Queen])) != 0) {
+		return true
+	}
+
+	// check en passant
+	if p.enPassantSquare != SqNone {
+		// white is attacker
+		if by == White &&
+			// black is target
+			p.board[p.enPassantSquare.To(South)] == BlackPawn &&
+			// this is indeed the en passant attacked square
+			p.enPassantSquare.To(South) == sq {
+			// left
+			square := sq.To(West)
+			if p.board[square] == WhitePawn {
+				return true
+			}
+			// right
+			square = sq.To(East)
+			return p.board[square] == WhitePawn
+			// black is attacker (assume not noColor)
+		} else if by == Black &&
+			// white is target
+			p.board[p.enPassantSquare.To(North)] == WhitePawn &&
+			// this is indeed the en passant attacked square
+			p.enPassantSquare.To(North) == sq {
+			// attack from left
+			square := sq.To(West)
+			if p.board[square] == BlackPawn {
+				return true
+			}
+			// right
+			square = sq.To(East)
+			return p.board[square] == BlackPawn
+		}
+	}
+	return false
+}
+
 // IsLegalMove test a move if it is legal on the current position.
 // Basically tests if
 func (p *Position) IsLegalMove(move Move) bool {
@@ -764,7 +829,7 @@ func (p *Position) NextPlayer() Color {
 
 // GetPiece returns the piece on the given square. Empty
 // squares are initialized with PieceNone and return the same.
-func (p * Position) GetPiece(sq Square) Piece {
+func (p *Position) GetPiece(sq Square) Piece {
 	return p.board[sq]
 }
 
