@@ -178,7 +178,7 @@ func Test_movegen_GeneratePseudoLegalMoves(t *testing.T) {
 // GeneratePseudoLegalMoves took 1.965.578.500 ns for 1.000.000 iterations
 // GeneratePseudoLegalMoves took 1.965 ns
 // GeneratePseudoLegalMoves 86.000.000 generated 43.753.022 mps
-func Test_TimingPseudoMoveGen(t *testing.T) {
+func TestTimingPseudoMoveGen(t *testing.T) {
 	out := message.NewPrinter(language.German)
 	Init()
 	const rounds = 5

@@ -224,7 +224,29 @@ func TestMoveArray_Sort(t *testing.T) {
 	}
 }
 
-func TestMoveArray_ForEach(t *testing.T) {
+
+func TestMoveArray_Filter(t *testing.T) {
+	ma := New(MaxMoves)
+	ma.PushBack(e2e4)
+	ma.PushBack(d7d5)
+	ma.PushBack(e4d5)
+	ma.PushBack(d8d5)
+	ma.PushBack(b1c3)
+
+	assert.Equal(t, 5, ma.Len())
+	assert.Equal(t, MaxMoves, ma.Cap())
+	assert.Equal(t, "e2e4 d7d5 e4d5 d8d5 b1c3", ma.StringUci())
+
+	ma.Filter(func(i int) bool {
+		return ma.At(i) != e4d5
+	})
+
+	assert.Equal(t, 4, ma.Len())
+	assert.Equal(t, MaxMoves, ma.Cap())
+	assert.Equal(t, "e2e4 d7d5 d8d5 b1c3", ma.StringUci())
+}
+
+func TestForEach(t *testing.T) {
 	// fill array
 	noOfItems := 1_000
 	ma := New(noOfItems)
@@ -237,13 +259,13 @@ func TestMoveArray_ForEach(t *testing.T) {
 	var counter int
 
 	// parallel execution
-	ma.ForEachParallel(func(i int){
+	ma.ForEachParallel(func(i int) {
 		m := ma.At(i)
 		f := m.From()
 		t := m.To()
 		mt := m.MoveType()
 		pt := m.PromotionType()
-		v:= Value(999)
+		v := Value(999)
 		ma.Set(i, CreateMoveValue(f, t, mt, pt, v))
 		// simulate cpu intense calculation
 		n := float64(100000)
@@ -255,14 +277,30 @@ func TestMoveArray_ForEach(t *testing.T) {
 		mux.Unlock()
 	})
 
-	fmt.Printf("Counter %d\n", counter)
 	assert.Equal(t, noOfItems, counter)
 	assert.Equal(t, Value(999), ma.Front().ValueOf())
 	assert.Equal(t, Value(999), ma.At(10).ValueOf())
 	assert.Equal(t, Value(999), ma.At(100).ValueOf())
 	assert.Equal(t, Value(999), ma.Back().ValueOf())
 
-	// ma.ForEach(func (i int) {
-	// 	fmt.Printf("%d: %s\n", i, ma.At(i).String())
-	// })
+	fmt.Printf("Counter %d\n", counter)
+	ma.ForEach(func(i int) {
+		fmt.Printf("%d: %s\n", i, ma.At(i).String())
+	})
 }
+
+
+func Test_GoLand_WithVeryLongName(t *testing.T) {
+	// fill array
+	noOfItems := 1_000
+	ma := New(noOfItems)
+	for i := 0; i < noOfItems; i++ {
+		ma.PushBack(e2e4)
+	}
+
+	fmt.Printf("Counter %d\n", noOfItems)
+	ma.ForEach(func (i int) {
+		fmt.Printf("%d: %s\n", i, ma.At(i).String())
+	})
+}
+

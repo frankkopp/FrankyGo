@@ -121,6 +121,16 @@ func (mg *movegen) GeneratePseudoLegalMoves(position *position.Position, mode Ge
 	return &mg.pseudoLegalMoves
 }
 
+// GenerateLegalMoves generates legal moves for the next player.
+// Uses GeneratePseudoLegalMoves and filters out illegal moves.
+// Disregards PV moves and Killer moves. They need to be handled
+// after the returned MoveList. Or just use the OnDemand Generator.
+func (mg *movegen) GenerateLegalMoves(position *position.Position, mode GenMode) *movearray.MoveArray {
+	mg.legalMoves.Clear()
+
+
+}
+
 func (mg *movegen) String() string {
 	return "movegen instance"
 }

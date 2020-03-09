@@ -34,7 +34,7 @@ import (
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
-// MoveArray represents a single instance of the MoveList data structure.
+// MoveArray represents a data structure (go slice) for Move.
 type MoveArray struct {
 	data []Move
 }
@@ -128,7 +128,22 @@ func (ma *MoveArray) Set(i int, move Move) {
 	ma.data[i] = move
 }
 
-// ForEach very simple range loop calling the given function on each element
+// Filter removes all elements from the MoveArray for
+// which the given call to func will return false.
+// Rebuilds the data slice by looping over all elements
+// and only re-adding elements for which the call to the
+// given func is true. Reuses the underlying array
+func (ma *MoveArray) Filter(f func (index int) bool) {
+	b := ma.data[:0]
+	for i, x := range ma.data {
+		if f(i) {
+			b = append(b, x)
+		}
+	}
+	ma.data = b
+}
+
+// ForEach simple range loop calling the given function on each element
 // in stored order
 func (ma *MoveArray) ForEach(f func (index int)) {
 	for index, _ := range ma.data  {
