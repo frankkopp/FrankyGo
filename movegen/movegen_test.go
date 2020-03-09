@@ -27,7 +27,6 @@ package movegen
 import (
 	"log"
 	"reflect"
-	"sort"
 	"testing"
 	"time"
 
@@ -35,7 +34,7 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
-	"github.com/frankkopp/FrankyGo/movelist"
+	"github.com/frankkopp/FrankyGo/movearray"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
@@ -50,8 +49,7 @@ func Test_movegen_generatePawnMoves(t *testing.T) {
 	Init()
 	mg := New()
 	pos := position.NewFen("1kr3nr/pp1pP1P1/2p1p3/3P1p2/1n1bP3/2P5/PP3PPP/RNBQKBNR w KQ -")
-	moves := movelist.MoveList{}
-	moves.SetMinCapacity(6) // 2^6 = 64
+	moves := movearray.MoveArray{}
 
 	mg.generatePawnMoves(&pos, GenCap, &moves)
 	assert.Equal(t, 9, moves.Len())
@@ -64,7 +62,7 @@ func Test_movegen_generatePawnMoves(t *testing.T) {
 	mg.generatePawnMoves(&pos, GenAll, &moves)
 	assert.Equal(t, 25, moves.Len())
 
-	sort.Stable(&moves)
+	moves.Sort()
 	log.Printf("Moves: %d\n", moves.Len())
 	l := moves.Len()
 	for i := 0; i < l; i++ {
@@ -76,8 +74,7 @@ func Test_movegen_generateCastling(t *testing.T) {
 	Init()
 	mg := New()
 	pos := position.NewFen("r3k2r/pbppqppp/1pn2n2/1B2p3/1b2P3/N1PP1N2/PP1BQPPP/R3K2R w KQkq -")
-	moves := movelist.MoveList{}
-	moves.SetMinCapacity(6) // 2^6 = 64
+	moves := movearray.MoveArray{}
 
 	mg.generateCastling(&pos, GenAll, &moves)
 	assert.Equal(t, 2, moves.Len())
@@ -94,8 +91,7 @@ func Test_movegen_generateCastling(t *testing.T) {
 func Test_movegen_generateKingMoves(t *testing.T) {
 	Init()
 	mg := New()
-	moves := movelist.MoveList{}
-	moves.SetMinCapacity(6) // 2^6 = 64
+	moves := movearray.MoveArray{}
 
 	pos := position.NewFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -")
 	mg.generateKingMoves(&pos, GenAll, &moves)
@@ -112,8 +108,7 @@ func Test_movegen_generateKingMoves(t *testing.T) {
 func Test_movegen_generateMoves(t *testing.T) {
 	Init()
 	mg := New()
-	moves := movelist.MoveList{}
-	moves.SetMinCapacity(6) // 2^6 = 64
+	moves := movearray.MoveArray{}
 
 	pos := position.NewFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -")
 	mg.generateMoves(&pos, GenCap, &moves)
@@ -171,27 +166,31 @@ func Test_movegen_GeneratePseudoLegalMoves(t *testing.T) {
 	moves.Clear()
 }
 
-func Test(t *testing.T) {
+// Round 4
+// GeneratePseudoLegalMoves took 6.948.781.000 ns for 1.000.000 iterations
+// GeneratePseudoLegalMoves took 6.948 ns
+// GeneratePseudoLegalMoves 86.000.000 generated 12.376.271 mps
+func Test_TimingPseudoMoveGen(t *testing.T) {
 	out := message.NewPrinter(language.German)
 	Init()
 	const rounds = 5
-	const iterations uint64 = 500_000
+	const iterations uint64 = 1_000_000
 
 	mg := New()
 	pos := position.NewFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
-	var moves *movelist.MoveList
+	moves := mg.GeneratePseudoLegalMoves(&pos, GenAll)
 
 	for r := 1; r <= rounds; r++ {
 		out.Printf("Round %d\n", r)
 		start := time.Now()
 		for i := uint64(0); i < iterations; i++ {
-			moves = mg.GeneratePseudoLegalMoves(&pos, GenAll)
 			moves.Clear()
+			moves = mg.GeneratePseudoLegalMoves(&pos, GenAll)
 		}
 		elapsed := time.Since(start)
 		out.Printf("GeneratePseudoLegalMoves took %d ns for %d iterations\n", elapsed.Nanoseconds(), iterations)
 		out.Printf("GeneratePseudoLegalMoves took %d ns\n", elapsed.Nanoseconds()/int64(iterations))
-		generated := uint64(86) * iterations
-		out.Printf("GeneratePseudoLegalMoves %d mps\n", (generated*uint64(1_000_000_000))/uint64(elapsed.Nanoseconds()))
+		generated := uint64(moves.Len()) * iterations
+		out.Printf("GeneratePseudoLegalMoves %d generated %d mps\n", generated, (generated*uint64(1_000_000_000))/uint64(elapsed.Nanoseconds()))
 	}
 }
