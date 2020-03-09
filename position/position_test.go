@@ -30,18 +30,18 @@ import (
 	"time"
 
 	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 
 	. "github.com/frankkopp/FrankyGo/types"
 
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/text/message"
 )
 
 func TestPositionCreation(t *testing.T) {
 	Init()
 	fen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 	p := NewFen(fen)
-	fmt.Print(p.String())
+	// fmt.Print(p.String())
 	assert.Equal(t, SqA1.Bb()|SqH1.Bb()|SqA8.Bb()|SqH8.Bb(), p.piecesBb[White][Rook]|p.piecesBb[Black][Rook])
 	assert.Equal(t, SqB1.Bb()|SqG1.Bb()|SqB8.Bb()|SqG8.Bb(), p.piecesBb[White][Knight]|p.piecesBb[Black][Knight])
 	assert.Equal(t, SqC1.Bb()|SqF1.Bb()|SqC8.Bb()|SqF8.Bb(), p.piecesBb[White][Bishop]|p.piecesBb[Black][Bishop])
@@ -53,17 +53,17 @@ func TestPositionCreation(t *testing.T) {
 	assert.Equal(t, SqNone, p.enPassantSquare)
 	assert.Equal(t, 0, p.halfMoveClock)
 	assert.Equal(t, 1, p.nextHalfMoveNumber)
-	assert.Equal(t, 0, p.material[White]-p.material[Black])
-	assert.Equal(t, 0, p.materialNonPawn[White]-p.materialNonPawn[Black])
-	assert.Equal(t, 0, p.psqMidValue[White]-p.psqMidValue[Black])
-	assert.Equal(t, 0, p.psqEndValue[White]-p.psqEndValue[Black])
+	assert.Equal(t, Value(0), p.material[White]-p.material[Black])
+	assert.Equal(t, Value(0), p.materialNonPawn[White]-p.materialNonPawn[Black])
+	assert.Equal(t, Value(0), p.psqMidValue[White]-p.psqMidValue[Black])
+	assert.Equal(t, Value(0), p.psqEndValue[White]-p.psqEndValue[Black])
 	assert.Equal(t, fen, p.StringFen())
 
 	fmt.Println()
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3 0 14"
 	p = NewFen(fen)
-	fmt.Print(p.String())
+	// fmt.Print(p.String())
 	assert.Equal(t, SqB1.Bb()|SqG3.Bb()|SqA8.Bb()|SqH8.Bb(), p.piecesBb[White][Rook]|p.piecesBb[Black][Rook])
 	assert.Equal(t, SqD7.Bb()|SqG6.Bb(), p.piecesBb[White][Knight]|p.piecesBb[Black][Knight])
 	assert.Equal(t, SqB2.Bb(), p.piecesBb[White][Bishop]|p.piecesBb[Black][Bishop])
@@ -77,10 +77,10 @@ func TestPositionCreation(t *testing.T) {
 	assert.Equal(t, SqE3, p.enPassantSquare)
 	assert.Equal(t, 0, p.halfMoveClock)
 	assert.Equal(t, 28, p.nextHalfMoveNumber)
-	assert.Equal(t, -3770, p.material[White]-p.material[Black])
-	assert.Equal(t, -3670, p.materialNonPawn[White]-p.materialNonPawn[Black])
-	assert.Equal(t, 113, p.psqMidValue[White]-p.psqMidValue[Black])
-	assert.Equal(t, -165, p.psqEndValue[White]-p.psqEndValue[Black])
+	assert.Equal(t, Value(-3770), p.material[White]-p.material[Black])
+	assert.Equal(t, Value(-3670), p.materialNonPawn[White]-p.materialNonPawn[Black])
+	assert.Equal(t, Value(113), p.psqMidValue[White]-p.psqMidValue[Black])
+	assert.Equal(t, Value(-165), p.psqEndValue[White]-p.psqEndValue[Black])
 	assert.Equal(t, fen, p.StringFen())
 }
 
@@ -106,74 +106,104 @@ func TestPositionEquality(t *testing.T) {
 	assert.Equal(t, p1, p3)
 }
 
-func TestPosition_DoMove(t *testing.T) {
+func TestPosition_DoUndoMove(t *testing.T) {
 	Init()
 	p := New()
-	println(p.String())
 	p.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
-	println(p.String())
 	p.DoMove(CreateMove(SqD7, SqD5, Normal, PtNone))
-	println(p.String())
 	p.DoMove(CreateMove(SqE4, SqD5, Normal, PtNone))
-	println(p.String())
 	p.DoMove(CreateMove(SqD8, SqD5, Normal, PtNone))
-	println(p.String())
 	p.DoMove(CreateMove(SqB1, SqC3, Normal, PtNone))
-	println(p.String())
 	p.UndoMove()
-	println(p.String())
 	p.UndoMove()
-	println(p.String())
 	p.UndoMove()
-	println(p.String())
 	p.UndoMove()
-	println(p.String())
 	p.UndoMove()
-	println(p.String())
 	assert.Equal(t, StartFen, p.StringFen())
 }
 
-//noinspection GoUnhandledErrorResult
-func Test_TimingDoUndo(t *testing.T) {
-	out := message.NewPrinter(language.German)
+func TestPosition_DoMoveNormal(t *testing.T) {
 	Init()
-	const rounds = 5
-	const iterations uint64 = 10_000_000
+	var fen string
+	var position Position
+	var move Move
 
-	// prepare moves
-	e2e4 := CreateMove(SqE2, SqE4, Normal, PtNone)
-	d7d5 := CreateMove(SqD7, SqD5, Normal, PtNone)
-	e4d5 := CreateMove(SqE4, SqD5, Normal, PtNone)
-	d8d5 := CreateMove(SqD8, SqD5, Normal, PtNone)
-	b1c3 := CreateMove(SqB1, SqC3, Normal, PtNone)
+	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
+	position = NewFen(fen)
+	move = CreateMove(SqC4, SqD4, Normal, PtNone)
+	position.DoMove(move)
+	// log.Println(position.String())
+	assert.Equal(t,"r3k2r/1ppn3p/2q1q1n1/8/3qPp2/B5R1/p1p2PPP/1R4K1 w kq - 1 2", position.StringFen())
 
-	for r := 1; r <= rounds; r++ {
-		out.Printf("Round %d\n", r)
-		p := New()
-		start := time.Now()
-		for i := uint64(0); i < iterations; i++ {
-			p.DoMove(e2e4)
-			p.DoMove(d7d5)
-			p.DoMove(e4d5)
-			p.DoMove(d8d5)
-			p.DoMove(b1c3)
-			p.UndoMove()
-			p.UndoMove()
-			p.UndoMove()
-			p.UndoMove()
-			p.UndoMove()
-		}
-		elapsed := time.Since(start)
-		out.Printf("DoMove/UndoMove took %d ns for %d iterations with 5 do/undo pairs\n", elapsed.Nanoseconds(), iterations)
-		out.Printf("DoMove/UndoMove took %d ns per do/undo pair\n", elapsed.Nanoseconds()/int64(iterations*5))
-	}
+	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
+	position = NewFen(fen)
+	move = CreateMove(SqC4, SqE4, Normal, PtNone)
+	position.DoMove(move)
+	// log.Println(position.String())
+	assert.Equal(t,"r3k2r/1ppn3p/2q1q1n1/8/4qp2/B5R1/p1p2PPP/1R4K1 w kq - 0 2", position.StringFen())
+
+	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 w kq -"
+	position = NewFen(fen)
+	move = CreateMove(SqG3, SqG6, Normal, PtNone)
+	position.DoMove(move)
+	// log.Println(position.String())
+	assert.Equal(t,"r3k2r/1ppn3p/2q1q1R1/8/2q1Pp2/B7/p1p2PPP/1R4K1 b kq - 0 1", position.StringFen())
 }
 
-func Benchmark_New(b *testing.B) {
+func TestPosition_DoMoveCastling(t *testing.T) {
 	Init()
-	for i := 0; i < b.N; i++ {
-		NewFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-	}
+	var fen string
+	var position Position
+	var move Move
+
+	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
+	position = NewFen(fen)
+	move = CreateMove(SqE8, SqG8, Castling, PtNone)
+	position.DoMove(move) // would be illegal as King crosses attacked square
+	// log.Println(position.String())
+	assert.Equal(t, "r4rk1/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 w - - 1 2", position.StringFen())
+
+	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
+	position = NewFen(fen)
+	move = CreateMove(SqE8, SqC8, Castling, PtNone)
+	position.DoMove(move)
+	// log.Println(position.String())
+	assert.Equal(t, "2kr3r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 w - - 1 2", position.StringFen())
+}
+
+func TestPosition_DoMoveEnPassant(t *testing.T) {
+	Init()
+	var fen string
+	var position Position
+	var move Move
+
+	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
+	position = NewFen(fen)
+	move = CreateMove(SqF4, SqE3, EnPassant, PtNone)
+	position.DoMove(move) // would be illegal as King crosses attacked square
+	// log.Println(position.String())
+	assert.Equal(t, "r3k2r/1ppn3p/2q1q1n1/8/2q5/B3p1R1/p1p2PPP/1R4K1 w kq - 0 2", position.StringFen())
+}
+
+func TestPosition_DoMovePromotion(t *testing.T) {
+	Init()
+	var fen string
+	var position Position
+	var move Move
+
+	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
+	position = NewFen(fen)
+	move = CreateMove(SqA2, SqA1, Promotion, Queen)
+	position.DoMove(move) // would be illegal as King crosses attacked square
+	// log.Println(position.String())
+	assert.Equal(t, "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/2p2PPP/qR4K1 w kq - 0 2", position.StringFen())
+
+	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
+	position = NewFen(fen)
+	move = CreateMove(SqA2, SqB1, Promotion, Rook)
+	position.DoMove(move) // would be illegal as King crosses attacked square
+	// log.Println(position.String())
+	assert.Equal(t, "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/2p2PPP/1r4K1 w kq - 0 2", position.StringFen())
 }
 
 func TestPosition_IsAttacked(t *testing.T) {
@@ -251,6 +281,72 @@ func TestPosition_IsAttacked(t *testing.T) {
 	assert.False(t,position.IsAttacked(SqB3, White))
 }
 
+func TestPosition_IsLegalMoves(t *testing.T) {
+	Init()
+	var fen string
+	var position Position
+
+	// no o-o castling
+	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
+	position = NewFen(fen)
+	assert.False(t,position.IsLegalMove(CreateMove(SqE8, SqG8, Castling, PtNone)))
+	assert.True(t,position.IsLegalMove(CreateMove(SqE8, SqC8, Castling, PtNone)))
+
+	// in check - no castling at all
+	fen = "r3k2r/1ppn3p/2q1qNn1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
+	position = NewFen(fen)
+	assert.False(t,position.IsLegalMove(CreateMove(SqE8, SqG8, Castling, PtNone)))
+	assert.False(t,position.IsLegalMove(CreateMove(SqE8, SqC8, Castling, PtNone)))
+
+}
+
+//noinspection GoUnhandledErrorResult
+func NOTest_TimingDoUndo(t *testing.T) {
+	out := message.NewPrinter(language.German)
+	Init()
+	const rounds = 5
+	const iterations uint64 = 10_000_000
+
+	// prepare moves
+	e2e4 := CreateMove(SqE2, SqE4, Normal, PtNone)
+	d7d5 := CreateMove(SqD7, SqD5, Normal, PtNone)
+	e4d5 := CreateMove(SqE4, SqD5, Normal, PtNone)
+	d8d5 := CreateMove(SqD8, SqD5, Normal, PtNone)
+	b1c3 := CreateMove(SqB1, SqC3, Normal, PtNone)
+
+	for r := 1; r <= rounds; r++ {
+		out.Printf("Round %d\n", r)
+		p := New()
+		start := time.Now()
+		for i := uint64(0); i < iterations; i++ {
+			p.DoMove(e2e4)
+			p.DoMove(d7d5)
+			p.DoMove(e4d5)
+			p.DoMove(d8d5)
+			p.DoMove(b1c3)
+			p.UndoMove()
+			p.UndoMove()
+			p.UndoMove()
+			p.UndoMove()
+			p.UndoMove()
+		}
+		elapsed := time.Since(start)
+		out.Printf("DoMove/UndoMove took %d ns for %d iterations with 5 do/undo pairs\n", elapsed.Nanoseconds(), iterations)
+		out.Printf("DoMove/UndoMove took %d ns per do/undo pair\n", elapsed.Nanoseconds()/int64(iterations*5))
+	}
+}
+
+
+// ///////////////////////////////////
+// BENCHMARKS
+
+
+func Benchmark_New(b *testing.B) {
+	Init()
+	for i := 0; i < b.N; i++ {
+		NewFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+	}
+}
 
 func Benchmark_DoUndo(b *testing.B) {
 	Init()

@@ -201,7 +201,7 @@ func (p *Position) DoMove(m Move) {
 		p.movePiece(fromSq, toSq)
 	case Promotion:
 		if assert.DEBUG {
-			assert.Assert(fromPc == MakePiece(myColor, King), "Position DoMove: Move type promotion but From piece not king")
+			assert.Assert(fromPc == MakePiece(myColor, Pawn), "Position DoMove: Move type promotion but From piece not Pawn")
 			assert.Assert(myColor.PromotionRankBb().Has(toSq), "Position DoMove: Promotion move but wrong Rank")
 		}
 		if targetPc != PieceNone { // capture
@@ -234,8 +234,8 @@ func (p *Position) DoMove(m Move) {
 			if assert.DEBUG {
 				assert.Assert(p.castlingRights.Has(CastlingWhiteOO), "Position DoMove: White king side castling not available")
 				assert.Assert(fromSq == SqE1, "Position DoMove: Castling from square not correct")
-				assert.Assert(p.board[SqE1] != WhiteKing, "Position DoMove: SqE1 has no king for castling")
-				assert.Assert(p.board[SqH1] != WhiteRook, "Position DoMove: SqH1 has no rook for castling")
+				assert.Assert(p.board[SqE1] == WhiteKing, "Position DoMove: SqE1 has no king for castling")
+				assert.Assert(p.board[SqH1] == WhiteRook, "Position DoMove: SqH1 has no rook for castling")
 				assert.Assert(p.OccupiedAll()&Intermediate(SqE1, SqH1) == 0, "Position DoMove: Castling king side blocked")
 			}
 			p.movePiece(fromSq, toSq)                                    // King
@@ -247,8 +247,8 @@ func (p *Position) DoMove(m Move) {
 			if assert.DEBUG {
 				assert.Assert(p.castlingRights.Has(CastlingWhiteOOO), "Position DoMove: White queen side castling not available")
 				assert.Assert(fromSq == SqE1, "Position DoMove: Castling from square not correct")
-				assert.Assert(p.board[SqE1] != WhiteKing, "Position DoMove: SqE1 has no king for castling")
-				assert.Assert(p.board[SqA1] != WhiteRook, "Position DoMove: SqA1 has no rook for castling")
+				assert.Assert(p.board[SqE1] == WhiteKing, "Position DoMove: SqE1 has no king for castling")
+				assert.Assert(p.board[SqA1] == WhiteRook, "Position DoMove: SqA1 has no rook for castling")
 				assert.Assert(p.OccupiedAll()&Intermediate(SqE1, SqA1) == 0, "Position DoMove: Castling queen side blocked")
 			}
 			p.movePiece(fromSq, toSq)                                    // King
@@ -260,8 +260,8 @@ func (p *Position) DoMove(m Move) {
 			if assert.DEBUG {
 				assert.Assert(p.castlingRights.Has(CastlingBlackOO), "Position DoMove: Black king side castling not available")
 				assert.Assert(fromSq == SqE8, "Position DoMove: Castling from square not correct")
-				assert.Assert(p.board[SqE8] != BlackKing, "Position DoMove: SqE8 has no king for castling")
-				assert.Assert(p.board[SqH8] != BlackRook, "Position DoMove: SqH8 has no rook for castling")
+				assert.Assert(p.board[SqE8] == BlackKing, "Position DoMove: SqE8 has no king for castling")
+				assert.Assert(p.board[SqH8] == BlackRook, "Position DoMove: SqH8 has no rook for castling")
 				assert.Assert(p.OccupiedAll()&Intermediate(SqE8, SqH8) == 0, "Position DoMove: Castling king side blocked")
 			}
 			p.movePiece(fromSq, toSq)                                    // King
@@ -273,8 +273,8 @@ func (p *Position) DoMove(m Move) {
 			if assert.DEBUG {
 				assert.Assert(p.castlingRights.Has(CastlingBlackOOO), "Position DoMove: Black queen side castling not available")
 				assert.Assert(fromSq == SqE8, "Position DoMove: Castling from square not correct")
-				assert.Assert(p.board[SqE8] != BlackKing, "Position DoMove: SqE8 has no king for castling")
-				assert.Assert(p.board[SqA8] != BlackRook, "Position DoMove: SqA8 has no rook for castling")
+				assert.Assert(p.board[SqE8] == BlackKing, "Position DoMove: SqE8 has no king for castling")
+				assert.Assert(p.board[SqA8] == BlackRook, "Position DoMove: SqA8 has no rook for castling")
 				assert.Assert(p.OccupiedAll()&Intermediate(SqE8, SqA8) == 0, "Position DoMove: Castling queen side blocked")
 			}
 			p.movePiece(fromSq, toSq)                                    // King
@@ -372,15 +372,15 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 	if (GetPseudoAttacks(Rook, sq)&p.piecesBb[by][Rook] != 0 || (GetPseudoAttacks(Queen, sq)&p.piecesBb[by][Queen] != 0)) &&
 		(((GetMovesOnRank(sq, p.OccupiedAll()) |
 			GetMovesOnFileRotated(sq, p.occupiedBbL90[White]|p.occupiedBbL90[Black])) &
-			(p.piecesBb[by][Rook]|p.piecesBb[by][Queen])) != 0) {
+			(p.piecesBb[by][Rook] | p.piecesBb[by][Queen])) != 0) {
 		return true
 	}
 
 	// sliding bishop and queens
 	if (GetPseudoAttacks(Bishop, sq)&p.piecesBb[by][Bishop] != 0 || (GetPseudoAttacks(Queen, sq)&p.piecesBb[by][Queen] != 0)) &&
-		(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[White]|p.occupiedBbR45[Black])|
-			GetMovesDiagDownRotated(sq, p.occupiedBbL45[White]|p.occupiedBbL45[Black]))&
-			(p.piecesBb[by][Bishop]|p.piecesBb[by][Queen])) != 0) {
+		(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[White]|p.occupiedBbR45[Black]) |
+			GetMovesDiagDownRotated(sq, p.occupiedBbL45[White]|p.occupiedBbL45[Black])) &
+			(p.piecesBb[by][Bishop] | p.piecesBb[by][Queen])) != 0) {
 		return true
 	}
 
@@ -422,55 +422,47 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 // IsLegalMove test a move if it is legal on the current position.
 // Basically tests if
 func (p *Position) IsLegalMove(move Move) bool {
-	panic("Not implemented yet")
 	// king is not allowed to pass a square which is attacked by opponent
-	// if (typeOf(move) == CASTLING) {
-	// 	switch (getToSquare(move)) {
-	// 	case SQ_G1:
-	// 		if (isAttacked(SQ_E1, ~nextPlayer)) {
-	// 			return false;
-	// 		}
-	// 		if (isAttacked(SQ_F1, ~nextPlayer)) {
-	// 			return false;
-	// 		}
-	// 		break;
-	// 	case SQ_C1:
-	// 		if (isAttacked(SQ_E1, ~nextPlayer)) {
-	// 			return false;
-	// 		}
-	// 		if (isAttacked(SQ_D1, ~nextPlayer)) {
-	// 			return false;
-	// 		}
-	// 		break;
-	// 	case SQ_G8:
-	// 		if (isAttacked(SQ_E8, ~nextPlayer)) {
-	// 			return false;
-	// 		}
-	// 		if (isAttacked(SQ_F8, ~nextPlayer)) {
-	// 			return false;
-	// 		}
-	// 		break;
-	// 	case SQ_C8:
-	// 		if (isAttacked(SQ_E8, ~nextPlayer)) {
-	// 			return false;
-	// 		}
-	// 		if (isAttacked(SQ_D8, ~nextPlayer)) {
-	// 			return false;
-	// 		}
-	// 		break;
-	// 	default:
-	// 		break;
-	// 	}
-	// }
+	if move.MoveType() == Castling {
+		switch move.To() {
+		case SqG1:
+			if p.IsAttacked(SqE1, p.nextPlayer.Flip()) {
+				return false
+			}
+			if p.IsAttacked(SqF1, p.nextPlayer.Flip()) {
+				return false
+			}
+		case SqC1:
+			if p.IsAttacked(SqE1, p.nextPlayer.Flip()) {
+				return false
+			}
+			if p.IsAttacked(SqD1, p.nextPlayer.Flip()) {
+				return false
+			}
+		case SqG8:
+			if p.IsAttacked(SqE8, p.nextPlayer.Flip()) {
+				return false
+			}
+			if p.IsAttacked(SqF8, p.nextPlayer.Flip()) {
+				return false
+			}
+		case SqC8:
+			if p.IsAttacked(SqE8, p.nextPlayer.Flip()) {
+				return false
+			}
+			if p.IsAttacked(SqD8, p.nextPlayer.Flip()) {
+				return false
+			}
+		default:
+			break
+		}
+	}
 	// // make the move on the position
 	// // then check if the move leaves the king in check
-	// // TODO: isLegalMove: can we make this more efficient??
-	// //  this forces this const function to use a const_cast
-	// const_cast<Position*>(this)->doMove(move);
-	// bool legal = !isAttacked(kingSquare[~nextPlayer], nextPlayer);
-	// const_cast<Position*>(this)->undoMove();
-	// return legal;
-	return false
+	p.DoMove(move)
+	legal := !p.IsAttacked(p.kingSquare[p.nextPlayer.Flip()], p.nextPlayer)
+	p.UndoMove()
+	return legal
 }
 
 // String returns a string representing the board instance. This
