@@ -29,6 +29,7 @@ package movearray
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	. "github.com/frankkopp/FrankyGo/types"
 )
@@ -125,6 +126,33 @@ func (ma *MoveArray) At(i int) Move {
 // Index will not be checked against bounds.
 func (ma *MoveArray) Set(i int, move Move) {
 	ma.data[i] = move
+}
+
+// ForEach very simple range loop calling the given function on each element
+// in stored order
+func (ma *MoveArray) ForEach(f func (index int)) {
+	for index, _ := range ma.data  {
+		f(index)
+	}
+}
+
+// ForEachParallel simple loop over all elements calling a goroutine
+// which calls the given func with the index of the current element
+// as a parameter.
+// Waits until all elements have been processed. There is not
+// synchronization for the parallel execution. This needs to done
+// in the provided function
+func (ma *MoveArray) ForEachParallel(f func (index int)) {
+	sliceLength := len(ma.data)
+	var wg sync.WaitGroup
+	wg.Add(sliceLength)
+	for index, _ := range ma.data  {
+		go func(i int) {
+			defer wg.Done()
+			f(i)
+		}(index)
+	}
+	wg.Wait()
 }
 
 // Clear removes all moves from the queue, but retains the current capacity.

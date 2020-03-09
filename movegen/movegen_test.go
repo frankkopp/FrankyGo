@@ -166,10 +166,18 @@ func Test_movegen_GeneratePseudoLegalMoves(t *testing.T) {
 	moves.Clear()
 }
 
-// Round 4
+// MoveList
 // GeneratePseudoLegalMoves took 6.948.781.000 ns for 1.000.000 iterations
 // GeneratePseudoLegalMoves took 6.948 ns
 // GeneratePseudoLegalMoves 86.000.000 generated 12.376.271 mps
+// Move Array
+// GeneratePseudoLegalMoves took 3.050.877.900 ns for 1.000.000 iterations
+// GeneratePseudoLegalMoves took 3.050 ns
+// GeneratePseudoLegalMoves 86.000.000 generated 28.188.607 mps
+// MoveArray with ForEach cleanup of moves
+// GeneratePseudoLegalMoves took 1.965.578.500 ns for 1.000.000 iterations
+// GeneratePseudoLegalMoves took 1.965 ns
+// GeneratePseudoLegalMoves 86.000.000 generated 43.753.022 mps
 func Test_TimingPseudoMoveGen(t *testing.T) {
 	out := message.NewPrinter(language.German)
 	Init()
@@ -193,4 +201,8 @@ func Test_TimingPseudoMoveGen(t *testing.T) {
 		generated := uint64(moves.Len()) * iterations
 		out.Printf("GeneratePseudoLegalMoves %d generated %d mps\n", generated, (generated*uint64(1_000_000_000))/uint64(elapsed.Nanoseconds()))
 	}
+
+	// moves.ForEach(func(i int) {
+	// 	log.Printf("%d. %s\n", i+1, moves.At(i).String())
+	// })
 }

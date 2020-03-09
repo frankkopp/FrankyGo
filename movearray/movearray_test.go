@@ -27,12 +27,12 @@ package movearray
 import (
 	"fmt"
 	"log"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	. "github.com/frankkopp/FrankyGo/types"
-
 )
 
 var (
@@ -222,4 +222,47 @@ func TestMoveArray_Sort(t *testing.T) {
 	for i, v := range ma.data {
 		fmt.Println(i, v)
 	}
+}
+
+func TestMoveArray_ForEach(t *testing.T) {
+	// fill array
+	noOfItems := 1_000
+	ma := New(noOfItems)
+	for i := 0; i < noOfItems; i++ {
+		ma.PushBack(e2e4)
+	}
+
+	// counter and mutex
+	var mux sync.Mutex
+	var counter int
+
+	// parallel execution
+	ma.ForEachParallel(func(i int){
+		m := ma.At(i)
+		f := m.From()
+		t := m.To()
+		mt := m.MoveType()
+		pt := m.PromotionType()
+		v:= Value(999)
+		ma.Set(i, CreateMoveValue(f, t, mt, pt, v))
+		// simulate cpu intense calculation
+		n := float64(100000)
+		for n > 1 {
+			n /= 1.000001
+		}
+		mux.Lock()
+		counter++
+		mux.Unlock()
+	})
+
+	fmt.Printf("Counter %d\n", counter)
+	assert.Equal(t, noOfItems, counter)
+	assert.Equal(t, Value(999), ma.Front().ValueOf())
+	assert.Equal(t, Value(999), ma.At(10).ValueOf())
+	assert.Equal(t, Value(999), ma.At(100).ValueOf())
+	assert.Equal(t, Value(999), ma.Back().ValueOf())
+
+	// ma.ForEach(func (i int) {
+	// 	fmt.Printf("%d: %s\n", i, ma.At(i).String())
+	// })
 }

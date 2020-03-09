@@ -100,17 +100,24 @@ func New() movegen {
 // the returned MoveList. Or just use the OnDemand Generator.
 func (mg *movegen) GeneratePseudoLegalMoves(position *position.Position, mode GenMode) *movearray.MoveArray {
 	mg.pseudoLegalMoves.Clear()
-	mg.generatePawnMoves(position, mode, &mg.pseudoLegalMoves)
-	mg.generateCastling(position, mode, &mg.pseudoLegalMoves)
-	mg.generateKingMoves(position, mode, &mg.pseudoLegalMoves)
-	mg.generateMoves(position, mode, &mg.pseudoLegalMoves)
-	//sort.Stable(&mg.pseudoLegalMoves)
+	if mode&GenCap != 0 {
+		mg.generatePawnMoves(position, GenCap, &mg.pseudoLegalMoves)
+		mg.generateCastling(position, GenCap, &mg.pseudoLegalMoves)
+		mg.generateKingMoves(position, GenCap, &mg.pseudoLegalMoves)
+		mg.generateMoves(position, GenCap, &mg.pseudoLegalMoves)
+	}
+	if mode&GenNonCap != 0 {
+		mg.generatePawnMoves(position, GenNonCap, &mg.pseudoLegalMoves)
+		mg.generateCastling(position, GenNonCap, &mg.pseudoLegalMoves)
+		mg.generateKingMoves(position, GenNonCap, &mg.pseudoLegalMoves)
+		mg.generateMoves(position, GenNonCap, &mg.pseudoLegalMoves)
+	}
+	// sort.Stable(&mg.pseudoLegalMoves)
 	mg.pseudoLegalMoves.Sort()
 	// remove internal sort value
-	l := mg.pseudoLegalMoves.Len()
-	for i := 0; i < l; i++ {
+	mg.pseudoLegalMoves.ForEach(func(i int) {
 		mg.pseudoLegalMoves.Set(i, mg.pseudoLegalMoves.At(i).MoveOf())
-	}
+	})
 	return &mg.pseudoLegalMoves
 }
 
