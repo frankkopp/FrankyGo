@@ -29,19 +29,17 @@
 package movegen
 
 import (
-	"sort"
-
 	"github.com/frankkopp/FrankyGo/assert"
-	"github.com/frankkopp/FrankyGo/movelist"
+	"github.com/frankkopp/FrankyGo/movearray"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
 type movegen struct {
-	pseudoLegalMoves   movelist.MoveList
-	legalMoves         movelist.MoveList
-	onDemandMoves      movelist.MoveList
-	killerMoves        movelist.MoveList
+	pseudoLegalMoves   movearray.MoveArray
+	legalMoves         movearray.MoveArray
+	onDemandMoves      movearray.MoveArray
+	killerMoves        movearray.MoveArray
 	pvMove             Move
 	currentODStage     int
 	currentIteratorKey position.Key
@@ -67,9 +65,10 @@ const (
 // // Public functions
 // //////////////////////////////////////////////////////
 
-// Generation modes for on demand move generation
+// GenMode generation modes for on demand move generation
 type GenMode int
 
+// GenMode generation modes for on demand move generation
 const (
 	GenZero   GenMode = 0b00
 	GenCap    GenMode = 0b01
@@ -80,18 +79,18 @@ const (
 // New creates a new instance of a move generator
 func New() movegen {
 	tmpMg := movegen{
-		pseudoLegalMoves:   movelist.MoveList{},
-		legalMoves:         movelist.MoveList{},
-		onDemandMoves:      movelist.MoveList{},
-		killerMoves:        movelist.MoveList{},
+		pseudoLegalMoves:   movearray.New(MaxMoves),
+		legalMoves:         movearray.New(MaxMoves),
+		onDemandMoves:      movearray.New(MaxMoves),
+		killerMoves:        movearray.New(4),
 		pvMove:             MoveNone,
 		currentODStage:     odNew,
 		currentIteratorKey: 0,
 		maxNumberOfKiller:  2, // default
 	}
-	tmpMg.pseudoLegalMoves.SetMinCapacity(6)
-	tmpMg.legalMoves.SetMinCapacity(6)
-	tmpMg.onDemandMoves.SetMinCapacity(6)
+	// tmpMg.pseudoLegalMoves.SetMinCapacity(6)
+	// tmpMg.legalMoves.SetMinCapacity(6)
+	// tmpMg.onDemandMoves.SetMinCapacity(6)
 	return tmpMg
 }
 
@@ -99,19 +98,40 @@ func New() movegen {
 // king is left in check or passes an attacked square when castling or has been in check
 // before castling. Disregards PV moves and Killer moves. They need to be handled after
 // the returned MoveList. Or just use the OnDemand Generator.
-func (mg *movegen) GeneratePseudoLegalMoves(position *position.Position, mode GenMode) *movelist.MoveList {
+func (mg *movegen) GeneratePseudoLegalMoves(position *position.Position, mode GenMode) *movearray.MoveArray {
 	mg.pseudoLegalMoves.Clear()
-	mg.generatePawnMoves(position, mode, &mg.pseudoLegalMoves)
-	mg.generateCastling(position, mode, &mg.pseudoLegalMoves)
-	mg.generateKingMoves(position, mode, &mg.pseudoLegalMoves)
-	mg.generateMoves(position, mode, &mg.pseudoLegalMoves)
-	sort.Stable(&mg.pseudoLegalMoves)
-	// remove internal sort value
-	l := mg.pseudoLegalMoves.Len()
-	for i := 0; i < l; i++ {
-		mg.pseudoLegalMoves.Set(i, mg.pseudoLegalMoves.At(i).MoveOf())
+	if mode&GenCap != 0 {
+		mg.generatePawnMoves(position, GenCap, &mg.pseudoLegalMoves)
+		mg.generateCastling(position, GenCap, &mg.pseudoLegalMoves)
+		mg.generateKingMoves(position, GenCap, &mg.pseudoLegalMoves)
+		mg.generateMoves(position, GenCap, &mg.pseudoLegalMoves)
 	}
+	if mode&GenNonCap != 0 {
+		mg.generatePawnMoves(position, GenNonCap, &mg.pseudoLegalMoves)
+		mg.generateCastling(position, GenNonCap, &mg.pseudoLegalMoves)
+		mg.generateKingMoves(position, GenNonCap, &mg.pseudoLegalMoves)
+		mg.generateMoves(position, GenNonCap, &mg.pseudoLegalMoves)
+	}
+	// sort.Stable(&mg.pseudoLegalMoves)
+	mg.pseudoLegalMoves.Sort()
+	// remove internal sort value
+	mg.pseudoLegalMoves.ForEach(func(i int) {
+		mg.pseudoLegalMoves.Set(i, mg.pseudoLegalMoves.At(i).MoveOf())
+	})
 	return &mg.pseudoLegalMoves
+}
+
+// GenerateLegalMoves generates legal moves for the next player.
+// Uses GeneratePseudoLegalMoves and filters out illegal moves.
+// Disregards PV moves and Killer moves. They need to be handled
+// after the returned MoveList. Or just use the OnDemand Generator.
+func (mg *movegen) GenerateLegalMoves(position *position.Position, mode GenMode) *movearray.MoveArray {
+	mg.legalMoves.Clear()
+	mg.GeneratePseudoLegalMoves(position, mode)
+	mg.legalMoves = *mg.pseudoLegalMoves.FilterCopy(func(i int) bool {
+		return position.IsLegalMove(mg.pseudoLegalMoves.At(i))
+	})
+	return &mg.legalMoves
 }
 
 func (mg *movegen) String() string {
@@ -122,7 +142,7 @@ func (mg *movegen) String() string {
 // // Private functions
 // //////////////////////////////////////////////////////
 
-func (mg *movegen) generatePawnMoves(position *position.Position, mode GenMode, ml *movelist.MoveList) {
+func (mg *movegen) generatePawnMoves(position *position.Position, mode GenMode, ml *movearray.MoveArray) {
 
 	nextPlayer := position.NextPlayer()
 	myPawns := position.PiecesBb(nextPlayer, Pawn)
@@ -238,7 +258,7 @@ func (mg *movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 	}
 }
 
-func (mg *movegen) generateCastling(position *position.Position, mode GenMode, ml *movelist.MoveList) {
+func (mg *movegen) generateCastling(position *position.Position, mode GenMode, ml *movearray.MoveArray) {
 	nextPlayer := position.NextPlayer()
 	occupiedBB := position.OccupiedAll()
 
@@ -281,7 +301,7 @@ func (mg *movegen) generateCastling(position *position.Position, mode GenMode, m
 	}
 }
 
-func (mg *movegen) generateKingMoves(position *position.Position, mode GenMode, ml *movelist.MoveList) {
+func (mg *movegen) generateKingMoves(position *position.Position, mode GenMode, ml *movearray.MoveArray) {
 	nextPlayer := position.NextPlayer()
 	piece := MakePiece(nextPlayer, King)
 	gamePhase := position.GamePhase()
@@ -317,7 +337,7 @@ func (mg *movegen) generateKingMoves(position *position.Position, mode GenMode, 
 	}
 }
 
-func (mg *movegen) generateMoves(position *position.Position, mode GenMode, ml *movelist.MoveList) {
+func (mg *movegen) generateMoves(position *position.Position, mode GenMode, ml *movearray.MoveArray) {
 	nextPlayer := position.NextPlayer()
 	gamePhase := position.GamePhase()
 	occupiedBb := position.OccupiedAll()
