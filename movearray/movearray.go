@@ -143,8 +143,8 @@ func (ma *MoveArray) Filter(f func (index int) bool) {
 	ma.data = b
 }
 
-// FilterCopy copies the MoveArray into a new MoveArray
-// without the filtered elements. AN element is filtered when
+// FilterCopy copies the MoveArray into the given destination array
+// without the filtered elements. An element is filtered when
 // the given call to func will return false for the element.
 func (ma *MoveArray) FilterCopy(dest *MoveArray, f func (index int) bool) {
 	for i, x := range ma.data {
@@ -179,6 +179,12 @@ func (ma *MoveArray) ForEachParallel(f func (index int)) {
 		}(index)
 	}
 	wg.Wait()
+}
+
+// Data allows access to the underlying slice which is good for range loops
+// Use with care!
+func (ma *MoveArray) Data() []Move {
+	return ma.data
 }
 
 // Clear removes all moves from the queue, but retains the current capacity.

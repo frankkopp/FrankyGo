@@ -133,21 +133,21 @@ func TestPosition_DoMoveNormal(t *testing.T) {
 	move = CreateMove(SqC4, SqD4, Normal, PtNone)
 	position.DoMove(move)
 	// log.Println(position.String())
-	assert.Equal(t,"r3k2r/1ppn3p/2q1q1n1/8/3qPp2/B5R1/p1p2PPP/1R4K1 w kq - 1 2", position.StringFen())
+	assert.Equal(t, "r3k2r/1ppn3p/2q1q1n1/8/3qPp2/B5R1/p1p2PPP/1R4K1 w kq - 1 2", position.StringFen())
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
 	position = NewFen(fen)
 	move = CreateMove(SqC4, SqE4, Normal, PtNone)
 	position.DoMove(move)
 	// log.Println(position.String())
-	assert.Equal(t,"r3k2r/1ppn3p/2q1q1n1/8/4qp2/B5R1/p1p2PPP/1R4K1 w kq - 0 2", position.StringFen())
+	assert.Equal(t, "r3k2r/1ppn3p/2q1q1n1/8/4qp2/B5R1/p1p2PPP/1R4K1 w kq - 0 2", position.StringFen())
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 w kq -"
 	position = NewFen(fen)
 	move = CreateMove(SqG3, SqG6, Normal, PtNone)
 	position.DoMove(move)
 	// log.Println(position.String())
-	assert.Equal(t,"r3k2r/1ppn3p/2q1q1R1/8/2q1Pp2/B7/p1p2PPP/1R4K1 b kq - 0 1", position.StringFen())
+	assert.Equal(t, "r3k2r/1ppn3p/2q1q1R1/8/2q1Pp2/B7/p1p2PPP/1R4K1 b kq - 0 1", position.StringFen())
 }
 
 func TestPosition_DoMoveCastling(t *testing.T) {
@@ -224,7 +224,7 @@ func TestPosition_IsAttacked(t *testing.T) {
 	// knight
 	assert.True(t, position.IsAttacked(SqE5, Black))
 	assert.True(t, position.IsAttacked(SqF4, Black))
-	assert.False(t,position.IsAttacked(SqG1, Black))
+	assert.False(t, position.IsAttacked(SqG1, Black))
 
 	// sliding
 	assert.True(t, position.IsAttacked(SqG6, White))
@@ -235,16 +235,16 @@ func TestPosition_IsAttacked(t *testing.T) {
 
 	// king
 	assert.True(t, position.IsAttacked(SqD1, White))
-	assert.False(t,position.IsAttacked(SqE1, Black))
+	assert.False(t, position.IsAttacked(SqE1, Black))
 
 	// rook
 	assert.True(t, position.IsAttacked(SqA5, Black))
-	assert.False(t,position.IsAttacked(SqA4, Black))
+	assert.False(t, position.IsAttacked(SqA4, Black))
 
 	// queen
-	assert.False(t,position.IsAttacked(SqE8, White))
+	assert.False(t, position.IsAttacked(SqE8, White))
 	assert.True(t, position.IsAttacked(SqD7, White))
-	assert.False(t,position.IsAttacked(SqE8, White))
+	assert.False(t, position.IsAttacked(SqE8, White))
 
 	// en passant
 	fen = "rnbqkbnr/1pp1pppp/p7/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6"
@@ -266,19 +266,19 @@ func TestPosition_IsAttacked(t *testing.T) {
 	// bug tests
 	fen = "r1bqk1nr/pppp1ppp/2nb4/1B2B3/3pP3/8/PPP2PPP/RN1QK1NR b KQkq -"
 	position = NewFen(fen)
-	assert.False(t,position.IsAttacked(SqE8, White))
-	assert.False(t,position.IsAttacked(SqE1, Black))
+	assert.False(t, position.IsAttacked(SqE8, White))
+	assert.False(t, position.IsAttacked(SqE1, Black))
 
 	fen = "rnbqkbnr/ppp1pppp/8/1B6/3Pp3/8/PPP2PPP/RNBQK1NR b KQkq -"
 	position = NewFen(fen)
 	assert.True(t, position.IsAttacked(SqE8, White))
-	assert.False(t,position.IsAttacked(SqE1, Black))
+	assert.False(t, position.IsAttacked(SqE1, Black))
 
 	fen = "8/1pk2p2/2p5/5p2/8/1pp2Q2/5K2/8 w - -"
 	position = NewFen(fen)
-	assert.False(t,position.IsAttacked(SqF7, White))
-	assert.False(t,position.IsAttacked(SqB7, White))
-	assert.False(t,position.IsAttacked(SqB3, White))
+	assert.False(t, position.IsAttacked(SqF7, White))
+	assert.False(t, position.IsAttacked(SqB7, White))
+	assert.False(t, position.IsAttacked(SqB3, White))
 }
 
 func TestPosition_IsLegalMoves(t *testing.T) {
@@ -286,18 +286,42 @@ func TestPosition_IsLegalMoves(t *testing.T) {
 	var fen string
 	var position Position
 
-	// no o-o castling
+	// no o-o castling / o-o-o is allowed
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
 	position = NewFen(fen)
-	assert.False(t,position.IsLegalMove(CreateMove(SqE8, SqG8, Castling, PtNone)))
-	assert.True(t,position.IsLegalMove(CreateMove(SqE8, SqC8, Castling, PtNone)))
+	assert.False(t, position.IsLegalMove(CreateMove(SqE8, SqG8, Castling, PtNone)))
+	assert.True(t, position.IsLegalMove(CreateMove(SqE8, SqC8, Castling, PtNone)))
 
 	// in check - no castling at all
 	fen = "r3k2r/1ppn3p/2q1qNn1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
 	position = NewFen(fen)
-	assert.False(t,position.IsLegalMove(CreateMove(SqE8, SqG8, Castling, PtNone)))
-	assert.False(t,position.IsLegalMove(CreateMove(SqE8, SqC8, Castling, PtNone)))
+	assert.False(t, position.IsLegalMove(CreateMove(SqE8, SqG8, Castling, PtNone)))
+	assert.False(t, position.IsLegalMove(CreateMove(SqE8, SqC8, Castling, PtNone)))
 
+}
+
+func TestPosition_WasLegalMove(t *testing.T) {
+	Init()
+	var fen string
+	var position Position
+
+	// no o-o castling
+	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
+	position = NewFen(fen)
+	position.DoMove(CreateMove(SqE8, SqG8, Castling, PtNone)) // illegal as king crosses attacked square
+	assert.False(t, position.WasLegalMove())
+	position.UndoMove()
+	position.DoMove(CreateMove(SqE8, SqC8, Castling, PtNone)) // legal
+	assert.True(t, position.WasLegalMove())
+
+	// in check - no castling at all
+	fen = "r3k2r/1ppn3p/2q1qNn1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq -"
+	position = NewFen(fen)
+	position.DoMove(CreateMove(SqE8, SqG8, Castling, PtNone)) // illegal as king crosses attacked square
+	assert.False(t, position.IsLegalMove(CreateMove(SqE8, SqG8, Castling, PtNone)))
+	position.UndoMove()
+	position.DoMove(CreateMove(SqE8, SqC8, Castling, PtNone))
+	assert.False(t, position.IsLegalMove(CreateMove(SqE8, SqC8, Castling, PtNone)))
 }
 
 //noinspection GoUnhandledErrorResult
@@ -336,10 +360,8 @@ func NOTest_TimingDoUndo(t *testing.T) {
 	}
 }
 
-
 // ///////////////////////////////////
 // BENCHMARKS
-
 
 func Benchmark_New(b *testing.B) {
 	Init()

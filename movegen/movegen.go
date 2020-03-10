@@ -134,6 +134,117 @@ func (mg *movegen) GenerateLegalMoves(position *position.Position, mode GenMode)
 	return &mg.legalMoves
 }
 
+// HasLegalMove determines if we have at least one legal move. We only have to find
+// one legal move. We search for any KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN move
+// and return immediately if we found one.
+// The order of our search is approx from the most likely to the least likely
+func (mg *movegen) HasLegalMove(position *position.Position) bool {
+
+	nextPlayer   := position.NextPlayer()
+	occupiedBb := position.OccupiedAll()
+	nextPlayerBb := position.OccupiedBb(nextPlayer)
+	opponentBb := position.OccupiedBb(nextPlayer.Flip());
+	myPawns      := position.PiecesBb(nextPlayer, Pawn)
+
+	// KING
+	// We do not need to check castling as possible castling implies King or Rook moves
+	kingSquare := position.KingSquare(nextPlayer)
+	tmpMoves := GetPseudoAttacks(King, kingSquare) &^ nextPlayerBb
+	for tmpMoves != 0 {
+		toSquare := tmpMoves.PopLsb()
+		if position.IsLegalMove(CreateMove(kingSquare, toSquare, Normal, PtNone)) {
+			return true
+		}
+	}
+
+	// PAWN
+	// normal pawn captures to the west (includes promotions)
+	tmpMoves = ShiftBitboard(myPawns, Direction(nextPlayer.MoveDirection())*North+West) & opponentBb
+	for tmpMoves != 0 {
+		toSquare := tmpMoves.PopLsb()
+		fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection())*North+East)
+		if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
+			return true
+		}
+	}
+
+	// normal pawn captures to the east - promotions first
+	tmpMoves = ShiftBitboard(myPawns, Direction(nextPlayer.MoveDirection())*North+East) & opponentBb
+	for tmpMoves != 0 {
+		toSquare := tmpMoves.PopLsb()
+		fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection())*North+West)
+		if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone))  {
+			return true
+		}
+	}
+
+	// pawn pushes - check step one to unoccupied squares
+	tmpMoves = ShiftBitboard(myPawns, Direction(nextPlayer.MoveDirection())*North) &^ occupiedBb
+	// double pawn steps
+	tmpMoves2 := ShiftBitboard(tmpMoves & nextPlayer.PawnDoubleRank(), Direction(nextPlayer.MoveDirection())*North) &^ occupiedBb
+	for tmpMoves != 0 {
+		toSquare := tmpMoves.PopLsb()
+		fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection())*North)
+		if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone))  {
+			return true
+		}
+	}
+	for tmpMoves2 != 0 {
+		toSquare := tmpMoves2.PopLsb()
+		fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection())*North).To(Direction(nextPlayer.Flip().MoveDirection())*North)
+		if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone))  {
+			return true
+		}
+	}
+
+	// OFFICERS
+	for pt := Knight; pt <= Queen; pt++ {
+		pieces := position.PiecesBb(nextPlayer, pt)
+		for pieces != 0 {
+			fromSquare := pieces.PopLsb()
+			moves := GetPseudoAttacks(pt, fromSquare) &^ nextPlayerBb
+			for moves != 0 {
+				toSquare := moves.PopLsb()
+				if pt > Knight { // sliding pieces
+					if Intermediate(fromSquare,toSquare) & occupiedBb == 0 {
+						if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
+							return true
+						}
+					}
+				} else { // knight cannot be blocked
+					if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
+						return true
+					}
+				}
+			}
+		}
+	}
+
+	// en passant captures
+	enPassantSquare := position.GetEnPassantSquare()
+	if enPassantSquare != SqNone {
+		// left
+		tmpMoves = ShiftBitboard(enPassantSquare.Bb(), Direction(nextPlayer.Flip().MoveDirection()) * North + West) & myPawns
+		if tmpMoves != 0 {
+			fromSquare := tmpMoves.PopLsb()
+			if position.IsLegalMove(CreateMove(fromSquare, fromSquare.To(Direction(nextPlayer.MoveDirection())*North+East), EnPassant, PtNone)) {
+				return true
+			}
+		}
+		// right
+		tmpMoves = ShiftBitboard(enPassantSquare.Bb(), Direction(nextPlayer.Flip().MoveDirection()) * North + East) & myPawns
+		if tmpMoves != 0 {
+			fromSquare := tmpMoves.PopLsb()
+			if position.IsLegalMove(CreateMove(fromSquare, fromSquare.To(Direction(nextPlayer.MoveDirection())*North+West), EnPassant, PtNone)) {
+				return true
+			}
+		}
+	}
+
+	// no move found
+	return false
+}
+
 func (mg *movegen) String() string {
 	return "movegen instance"
 }
@@ -206,7 +317,7 @@ func (mg *movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 					toSquare := fromSquare.To(Direction(nextPlayer.MoveDirection())*North - dir)
 					// value is the positional value of the piece at this game phase
 					value := PosValue(piece, toSquare, gamePhase)
-					ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
+					ml.PushBack(CreateMoveValue(fromSquare, toSquare, EnPassant, PtNone, value))
 				}
 			}
 		}

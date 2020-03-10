@@ -420,36 +420,34 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 }
 
 // IsLegalMove test a move if it is legal on the current position.
-// Basically tests if
+// Basically tests if the king would be left in check after the move
+// or if the king crosses an attacked square during castling.
 func (p *Position) IsLegalMove(move Move) bool {
 	// king is not allowed to pass a square which is attacked by opponent
 	if move.MoveType() == Castling {
+		// castling not allowed when in check
+		// we can simply check the from square of the castling move
+		// and check if the current opponent attacks it. Castling would not
+		// be possible if the attack would be influenced by the castling
+		// itself.
+		if p.IsAttacked(move.From(), p.nextPlayer.Flip()) {
+			return false
+		}
+		// castling crossing attacked square?
 		switch move.To() {
 		case SqG1:
-			if p.IsAttacked(SqE1, p.nextPlayer.Flip()) {
-				return false
-			}
 			if p.IsAttacked(SqF1, p.nextPlayer.Flip()) {
 				return false
 			}
 		case SqC1:
-			if p.IsAttacked(SqE1, p.nextPlayer.Flip()) {
-				return false
-			}
 			if p.IsAttacked(SqD1, p.nextPlayer.Flip()) {
 				return false
 			}
 		case SqG8:
-			if p.IsAttacked(SqE8, p.nextPlayer.Flip()) {
-				return false
-			}
 			if p.IsAttacked(SqF8, p.nextPlayer.Flip()) {
 				return false
 			}
 		case SqC8:
-			if p.IsAttacked(SqE8, p.nextPlayer.Flip()) {
-				return false
-			}
 			if p.IsAttacked(SqD8, p.nextPlayer.Flip()) {
 				return false
 			}
@@ -457,13 +455,77 @@ func (p *Position) IsLegalMove(move Move) bool {
 			break
 		}
 	}
-	// // make the move on the position
-	// // then check if the move leaves the king in check
+	// make the move on the position
+	// then check if the move leaves the king in check
 	p.DoMove(move)
 	legal := !p.IsAttacked(p.kingSquare[p.nextPlayer.Flip()], p.nextPlayer)
 	p.UndoMove()
 	return legal
 }
+
+// WasLegalMove tests if the last move was legal. Basically tests if
+// the king is now in check or if the king crossed an attacked square
+// during castling or of there was a castling although in check.
+// If the position does not have a last move (history empty) this
+// will only check if the king of the next player is attacked.
+func (p *Position) WasLegalMove() bool {
+	// king attacked?
+	if p.IsAttacked(p.kingSquare[p.nextPlayer.Flip()], p.nextPlayer) {
+		return false
+	}
+	// look back and check if castling was legal
+	if p.historyCounter > 0 {
+		move := p.history[p.historyCounter-1].move
+		if move.MoveType() == Castling {
+			// castling not allowed when in check
+			// we can simply check the from square of the last castling move
+			// and check if the current player attacks it. Castling would not
+			// be possible if the attack would be influenced by the castling
+			// itself.
+			if p.IsAttacked(move.From(), p.nextPlayer) {
+				return false
+			}
+			// castling crossing attacked square?
+			switch move.To() {
+			case SqG1:
+				if p.IsAttacked(SqF1, p.nextPlayer) {
+					return false
+				}
+			case SqC1:
+				if p.IsAttacked(SqD1, p.nextPlayer) {
+					return false
+				}
+			case SqG8:
+				if p.IsAttacked(SqF8, p.nextPlayer) {
+					return false
+				}
+			case SqC8:
+				if p.IsAttacked(SqD8, p.nextPlayer) {
+					return false
+				}
+			default:
+				break
+			}
+		}
+	}
+	return true
+}
+
+// HasCheck returns true if the next player is threatened by a check
+// (king is attacked)
+func (p *Position) HasCheck() bool {
+	if p.hasCheckFlag != flagTBD {
+		return p.hasCheckFlag == flagTrue
+	}
+	check := p.IsAttacked(p.kingSquare[p.nextPlayer], p.nextPlayer.Flip())
+	if check {
+		p.hasCheckFlag = flagTrue
+	} else {
+		p.hasCheckFlag = flagFalse
+	}
+	return check
+}
+
 
 // String returns a string representing the board instance. This
 // includes the fen, a board matrix, game phase, material and pos values.
@@ -861,3 +923,4 @@ func (p *Position) CastlingRights() CastlingRights {
 func (p *Position) KingSquare(c Color) Square {
 	return p.kingSquare[c]
 }
+
