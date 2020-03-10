@@ -325,7 +325,7 @@ func TestPosition_WasLegalMove(t *testing.T) {
 }
 
 //noinspection GoUnhandledErrorResult
-func NOTest_TimingDoUndo(t *testing.T) {
+func Test_TimingDoUndo(t *testing.T) {
 	out := message.NewPrinter(language.German)
 	Init()
 	const rounds = 5
@@ -357,6 +357,7 @@ func NOTest_TimingDoUndo(t *testing.T) {
 		elapsed := time.Since(start)
 		out.Printf("DoMove/UndoMove took %d ns for %d iterations with 5 do/undo pairs\n", elapsed.Nanoseconds(), iterations)
 		out.Printf("DoMove/UndoMove took %d ns per do/undo pair\n", elapsed.Nanoseconds()/int64(iterations*5))
+		out.Printf("Positions per sec %d pps\n",int64(iterations*5*1e9)/elapsed.Nanoseconds())
 	}
 }
 

@@ -209,6 +209,27 @@ func Test_movegen_GenerateLegalMoves(t *testing.T) {
 	moves.Clear()
 }
 
+func TestHasLegalMoves(t *testing.T) {
+	Init()
+	mg := New()
+
+	// check mate position
+	pos := position.NewFen("rn2kbnr/pbpp1ppp/8/1p2p1q1/4K3/3P4/PPP1PPPP/RNBQ1BNR w kq -")
+	assert.False(t, mg.HasLegalMove(&pos))
+	assert.True(t, pos.HasCheck())
+
+	// stale mate position
+	pos = position.NewFen("7k/5K2/6Q1/8/8/8/8/8 b - -")
+	assert.False(t, mg.HasLegalMove(&pos))
+	assert.False(t, pos.HasCheck())
+
+	// only en passant
+	pos = position.NewFen("8/8/8/8/5Pp1/6P1/7k/K3BQ2 b - f3")
+	assert.True(t, mg.HasLegalMove(&pos))
+	assert.False(t, pos.HasCheck())
+}
+
+
 // MoveList
 // GeneratePseudoLegalMoves took 6.948.781.000 ns for 1.000.000 iterations
 // GeneratePseudoLegalMoves took 6.948 ns
@@ -249,27 +270,5 @@ func TestTimingPseudoMoveGen(t *testing.T) {
 	// moves.ForEach(func(i int) {
 	// 	log.Printf("%d. %s\n", i+1, moves.At(i).String())
 	// })
-}
-
-func TestHasLegalMoves(t *testing.T) {
-	// out := message.NewPrinter(language.German)
-	Init()
-	mg := New()
-
-	// check mate position
-	pos := position.NewFen("rn2kbnr/pbpp1ppp/8/1p2p1q1/4K3/3P4/PPP1PPPP/RNBQ1BNR w kq -")
-	assert.False(t, mg.HasLegalMove(&pos))
-	assert.True(t, pos.HasCheck())
-
-	// stale mate position
-	pos = position.NewFen("7k/5K2/6Q1/8/8/8/8/8 b - -")
-	assert.False(t, mg.HasLegalMove(&pos))
-	assert.False(t, pos.HasCheck())
-
-	// only en passant
-	pos = position.NewFen("8/8/8/8/5Pp1/6P1/7k/K3BQ2 b - f3")
-	assert.True(t, mg.HasLegalMove(&pos))
-	assert.False(t, pos.HasCheck())
-
 }
 

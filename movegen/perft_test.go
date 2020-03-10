@@ -50,7 +50,7 @@ var results = [10][6]uint64{
 //noinspection GoImportUsedAsName
 func Test_StandardPerft(t *testing.T) {
 	Init()
-	maxDepth := 7
+	maxDepth := 6
 	var perft Perft
 	assert := assert.New(t)
 

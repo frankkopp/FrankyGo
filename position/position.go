@@ -149,13 +149,11 @@ func (p *Position) DoMove(m Move) {
 	if assert.DEBUG {
 		assert.Assert(m.IsValid(), "Position DoMove: Invalid move %s", m.String())
 	}
-	moveType := m.MoveType()
 	fromSq := m.From()
 	fromPc := p.board[fromSq]
 	if assert.DEBUG {
 		assert.Assert(fromPc != PieceNone, "Position DoMove: No piece on %s", fromPc.String())
 	}
-	fromPt := fromPc.TypeOf()
 	myColor := fromPc.ColorOf()
 	if assert.DEBUG {
 		assert.Assert(myColor == p.nextPlayer,
@@ -163,7 +161,6 @@ func (p *Position) DoMove(m Move) {
 	}
 	toSq := m.To()
 	targetPc := p.board[toSq]
-	promPt := m.PromotionType()
 
 	p.history[p.historyCounter] = historyState{
 		p.zobristKey,
@@ -174,12 +171,13 @@ func (p *Position) DoMove(m Move) {
 		p.enPassantSquare,
 		p.halfMoveClock,
 		p.hasCheckFlag}
+
 	p.historyCounter++
 	if assert.DEBUG {
 		assert.Assert(p.historyCounter < MaxMoves, "Position DoMove: Can't have more moves than MaxMoves=%d", MaxMoves)
 	}
 
-	switch moveType {
+	switch m.MoveType() {
 	case Normal:
 		if p.castlingRights != CastlingNone && (CastlingMask.Has(fromSq) || CastlingMask.Has(toSq)) {
 			p.invalidateCastlingRights(fromSq, toSq)
@@ -188,7 +186,7 @@ func (p *Position) DoMove(m Move) {
 		if targetPc != PieceNone { // capture
 			p.removePiece(toSq)
 			p.halfMoveClock = 0 // reset half move clock because of capture
-		} else if fromPt == Pawn {
+		} else if fromPc.TypeOf() == Pawn {
 			p.halfMoveClock = 0                    // reset half move clock because of pawn move
 			if SquareDistance(fromSq, toSq) == 2 { // pawn double - set en passant
 				// set new en passant target field - always one "behind" the toSquare
@@ -211,7 +209,7 @@ func (p *Position) DoMove(m Move) {
 			p.invalidateCastlingRights(fromSq, toSq)
 		}
 		p.removePiece(fromSq)
-		p.putPiece(MakePiece(myColor, promPt), toSq)
+		p.putPiece(MakePiece(myColor, m.PromotionType()), toSq)
 		p.clearEnPassant()
 		p.halfMoveClock = 0 // reset half move clock because of pawn move
 	case EnPassant:
@@ -310,7 +308,6 @@ func (p *Position) UndoMove() {
 
 	// undo piece move / restore board
 	switch move.MoveType() {
-
 	case Normal:
 		p.movePiece(move.To(), move.From())
 		if p.history[p.historyCounter].capturedPiece != PieceNone {
@@ -525,7 +522,6 @@ func (p *Position) HasCheck() bool {
 	}
 	return check
 }
-
 
 // String returns a string representing the board instance. This
 // includes the fen, a board matrix, game phase, material and pos values.
@@ -923,4 +919,3 @@ func (p *Position) CastlingRights() CastlingRights {
 func (p *Position) KingSquare(c Color) Square {
 	return p.kingSquare[c]
 }
-
