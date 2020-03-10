@@ -162,6 +162,7 @@ func (p *Position) DoMove(m Move) {
 	toSq := m.To()
 	targetPc := p.board[toSq]
 
+	// Save state of board for undo
 	p.history[p.historyCounter] = historyState{
 		p.zobristKey,
 		m,
@@ -177,117 +178,19 @@ func (p *Position) DoMove(m Move) {
 		assert.Assert(p.historyCounter < MaxMoves, "Position DoMove: Can't have more moves than MaxMoves=%d", MaxMoves)
 	}
 
+	// do move according to MoveType
 	switch m.MoveType() {
 	case Normal:
-		if p.castlingRights != CastlingNone && (CastlingMask.Has(fromSq) || CastlingMask.Has(toSq)) {
-			p.invalidateCastlingRights(fromSq, toSq)
-		}
-		p.clearEnPassant()
-		if targetPc != PieceNone { // capture
-			p.removePiece(toSq)
-			p.halfMoveClock = 0 // reset half move clock because of capture
-		} else if fromPc.TypeOf() == Pawn {
-			p.halfMoveClock = 0                    // reset half move clock because of pawn move
-			if SquareDistance(fromSq, toSq) == 2 { // pawn double - set en passant
-				// set new en passant target field - always one "behind" the toSquare
-				p.enPassantSquare = toSq.To(Direction(myColor.Flip().MoveDirection()) * North)
-				p.zobristKey ^= zobristBase.enPassantFile[p.enPassantSquare.FileOf()] // in
-			}
-		} else {
-			p.halfMoveClock++
-		}
-		p.movePiece(fromSq, toSq)
+		p.doNormalMove(fromSq, toSq, targetPc, fromPc, myColor)
 	case Promotion:
-		if assert.DEBUG {
-			assert.Assert(fromPc == MakePiece(myColor, Pawn), "Position DoMove: Move type promotion but From piece not Pawn")
-			assert.Assert(myColor.PromotionRankBb().Has(toSq), "Position DoMove: Promotion move but wrong Rank")
-		}
-		if targetPc != PieceNone { // capture
-			p.removePiece(toSq)
-		}
-		if p.castlingRights != CastlingNone && (CastlingMask.Has(fromSq) || CastlingMask.Has(toSq)) {
-			p.invalidateCastlingRights(fromSq, toSq)
-		}
-		p.removePiece(fromSq)
-		p.putPiece(MakePiece(myColor, m.PromotionType()), toSq)
-		p.clearEnPassant()
-		p.halfMoveClock = 0 // reset half move clock because of pawn move
+		p.doPromotionMove(m, fromPc, myColor, toSq, targetPc, fromSq)
 	case EnPassant:
-		capSq := toSq.To(Direction(myColor.Flip().MoveDirection()) * North)
-		if assert.DEBUG {
-			assert.Assert(fromPc == MakePiece(myColor, Pawn), "Position DoMove: Move type en passant but from piece not pawn")
-			assert.Assert(p.enPassantSquare != SqNone, "Position DoMove: EnPassant move type without en passant")
-			assert.Assert(p.board[capSq] == MakePiece(myColor.Flip(), Pawn), "Position DoMove: Captured en passant piece invalid")
-		}
-		p.removePiece(capSq)
-		p.movePiece(fromSq, toSq)
-		p.clearEnPassant()
-		p.halfMoveClock = 0 // reset half move clock because of pawn move
+		p.doEnPassantMove(toSq, myColor, fromPc, fromSq)
 	case Castling:
-		if assert.DEBUG {
-			assert.Assert(fromPc == MakePiece(myColor, King), "Position DoMove: Move type castling but from piece not king")
-		}
-		switch toSq {
-		case SqG1:
-			if assert.DEBUG {
-				assert.Assert(p.castlingRights.Has(CastlingWhiteOO), "Position DoMove: White king side castling not available")
-				assert.Assert(fromSq == SqE1, "Position DoMove: Castling from square not correct")
-				assert.Assert(p.board[SqE1] == WhiteKing, "Position DoMove: SqE1 has no king for castling")
-				assert.Assert(p.board[SqH1] == WhiteRook, "Position DoMove: SqH1 has no rook for castling")
-				assert.Assert(p.OccupiedAll()&Intermediate(SqE1, SqH1) == 0, "Position DoMove: Castling king side blocked")
-			}
-			p.movePiece(fromSq, toSq)                                    // King
-			p.movePiece(SqH1, SqF1)                                      // Rook
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
-			p.castlingRights.Remove(CastlingWhite)
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in;
-		case SqC1:
-			if assert.DEBUG {
-				assert.Assert(p.castlingRights.Has(CastlingWhiteOOO), "Position DoMove: White queen side castling not available")
-				assert.Assert(fromSq == SqE1, "Position DoMove: Castling from square not correct")
-				assert.Assert(p.board[SqE1] == WhiteKing, "Position DoMove: SqE1 has no king for castling")
-				assert.Assert(p.board[SqA1] == WhiteRook, "Position DoMove: SqA1 has no rook for castling")
-				assert.Assert(p.OccupiedAll()&Intermediate(SqE1, SqA1) == 0, "Position DoMove: Castling queen side blocked")
-			}
-			p.movePiece(fromSq, toSq)                                    // King
-			p.movePiece(SqA1, SqD1)                                      // Rook
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
-			p.castlingRights.Remove(CastlingWhite)
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in
-		case SqG8:
-			if assert.DEBUG {
-				assert.Assert(p.castlingRights.Has(CastlingBlackOO), "Position DoMove: Black king side castling not available")
-				assert.Assert(fromSq == SqE8, "Position DoMove: Castling from square not correct")
-				assert.Assert(p.board[SqE8] == BlackKing, "Position DoMove: SqE8 has no king for castling")
-				assert.Assert(p.board[SqH8] == BlackRook, "Position DoMove: SqH8 has no rook for castling")
-				assert.Assert(p.OccupiedAll()&Intermediate(SqE8, SqH8) == 0, "Position DoMove: Castling king side blocked")
-			}
-			p.movePiece(fromSq, toSq)                                    // King
-			p.movePiece(SqH8, SqF8)                                      // Rook
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
-			p.castlingRights.Remove(CastlingBlack)
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in
-		case SqC8:
-			if assert.DEBUG {
-				assert.Assert(p.castlingRights.Has(CastlingBlackOOO), "Position DoMove: Black queen side castling not available")
-				assert.Assert(fromSq == SqE8, "Position DoMove: Castling from square not correct")
-				assert.Assert(p.board[SqE8] == BlackKing, "Position DoMove: SqE8 has no king for castling")
-				assert.Assert(p.board[SqA8] == BlackRook, "Position DoMove: SqA8 has no rook for castling")
-				assert.Assert(p.OccupiedAll()&Intermediate(SqE8, SqA8) == 0, "Position DoMove: Castling queen side blocked")
-			}
-			p.movePiece(fromSq, toSq)                                    // King
-			p.movePiece(SqA8, SqD8)                                      // Rook
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
-			p.castlingRights.Remove(CastlingBlack)
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in
-			break
-		default:
-			panic("Invalid castle move!")
-		}
-		p.clearEnPassant()
-		p.halfMoveClock++
+		p.doCastlingMove(fromPc, myColor, toSq, fromSq)
 	}
 
+	// update additional state info
 	p.hasCheckFlag = flagTBD
 	p.nextHalfMoveNumber++
 	p.nextPlayer = p.nextPlayer.Flip()
@@ -323,8 +226,6 @@ func (p *Position) UndoMove() {
 		// ignore Zobrist Key as it will be restored via history
 		p.movePiece(move.To(), move.From())
 		p.putPiece(MakePiece(p.nextPlayer.Flip(), Pawn), move.To().To(Direction(p.nextPlayer.Flip().MoveDirection())*North))
-		break
-
 	case Castling:
 		// ignore Zobrist Key as it will be restored via history
 		// castling rights are restored via history
@@ -349,6 +250,125 @@ func (p *Position) UndoMove() {
 	p.halfMoveClock = p.history[p.historyCounter].halfMoveClock
 	p.hasCheckFlag = p.history[p.historyCounter].hasCheckFlag
 	p.zobristKey = p.history[p.historyCounter].zobristKey
+}
+
+func (p *Position) doNormalMove(fromSq Square, toSq Square, targetPc Piece, fromPc Piece, myColor Color) {
+	// If we still have castling rights and the move touches castling squares then invalidate
+	// the corresponding castling right
+	if p.castlingRights != CastlingNone && (CastlingMask.Has(fromSq) || CastlingMask.Has(toSq)) {
+		p.invalidateCastlingRights(fromSq, toSq)
+	}
+	p.clearEnPassant()
+	if targetPc != PieceNone { // capture
+		p.removePiece(toSq)
+		p.halfMoveClock = 0 // reset half move clock because of capture
+	} else if fromPc.TypeOf() == Pawn {
+		p.halfMoveClock = 0                    // reset half move clock because of pawn move
+		if SquareDistance(fromSq, toSq) == 2 { // pawn double - set en passant
+			// set new en passant target field - always one "behind" the toSquare
+			p.enPassantSquare = toSq.To(Direction(myColor.Flip().MoveDirection()) * North)
+			p.zobristKey ^= zobristBase.enPassantFile[p.enPassantSquare.FileOf()] // in
+		}
+	} else {
+		p.halfMoveClock++
+	}
+	p.movePiece(fromSq, toSq)
+}
+
+func (p *Position) doCastlingMove(fromPc Piece, myColor Color, toSq Square, fromSq Square) {
+	if assert.DEBUG {
+		assert.Assert(fromPc == MakePiece(myColor, King), "Position DoMove: Move type castling but from piece not king")
+	}
+	switch toSq {
+	case SqG1:
+		if assert.DEBUG {
+			assert.Assert(p.castlingRights.Has(CastlingWhiteOO), "Position DoMove: White king side castling not available")
+			assert.Assert(fromSq == SqE1, "Position DoMove: Castling from square not correct")
+			assert.Assert(p.board[SqE1] == WhiteKing, "Position DoMove: SqE1 has no king for castling")
+			assert.Assert(p.board[SqH1] == WhiteRook, "Position DoMove: SqH1 has no rook for castling")
+			assert.Assert(p.OccupiedAll()&Intermediate(SqE1, SqH1) == 0, "Position DoMove: Castling king side blocked")
+		}
+		p.movePiece(fromSq, toSq)                                    // King
+		p.movePiece(SqH1, SqF1)                                      // Rook
+		p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
+		p.castlingRights.Remove(CastlingWhite)
+		p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in;
+	case SqC1:
+		if assert.DEBUG {
+			assert.Assert(p.castlingRights.Has(CastlingWhiteOOO), "Position DoMove: White queen side castling not available")
+			assert.Assert(fromSq == SqE1, "Position DoMove: Castling from square not correct")
+			assert.Assert(p.board[SqE1] == WhiteKing, "Position DoMove: SqE1 has no king for castling")
+			assert.Assert(p.board[SqA1] == WhiteRook, "Position DoMove: SqA1 has no rook for castling")
+			assert.Assert(p.OccupiedAll()&Intermediate(SqE1, SqA1) == 0, "Position DoMove: Castling queen side blocked")
+		}
+		p.movePiece(fromSq, toSq)                                    // King
+		p.movePiece(SqA1, SqD1)                                      // Rook
+		p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
+		p.castlingRights.Remove(CastlingWhite)
+		p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in
+	case SqG8:
+		if assert.DEBUG {
+			assert.Assert(p.castlingRights.Has(CastlingBlackOO), "Position DoMove: Black king side castling not available")
+			assert.Assert(fromSq == SqE8, "Position DoMove: Castling from square not correct")
+			assert.Assert(p.board[SqE8] == BlackKing, "Position DoMove: SqE8 has no king for castling")
+			assert.Assert(p.board[SqH8] == BlackRook, "Position DoMove: SqH8 has no rook for castling")
+			assert.Assert(p.OccupiedAll()&Intermediate(SqE8, SqH8) == 0, "Position DoMove: Castling king side blocked")
+		}
+		p.movePiece(fromSq, toSq)                                    // King
+		p.movePiece(SqH8, SqF8)                                      // Rook
+		p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
+		p.castlingRights.Remove(CastlingBlack)
+		p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in
+	case SqC8:
+		if assert.DEBUG {
+			assert.Assert(p.castlingRights.Has(CastlingBlackOOO), "Position DoMove: Black queen side castling not available")
+			assert.Assert(fromSq == SqE8, "Position DoMove: Castling from square not correct")
+			assert.Assert(p.board[SqE8] == BlackKing, "Position DoMove: SqE8 has no king for castling")
+			assert.Assert(p.board[SqA8] == BlackRook, "Position DoMove: SqA8 has no rook for castling")
+			assert.Assert(p.OccupiedAll()&Intermediate(SqE8, SqA8) == 0, "Position DoMove: Castling queen side blocked")
+		}
+		p.movePiece(fromSq, toSq)                                    // King
+		p.movePiece(SqA8, SqD8)                                      // Rook
+		p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
+		p.castlingRights.Remove(CastlingBlack)
+		p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in
+	default:
+		panic("Invalid castle move!")
+	}
+	p.clearEnPassant()
+	p.halfMoveClock++
+}
+
+func (p *Position) doEnPassantMove(toSq Square, myColor Color, fromPc Piece, fromSq Square) {
+	capSq := toSq.To(Direction(myColor.Flip().MoveDirection()) * North)
+	if assert.DEBUG {
+		assert.Assert(fromPc == MakePiece(myColor, Pawn), "Position DoMove: Move type en passant but from piece not pawn")
+		assert.Assert(p.enPassantSquare != SqNone, "Position DoMove: EnPassant move type without en passant")
+		assert.Assert(p.board[capSq] == MakePiece(myColor.Flip(), Pawn), "Position DoMove: Captured en passant piece invalid")
+	}
+	p.removePiece(capSq)
+	p.movePiece(fromSq, toSq)
+	p.clearEnPassant()
+	// reset half move clock because of pawn move
+	p.halfMoveClock = 0
+}
+
+
+func (p *Position) doPromotionMove(m Move, fromPc Piece, myColor Color, toSq Square, targetPc Piece, fromSq Square) {
+	if assert.DEBUG {
+		assert.Assert(fromPc == MakePiece(myColor, Pawn), "Position DoMove: Move type promotion but From piece not Pawn")
+		assert.Assert(myColor.PromotionRankBb().Has(toSq), "Position DoMove: Promotion move but wrong Rank")
+	}
+	if targetPc != PieceNone { // capture
+		p.removePiece(toSq)
+	}
+	if p.castlingRights != CastlingNone && (CastlingMask.Has(fromSq) || CastlingMask.Has(toSq)) {
+		p.invalidateCastlingRights(fromSq, toSq)
+	}
+	p.removePiece(fromSq)
+	p.putPiece(MakePiece(myColor, m.PromotionType()), toSq)
+	p.clearEnPassant()
+	p.halfMoveClock = 0  // reset half move clock because of pawn move
 }
 
 // IsAttacked checks if the given square is attacked by a piece
