@@ -5,6 +5,6 @@
     <inspection_tool class="GoExportedElementShouldHaveComment" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="GoShadowedVar" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="GoUnusedConst" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
-    <inspection_tool class="TodoComment" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="TodoComment" enabled="true" level="INFORMATION" enabled_by_default="true" />
   </profile>
 </component>
