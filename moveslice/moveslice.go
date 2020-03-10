@@ -44,77 +44,87 @@ func New(cap int) MoveSlice {
 	return make([]Move, 0, cap)
 }
 
+// Len returns the number of moves currently stored in the array
+func (ms *MoveSlice) Len() int {
+	return len(*ms)
+}
+
+// Cap returns the capacity of the array
+func (ms *MoveSlice) Cap() int {
+	return cap(*ms)
+}
+
 // PushBack appends an element at the end of the array
-func (ma *MoveSlice) PushBack(m Move) {
-	*ma = append(*ma, m)
+func (ms *MoveSlice) PushBack(m Move) {
+	*ms = append(*ms, m)
 }
 
 // PopBack removes and returns the move from the back of the queue.
 // If the queue is empty, the call panics.
-func (ma *MoveSlice) PopBack() Move {
-	if len(*ma) <= 0 {
+func (ms *MoveSlice) PopBack() Move {
+	if len(*ms) <= 0 {
 		panic("MoveSlice: PopBack() called on empty array")
 	}
-	backMove := (*ma)[len(*ma)-1]
-	*ma = (*ma)[:len(*ma)-1]
+	backMove := (*ms)[len(*ms)-1]
+	*ms = (*ms)[:len(*ms)-1]
 	return backMove
 }
 
 // PushFront prepends an element at the beginning of the array using
 // the underlying array (does not create a new one)
-func (ma *MoveSlice) PushFront(m Move) {
-	*ma = append(*ma, MoveNone)
-	copy((*ma)[1:], *ma)
-	(*ma)[0] = m
+func (ms *MoveSlice) PushFront(m Move) {
+	*ms = append(*ms, MoveNone)
+	copy((*ms)[1:], *ms)
+	(*ms)[0] = m
 }
 
 // PopFront removes and returns the move from the front of the array.
 // If the array is empty, the call panics.
 // Shrinks the capacity of the array and might lead to earlier
 // re-allocations
-func (ma *MoveSlice) PopFront() Move {
-	if len(*ma) <= 0 {
+func (ms *MoveSlice) PopFront() Move {
+	if len(*ms) <= 0 {
 		panic("MoveSlice: PopFront() called on empty array")
 	}
-		frontMove := (*ma)[0]
-	*ma = (*ma)[1:]
+		frontMove := (*ms)[0]
+	*ms = (*ms)[1:]
 	return frontMove
 }
 
 // Front returns the move at the front of the array.  This is the element
 // that would be returned by PopFront(). This call panics if the array is
 // empty.
-func (ma *MoveSlice) Front() Move {
-	if len(*ma) <= 0 {
+func (ms *MoveSlice) Front() Move {
+	if len(*ms) <= 0 {
 		panic("MoveSlice: Front() called when empty")
 	}
-	return (*ma)[0]
+	return (*ms)[0]
 }
 
 // Back returns the move at the back of the array.  This is the element
 // that would be returned by PopBack().  This call panics if the array is
 // empty.
-func (ma *MoveSlice) Back() Move {
-	if len(*ma) <= 0 {
+func (ms *MoveSlice) Back() Move {
+	if len(*ms) <= 0 {
 		panic("MoveSlice: Back() called when empty")
 	}
-	return (*ma)[len(*ma)-1]
+	return (*ms)[len(*ms)-1]
 }
 
 // At returns the move at index i in the array without removing the move
 // from the array. At(0) refers to the first move and is the same as Front().
 // At(Len()-1) refers to the last move and is the same as Back().
 // Index will not be checked against bounds.
-func (ma *MoveSlice) At(i int) Move {
-	return (*ma)[i]
+func (ms *MoveSlice) At(i int) Move {
+	return (*ms)[i]
 }
 
 // Set puts a move at index i in the queue. Set shares the same purpose
 // than At() but perform the opposite operation. The index i is the same
 // index defined by At().
 // Index will not be checked against bounds.
-func (ma *MoveSlice) Set(i int, move Move) {
-	(*ma)[i] = move
+func (ms *MoveSlice) Set(i int, move Move) {
+	(*ms)[i] = move
 }
 
 // Filter removes all elements from the MoveSlice for
@@ -122,21 +132,21 @@ func (ma *MoveSlice) Set(i int, move Move) {
 // Rebuilds the data slice by looping over all elements
 // and only re-adding elements for which the call to the
 // given func is true. Reuses the underlying array
-func (ma *MoveSlice) Filter(f func(index int) bool) {
-	b := (*ma)[:0]
-	for i, x := range *ma {
+func (ms *MoveSlice) Filter(f func(index int) bool) {
+	b := (*ms)[:0]
+	for i, x := range *ms {
 		if f(i) {
 			b = append(b, x)
 		}
 	}
-	*ma = b
+	*ms = b
 }
 
 // FilterCopy copies the MoveSlice into the given destination array
 // without the filtered elements. An element is filtered when
 // the given call to func will return false for the element.
-func (ma *MoveSlice) FilterCopy(dest *MoveSlice, f func(index int) bool) {
-	for i, x := range *ma {
+func (ms *MoveSlice) FilterCopy(dest *MoveSlice, f func(index int) bool) {
+	for i, x := range *ms {
 		if f(i) {
 			*dest = append(*dest, x)
 		}
@@ -145,8 +155,8 @@ func (ma *MoveSlice) FilterCopy(dest *MoveSlice, f func(index int) bool) {
 
 // ForEach simple range loop calling the given function on each element
 // in stored order
-func (ma *MoveSlice) ForEach(f func(index int)) {
-	for index, _ := range *ma {
+func (ms *MoveSlice) ForEach(f func(index int)) {
+	for index, _ := range *ms {
 		f(index)
 	}
 }
@@ -157,11 +167,11 @@ func (ma *MoveSlice) ForEach(f func(index int)) {
 // Waits until all elements have been processed. There is not
 // synchronization for the parallel execution. This needs to done
 // in the provided function
-func (ma *MoveSlice) ForEachParallel(f func(index int)) {
-	sliceLength := len(*ma)
+func (ms *MoveSlice) ForEachParallel(f func(index int)) {
+	sliceLength := len(*ms)
 	var wg sync.WaitGroup
 	wg.Add(sliceLength)
-	for index, _ := range *ma {
+	for index, _ := range *ms {
 		go func(i int) {
 			defer wg.Done()
 			f(i)
@@ -172,42 +182,42 @@ func (ma *MoveSlice) ForEachParallel(f func(index int)) {
 
 // Data allows access to the underlying slice which is good for range loops
 // Use with care!
-func (ma *MoveSlice) Data() []Move {
-	return *ma
+func (ms *MoveSlice) Data() []Move {
+	return *ms
 }
 
 // Clear removes all moves from the queue, but retains the current capacity.
 // This is useful when repeatedly reusing the queue at high frequency to avoid
 // GC during reuse.
-func (ma *MoveSlice) Clear() {
-	*ma = (*ma)[:0]
+func (ms *MoveSlice) Clear() {
+	*ms = (*ms)[:0]
 }
 
 // Sort sorts the moves from highest value to lowest value
 // Uses InsertionSort as MoveSlices are mostly pre-sorted and small
-func (ma *MoveSlice) Sort() {
-	l := len(*ma)
+func (ms *MoveSlice) Sort() {
+	l := len(*ms)
 	for i := 1; i < l; i++ {
-		tmp := (*ma)[i]
+		tmp := (*ms)[i]
 		j := i
-		for j > 0 && tmp > (*ma)[j-1] {
-			(*ma)[j] = (*ma)[j-1]
+		for j > 0 && tmp > (*ms)[j-1] {
+			(*ms)[j] = (*ms)[j-1]
 			j--
 		}
-		(*ma)[j] = tmp
+		(*ms)[j] = tmp
 	}
 }
 
 // String returns a string representation of a move list
-func (ma *MoveSlice) String() string {
+func (ms *MoveSlice) String() string {
 	var os strings.Builder
-	size := len(*ma)
+	size := len(*ms)
 	os.WriteString(fmt.Sprintf("MoveList: [%d] { ", size))
 	for i := 0; i < size; i++ {
 		if i > 0 {
 			os.WriteString(", ")
 		}
-		m := ma.At(i)
+		m := ms.At(i)
 		os.WriteString(m.String())
 	}
 	os.WriteString(" }")
@@ -216,14 +226,14 @@ func (ma *MoveSlice) String() string {
 
 // StringUci returns a string with a space separated list
 // of all moves i the list in UCI protocol format
-func (ma *MoveSlice) StringUci() string {
+func (ms *MoveSlice) StringUci() string {
 	var os strings.Builder
-	size := len(*ma)
+	size := len(*ms)
 	for i := 0; i < size; i++ {
 		if i > 0 {
 			os.WriteString(" ")
 		}
-		m := ma.At(i)
+		m := ms.At(i)
 		os.WriteString(m.StringUci())
 	}
 	return os.String()

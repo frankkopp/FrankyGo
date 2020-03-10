@@ -27,10 +27,14 @@ package moveslice
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 
 	. "github.com/frankkopp/FrankyGo/types"
 )
@@ -223,6 +227,33 @@ func TestMoveArray_Sort(t *testing.T) {
 	for i, v := range ma {
 		fmt.Println(i, v)
 	}
+}
+
+
+func TestMoveArray_SortRandom(t *testing.T) {
+	out := message.NewPrinter(language.German)
+
+	ma := New(MaxMoves)
+	items := 10_000
+
+	// generate random moves
+	for i := 0; i < items; i++ {
+		ma.PushBack(Move(rand.Int31()))
+	}
+
+	// sort
+	start := time.Now()
+	ma.Sort()
+	elapsed := time.Since(start)
+	out.Printf("%d ns\n", elapsed.Nanoseconds())
+
+	// check
+	tmp := ma[0]
+	for i := 0; i < items; i++ {
+		assert.True(t, tmp >= ma[i])
+		tmp = ma[i]
+	}
+
 }
 
 
