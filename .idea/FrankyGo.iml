@@ -1,8 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="WEB_MODULE" version="4">
-  <component name="Go" enabled="true" />
+  <component name="Go" enabled="true">
+    <buildTags>
+      <option name="compiler" value="gc" />
+    </buildTags>
+  </component>
+  <component name="GoLibraries">
+    <option name="urls">
+      <list>
+        <option value="file://$MODULE_DIR$/../.." />
+        <option value="file://$MODULE_DIR$/../../../pkg/mod/golang.org" />
+        <option value="file://$MODULE_DIR$/../../../pkg/mod/github.com" />
+      </list>
+    </option>
+  </component>
   <component name="NewModuleRootManager">
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/.idea" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
