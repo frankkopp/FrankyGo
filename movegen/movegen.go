@@ -30,16 +30,16 @@ package movegen
 
 import (
 	"github.com/frankkopp/FrankyGo/assert"
-	"github.com/frankkopp/FrankyGo/movearray"
+	"github.com/frankkopp/FrankyGo/moveslice"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
 type movegen struct {
-	pseudoLegalMoves   movearray.MoveArray
-	legalMoves         movearray.MoveArray
-	onDemandMoves      movearray.MoveArray
-	killerMoves        movearray.MoveArray
+	pseudoLegalMoves   moveslice.MoveSlice
+	legalMoves         moveslice.MoveSlice
+	onDemandMoves      moveslice.MoveSlice
+	killerMoves        moveslice.MoveSlice
 	pvMove             Move
 	currentODStage     int
 	currentIteratorKey position.Key
@@ -79,10 +79,10 @@ const (
 // New creates a new instance of a move generator
 func New() movegen {
 	tmpMg := movegen{
-		pseudoLegalMoves:   movearray.New(MaxMoves),
-		legalMoves:         movearray.New(MaxMoves),
-		onDemandMoves:      movearray.New(MaxMoves),
-		killerMoves:        movearray.New(4),
+		pseudoLegalMoves:   moveslice.New(MaxMoves),
+		legalMoves:         moveslice.New(MaxMoves),
+		onDemandMoves:      moveslice.New(MaxMoves),
+		killerMoves:        moveslice.New(4),
 		pvMove:             MoveNone,
 		currentODStage:     odNew,
 		currentIteratorKey: 0,
@@ -98,7 +98,7 @@ func New() movegen {
 // king is left in check or passes an attacked square when castling or has been in check
 // before castling. Disregards PV moves and Killer moves. They need to be handled after
 // the returned MoveList. Or just use the OnDemand Generator.
-func (mg *movegen) GeneratePseudoLegalMoves(position *position.Position, mode GenMode) *movearray.MoveArray {
+func (mg *movegen) GeneratePseudoLegalMoves(position *position.Position, mode GenMode) *moveslice.MoveSlice {
 	mg.pseudoLegalMoves.Clear()
 	if mode&GenCap != 0 {
 		mg.generatePawnMoves(position, GenCap, &mg.pseudoLegalMoves)
@@ -125,7 +125,7 @@ func (mg *movegen) GeneratePseudoLegalMoves(position *position.Position, mode Ge
 // Uses GeneratePseudoLegalMoves and filters out illegal moves.
 // Disregards PV moves and Killer moves. They need to be handled
 // after the returned MoveList. Or just use the OnDemand Generator.
-func (mg *movegen) GenerateLegalMoves(position *position.Position, mode GenMode) *movearray.MoveArray {
+func (mg *movegen) GenerateLegalMoves(position *position.Position, mode GenMode) *moveslice.MoveSlice {
 	mg.legalMoves.Clear()
 	mg.GeneratePseudoLegalMoves(position, mode)
 	mg.pseudoLegalMoves.FilterCopy(&mg.legalMoves, func(i int) bool {
@@ -255,7 +255,7 @@ func (mg *movegen) String() string {
 // // Private functions
 // //////////////////////////////////////////////////////
 
-func (mg *movegen) generatePawnMoves(position *position.Position, mode GenMode, ml *movearray.MoveArray) {
+func (mg *movegen) generatePawnMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
 
 	nextPlayer := position.NextPlayer()
 	myPawns := position.PiecesBb(nextPlayer, Pawn)
@@ -371,7 +371,7 @@ func (mg *movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 	}
 }
 
-func (mg *movegen) generateCastling(position *position.Position, mode GenMode, ml *movearray.MoveArray) {
+func (mg *movegen) generateCastling(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
 	nextPlayer := position.NextPlayer()
 	occupiedBB := position.OccupiedAll()
 
@@ -414,7 +414,7 @@ func (mg *movegen) generateCastling(position *position.Position, mode GenMode, m
 	}
 }
 
-func (mg *movegen) generateKingMoves(position *position.Position, mode GenMode, ml *movearray.MoveArray) {
+func (mg *movegen) generateKingMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
 	nextPlayer := position.NextPlayer()
 	piece := MakePiece(nextPlayer, King)
 	gamePhase := position.GamePhase()
@@ -450,7 +450,7 @@ func (mg *movegen) generateKingMoves(position *position.Position, mode GenMode, 
 	}
 }
 
-func (mg *movegen) generateMoves(position *position.Position, mode GenMode, ml *movearray.MoveArray) {
+func (mg *movegen) generateMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
 	nextPlayer := position.NextPlayer()
 	gamePhase := position.GamePhase()
 	occupiedBb := position.OccupiedAll()

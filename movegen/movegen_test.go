@@ -34,7 +34,7 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
-	"github.com/frankkopp/FrankyGo/movearray"
+	"github.com/frankkopp/FrankyGo/moveslice"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
@@ -49,22 +49,22 @@ func Test_movegen_generatePawnMoves(t *testing.T) {
 	Init()
 	mg := New()
 	pos := position.NewFen("1kr3nr/pp1pP1P1/2p1p3/3P1p2/1n1bP3/2P5/PP3PPP/RNBQKBNR w KQ -")
-	moves := movearray.MoveArray{}
+	moves := moveslice.MoveSlice{}
 
 	mg.generatePawnMoves(&pos, GenCap, &moves)
-	assert.Equal(t, 9, moves.Len())
+	assert.Equal(t, 9, len(moves))
 
 	moves.Clear()
 	mg.generatePawnMoves(&pos, GenNonCap, &moves)
-	assert.Equal(t, 16, moves.Len())
+	assert.Equal(t, 16, len(moves))
 
 	moves.Clear()
 	mg.generatePawnMoves(&pos, GenAll, &moves)
-	assert.Equal(t, 25, moves.Len())
+	assert.Equal(t, 25, len(moves))
 
 	moves.Sort()
-	log.Printf("Moves: %d\n", moves.Len())
-	l := moves.Len()
+	log.Printf("Moves: %d\n", len(moves))
+	l := len(moves)
 	for i := 0; i < l; i++ {
 		log.Printf("Move: %s\n", moves.At(i))
 	}
@@ -74,16 +74,16 @@ func Test_movegen_generateCastling(t *testing.T) {
 	Init()
 	mg := New()
 	pos := position.NewFen("r3k2r/pbppqppp/1pn2n2/1B2p3/1b2P3/N1PP1N2/PP1BQPPP/R3K2R w KQkq -")
-	moves := movearray.MoveArray{}
+	moves := moveslice.MoveSlice{}
 
 	mg.generateCastling(&pos, GenAll, &moves)
-	assert.Equal(t, 2, moves.Len())
+	assert.Equal(t, 2, len(moves))
 	assert.Equal(t, "e1g1 e1c1", moves.StringUci())
 	moves.Clear()
 
 	pos = position.NewFen("r3k2r/pbppqppp/1pn2n2/1B2p3/1b2P3/N1PP1N2/PP1BQPPP/R3K2R b KQkq -")
 	mg.generateCastling(&pos, GenAll, &moves)
-	assert.Equal(t, 2, moves.Len())
+	assert.Equal(t, 2, len(moves))
 	assert.Equal(t, "e8g8 e8c8", moves.StringUci())
 
 }
@@ -91,41 +91,41 @@ func Test_movegen_generateCastling(t *testing.T) {
 func Test_movegen_generateKingMoves(t *testing.T) {
 	Init()
 	mg := New()
-	moves := movearray.MoveArray{}
+	moves := moveslice.MoveSlice{}
 
 	pos := position.NewFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -")
 	mg.generateKingMoves(&pos, GenAll, &moves)
-	assert.Equal(t, 3, moves.Len())
+	assert.Equal(t, 3, len(moves))
 	assert.Equal(t, "e1d2 e1d1 e1f1", moves.StringUci())
 	moves.Clear()
 
 	pos = position.NewFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R b KQkq -")
 	mg.generateKingMoves(&pos, GenAll, &moves)
-	assert.Equal(t, 3, moves.Len())
+	assert.Equal(t, 3, len(moves))
 	assert.Equal(t, "e8d7 e8d8 e8f8", moves.StringUci())
 }
 
 func Test_movegen_generateMoves(t *testing.T) {
 	Init()
 	mg := New()
-	moves := movearray.MoveArray{}
+	moves := moveslice.MoveSlice{}
 
 	pos := position.NewFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -")
 	mg.generateMoves(&pos, GenCap, &moves)
-	assert.Equal(t, 7, moves.Len())
+	assert.Equal(t, 7, len(moves))
 	assert.Equal(t, "f3d2 f3e5 d7e5 d7b6 d7f6 b5c6 e2d2", moves.StringUci())
 	moves.Clear()
 
 	pos = position.NewFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R b KQkq -")
 	mg.generateMoves(&pos, GenNonCap, &moves)
-	assert.Equal(t, 28, moves.Len())
+	assert.Equal(t, 28, len(moves))
 	assert.Equal(t, "d2b1 d2f1 d2b3 d2c4 c6d4 c6a5 c6b8 c6d8 f6g4 f6d5 f6h5 f6g8 b4a3 b4a5 b4c5 b4d6 b7a6 "+
 		"b7c8 a8b8 a8c8 a8d8 h8f8 h8g8 e7c5 e7d6 e7e6 e7d8 e7f8", moves.StringUci())
 	moves.Clear()
 
 	pos = position.NewFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R b KQkq -")
 	mg.generateMoves(&pos, GenAll, &moves)
-	assert.Equal(t, 34, moves.Len())
+	assert.Equal(t, 34, len(moves))
 	assert.Equal(t, "d2f3 d2e4 d2b1 d2f1 d2b3 d2c4 c6d4 c6a5 c6b8 c6d8 f6e4 f6d7 f6g4 f6d5 f6h5 f6g8 b4c3 "+
 		"b4a3 b4a5 b4c5 b4d6 b7a6 b7c8 a8b8 a8c8 a8d8 h8f8 h8g8 e7d7 e7c5 e7d6 e7e6 e7d8 e7f8", moves.StringUci())
 }
@@ -136,7 +136,7 @@ func Test_movegen_GeneratePseudoLegalMoves(t *testing.T) {
 
 	pos := position.New()
 	moves := mg.GeneratePseudoLegalMoves(&pos, GenAll)
-	assert.Equal(t, 20, moves.Len())
+	assert.Equal(t, 20, len(*moves))
 	assert.Equal(t, "e2e4 d2d4 g1f3 b1c3 h2h3 a2a3 h2h4 g2g4 f2f4 e2e3 d2d3 c2c4 b2b4 a2a4 g2g3 b2b3 f2f3 "+
 		"c2c3 g1h3 b1a3", moves.StringUci())
 	// l := mg.pseudoLegalMoves.Len()
@@ -147,7 +147,7 @@ func Test_movegen_GeneratePseudoLegalMoves(t *testing.T) {
 
 	pos = position.NewFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -")
 	moves = mg.GeneratePseudoLegalMoves(&pos, GenAll)
-	assert.Equal(t, 40, moves.Len())
+	assert.Equal(t, 40, len(*moves))
 	assert.Equal(t, "c3b4 d7f6 f3d2 b5c6 d7e5 f3e5 d7b6 e2d2 e1d2 e1g1 e1c1 d3d4 f3d4 d7c5 h1f1 a1d1 a1c1 b5c4 f3g5 h2h3 e2e3 a2a3 c3c4 h2h4 g2g4 a2a4 e1f1 g2g3 e2d1 b2b3 b5a6 b5a4 e2f1 h1g1 a1b1 e1d1 d7f8 f3h4 d7b8 f3g1", moves.StringUci())
 	// l = mg.pseudoLegalMoves.Len()
 	// for i := 0; i < l; i++ {
@@ -158,13 +158,13 @@ func Test_movegen_GeneratePseudoLegalMoves(t *testing.T) {
 	// 86 moves
 	pos = position.NewFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
 	moves = mg.GeneratePseudoLegalMoves(&pos, GenAll)
-	assert.Equal(t, 86, moves.Len())
+	assert.Equal(t, 86, len(*moves))
 	moves.Clear()
 
 	// 218 moves
 	pos = position.NewFen("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - -")
 	moves = mg.GeneratePseudoLegalMoves(&pos, GenAll)
-	assert.Equal(t, 218, moves.Len())
+	assert.Equal(t, 218, len(*moves))
 	moves.Clear()
 }
 
@@ -174,14 +174,14 @@ func Test_movegen_GenerateLegalMoves(t *testing.T) {
 
 	pos := position.New()
 	moves := mg.GenerateLegalMoves(&pos, GenAll)
-	assert.Equal(t, 20, moves.Len())
+	assert.Equal(t, 20, len(*moves))
 	assert.Equal(t, "e2e4 d2d4 g1f3 b1c3 h2h3 a2a3 h2h4 g2g4 f2f4 e2e3 d2d3 c2c4 b2b4 a2a4 g2g3 b2b3 f2f3 "+
 		"c2c3 g1h3 b1a3", moves.StringUci())
 	moves.Clear()
 
 	pos = position.NewFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -")
 	moves = mg.GenerateLegalMoves(&pos, GenAll)
-	assert.Equal(t, 38, moves.Len())
+	assert.Equal(t, 38, len(*moves))
 	assert.Equal(t, "c3b4 d7f6 f3d2 b5c6 d7e5 f3e5 d7b6 e2d2 e1d2 e1c1 d3d4 f3d4 d7c5 h1f1 a1d1 a1c1 b5c4 " +
 		"f3g5 h2h3 e2e3 a2a3 c3c4 h2h4 g2g4 a2a4 g2g3 e2d1 b2b3 b5a6 b5a4 e2f1 h1g1 a1b1 e1d1 d7f8 f3h4 d7b8 f3g1",
 		moves.StringUci())
@@ -194,7 +194,7 @@ func Test_movegen_GenerateLegalMoves(t *testing.T) {
 	// 86 moves
 	pos = position.NewFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
 	moves = mg.GenerateLegalMoves(&pos, GenAll)
-	assert.Equal(t, 83, moves.Len())
+	assert.Equal(t, 83, len(*moves))
 	assert.Equal(t, "c2b1Q a2b1Q c2b1N a2b1N f4g3 b2a3 f4e3 a8a3 d7e5 g6e5 b2e5 e6e5 c6e4 c4e4 c2b1R a2b1R " +
 		"c2b1B a2b1B e8c8 c2c1Q a2a1Q c2c1N a2a1N h8f8 a8d8 a8c8 e8d8 d7b6 g6e7 e6f7 e6e7 a8a7 a8a6 a8a5 a8a4 h7h6 " +
 		"d7f8 d7f6 d7c5 g6f8 e6g8 e6f6 e6d6 e6f5 e6d5 e6g4 e6h3 c6d6 c6b6 c6a6 c6d5 c6c5 c6b5 c6a4 c4a6 c4d5 c4c5 " +
@@ -205,7 +205,7 @@ func Test_movegen_GenerateLegalMoves(t *testing.T) {
 	// 218 moves
 	pos = position.NewFen("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - -")
 	moves = mg.GenerateLegalMoves(&pos, GenAll)
-	assert.Equal(t, 218, moves.Len())
+	assert.Equal(t, 218, len(*moves))
 	moves.Clear()
 }
 
@@ -263,7 +263,7 @@ func TestTimingPseudoMoveGen(t *testing.T) {
 		elapsed := time.Since(start)
 		out.Printf("GeneratePseudoLegalMoves took %d ns for %d iterations\n", elapsed.Nanoseconds(), iterations)
 		out.Printf("GeneratePseudoLegalMoves took %d ns\n", elapsed.Nanoseconds()/int64(iterations))
-		generated := uint64(moves.Len()) * iterations
+		generated := uint64(len(*moves)) * iterations
 		out.Printf("GeneratePseudoLegalMoves %d generated %d mps\n", generated, (generated*uint64(1_000_000_000))/uint64(elapsed.Nanoseconds()))
 	}
 
