@@ -502,6 +502,15 @@ func QueenSideCastMask(c Color) Bitboard {
 	return queenSideCastleMask[c]
 }
 
+// GetCastlingRights returns the CastlingRights for
+// changes on this square.
+func GetCastlingRights(sq Square) CastlingRights {
+	if assert.DEBUG {
+		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
+	}
+	return castlingRights[sq]
+}
+
 // SquaresBb returns a Bb of all squares of the given color.
 // E.g. can be used to find bishops of the same "color" for draw detection.
 func SquaresBb(c Color) Bitboard {
@@ -794,6 +803,9 @@ var (
 	// helper mask for supporting castling moves
 	queenSideCastleMask [2]Bitboard
 
+	// array to store all possible CastlingRights for squares which impact castlings
+	castlingRights[SqLength] CastlingRights
+
 	// mask for all white  and black squares
 	squaresBb [2]Bitboard
 
@@ -835,6 +847,12 @@ func castleMasksPreCompute() {
 	kingSideCastleMask[Black] = sqBb[SqF8] | sqBb[SqG8] | sqBb[SqH8]
 	queenSideCastleMask[White] = sqBb[SqD1] | sqBb[SqC1] | sqBb[SqB1] | sqBb[SqA1]
 	queenSideCastleMask[Black] = sqBb[SqD8] | sqBb[SqC8] | sqBb[SqB8] | sqBb[SqA8]
+	castlingRights[SqE1] = CastlingWhite
+	castlingRights[SqA1] = CastlingWhiteOOO
+	castlingRights[SqH1] = CastlingWhiteOO
+	castlingRights[SqE8] = CastlingBlack
+	castlingRights[SqA8] = CastlingBlackOOO
+	castlingRights[SqH8] = CastlingBlackOO
 }
 
 func squareBitboardsPreCompute() {

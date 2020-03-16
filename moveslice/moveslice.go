@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-// Package moveslice provides a array (slice) facade to be used with
+// Package moveslice provides an array (slice) facade to be used with
 // chess moves.
 package moveslice
 
@@ -38,61 +38,61 @@ import (
 type MoveSlice []Move
 
 
-// New creates a new move array with the given capacity and 0 elements
+// New creates a new move slice with the given capacity and 0 elements
 // Is identical to MoveSlice(make([]Move, 0, cap))
 func New(cap int) MoveSlice {
 	return make([]Move, 0, cap)
 }
 
-// Len returns the number of moves currently stored in the array
+// Len returns the number of moves currently stored in the slice
 func (ms *MoveSlice) Len() int {
 	return len(*ms)
 }
 
-// Cap returns the capacity of the array
+// Cap returns the capacity of the slice
 func (ms *MoveSlice) Cap() int {
 	return cap(*ms)
 }
 
-// PushBack appends an element at the end of the array
+// PushBack appends an element at the end of the slice
 func (ms *MoveSlice) PushBack(m Move) {
 	*ms = append(*ms, m)
 }
 
-// PopBack removes and returns the move from the back of the queue.
-// If the queue is empty, the call panics.
+// PopBack removes and returns the move from the back of the slice.
+// If the slice is empty, the call panics.
 func (ms *MoveSlice) PopBack() Move {
 	if len(*ms) <= 0 {
-		panic("MoveSlice: PopBack() called on empty array")
+		panic("MoveSlice: PopBack() called on empty slice")
 	}
 	backMove := (*ms)[len(*ms)-1]
 	*ms = (*ms)[:len(*ms)-1]
 	return backMove
 }
 
-// PushFront prepends an element at the beginning of the array using
-// the underlying array (does not create a new one)
+// PushFront prepends an element at the beginning of the slice using
+// the underlying array (does not create a new array)
 func (ms *MoveSlice) PushFront(m Move) {
 	*ms = append(*ms, MoveNone)
 	copy((*ms)[1:], *ms)
 	(*ms)[0] = m
 }
 
-// PopFront removes and returns the move from the front of the array.
-// If the array is empty, the call panics.
-// Shrinks the capacity of the array and might lead to earlier
+// PopFront removes and returns the move from the front of the slice.
+// If the slice is empty, the call panics.
+// Shrinks the capacity of the slice and might lead to earlier
 // re-allocations
 func (ms *MoveSlice) PopFront() Move {
 	if len(*ms) <= 0 {
-		panic("MoveSlice: PopFront() called on empty array")
+		panic("MoveSlice: PopFront() called on empty slice")
 	}
 		frontMove := (*ms)[0]
 	*ms = (*ms)[1:]
 	return frontMove
 }
 
-// Front returns the move at the front of the array.  This is the element
-// that would be returned by PopFront(). This call panics if the array is
+// Front returns the move at the front of the slice.  This is the element
+// that would be returned by PopFront(). This call panics if the slice is
 // empty.
 func (ms *MoveSlice) Front() Move {
 	if len(*ms) <= 0 {
@@ -101,8 +101,8 @@ func (ms *MoveSlice) Front() Move {
 	return (*ms)[0]
 }
 
-// Back returns the move at the back of the array.  This is the element
-// that would be returned by PopBack().  This call panics if the array is
+// Back returns the move at the back of the slice.  This is the element
+// that would be returned by PopBack().  This call panics if the slice is
 // empty.
 func (ms *MoveSlice) Back() Move {
 	if len(*ms) <= 0 {
@@ -111,15 +111,15 @@ func (ms *MoveSlice) Back() Move {
 	return (*ms)[len(*ms)-1]
 }
 
-// At returns the move at index i in the array without removing the move
-// from the array. At(0) refers to the first move and is the same as Front().
+// At returns the move at index i in the slice without removing the move
+// from the slice. At(0) refers to the first move and is the same as Front().
 // At(Len()-1) refers to the last move and is the same as Back().
 // Index will not be checked against bounds.
 func (ms *MoveSlice) At(i int) Move {
 	return (*ms)[i]
 }
 
-// Set puts a move at index i in the queue. Set shares the same purpose
+// Set puts a move at index i in the slice. Set shares the same purpose
 // than At() but perform the opposite operation. The index i is the same
 // index defined by At().
 // Index will not be checked against bounds.
@@ -142,7 +142,7 @@ func (ms *MoveSlice) Filter(f func(index int) bool) {
 	*ms = b
 }
 
-// FilterCopy copies the MoveSlice into the given destination array
+// FilterCopy copies the MoveSlice into the given destination slice
 // without the filtered elements. An element is filtered when
 // the given call to func will return false for the element.
 func (ms *MoveSlice) FilterCopy(dest *MoveSlice, f func(index int) bool) {
@@ -180,14 +180,8 @@ func (ms *MoveSlice) ForEachParallel(f func(index int)) {
 	wg.Wait()
 }
 
-// Data allows access to the underlying slice which is good for range loops
-// Use with care!
-func (ms *MoveSlice) Data() []Move {
-	return *ms
-}
-
-// Clear removes all moves from the queue, but retains the current capacity.
-// This is useful when repeatedly reusing the queue at high frequency to avoid
+// Clear removes all moves from the slice, but retains the current capacity.
+// This is useful when repeatedly reusing the slice at high frequency to avoid
 // GC during reuse.
 func (ms *MoveSlice) Clear() {
 	*ms = (*ms)[:0]
@@ -208,7 +202,7 @@ func (ms *MoveSlice) Sort() {
 	}
 }
 
-// String returns a string representation of a move list
+// String returns a string representation of a slice of moves
 func (ms *MoveSlice) String() string {
 	var os strings.Builder
 	size := len(*ms)

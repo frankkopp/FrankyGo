@@ -46,6 +46,8 @@ type Perft struct {
 	CheckMateCounter uint64
 	CaptureCounter   uint64
 	EnpassantCounter uint64
+	CastleCounter    uint64
+	PromotionCounter uint64
 }
 
 // StartPerft is using the "normal" move generation and doesn't divide the
@@ -62,20 +64,24 @@ func (p *Perft) StartPerft(fen string, depth int) {
 
 	out.Printf("Performing PERFT Test for Depth %d\n", depth)
 	out.Printf("-----------------------------------------\n")
+
 	start := time.Now()
 
 	result := p.miniMax(depth, &pos, &mgList)
 	p.Nodes = result
 
 	elapsed := time.Since(start)
+
 	out.Printf("Time         : %d ms\n", elapsed.Milliseconds())
-	out.Printf("NPS          : %d nps\n", (result*ns)/uint64(elapsed.Nanoseconds()+1))
+	out.Printf("NPS          : %d nps\n", (p.Nodes*ns)/uint64(elapsed.Nanoseconds()+1))
 	out.Printf("Results:\n")
 	out.Printf("   Nodes     : %d\n", p.Nodes)
 	out.Printf("   Captures  : %d\n", p.CaptureCounter)
 	out.Printf("   EnPassant : %d\n", p.EnpassantCounter)
 	out.Printf("   Checks    : %d\n", p.CheckCounter)
 	out.Printf("   CheckMates: %d\n", p.CheckMateCounter)
+	out.Printf("   Castles   : %d\n", p.CastleCounter)
+	out.Printf("   Promotions: %d\n", p.PromotionCounter)
 	out.Printf("-----------------------------------------\n")
 
 }
@@ -94,13 +100,16 @@ func (p *Perft) resetCounter() {
 	p.CheckMateCounter = 0
 	p.CaptureCounter = 0
 	p.EnpassantCounter = 0
+	p.CastleCounter = 0
+	p.PromotionCounter = 0
 }
 
 func (p *Perft) miniMax(depth int, positionPtr *position.Position, mgListPtr *[]movegen) uint64 {
 	totalNodes := uint64(0)
+	movegens := *mgListPtr
 	// moves to search recursively
-	moves := (*mgListPtr)[depth].GeneratePseudoLegalMoves(positionPtr, GenAll)
-	for _, move := range moves.Data() {
+	movesPtr := movegens[depth].GeneratePseudoLegalMoves(positionPtr, GenAll)
+	for _, move := range *movesPtr {
 		if depth > 1 {
 			positionPtr.DoMove(move)
 			if positionPtr.WasLegalMove() {
@@ -110,6 +119,8 @@ func (p *Perft) miniMax(depth int, positionPtr *position.Position, mgListPtr *[]
 		} else {
 			capture := positionPtr.GetPiece(move.To()) != PieceNone
 			enpassant := move.MoveType() == EnPassant
+			castling := move.MoveType() == Castling
+			promotion := move.MoveType() == Promotion
 			positionPtr.DoMove(move)
 			if positionPtr.WasLegalMove() {
 				totalNodes++
@@ -120,10 +131,16 @@ func (p *Perft) miniMax(depth int, positionPtr *position.Position, mgListPtr *[]
 				if capture {
 					p.CaptureCounter++
 				}
+				if castling {
+					p.CastleCounter++
+				}
+				if promotion {
+					p.PromotionCounter++
+				}
 				if positionPtr.HasCheck() {
 					p.CheckCounter++
 				}
-				if !(*mgListPtr)[0].HasLegalMove(positionPtr) {
+				if !movegens[0].HasLegalMove(positionPtr) {
 					p.CheckMateCounter++
 				}
 			}

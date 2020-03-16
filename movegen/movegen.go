@@ -40,10 +40,10 @@ type movegen struct {
 	legalMoves         moveslice.MoveSlice
 	onDemandMoves      moveslice.MoveSlice
 	killerMoves        moveslice.MoveSlice
-	pvMove             Move
-	currentODStage     int
 	currentIteratorKey position.Key
-	maxNumberOfKiller  int
+	pvMove             Move
+	currentODStage     int8
+	maxNumberOfKiller  int8
 }
 
 // States for the on demand move generator
@@ -112,7 +112,6 @@ func (mg *movegen) GeneratePseudoLegalMoves(position *position.Position, mode Ge
 		mg.generateKingMoves(position, GenNonCap, &mg.pseudoLegalMoves)
 		mg.generateMoves(position, GenNonCap, &mg.pseudoLegalMoves)
 	}
-	// sort.Stable(&mg.pseudoLegalMoves)
 	mg.pseudoLegalMoves.Sort()
 	// remove internal sort value
 	mg.pseudoLegalMoves.ForEach(func(i int) {

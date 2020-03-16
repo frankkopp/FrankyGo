@@ -32,21 +32,6 @@ import (
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
-var results = [10][6]uint64{
-	// @formatter:off
-	// N             Nodes         Captures           EP          Checks           Mates
-	{ 0,                 1,               0,           0,              0,              0 },
-	{ 1,                20,               0,           0,              0,              0 },
-	{ 2,               400,               0,           0,              0,              0 },
-	{ 3,             8_902,              34,           0,             12,              0 },
-	{ 4,           197_281,           1_576,           0,            469,              8 },
-	{ 5,         4_865_609,          82_719,         258,         27_351,            347 },
-	{ 6,       119_060_324,       2_812_008,       5_248,        809_099,         10_828 },
-	{ 7,     3_195_901_860,     108_329_926,     319_617,     33_103_848,        435_767 },
-	{ 8,    84_998_978_956,   3_523_740_106,   7_187_977,    968_981_593,      9_852_036 },
-	{ 9, 2_439_530_234_167, 125_208_536_153, 319_496_827, 36_095_901_903,    400_191_963 }}
-// @formatter:on
-
 //noinspection GoImportUsedAsName
 func Test_StandardPerft(t *testing.T) {
 	Init()
@@ -54,13 +39,58 @@ func Test_StandardPerft(t *testing.T) {
 	var perft Perft
 	assert := assert.New(t)
 
-	for i := 1; i <= maxDepth; i++ {
+	var results = [10][6]uint64{
+		// @formatter:off
+		// N             Nodes         Captures           EP          Checks           Mates
+		{ 0,                 1,               0,           0,              0,              0 },
+		{ 1,                20,               0,           0,              0,              0 },
+		{ 2,               400,               0,           0,              0,              0 },
+		{ 3,             8_902,              34,           0,             12,              0 },
+		{ 4,           197_281,           1_576,           0,            469,              8 },
+		{ 5,         4_865_609,          82_719,         258,         27_351,            347 },
+		{ 6,       119_060_324,       2_812_008,       5_248,        809_099,         10_828 },
+		{ 7,     3_195_901_860,     108_329_926,     319_617,     33_103_848,        435_767 },
+		{ 8,    84_998_978_956,   3_523_740_106,   7_187_977,    968_981_593,      9_852_036 },
+		{ 9, 2_439_530_234_167, 125_208_536_153, 319_496_827, 36_095_901_903,    400_191_963 }}
+	// @formatter:on
+
+	for i := 6; i <= maxDepth; i++ {
 		perft.StartPerft(StartFen, i)
 		assert.Equal(results[i][1], perft.Nodes)
 		assert.Equal(results[i][2], perft.CaptureCounter)
 		assert.Equal(results[i][3], perft.EnpassantCounter)
 		assert.Equal(results[i][4], perft.CheckCounter)
 		assert.Equal(results[i][5], perft.CheckMateCounter)
+	}
+}
+
+//noinspection GoImportUsedAsName
+func Test_KiwipetePerft(t *testing.T) {
+	Init()
+	maxDepth := 5
+	var perft Perft
+	assert := assert.New(t)
+
+	var kiwipete = [10][8]uint64{
+		// @formatter:off
+		// N             Nodes         Captures           EP          Checks           Mates		Castles		Promotions
+		{ 0,                 1,               0,           0,              0,              0, 			  0,             0 },
+		{ 1,                48,               8,           0,              0,              0, 			  2,             0 },
+		{ 2,             2_039,             351,           1,              3,              0,		     91,             0 },
+		{ 3,            97_862,          17_102,          45,            993,              1, 	      3_162,             0 },
+		{ 4,         4_085_603,         757_163,       1_929,         25_523,             43, 		128_013,        15_172 },
+		{ 5,       193_690_690,      35_043_416,      73_365,      3_309_887,         30_171, 	  4_993_637,         8_392 },
+		{ 6,     8_031_647_685,   1_558_445_089,   3_577_504,     92_238_050,        360_003, 	184_513_607,    56_627_920 }}
+
+	for depth := 5; depth <= maxDepth; depth++ {
+		perft.StartPerft("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ", depth)
+		assert.Equal(kiwipete[depth][1], perft.Nodes)
+		assert.Equal(kiwipete[depth][2], perft.CaptureCounter)
+		assert.Equal(kiwipete[depth][3], perft.EnpassantCounter)
+		assert.Equal(kiwipete[depth][4], perft.CheckCounter)
+		assert.Equal(kiwipete[depth][5], perft.CheckMateCounter)
+		assert.Equal(kiwipete[depth][6], perft.CastleCounter)
+		assert.Equal(kiwipete[depth][7], perft.PromotionCounter)
 	}
 }
 

@@ -255,8 +255,13 @@ func (p *Position) UndoMove() {
 func (p *Position) doNormalMove(fromSq Square, toSq Square, targetPc Piece, fromPc Piece, myColor Color) {
 	// If we still have castling rights and the move touches castling squares then invalidate
 	// the corresponding castling right
-	if p.castlingRights != CastlingNone && (CastlingMask.Has(fromSq) || CastlingMask.Has(toSq)) {
-		p.invalidateCastlingRights(fromSq, toSq)
+	if p.castlingRights != CastlingNone {
+		cr := GetCastlingRights(fromSq) | GetCastlingRights(toSq)
+		if cr != CastlingNone {
+			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
+			p.castlingRights.Remove(cr)
+			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in
+		}
 	}
 	p.clearEnPassant()
 	if targetPc != PieceNone { // capture
@@ -353,7 +358,6 @@ func (p *Position) doEnPassantMove(toSq Square, myColor Color, fromPc Piece, fro
 	p.halfMoveClock = 0
 }
 
-
 func (p *Position) doPromotionMove(m Move, fromPc Piece, myColor Color, toSq Square, targetPc Piece, fromSq Square) {
 	if assert.DEBUG {
 		assert.Assert(fromPc == MakePiece(myColor, Pawn), "Position DoMove: Move type promotion but From piece not Pawn")
@@ -362,13 +366,18 @@ func (p *Position) doPromotionMove(m Move, fromPc Piece, myColor Color, toSq Squ
 	if targetPc != PieceNone { // capture
 		p.removePiece(toSq)
 	}
-	if p.castlingRights != CastlingNone && (CastlingMask.Has(fromSq) || CastlingMask.Has(toSq)) {
-		p.invalidateCastlingRights(fromSq, toSq)
+	if p.castlingRights != CastlingNone {
+		cr := GetCastlingRights(fromSq) | GetCastlingRights(toSq)
+		if cr != CastlingNone {
+			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
+			p.castlingRights.Remove(cr)
+			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in
+		}
 	}
 	p.removePiece(fromSq)
 	p.putPiece(MakePiece(myColor, m.PromotionType()), toSq)
 	p.clearEnPassant()
-	p.halfMoveClock = 0  // reset half move clock because of pawn move
+	p.halfMoveClock = 0 // reset half move clock because of pawn move
 }
 
 // IsAttacked checks if the given square is attacked by a piece
@@ -663,44 +672,6 @@ func (p *Position) removePiece(square Square) Piece {
 	p.psqMidValue[color] -= PosMidValue(removed, square)
 	p.psqEndValue[color] -= PosEndValue(removed, square)
 	return removed
-}
-
-func (p Position) invalidateCastlingRights(from Square, to Square) {
-	// check for castling rights invalidation
-	if p.castlingRights&CastlingWhite != 0 {
-		if from == SqE1 || to == SqE1 {
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
-			p.castlingRights.Remove(CastlingWhite)
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in
-		}
-		if p.castlingRights == CastlingWhiteOO && (from == SqH1 || to == SqH1) {
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
-			p.castlingRights.Remove(CastlingWhiteOO)
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in
-		}
-		if p.castlingRights == CastlingWhiteOOO && (from == SqA1 || to == SqA1) {
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
-			p.castlingRights.Remove(CastlingWhiteOOO)
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in
-		}
-	}
-	if p.castlingRights&CastlingBlack != 0 {
-		if from == SqE8 || to == SqE8 {
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
-			p.castlingRights.Remove(CastlingBlack)
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in
-		}
-		if p.castlingRights == CastlingBlackOOO && (from == SqA8 || to == SqA8) {
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
-			p.castlingRights.Remove(CastlingBlackOOO)
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in
-		}
-		if p.castlingRights == CastlingBlackOO && (from == SqH8 || to == SqH8) {
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
-			p.castlingRights.Remove(CastlingBlackOO)
-			p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in
-		}
-	}
 }
 
 func (p *Position) clearEnPassant() {

@@ -262,9 +262,11 @@ func TestTimingPseudoMoveGen(t *testing.T) {
 		}
 		elapsed := time.Since(start)
 		out.Printf("GeneratePseudoLegalMoves took %d ns for %d iterations\n", elapsed.Nanoseconds(), iterations)
-		out.Printf("GeneratePseudoLegalMoves took %d ns\n", elapsed.Nanoseconds()/int64(iterations))
 		generated := uint64(len(*moves)) * iterations
-		out.Printf("GeneratePseudoLegalMoves %d generated %d mps\n", generated, (generated*uint64(1_000_000_000))/uint64(elapsed.Nanoseconds()))
+		out.Printf("%d moves generated in %d ns: %d mps\n",
+			generated,
+			elapsed.Nanoseconds()/int64(iterations),
+			(generated*uint64(1_000_000_000))/uint64(elapsed.Nanoseconds()))
 	}
 
 	// moves.ForEach(func(i int) {
