@@ -4,9 +4,11 @@ v 0.x (planned)
 v 0.2 (in progress)
 ================================================================================
 - TODO:
-    - Improve performance of Perft - otherwise not worth continuing
+    - Continue to improve performance of perft
+
 
 - DONE
+    - Improve performance of Perft - otherwise not worth continuing
     - Added MoveSlice - little optimization of MoveArray - usable directly as Slice
 
 v 0.1 (done)

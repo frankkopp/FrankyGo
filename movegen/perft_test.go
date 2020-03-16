@@ -32,6 +32,10 @@ import (
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
+// ///////////////////////////////////////////////////////////////
+// Perft tests from https://www.chessprogramming.org/Perft_Results
+// ///////////////////////////////////////////////////////////////
+
 //noinspection GoImportUsedAsName
 func Test_StandardPerft(t *testing.T) {
 	Init()
@@ -82,7 +86,7 @@ func Test_KiwipetePerft(t *testing.T) {
 		{ 5,       193_690_690,      35_043_416,      73_365,      3_309_887,         30_171, 	  4_993_637,         8_392 },
 		{ 6,     8_031_647_685,   1_558_445_089,   3_577_504,     92_238_050,        360_003, 	184_513_607,    56_627_920 }}
 
-	for depth := 5; depth <= maxDepth; depth++ {
+	for depth := 1; depth <= maxDepth; depth++ {
 		perft.StartPerft("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ", depth)
 		assert.Equal(kiwipete[depth][1], perft.Nodes)
 		assert.Equal(kiwipete[depth][2], perft.CaptureCounter)
@@ -93,4 +97,73 @@ func Test_KiwipetePerft(t *testing.T) {
 		assert.Equal(kiwipete[depth][7], perft.PromotionCounter)
 	}
 }
+
+//noinspection GoImportUsedAsName
+func Test_MirrorPerft(t *testing.T) {
+	Init()
+	maxDepth := 5
+	var perft Perft
+	assert := assert.New(t)
+
+	var mirrorPerft = [10][8]uint64{
+		// @formatter:off
+		// N             Nodes         Captures           EP          Checks           Mates		Castles		Promotions
+		{ 0,                 1,               0,           0,              0,              0, 			  0,             0 },
+		{ 1,     		     6,               0,           0,              0,              0, 	          0,             0 },
+		{ 2,     		   264,              87,           0,             10,              0,	          6,            48 },
+		{ 3,              9467,            1021,           4,             38,             22, 			  0,           120 },
+		{ 4,            422333,          131393,           0,          15492,              5, 		   7795,         60032 },
+		{ 5,          15833292,         2046173,        6512,         200568,          50562, 	          0,        329464 },
+		{ 6,         706045033,       210369132,   		 212,       26973664,          81076, 	   10882006,      81102984 }}
+
+
+	// white
+	for depth := 1; depth <= maxDepth; depth++ {
+		perft.StartPerft("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq -", depth)
+		assert.Equal(mirrorPerft[depth][1], perft.Nodes)
+		assert.Equal(mirrorPerft[depth][2], perft.CaptureCounter)
+		assert.Equal(mirrorPerft[depth][3], perft.EnpassantCounter)
+		assert.Equal(mirrorPerft[depth][4], perft.CheckCounter)
+		assert.Equal(mirrorPerft[depth][5], perft.CheckMateCounter)
+		assert.Equal(mirrorPerft[depth][6], perft.CastleCounter)
+		assert.Equal(mirrorPerft[depth][7], perft.PromotionCounter)
+	}
+
+	// mirrored
+	for depth := 1; depth <= maxDepth; depth++ {
+		perft.StartPerft("r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ -", depth)
+		assert.Equal(mirrorPerft[depth][1], perft.Nodes)
+		assert.Equal(mirrorPerft[depth][2], perft.CaptureCounter)
+		assert.Equal(mirrorPerft[depth][3], perft.EnpassantCounter)
+		assert.Equal(mirrorPerft[depth][4], perft.CheckCounter)
+		assert.Equal(mirrorPerft[depth][5], perft.CheckMateCounter)
+		assert.Equal(mirrorPerft[depth][6], perft.CastleCounter)
+		assert.Equal(mirrorPerft[depth][7], perft.PromotionCounter)
+	}
+}
+
+
+//noinspection GoImportUsedAsName
+func Test_Pos5Perft(t *testing.T) {
+	Init()
+	maxDepth := 5
+	var perft Perft
+	assert := assert.New(t)
+
+	var kiwipete = [10][2]uint64{
+		// @formatter:off
+		// N             Nodes
+		{ 0,                 1 },
+		{ 1,                44 },
+		{ 2,             1_486 },
+		{ 3,            62_379 },
+		{ 4,         2_103_487 },
+		{ 5,        89_941_194 }}
+
+	for depth := 1; depth <= maxDepth; depth++ {
+		perft.StartPerft("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ -", depth)
+		assert.Equal(kiwipete[depth][1], perft.Nodes)
+	}
+}
+
 

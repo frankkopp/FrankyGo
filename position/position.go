@@ -412,34 +412,35 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 
 	// check en passant
 	if p.enPassantSquare != SqNone {
-		// white is attacker
-		if by == White &&
+		switch by {
+		case White: // white is attacker
 			// black is target
-			p.board[p.enPassantSquare.To(South)] == BlackPawn &&
-			// this is indeed the en passant attacked square
-			p.enPassantSquare.To(South) == sq {
-			// left
-			square := sq.To(West)
-			if p.board[square] == WhitePawn {
-				return true
+			if p.board[p.enPassantSquare.To(South)] == BlackPawn &&
+				// this is indeed the en passant attacked square
+				p.enPassantSquare.To(South) == sq {
+				// left
+				square := sq.To(West)
+				if p.board[square] == WhitePawn {
+					return true
+				}
+				// right
+				square = sq.To(East)
+				return p.board[square] == WhitePawn
 			}
-			// right
-			square = sq.To(East)
-			return p.board[square] == WhitePawn
-			// black is attacker (assume not noColor)
-		} else if by == Black &&
+		case Black: // black is attacker
 			// white is target
-			p.board[p.enPassantSquare.To(North)] == WhitePawn &&
-			// this is indeed the en passant attacked square
-			p.enPassantSquare.To(North) == sq {
-			// attack from left
-			square := sq.To(West)
-			if p.board[square] == BlackPawn {
-				return true
+			if p.board[p.enPassantSquare.To(North)] == WhitePawn &&
+				// this is indeed the en passant attacked square
+				p.enPassantSquare.To(North) == sq {
+				// attack from left
+				square := sq.To(West)
+				if p.board[square] == BlackPawn {
+					return true
+				}
+				// right
+				square = sq.To(East)
+				return p.board[square] == BlackPawn
 			}
-			// right
-			square = sq.To(East)
-			return p.board[square] == BlackPawn
 		}
 	}
 	return false
@@ -676,7 +677,7 @@ func (p *Position) removePiece(square Square) Piece {
 
 func (p *Position) clearEnPassant() {
 	if p.enPassantSquare != SqNone {
-		p.zobristKey = p.zobristKey ^ zobristBase.enPassantFile[p.enPassantSquare.FileOf()] // out
+		p.zobristKey ^= zobristBase.enPassantFile[p.enPassantSquare.FileOf()] // out
 		p.enPassantSquare = SqNone
 	}
 }
