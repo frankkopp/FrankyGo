@@ -46,7 +46,9 @@ const (
 	debug bool = false
 )
 
-type movegen struct {
+// Movegen data structure. Create new move generator via movegen.New()
+// Creating this directly will not work.
+type Movegen struct {
 	pseudoLegalMoves   moveslice.MoveSlice
 	legalMoves         moveslice.MoveSlice
 	onDemandMoves      moveslice.MoveSlice
@@ -88,8 +90,8 @@ const (
 )
 
 // New creates a new instance of a move generator
-func New() movegen {
-	tmpMg := movegen{
+func New() Movegen {
+	tmpMg := Movegen{
 		pseudoLegalMoves:   moveslice.New(MaxMoves),
 		legalMoves:         moveslice.New(MaxMoves),
 		onDemandMoves:      moveslice.New(MaxMoves),
@@ -109,7 +111,7 @@ func New() movegen {
 // king is left in check or passes an attacked square when castling or has been in check
 // before castling. Disregards PV moves and Killer moves. They need to be handled after
 // the returned MoveList. Or just use the OnDemand Generator.
-func (mg *movegen) GeneratePseudoLegalMoves(position *position.Position, mode GenMode) *moveslice.MoveSlice {
+func (mg *Movegen) GeneratePseudoLegalMoves(position *position.Position, mode GenMode) *moveslice.MoveSlice {
 	mg.pseudoLegalMoves.Clear()
 	if mode&GenCap != 0 {
 		mg.generatePawnMoves(position, GenCap, &mg.pseudoLegalMoves)
@@ -135,7 +137,7 @@ func (mg *movegen) GeneratePseudoLegalMoves(position *position.Position, mode Ge
 // Uses GeneratePseudoLegalMoves and filters out illegal moves.
 // Disregards PV moves and Killer moves. They need to be handled
 // after the returned MoveList. Or just use the OnDemand Generator.
-func (mg *movegen) GenerateLegalMoves(position *position.Position, mode GenMode) *moveslice.MoveSlice {
+func (mg *Movegen) GenerateLegalMoves(position *position.Position, mode GenMode) *moveslice.MoveSlice {
 	mg.legalMoves.Clear()
 	mg.GeneratePseudoLegalMoves(position, mode)
 	mg.pseudoLegalMoves.FilterCopy(&mg.legalMoves, func(i int) bool {
@@ -148,7 +150,7 @@ func (mg *movegen) GenerateLegalMoves(position *position.Position, mode GenMode)
 // one legal move. We search for any KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN move
 // and return immediately if we found one.
 // The order of our search is approx from the most likely to the least likely
-func (mg *movegen) HasLegalMove(position *position.Position) bool {
+func (mg *Movegen) HasLegalMove(position *position.Position) bool {
 
 	nextPlayer := position.NextPlayer()
 	nextPlayerBb := position.OccupiedBb(nextPlayer)
@@ -263,7 +265,7 @@ var regexUciMove = regexp.MustCompile("([a-h][1-8][a-h][1-8])([NBRQnbrq])?")
 // GetMoveFromUci Generates all legal moves and matches the given UCI
 // move string against them. If there is a match the actual move is returned.
 // Otherwise MoveNone is returned.
-func (mg *movegen) GetMoveFromUci(posPtr *position.Position, uciMove string) Move {
+func (mg *Movegen) GetMoveFromUci(posPtr *position.Position, uciMove string) Move {
 	matches := regexUciMove.FindStringSubmatch(uciMove)
 	if matches == nil {
 		return MoveNone
@@ -295,7 +297,7 @@ var regexSanMove = regexp.MustCompile("([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O
 // GetMoveFromSan Generates all legal moves and matches the given SAN
 // move string against them. If there is a match the actual move is returned.
 // Otherwise MoveNone is returned.
-func (mg *movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Move {
+func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Move {
 	matches := regexSanMove.FindStringSubmatch(sanMove)
 	if matches == nil {
 		if debug {
@@ -447,7 +449,7 @@ func (mg *movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 	return MoveNone
 }
 
-func (mg *movegen) String() string {
+func (mg *Movegen) String() string {
 	return "movegen instance"
 }
 
@@ -455,7 +457,7 @@ func (mg *movegen) String() string {
 // // Private functions
 // //////////////////////////////////////////////////////
 
-func (mg *movegen) generatePawnMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
+func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
 
 	nextPlayer := position.NextPlayer()
 	myPawns := position.PiecesBb(nextPlayer, Pawn)
@@ -571,7 +573,7 @@ func (mg *movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 	}
 }
 
-func (mg *movegen) generateCastling(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
+func (mg *Movegen) generateCastling(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
 	nextPlayer := position.NextPlayer()
 	occupiedBB := position.OccupiedAll()
 
@@ -614,7 +616,7 @@ func (mg *movegen) generateCastling(position *position.Position, mode GenMode, m
 	}
 }
 
-func (mg *movegen) generateKingMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
+func (mg *Movegen) generateKingMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
 	nextPlayer := position.NextPlayer()
 	piece := MakePiece(nextPlayer, King)
 	gamePhase := position.GamePhase()
@@ -650,7 +652,7 @@ func (mg *movegen) generateKingMoves(position *position.Position, mode GenMode, 
 	}
 }
 
-func (mg *movegen) generateMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
+func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
 	nextPlayer := position.NextPlayer()
 	gamePhase := position.GamePhase()
 	occupiedBb := position.OccupiedAll()

@@ -57,7 +57,7 @@ func (p *Perft) StartPerft(fen string, depth int) {
 
 	p.resetCounter()
 	pos := position.NewFen(fen)
-	mgList := make([]movegen, depth+1)
+	mgList := make([]Movegen, depth+1)
 	for i := 0; i <= depth; i++ {
 		mgList[i] = New()
 	}
@@ -104,7 +104,7 @@ func (p *Perft) resetCounter() {
 	p.PromotionCounter = 0
 }
 
-func (p *Perft) miniMax(depth int, positionPtr *position.Position, mgListPtr *[]movegen) uint64 {
+func (p *Perft) miniMax(depth int, positionPtr *position.Position, mgListPtr *[]Movegen) uint64 {
 	totalNodes := uint64(0)
 	movegens := *mgListPtr
 	// moves to search recursively
@@ -150,7 +150,7 @@ func (p *Perft) miniMax(depth int, positionPtr *position.Position, mgListPtr *[]
 	return totalNodes
 }
 
-func (p *Perft) miniMaxOD(d int, position *position.Position, moveGenList *[]movegen) uint64 {
+func (p *Perft) miniMaxOD(d int, position *position.Position, moveGenList *[]Movegen) uint64 {
 
 	return 0
 }

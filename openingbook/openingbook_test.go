@@ -50,7 +50,7 @@ func Test_readingNonExistingFile(t *testing.T) {
 func Test_processingEmpty(t *testing.T) {
 	Init()
 	var book Book
-	err := book.Initialize("../books/empty.txt", Simple)
+	err := book.Initialize("../books/empty.txt", Simple, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	assert.Equal(t, 1, book.NumberOfEntries())
 
@@ -62,13 +62,12 @@ func Test_processingEmpty(t *testing.T) {
 	entry, ok = book.GetEntry(position.Key(1234))
 	assert.False(t, ok)
 	assert.Nil(t, entry)
-
 }
 
 func Test_processingSimpleSmall(t *testing.T) {
 	Init()
 	var book Book
-	err := book.Initialize("../books/book_smalltest.txt", Simple)
+	err := book.Initialize("../books/book_smalltest.txt", Simple, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	assert.Equal(t, 11_196, book.NumberOfEntries())
 
@@ -96,7 +95,7 @@ func Test_processingSimpleSmall(t *testing.T) {
 func Test_processingSimple(t *testing.T) {
 	Init()
 	var book Book
-	err := book.Initialize("../books/book.txt", Simple)
+	err := book.Initialize("../books/book.txt", Simple, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	assert.Equal(t, 273_578, book.NumberOfEntries())
 
@@ -123,14 +122,106 @@ func Test_processingSimple(t *testing.T) {
 	}
 }
 
-
 func Test_processingSANSmall(t *testing.T) {
 	logTest.Info("Starting SAN small test")
 	Init()
 	var book Book
-	err := book.Initialize("../books/book_graham.txt", San)
+	err := book.Initialize("../books/book_graham.txt", San, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	assert.Equal(t, 1_256, book.NumberOfEntries())
+
+	// get root entry
+	pos := position.New()
+	entry, found := book.GetEntry(pos.ZobristKey())
+	assert.True(t, found)
+	assert.NotNil(t, entry)
+	assert.Equal(t, book.rootEntry, entry)
+	assert.Equal(t, entry.zobristKey, pos.ZobristKey())
+	assert.Equal(t, 8, len(entry.moves))
+	assert.Equal(t, 149, entry.counter)
+
+	pos.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
+	entry, found = book.GetEntry(pos.ZobristKey())
+	assert.True(t, found)
+	assert.NotNil(t, entry)
+	assert.Equal(t, entry.zobristKey, pos.ZobristKey())
+	assert.Equal(t, 8, len(entry.moves))
+	assert.Equal(t, 94, entry.counter)
+
+	for _, p := range entry.moves {
+		out.Printf("%s ==> %#v (%d)\n",p.move.StringUci(), p.nextEntry.zobristKey, p.nextEntry.counter)
+	}
+}
+
+func Test_processingPGNSmall(t *testing.T) {
+	logTest.Info("Starting PGN small test")
+	Init()
+	var book Book
+	err := book.Initialize("../books/pgn_test.pgn", Pgn, false, false)
+	assert.NoError(t, err, "Initialize book threw error: %s", err)
+	assert.Equal(t, 1_428, book.NumberOfEntries())
+
+	// get root entry
+	pos := position.New()
+	entry, found := book.GetEntry(pos.ZobristKey())
+	assert.True(t, found)
+	assert.NotNil(t, entry)
+	assert.Equal(t, book.rootEntry, entry)
+	assert.Equal(t, entry.zobristKey, pos.ZobristKey())
+	assert.Equal(t, 2, len(entry.moves))
+	assert.Equal(t, 18, entry.counter)
+
+	pos.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
+	entry, found = book.GetEntry(pos.ZobristKey())
+	assert.True(t, found)
+	assert.NotNil(t, entry)
+	assert.Equal(t, entry.zobristKey, pos.ZobristKey())
+	assert.Equal(t, 4, len(entry.moves))
+	assert.Equal(t, 12, entry.counter)
+
+	for _, p := range entry.moves {
+		out.Printf("%s ==> %#v (%d)\n",p.move.StringUci(), p.nextEntry.zobristKey, p.nextEntry.counter)
+	}
+}
+
+func Test_processingPGNLarge(t *testing.T) {
+	logTest.Info("Starting PGN large test")
+	Init()
+	var book Book
+	err := book.Initialize("../books/superbook.pgn", Pgn, false, false)
+	assert.NoError(t, err, "Initialize book threw error: %s", err)
+	assert.Equal(t, 4_821_316, book.NumberOfEntries())
+
+	// get root entry
+	pos := position.New()
+	entry, found := book.GetEntry(pos.ZobristKey())
+	assert.True(t, found)
+	assert.NotNil(t, entry)
+	assert.Equal(t, book.rootEntry, entry)
+	assert.Equal(t, entry.zobristKey, pos.ZobristKey())
+	assert.Equal(t, 20, len(entry.moves))
+	assert.Equal(t, 190_775, entry.counter)
+
+	pos.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
+	entry, found = book.GetEntry(pos.ZobristKey())
+	assert.True(t, found)
+	assert.NotNil(t, entry)
+	assert.Equal(t, entry.zobristKey, pos.ZobristKey())
+	assert.Equal(t, 18, len(entry.moves))
+	assert.Equal(t, 89_615, entry.counter)
+
+	for _, p := range entry.moves {
+		out.Printf("%s ==> %#v (%d)\n",p.move.StringUci(), p.nextEntry.zobristKey, p.nextEntry.counter)
+	}
+}
+
+
+func Test_processingPGNCache(t *testing.T) {
+	logTest.Info("Starting PGN cache test")
+	Init()
+	var book Book
+	err := book.Initialize("../books/pgn_test.pgn", Pgn, true, true)
+	assert.NoError(t, err, "Initialize book threw error: %s", err)
 
 	// // get root entry
 	// pos := position.New()
@@ -139,17 +230,17 @@ func Test_processingSANSmall(t *testing.T) {
 	// assert.NotNil(t, entry)
 	// assert.Equal(t, book.rootEntry, entry)
 	// assert.Equal(t, entry.zobristKey, pos.ZobristKey())
-	// assert.Equal(t, 15, len(entry.moves))
-	// assert.Equal(t, 61_217, entry.counter)
+	// assert.Equal(t, 20, len(entry.moves))
+	// assert.Equal(t, 190_775, entry.counter)
 	//
 	// pos.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
 	// entry, found = book.GetEntry(pos.ZobristKey())
 	// assert.True(t, found)
 	// assert.NotNil(t, entry)
 	// assert.Equal(t, entry.zobristKey, pos.ZobristKey())
-	// assert.Equal(t, 11, len(entry.moves))
-	// assert.Equal(t, 24_350, entry.counter)
-
+	// assert.Equal(t, 18, len(entry.moves))
+	// assert.Equal(t, 89_615, entry.counter)
+	//
 	// for _, p := range entry.moves {
 	// 	out.Printf("%s ==> %#v (%d)\n",p.move.StringUci(), p.nextEntry.zobristKey, p.nextEntry.counter)
 	// }

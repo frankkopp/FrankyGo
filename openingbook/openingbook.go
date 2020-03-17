@@ -39,6 +39,8 @@ package openingbook
 
 import (
 	"bufio"
+	"encoding/gob"
+	"errors"
 	"os"
 	"regexp"
 	"strings"
@@ -56,6 +58,9 @@ import (
 
 var out = message.NewPrinter(language.German)
 var log = franky_logging.GetLog("openingbook")
+
+// setting to use multiple goroutines or not - useful for debugging
+const parallel = true
 
 // BookFormat represent the supported book formats defined as constants
 type BookFormat uint8
@@ -98,18 +103,32 @@ type Book struct {
 var bookLock sync.Mutex
 
 //noinspection GoUnhandledErrorResult
-func (b *Book) Initialize(bookPath string, bookFormat BookFormat) error {
+func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool, recreateCache bool) error {
 	if b.initialized {
 		return nil
 	}
+
 	startTotal := time.Now()
 
-	log.Info("Initializing Opening Book.")
+	if parallel {
+		log.Info("Initializing Opening Book (parallel processing).")
+	} else {
+		log.Info("Initializing Opening Book (non parallel processing).")
+	}
 
 	// check file path
 	if _, err := os.Stat(bookPath); err != nil {
 		log.Errorf("File \"%s\" does not exist\n", bookPath)
 		return err
+	}
+
+	// if cache enabled check if we have a cache file and load from cache
+	if useCache && !recreateCache && b.hasCache() {
+		err := b.loadFromCache()
+		if err == nil {
+			return nil
+		}
+		log.Warningf("Cache could not be loaded. Reading original data from \"%s\"", bookPath)
 	}
 
 	// read book from file
@@ -145,6 +164,18 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat) error {
 	// finished
 	elapsedTotal := time.Since(startTotal)
 	log.Infof("Total initialization time : %d ms\n", elapsedTotal.Milliseconds())
+
+	// saving to cache
+	if useCache {
+		log.Infof("Saving to cache...")
+		startSave := time.Now()
+		cacheFile, err := b.saveToCache(bookPath)
+		if err != nil {
+			log.Errorf("Error while saving to cache: %s\n", err)
+		}
+		elapsedSave := time.Since(startSave)
+		log.Infof("Saved to cache %s in %d ms\n", cacheFile, elapsedSave.Milliseconds())
+	}
 
 	b.initialized = true
 	return nil
@@ -203,37 +234,40 @@ func (b *Book) process(lines *[]string, format BookFormat) error {
 	case San:
 		b.processSan(lines)
 	case Pgn:
-		panic("not yet implemented")
+		b.processPgn(lines)
 	}
 	return nil
 }
 
 // processes all lines of Simple format
 func (b *Book) processSimple(lines *[]string) {
-	// for _, line := range *lines {
-	// 	b.processSimpleLine(line)
-	// }
-	sliceLength := len(*lines)
-	var wg sync.WaitGroup
-	wg.Add(sliceLength)
-	for _, line := range *lines {
-		go func(line string) {
-			defer wg.Done()
+	if parallel {
+		sliceLength := len(*lines)
+		var wg sync.WaitGroup
+		wg.Add(sliceLength)
+		for _, line := range *lines {
+			go func(line string) {
+				defer wg.Done()
+				b.processSimpleLine(line)
+			}(line)
+		}
+		wg.Wait()
+	} else {
+		for _, line := range *lines {
 			b.processSimpleLine(line)
-		}(line)
+		}
 	}
-	wg.Wait()
 }
 
 // regular expressions for detecting moves
-var regexUciMove = regexp.MustCompile("([a-h][1-8][a-h][1-8])")
+var regexSimpleUciMove = regexp.MustCompile("([a-h][1-8][a-h][1-8])")
 
 // processes one line of simple format and adds each move to book
 func (b *Book) processSimpleLine(line string) {
 	line = strings.TrimSpace(line)
 
-	// check if line starts with a move - otherwise skip
-	matches := regexUciMove.FindAllString(line, -1)
+	// find Uci moves
+	matches := regexSimpleUciMove.FindAllString(line, -1)
 
 	// skip lines without matches
 	if len(matches) == 0 {
@@ -253,46 +287,132 @@ func (b *Book) processSimpleLine(line string) {
 	var mg = movegen.New()
 
 	// add all matches to book
-	for _, m := range matches {
-		// find move in the current position or stop processing
-		move := mg.GetMoveFromUci(&pos, m)
-		if !move.IsValid() {
-			// we got an invalid move and stop processing further matches
+	for _, moveString := range matches {
+		err := b.processSingleMove(moveString, &mg, &pos)
+		// stop processing further matches when we had an error as it
+		// would probably be fruitless as position will be wrong
+		if err != nil {
 			break
 		}
-		// execute move on position and store the keys for the positions
-		curPosKey := pos.ZobristKey()
-		pos.DoMove(move)
-		nextPosKey := pos.ZobristKey()
-		// add the move
-		b.addToBook(curPosKey, nextPosKey, move)
 	}
 }
 
 // processes all lines of Simple format
 func (b *Book) processSan(lines *[]string) {
-	// for _, line := range *lines {
-	// 	b.processSanLine(line)
-	// }
-	sliceLength := len(*lines)
-	var wg sync.WaitGroup
-	wg.Add(sliceLength)
-	for _, line := range *lines {
-		go func(line string) {
-			defer wg.Done()
+	if parallel {
+		sliceLength := len(*lines)
+		var wg sync.WaitGroup
+		wg.Add(sliceLength)
+		for _, line := range *lines {
+			go func(line string) {
+				defer wg.Done()
+				b.processSanLine(line)
+			}(line)
+		}
+		wg.Wait()
+	} else {
+		for _, line := range *lines {
 			b.processSanLine(line)
-		}(line)
+		}
 	}
-	wg.Wait()
 }
 
-// regular expressions for handling input lines
+var regexResult = regexp.MustCompile("((1-0)|(0-1)|(1/2-1/2)|(\\*))$")
+
+func (b *Book) processPgn(lines *[]string) {
+	// bundle games in slices of lines by finding result patterns
+	var gamesSlices [][]string
+
+	// find slices for each game
+	startSlicing := time.Now()
+	start := 0
+	// end := len(*lines)
+	for i, l := range *lines {
+		l = strings.TrimSpace(l)
+		if regexResult.MatchString(l) {
+			end := i + 1
+			gamesSlices = append(gamesSlices, (*lines)[start:end])
+			start = end
+		}
+	}
+	elapsedReading := time.Since(startSlicing)
+	log.Infof("Finished finding %d games from file in: %d ms\n", len(gamesSlices), elapsedReading.Milliseconds())
+
+	// process each game
+	startProcessing := time.Now()
+	if parallel {
+		noOfSlices := len(gamesSlices)
+		var wg sync.WaitGroup
+		wg.Add(noOfSlices)
+		for _, gs := range gamesSlices {
+			go func(gs []string) {
+				defer wg.Done()
+				b.processPgnGame(gs)
+			}(gs)
+		}
+		wg.Wait()
+	} else {
+		for _, gs := range gamesSlices {
+			b.processPgnGame(gs)
+		}
+
+	}
+	elapsedProcessing := time.Since(startProcessing)
+	log.Infof("Finished processing %d games from file in: %d ms\n", len(gamesSlices), elapsedProcessing.Milliseconds())
+}
+
+var regexTrailingComments = regexp.MustCompile(";.*$")
+var regexTagPairs = regexp.MustCompile("\\[\\w+ +\".*?\"\\]")
+var regexNagAnnotation = regexp.MustCompile("(\\$\\d{1,3})") // no NAG annotation supported
+var regexBracketComments = regexp.MustCompile("{[^{}]*}")    // bracket comments
+var regexReservedSymbols = regexp.MustCompile("<[^<>]*>")    // reserved symbols < >
+var regexRavVariants = regexp.MustCompile("\\([^()]*\\)")    // RAV variant comments < >
+
+func (b *Book) processPgnGame(gs []string) {
+	// build a cleaned up string of the move part of the PGN
+	var moveLine strings.Builder
+
+	// cleanup lines and concatenate move lines
+	for _, l := range gs {
+		l = strings.TrimSpace(l)
+		if strings.HasPrefix(l, "%") { // skip comment lines
+			continue
+		}
+		// remove unnecessary parts and lines / order is important - comments last
+		l = regexTagPairs.ReplaceAllString(l, "")
+		l = regexResult.ReplaceAllString(l, "")
+		l = regexTrailingComments.ReplaceAllString(l, "")
+		l = strings.TrimSpace(l)
+		// after cleanup skip now empty lines
+		if len(l) == 0 {
+			continue
+		}
+		// add the rest to the moveLine
+		moveLine.WriteString(" ")
+		moveLine.WriteString(l)
+	}
+	line := moveLine.String()
+
+	// clean up move section of PGN
+	line = regexNagAnnotation.ReplaceAllString(line, " ")
+	line = regexBracketComments.ReplaceAllString(line, " ")
+	line = regexReservedSymbols.ReplaceAllString(line, " ")
+	// RAV variation comments can be nested - therefore loop
+	for regexRavVariants.MatchString(line) {
+		line = regexRavVariants.ReplaceAllString(line, " ")
+	}
+
+	// process as SAN line
+	b.processSanLine(line)
+}
+
+// regular expressions for handling SAN/UCI input lines
 var regexSanLineStart = regexp.MustCompile("^\\d+\\. ?")
-var regexSanLineCleanUpNumbers = regexp.MustCompile("(\\d+\\. ?)")
+var regexSanLineCleanUpNumbers = regexp.MustCompile("(\\d+\\.{1,3} ?)")
 var regexSanLineCleanUpResults = regexp.MustCompile("(1/2|1|0)-(1/2|1|0)")
 var regexWhiteSpace = regexp.MustCompile("\\s+")
 
-// processes one line of simple format and adds each move to book
+// processes one line of SAN format and adds each move to book
 func (b *Book) processSanLine(line string) {
 	line = strings.TrimSpace(line)
 
@@ -315,9 +435,9 @@ func (b *Book) processSanLine(line string) {
 	line = strings.TrimSpace(line)
 
 	// split at every whitespace and iterate through items
-	sans := regexWhiteSpace.Split(line, -1)
+	moveStrings := regexWhiteSpace.Split(line, -1)
 	// skip lines without matches
-	if len(sans) == 0 {
+	if len(moveStrings) == 0 {
 		return
 	}
 
@@ -333,21 +453,42 @@ func (b *Book) processSanLine(line string) {
 	// movegen is not thread safe therefore we create a new instance for every line
 	var mg = movegen.New()
 
-	for _, s := range sans {
-		// find move in the current position or stop processing
-		move := mg.GetMoveFromSan(&pos, s)
-		if !move.IsValid() {
-			// we got an invalid move and stop processing further matches
+	for _, moveString := range moveStrings {
+		err := b.processSingleMove(moveString, &mg, &pos)
+		// stop processing further matches when we had an error as it
+		// would probably be fruitless as position will be wrong
+		if err != nil {
+			log.Warningf("Move not valid %s on %s", moveString, pos.StringFen())
 			break
 		}
-		// execute move on position and store the keys for the positions
-		curPosKey := pos.ZobristKey()
-		pos.DoMove(move)
-		nextPosKey := pos.ZobristKey()
-		// add the move
-		b.addToBook(curPosKey, nextPosKey, move)
 	}
+}
 
+var regexUciMove = regexp.MustCompile("([a-h][1-8][a-h][1-8])([NBRQnbrq])?")
+var regexSanMove = regexp.MustCompile("([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=?([NBRQ]))?([!?+#]*)?")
+
+// Process a single move as a string in either UCI or SAN format.
+// Uses pattern matching to distinguish format
+func (b *Book) processSingleMove(s string, mgPtr *movegen.Movegen, posPtr *position.Position) error {
+	// find move in the current position or stop processing
+	var move = types.MoveNone
+	if regexUciMove.MatchString(s) {
+		move = mgPtr.GetMoveFromUci(posPtr, s)
+	} else if regexSanMove.MatchString(s) {
+		move = mgPtr.GetMoveFromSan(posPtr, s)
+	}
+	// if move is invalid return stop processing further matches
+	if !move.IsValid() {
+		return errors.New("Invalid move " + s)
+	}
+	// execute move on position and store the keys for the positions
+	curPosKey := posPtr.ZobristKey()
+	posPtr.DoMove(move)
+	nextPosKey := posPtr.ZobristKey()
+	// add the move
+	b.addToBook(curPosKey, nextPosKey, move)
+	// no error
+	return nil
 }
 
 // adds a move to the book
@@ -380,5 +521,38 @@ func (b *Book) addToBook(curPosKey position.Key, nextPosKey position.Key, move t
 		// add move and link to child position entry to current entry
 		currentPosEntryPtr.moves = append(currentPosEntryPtr.moves, successor{move, nextPosEntryPtr})
 	}
+}
 
+func (b *Book) hasCache() bool {
+	panic("not yet implemented")
+}
+
+func (b *Book) loadFromCache() error {
+	panic("not yet implemented")
+}
+
+func (b *Book) saveToCache(bookPath string) (string, error) {
+	// determine cache file name
+	cachePath := bookPath + ".cache"
+
+	// Create a file for IO
+	encodeFile, err := os.Create(cachePath)
+	if err != nil {
+		return cachePath, err
+	}
+
+	// create encoder with buffer
+	encoder := gob.NewEncoder(encodeFile)
+
+	// Encoding the map
+	// Write to the file
+	if err = encoder.Encode(b.bookMap); err != nil {
+		return cachePath, err
+	}
+	if err = encodeFile.Close(); err != nil {
+		return cachePath, err
+	}
+
+	// no error
+	return cachePath, nil
 }
