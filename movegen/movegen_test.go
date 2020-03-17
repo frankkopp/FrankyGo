@@ -25,7 +25,7 @@
 package movegen
 
 import (
-	"log"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -34,15 +34,18 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
+	"github.com/frankkopp/FrankyGo/franky_logging"
 	"github.com/frankkopp/FrankyGo/moveslice"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
+var logTest = franky_logging.GetLog("test")
+
 func TestConstruction(t *testing.T) {
 	Init()
 	mg := New()
-	log.Printf("%s type of %s", mg.String(), reflect.TypeOf(mg))
+	fmt.Printf("%s type of %s", mg.String(), reflect.TypeOf(mg))
 }
 
 func Test_movegen_generatePawnMoves(t *testing.T) {
@@ -63,10 +66,10 @@ func Test_movegen_generatePawnMoves(t *testing.T) {
 	assert.Equal(t, 25, len(moves))
 
 	moves.Sort()
-	log.Printf("Moves: %d\n", len(moves))
+	fmt.Printf("Moves: %d\n", len(moves))
 	l := len(moves)
 	for i := 0; i < l; i++ {
-		log.Printf("Move: %s\n", moves.At(i))
+		fmt.Printf("Move: %s\n", moves.At(i))
 	}
 }
 
@@ -141,7 +144,7 @@ func Test_movegen_GeneratePseudoLegalMoves(t *testing.T) {
 		"c2c3 g1h3 b1a3", moves.StringUci())
 	// l := mg.pseudoLegalMoves.Len()
 	// for i := 0; i < l; i++ {
-	// 	log.Printf("%d. %s\n", i+1, moves.At(i).String())
+	// 	fmt.Printf("%d. %s\n", i+1, moves.At(i).String())
 	// }
 	moves.Clear()
 
@@ -151,7 +154,7 @@ func Test_movegen_GeneratePseudoLegalMoves(t *testing.T) {
 	assert.Equal(t, "c3b4 d7f6 f3d2 b5c6 d7e5 f3e5 d7b6 e2d2 e1d2 e1g1 e1c1 d3d4 f3d4 d7c5 h1f1 a1d1 a1c1 b5c4 f3g5 h2h3 e2e3 a2a3 c3c4 h2h4 g2g4 a2a4 e1f1 g2g3 e2d1 b2b3 b5a6 b5a4 e2f1 h1g1 a1b1 e1d1 d7f8 f3h4 d7b8 f3g1", moves.StringUci())
 	// l = mg.pseudoLegalMoves.Len()
 	// for i := 0; i < l; i++ {
-	// 	log.Printf("%d. %s\n", i+1, moves.At(i).String())
+	// 	fmt.Printf("%d. %s\n", i+1, moves.At(i).String())
 	// }
 	moves.Clear()
 
@@ -187,7 +190,7 @@ func Test_movegen_GenerateLegalMoves(t *testing.T) {
 		moves.StringUci())
 	// l = mg.pseudoLegalMoves.Len()
 	// for i := 0; i < l; i++ {
-	// 	log.Printf("%d. %s\n", i+1, moves.At(i).String())
+	// 	fmt.Printf("%d. %s\n", i+1, moves.At(i).String())
 	// }
 	moves.Clear()
 
@@ -270,7 +273,7 @@ func TestTimingPseudoMoveGen(t *testing.T) {
 	}
 
 	// moves.ForEach(func(i int) {
-	// 	log.Printf("%d. %s\n", i+1, moves.At(i).String())
+	// 	fmt.Printf("%d. %s\n", i+1, moves.At(i).String())
 	// })
 }
 
@@ -306,7 +309,57 @@ func TestMovegen_GetMoveFromUci(t *testing.T) {
 	// invalid castling
 	move = mg.GetMoveFromUci(&pos, "e8g8")
 	assert.Equal(t, MoveNone, move)
-
 }
 
+
+func TestMovegen_GetMoveFromSan(t *testing.T) {
+	Init()
+	pos := position.NewFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
+	mg := New()
+
+	// invalid pattern
+	move := mg.GetMoveFromSan(&pos, "33")
+	assert.Equal(t, MoveNone, move)
+
+	// valid move
+	move = mg.GetMoveFromSan(&pos, "b5")
+	assert.Equal(t, CreateMove(SqB7, SqB5, Normal, PtNone), move)
+
+	// invalid move
+	move = mg.GetMoveFromSan(&pos, "a5")
+	assert.Equal(t, MoveNone, move)
+
+	// valid promotion
+	move = mg.GetMoveFromSan(&pos, "a1Q")
+	assert.Equal(t, CreateMove(SqA2, SqA1, Promotion, Queen), move)
+
+	// valid promotion (we allow lower case promotions)
+	move = mg.GetMoveFromSan(&pos, "a1q")
+	assert.Equal(t, MoveNone, move)
+
+	// valid castling
+	move = mg.GetMoveFromSan(&pos, "O-O-O")
+	assert.Equal(t, CreateMove(SqE8, SqC8, Castling, PtNone), move)
+
+	// invalid castling
+	move = mg.GetMoveFromSan(&pos, "O-O")
+	assert.Equal(t, MoveNone, move)
+
+	// ambiguous
+	move = mg.GetMoveFromSan(&pos, "Ne5")
+	assert.Equal(t, MoveNone, move)
+	move = mg.GetMoveFromSan(&pos, "Nde5")
+	assert.Equal(t, CreateMove(SqD7, SqE5, Normal, PtNone), move)
+	move = mg.GetMoveFromSan(&pos, "Nge5")
+	assert.Equal(t, CreateMove(SqG6, SqE5, Normal, PtNone), move)
+	move = mg.GetMoveFromSan(&pos, "N7e5")
+	assert.Equal(t, CreateMove(SqD7, SqE5, Normal, PtNone), move)
+	move = mg.GetMoveFromSan(&pos, "N6e5")
+	assert.Equal(t, CreateMove(SqG6, SqE5, Normal, PtNone), move)
+	move = mg.GetMoveFromSan(&pos, "ab1Q")
+	assert.Equal(t, CreateMove(SqA2, SqB1, Promotion, Queen), move)
+	move = mg.GetMoveFromSan(&pos, "cb1Q")
+	assert.Equal(t, CreateMove(SqC2, SqB1, Promotion, Queen), move)
+
+}
 

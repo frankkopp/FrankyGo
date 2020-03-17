@@ -29,9 +29,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/frankkopp/FrankyGo/franky_logging"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
+
+var logTest = franky_logging.GetLog("test")
 
 func Test_readingFile(t *testing.T) {
 	lines, err := readFile("../books/superbook.pgn")
@@ -120,3 +123,34 @@ func Test_processingSimple(t *testing.T) {
 	}
 }
 
+
+func Test_processingSANSmall(t *testing.T) {
+	logTest.Info("Starting SAN small test")
+	Init()
+	var book Book
+	err := book.Initialize("../books/book_graham.txt", San)
+	assert.NoError(t, err, "Initialize book threw error: %s", err)
+	assert.Equal(t, 273_578, book.NumberOfEntries())
+
+	// // get root entry
+	// pos := position.New()
+	// entry, found := book.GetEntry(pos.ZobristKey())
+	// assert.True(t, found)
+	// assert.NotNil(t, entry)
+	// assert.Equal(t, book.rootEntry, entry)
+	// assert.Equal(t, entry.zobristKey, pos.ZobristKey())
+	// assert.Equal(t, 15, len(entry.moves))
+	// assert.Equal(t, 61_217, entry.counter)
+	//
+	// pos.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
+	// entry, found = book.GetEntry(pos.ZobristKey())
+	// assert.True(t, found)
+	// assert.NotNil(t, entry)
+	// assert.Equal(t, entry.zobristKey, pos.ZobristKey())
+	// assert.Equal(t, 11, len(entry.moves))
+	// assert.Equal(t, 24_350, entry.counter)
+
+	// for _, p := range entry.moves {
+	// 	out.Printf("%s ==> %#v (%d)\n",p.move.StringUci(), p.nextEntry.zobristKey, p.nextEntry.counter)
+	// }
+}

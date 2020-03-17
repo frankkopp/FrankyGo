@@ -39,7 +39,6 @@ package openingbook
 
 import (
 	"bufio"
-	"log"
 	"os"
 	"regexp"
 	"strings"
@@ -49,12 +48,14 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
+	"github.com/frankkopp/FrankyGo/franky_logging"
 	"github.com/frankkopp/FrankyGo/movegen"
 	"github.com/frankkopp/FrankyGo/position"
 	"github.com/frankkopp/FrankyGo/types"
 )
 
 var out = message.NewPrinter(language.German)
+var log = franky_logging.GetLog("openingbook")
 
 // BookFormat represent the supported book formats defined as constants
 type BookFormat uint8
@@ -96,9 +97,6 @@ type Book struct {
 // to test found moves against positions
 var bookLock sync.Mutex
 
-// regular expressions for detecting moves
-var regexUciMove = regexp.MustCompile("([a-h][1-8][a-h][1-8])")
-
 //noinspection GoUnhandledErrorResult
 func (b *Book) Initialize(bookPath string, bookFormat BookFormat) error {
 	if b.initialized {
@@ -106,22 +104,24 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat) error {
 	}
 	startTotal := time.Now()
 
+	log.Info("Initializing Opening Book.")
+
 	// check file path
 	if _, err := os.Stat(bookPath); err != nil {
-		out.Printf("File \"%s\" does not exist\n", bookPath)
+		log.Errorf("File \"%s\" does not exist\n", bookPath)
 		return err
 	}
 
 	// read book from file
-	out.Printf("Reading opening book file: %s\n", bookPath)
+	log.Infof("Reading opening book file: %s\n", bookPath)
 	startReading := time.Now()
 	lines, err := readFile(bookPath)
 	if err != nil {
-		out.Printf("File \"%s\" could not be read: %s\n", bookPath, err)
+		log.Errorf("File \"%s\" could not be read: %s\n", bookPath, err)
 		return err
 	}
 	elapsedReading := time.Since(startReading)
-	out.Printf("Finished reading %d lines from file in: %d ms\n", len(*lines), elapsedReading.Milliseconds())
+	log.Infof("Finished reading %d lines from file in: %d ms\n", len(*lines), elapsedReading.Milliseconds())
 
 	// add root position
 	startPosition := position.New()
@@ -130,21 +130,21 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat) error {
 	b.bookMap[startPosition.ZobristKey()] = b.rootEntry
 
 	// process lines
-	out.Printf("Processing %d lines with format: %v\n", len(*lines), bookFormat)
+	log.Infof("Processing %d lines with format: %v\n", len(*lines), bookFormat)
 	startProcessing := time.Now()
 	err = b.process(lines, bookFormat)
 	if err != nil {
-		out.Printf("Error while processing: %s\n", err)
+		log.Errorf("Error while processing: %s\n", err)
 		return err
 	}
 	elapsedProcessing := time.Since(startProcessing)
-	out.Printf("Finished processing %d lines in: %d ms\n", len(*lines), elapsedProcessing.Milliseconds())
+	log.Infof("Finished processing %d lines in: %d ms\n", len(*lines), elapsedProcessing.Milliseconds())
 
-	out.Printf("Book contains %d entries\n", len(b.bookMap))
+	log.Infof("Book contains %d entries\n", len(b.bookMap))
 
 	// finished
 	elapsedTotal := time.Since(startTotal)
-	out.Printf("Total initialization time : %d ms\n", elapsedTotal.Milliseconds())
+	log.Infof("Total initialization time : %d ms\n", elapsedTotal.Milliseconds())
 
 	b.initialized = true
 	return nil
@@ -173,12 +173,12 @@ func (b *Book) GetEntry(key position.Key) (*bookEntry, bool) {
 func readFile(bookPath string) (*[]string, error) {
 	f, err := os.Open(bookPath)
 	if err != nil {
-		out.Printf("File \"%s\" could not be read; %s\n", bookPath, err)
+		log.Errorf("File \"%s\" could not be read; %s\n", bookPath, err)
 		return nil, err
 	}
 	defer func() {
 		if err = f.Close(); err != nil {
-			out.Printf("File \"%s\" could not be closed: %s\n", bookPath, err)
+			log.Errorf("File \"%s\" could not be closed: %s\n", bookPath, err)
 		}
 	}()
 	var lines []string
@@ -188,7 +188,7 @@ func readFile(bookPath string) (*[]string, error) {
 	}
 	err = s.Err()
 	if err != nil {
-		out.Printf("Error while reading file \"%s\": %s\n", bookPath, err)
+		log.Errorf("Error while reading file \"%s\": %s\n", bookPath, err)
 		return nil, err
 	}
 
@@ -201,7 +201,7 @@ func (b *Book) process(lines *[]string, format BookFormat) error {
 	case Simple:
 		b.processSimple(lines)
 	case San:
-		panic("not yet implemented")
+		b.processSan(lines)
 	case Pgn:
 		panic("not yet implemented")
 	}
@@ -224,6 +224,9 @@ func (b *Book) processSimple(lines *[]string) {
 	}
 	wg.Wait()
 }
+
+// regular expressions for detecting moves
+var regexUciMove = regexp.MustCompile("([a-h][1-8][a-h][1-8])")
 
 // processes one line of simple format and adds each move to book
 func (b *Book) processSimpleLine(line string) {
@@ -253,6 +256,87 @@ func (b *Book) processSimpleLine(line string) {
 	for _, m := range matches {
 		// find move in the current position or stop processing
 		move := mg.GetMoveFromUci(&pos, m)
+		if !move.IsValid() {
+			// we got an invalid move and stop processing further matches
+			break
+		}
+		// execute move on position and store the keys for the positions
+		curPosKey := pos.ZobristKey()
+		pos.DoMove(move)
+		nextPosKey := pos.ZobristKey()
+		// add the move
+		b.addToBook(curPosKey, nextPosKey, move)
+	}
+}
+
+// processes all lines of Simple format
+func (b *Book) processSan(lines *[]string) {
+	for _, line := range *lines {
+		b.processSanLine(line)
+	}
+	// sliceLength := len(*lines)
+	// var wg sync.WaitGroup
+	// wg.Add(sliceLength)
+	// for _, line := range *lines {
+	// 	go func(line string) {
+	// 		defer wg.Done()
+	// 		b.processSimpleLine(line)
+	// 	}(line)
+	// }
+	// wg.Wait()
+}
+
+// regular expressions for handling input lines
+var regexSanLineStart = regexp.MustCompile("^\\d+\\. ?")
+var regexSanLineCleanUpNumbers = regexp.MustCompile("(\\d+\\. ?)")
+var regexSanLineCleanUpResults = regexp.MustCompile("(1/2|1|0)-(1/2|1|0)")
+var regexWhiteSpace = regexp.MustCompile("\\s+")
+
+// processes one line of simple format and adds each move to book
+func (b *Book) processSanLine(line string) {
+	line = strings.TrimSpace(line)
+
+	// check if line starts valid
+	found := regexSanLineStart.MatchString(line)
+	if !found {
+		log.Debugf("Wrong format - line ignored %s", line)
+		return
+	}
+
+	/*
+	 Iterate over all tokens, ignore move numbers and results
+	 Example:
+	 1. f4 d5 2. Nf3 Nf6 3. e3 g6 4. b3 Bg7 5. Bb2 O-O 6. Be2 c5 7. O-O Nc6 8. Ne5 Qc7 1/2-1/2
+	 1. f4 d5 2. Nf3 Nf6 3. e3 Bg4 4. Be2 e6 5. O-O Bd6 6. b3 O-O 7. Bb2 c5 1/2-1/2
+	*/
+
+	// remove unnecessary parts
+	line = regexSanLineCleanUpNumbers.ReplaceAllString(line, "")
+	line = regexSanLineCleanUpResults.ReplaceAllString(line, "")
+	line = strings.TrimSpace(line)
+
+	// split at every whitespace and iterate through items
+	sans := regexWhiteSpace.Split(line, -1)
+	// skip lines without matches
+	if len(sans) == 0 {
+		return
+	}
+
+	// start with root position
+	pos := position.New()
+
+	// increase counter for root position
+	bookLock.Lock()
+	b.rootEntry.counter++
+	bookLock.Unlock()
+
+	// move gen to check moves
+	// movegen is not thread safe therefore we create a new instance for every line
+	var mg = movegen.New()
+
+	for _, s := range sans {
+		// find move in the current position or stop processing
+		move := mg.GetMoveFromUci(&pos, s)
 		if !move.IsValid() {
 			// we got an invalid move and stop processing further matches
 			break
