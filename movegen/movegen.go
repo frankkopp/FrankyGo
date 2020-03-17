@@ -42,6 +42,7 @@ import (
 var log = franky_logging.GetLog("movegen")
 
 const (
+	// to let the compiler eliminate debugging out completely
 	debug bool = false
 )
 
@@ -327,10 +328,12 @@ func (mg *movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 			var castlingString string
 			switch kingToSquare {
 			case SqG1: // white king side
+				fallthrough
 			case SqG8: // black king side
 				castlingString = "O-O"
 				break
 			case SqC1: // white queen side
+				fallthrough
 			case SqC8: // black queen side
 				castlingString = "O-O-O"
 				break
@@ -440,6 +443,7 @@ func (mg *movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 		}
 		return moveFromSAN
 	}
+	// no move found
 	return MoveNone
 }
 

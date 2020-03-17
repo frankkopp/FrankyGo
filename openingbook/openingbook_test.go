@@ -130,7 +130,7 @@ func Test_processingSANSmall(t *testing.T) {
 	var book Book
 	err := book.Initialize("../books/book_graham.txt", San)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
-	assert.Equal(t, 273_578, book.NumberOfEntries())
+	assert.Equal(t, 1_256, book.NumberOfEntries())
 
 	// // get root entry
 	// pos := position.New()

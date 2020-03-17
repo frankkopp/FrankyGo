@@ -271,19 +271,19 @@ func (b *Book) processSimpleLine(line string) {
 
 // processes all lines of Simple format
 func (b *Book) processSan(lines *[]string) {
-	for _, line := range *lines {
-		b.processSanLine(line)
-	}
-	// sliceLength := len(*lines)
-	// var wg sync.WaitGroup
-	// wg.Add(sliceLength)
 	// for _, line := range *lines {
-	// 	go func(line string) {
-	// 		defer wg.Done()
-	// 		b.processSimpleLine(line)
-	// 	}(line)
+	// 	b.processSanLine(line)
 	// }
-	// wg.Wait()
+	sliceLength := len(*lines)
+	var wg sync.WaitGroup
+	wg.Add(sliceLength)
+	for _, line := range *lines {
+		go func(line string) {
+			defer wg.Done()
+			b.processSanLine(line)
+		}(line)
+	}
+	wg.Wait()
 }
 
 // regular expressions for handling input lines
@@ -299,7 +299,6 @@ func (b *Book) processSanLine(line string) {
 	// check if line starts valid
 	found := regexSanLineStart.MatchString(line)
 	if !found {
-		log.Debugf("Wrong format - line ignored %s", line)
 		return
 	}
 
@@ -336,7 +335,7 @@ func (b *Book) processSanLine(line string) {
 
 	for _, s := range sans {
 		// find move in the current position or stop processing
-		move := mg.GetMoveFromUci(&pos, s)
+		move := mg.GetMoveFromSan(&pos, s)
 		if !move.IsValid() {
 			// we got an invalid move and stop processing further matches
 			break
