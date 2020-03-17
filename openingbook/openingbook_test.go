@@ -281,6 +281,11 @@ func Test_processingPGNCacheLarge(t *testing.T) {
 	assert.Equal(t, 20, len(entry.Moves))
 	assert.Equal(t, 190_775, entry.Counter)
 
+	for _, p := range entry.Moves {
+		ne, _ := book.GetEntry(position.Key(p.NextEntry))
+		out.Printf("%s ==> %#v (%d)\n",Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter )
+	}
+
 	pos.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
 	entry, found = book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
@@ -289,8 +294,4 @@ func Test_processingPGNCacheLarge(t *testing.T) {
 	assert.Equal(t, 18, len(entry.Moves))
 	assert.Equal(t, 89_615, entry.Counter)
 
-	for _, p := range entry.Moves {
-		ne, _ := book.GetEntry(position.Key(p.NextEntry))
-		out.Printf("%s ==> %#v (%d)\n",Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter )
-	}
 }

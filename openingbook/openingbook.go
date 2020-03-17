@@ -25,13 +25,15 @@
 // Package openingbook
 // The OpeningBook reads game databases of different formats into an internal
 // data structure. It can then be queried for a book move on a certain position.
-// <p/>
-// Supported formats are currently:<br/>
-// BookFormat::SIMPLE for files storing a game per line with from-square and
-// to-square notation<br/>
-// BookFormat::SAN for files with lines of moves in SAN notation<br/>
-// BookFormat::PGN for PGN formatted games<br/>
 //
+// Supported formats are currently:
+//
+// BookFormat::SIMPLE for files storing a game per line with from-square and
+// to-square notation
+//
+// BookFormat::SAN for files with lines of moves in SAN notation
+//
+// BookFormat::PGN for PGN formatted games<br/>
 package openingbook
 
 import (
@@ -249,6 +251,7 @@ func (b *Book) process(lines *[]string, format BookFormat) error {
 }
 
 // processes all lines of Simple format
+// uses goroutines in parallel if enabled
 func (b *Book) processSimple(lines *[]string) {
 	if parallel {
 		sliceLength := len(*lines)
@@ -313,6 +316,7 @@ func (b *Book) processSimpleLine(line string) {
 }
 
 // processes all lines of Simple format
+// uses goroutines in parallel if enabled
 func (b *Book) processSan(lines *[]string) {
 	if parallel {
 		sliceLength := len(*lines)
@@ -334,6 +338,10 @@ func (b *Book) processSan(lines *[]string) {
 
 var regexResult = regexp.MustCompile("((1-0)|(0-1)|(1/2-1/2)|(\\*))$")
 
+// Processes PGN formatted file. PGN file have additional
+// metadata and spreads its move section over several lines.
+// We ignore the metadata for now and only look at the
+// move section.
 func (b *Book) processPgn(lines *[]string) {
 	// bundle games in slices of lines by finding result patterns
 	var gamesSlices [][]string
@@ -354,6 +362,7 @@ func (b *Book) processPgn(lines *[]string) {
 	log.Infof("Finished finding %d games from file in: %d ms\n", len(gamesSlices), elapsedReading.Milliseconds())
 
 	// process each game
+	// uses goroutines in parallel if enabled
 	startProcessing := time.Now()
 	if parallel {
 		noOfSlices := len(gamesSlices)
@@ -383,12 +392,13 @@ var regexBracketComments = regexp.MustCompile("{[^{}]*}")    // bracket comments
 var regexReservedSymbols = regexp.MustCompile("<[^<>]*>")    // reserved symbols < >
 var regexRavVariants = regexp.MustCompile("\\([^()]*\\)")    // RAV variant comments < >
 
-func (b *Book) processPgnGame(gs []string) {
+// processes one game comprising of several input lines
+func (b *Book) processPgnGame(gameSlice []string) {
 	// build a cleaned up string of the move part of the PGN
 	var moveLine strings.Builder
 
 	// cleanup lines and concatenate move lines
-	for _, l := range gs {
+	for _, l := range gameSlice {
 		l = strings.TrimSpace(l)
 		if strings.HasPrefix(l, "%") { // skip comment lines
 			continue
@@ -427,7 +437,7 @@ var regexSanLineCleanUpNumbers = regexp.MustCompile("(\\d+\\.{1,3} ?)")
 var regexSanLineCleanUpResults = regexp.MustCompile("(1/2|1|0)-(1/2|1|0)")
 var regexWhiteSpace = regexp.MustCompile("\\s+")
 
-// processes one line of SAN format and adds each move to book
+// processes one line of SAN format
 func (b *Book) processSanLine(line string) {
 	line = strings.TrimSpace(line)
 
@@ -524,7 +534,7 @@ func (b *Book) addToBook(curPosKey uint64, nextPosKey uint64, move uint32) {
 	// find the current position's entry
 	currentPosEntry, found := b.bookMap[curPosKey]
 	if !found {
-		log.Panic("Could not find current position in book.")
+		log.Error("Could not find current position in book.")
 		return
 	}
 
@@ -575,7 +585,6 @@ func (b *Book) loadFromCache(bookPath string) (bool, error) {
 
 	// no error
 	return true, nil
-
 }
 
 func (b *Book) saveToCache(bookPath string) (string, int64, error) {
