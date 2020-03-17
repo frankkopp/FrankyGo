@@ -57,7 +57,7 @@ func Test_processingEmpty(t *testing.T) {
 	startPos := position.New()
 	entry, ok := book.GetEntry(startPos.ZobristKey())
 	assert.True(t, ok)
-	assert.Equal(t, entry.zobristKey, startPos.ZobristKey())
+	assert.Equal(t, entry.ZobristKey, startPos.ZobristKey())
 
 	entry, ok = book.GetEntry(position.Key(1234))
 	assert.False(t, ok)
@@ -76,16 +76,16 @@ func Test_processingSimpleSmall(t *testing.T) {
 	entry, found := book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
-	assert.Equal(t, entry.zobristKey, pos.ZobristKey())
-	assert.Equal(t, 10, len(entry.moves))
+	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.Equal(t, 10, len(entry.Moves))
 
 	// get next entry from the first found entry
 	pos.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
 	entry, found = book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
-	assert.Equal(t, entry.zobristKey, pos.ZobristKey())
-	assert.Equal(t, 10, len(entry.moves))
+	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.Equal(t, 10, len(entry.Moves))
 
 	// for _, p := range entry.moves {
 	// 	out.Printf("%s ==> %#v (%d)\n",p.move.StringUci(), p.nextEntry.zobristKey, p.nextEntry.counter)
@@ -104,21 +104,22 @@ func Test_processingSimple(t *testing.T) {
 	entry, found := book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
-	assert.Equal(t, book.rootEntry, entry)
-	assert.Equal(t, entry.zobristKey, pos.ZobristKey())
-	assert.Equal(t, 15, len(entry.moves))
-	assert.Equal(t, 61_217, entry.counter)
+	assert.Equal(t, book.rootEntry, entry.ZobristKey)
+	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.Equal(t, 15, len(entry.Moves))
+	assert.Equal(t, 61_217, entry.Counter)
 
 	pos.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
 	entry, found = book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
-	assert.Equal(t, entry.zobristKey, pos.ZobristKey())
-	assert.Equal(t, 11, len(entry.moves))
-	assert.Equal(t, 24_350, entry.counter)
+	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.Equal(t, 11, len(entry.Moves))
+	assert.Equal(t, 24_350, entry.Counter)
 
-	for _, p := range entry.moves {
-		out.Printf("%s ==> %#v (%d)\n",p.move.StringUci(), p.nextEntry.zobristKey, p.nextEntry.counter)
+	for _, p := range entry.Moves {
+		ne, _ := book.GetEntry(position.Key(p.NextEntry))
+		out.Printf("%s ==> %#v (%d)\n",Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter)
 	}
 }
 
@@ -135,21 +136,22 @@ func Test_processingSANSmall(t *testing.T) {
 	entry, found := book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
-	assert.Equal(t, book.rootEntry, entry)
-	assert.Equal(t, entry.zobristKey, pos.ZobristKey())
-	assert.Equal(t, 8, len(entry.moves))
-	assert.Equal(t, 149, entry.counter)
+	assert.Equal(t, book.rootEntry, entry.ZobristKey)
+	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.Equal(t, 8, len(entry.Moves))
+	assert.Equal(t, 149, entry.Counter)
 
 	pos.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
 	entry, found = book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
-	assert.Equal(t, entry.zobristKey, pos.ZobristKey())
-	assert.Equal(t, 8, len(entry.moves))
-	assert.Equal(t, 94, entry.counter)
+	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.Equal(t, 8, len(entry.Moves))
+	assert.Equal(t, 94, entry.Counter)
 
-	for _, p := range entry.moves {
-		out.Printf("%s ==> %#v (%d)\n",p.move.StringUci(), p.nextEntry.zobristKey, p.nextEntry.counter)
+	for _, p := range entry.Moves {
+		ne, _ := book.GetEntry(position.Key(p.NextEntry))
+		out.Printf("%s ==> %#v (%d)\n",Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter)
 	}
 }
 
@@ -166,21 +168,22 @@ func Test_processingPGNSmall(t *testing.T) {
 	entry, found := book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
-	assert.Equal(t, book.rootEntry, entry)
-	assert.Equal(t, entry.zobristKey, pos.ZobristKey())
-	assert.Equal(t, 2, len(entry.moves))
-	assert.Equal(t, 18, entry.counter)
+	assert.Equal(t, book.rootEntry, entry.ZobristKey)
+	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.Equal(t, 2, len(entry.Moves))
+	assert.Equal(t, 18, entry.Counter)
 
 	pos.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
 	entry, found = book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
-	assert.Equal(t, entry.zobristKey, pos.ZobristKey())
-	assert.Equal(t, 4, len(entry.moves))
-	assert.Equal(t, 12, entry.counter)
+	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.Equal(t, 4, len(entry.Moves))
+	assert.Equal(t, 12, entry.Counter)
 
-	for _, p := range entry.moves {
-		out.Printf("%s ==> %#v (%d)\n",p.move.StringUci(), p.nextEntry.zobristKey, p.nextEntry.counter)
+	for _, p := range entry.Moves {
+		ne, _ := book.GetEntry(position.Key(p.NextEntry))
+		out.Printf("%s ==> %#v (%d)\n",Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter)
 	}
 }
 
@@ -197,51 +200,97 @@ func Test_processingPGNLarge(t *testing.T) {
 	entry, found := book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
-	assert.Equal(t, book.rootEntry, entry)
-	assert.Equal(t, entry.zobristKey, pos.ZobristKey())
-	assert.Equal(t, 20, len(entry.moves))
-	assert.Equal(t, 190_775, entry.counter)
+	assert.Equal(t, book.rootEntry, entry.ZobristKey)
+	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.Equal(t, 20, len(entry.Moves))
+	assert.Equal(t, 190_775, entry.Counter)
 
 	pos.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
 	entry, found = book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
-	assert.Equal(t, entry.zobristKey, pos.ZobristKey())
-	assert.Equal(t, 18, len(entry.moves))
-	assert.Equal(t, 89_615, entry.counter)
+	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.Equal(t, 18, len(entry.Moves))
+	assert.Equal(t, 89_615, entry.Counter)
 
-	for _, p := range entry.moves {
-		out.Printf("%s ==> %#v (%d)\n",p.move.StringUci(), p.nextEntry.zobristKey, p.nextEntry.counter)
+	for _, p := range entry.Moves {
+		ne, _ := book.GetEntry(position.Key(p.NextEntry))
+		out.Printf("%s ==> %#v (%d)\n",Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter)
 	}
 }
 
-
-func Test_processingPGNCache(t *testing.T) {
+func Test_processingPGNCacheSmall(t *testing.T) {
 	logTest.Info("Starting PGN cache test")
 	Init()
 	var book Book
 	err := book.Initialize("../books/pgn_test.pgn", Pgn, true, true)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
+	numberOfEntries := book.NumberOfEntries()
+	assert.Equal(t, 1_428, numberOfEntries)
 
-	// // get root entry
-	// pos := position.New()
-	// entry, found := book.GetEntry(pos.ZobristKey())
-	// assert.True(t, found)
-	// assert.NotNil(t, entry)
-	// assert.Equal(t, book.rootEntry, entry)
-	// assert.Equal(t, entry.zobristKey, pos.ZobristKey())
-	// assert.Equal(t, 20, len(entry.moves))
-	// assert.Equal(t, 190_775, entry.counter)
-	//
-	// pos.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
-	// entry, found = book.GetEntry(pos.ZobristKey())
-	// assert.True(t, found)
-	// assert.NotNil(t, entry)
-	// assert.Equal(t, entry.zobristKey, pos.ZobristKey())
-	// assert.Equal(t, 18, len(entry.moves))
-	// assert.Equal(t, 89_615, entry.counter)
-	//
-	// for _, p := range entry.moves {
-	// 	out.Printf("%s ==> %#v (%d)\n",p.move.StringUci(), p.nextEntry.zobristKey, p.nextEntry.counter)
-	// }
+	book.Reset()
+	assert.Equal(t, 0, book.NumberOfEntries())
+
+	err = book.Initialize("../books/pgn_test.pgn", Pgn, true, false)
+	assert.NoError(t, err, "Initialize book threw error: %s", err)
+	assert.Equal(t, numberOfEntries, book.NumberOfEntries())
+
+	// get root entry
+	pos := position.New()
+	entry, found := book.GetEntry(pos.ZobristKey())
+	assert.True(t, found)
+	assert.NotNil(t, entry)
+	assert.Equal(t, book.rootEntry, entry.ZobristKey)
+	assert.Equal(t, entry.ZobristKey, uint64(pos.ZobristKey()))
+	assert.Equal(t, 2, len(entry.Moves))
+	assert.Equal(t, 18, entry.Counter)
+
+	pos.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
+	entry, found = book.GetEntry(pos.ZobristKey())
+	assert.True(t, found)
+	assert.NotNil(t, entry)
+	assert.Equal(t, entry.ZobristKey, uint64(pos.ZobristKey()))
+	assert.Equal(t, 4, len(entry.Moves))
+	assert.Equal(t, 12, entry.Counter)
+
+	for _, p := range entry.Moves {
+		ne, _ := book.GetEntry(position.Key(p.NextEntry))
+		out.Printf("%s ==> %#v (%d)\n",Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter )
+	}
+}
+
+func Test_processingPGNCacheLarge(t *testing.T) {
+	logTest.Info("Starting PGN large cache test")
+	Init()
+	var book Book
+	err := book.Initialize("../books/superbook.pgn", Pgn, true, true)
+	assert.NoError(t, err, "Initialize book threw error: %s", err)
+
+	book.Reset()
+
+	err = book.Initialize("../books/superbook.pgn", Pgn, true, false)
+	assert.NoError(t, err, "Initialize book threw error: %s", err)
+
+	// get root entry
+	pos := position.New()
+	entry, found := book.GetEntry(pos.ZobristKey())
+	assert.True(t, found)
+	assert.NotNil(t, entry)
+	assert.Equal(t, book.rootEntry, entry.ZobristKey)
+	assert.Equal(t, entry.ZobristKey, uint64(pos.ZobristKey()))
+	assert.Equal(t, 20, len(entry.Moves))
+	assert.Equal(t, 190_775, entry.Counter)
+
+	pos.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
+	entry, found = book.GetEntry(pos.ZobristKey())
+	assert.True(t, found)
+	assert.NotNil(t, entry)
+	assert.Equal(t, entry.ZobristKey, uint64(pos.ZobristKey()))
+	assert.Equal(t, 18, len(entry.Moves))
+	assert.Equal(t, 89_615, entry.Counter)
+
+	for _, p := range entry.Moves {
+		ne, _ := book.GetEntry(position.Key(p.NextEntry))
+		out.Printf("%s ==> %#v (%d)\n",Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter )
+	}
 }

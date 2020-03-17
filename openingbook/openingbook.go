@@ -31,9 +31,6 @@
 // to-square notation<br/>
 // BookFormat::SAN for files with lines of moves in SAN notation<br/>
 // BookFormat::PGN for PGN formatted games<br/>
-// <p/>
-// TODO: As reading these formats can be slow the OpeningBook keeps a cache file where
-//  it stores the serialized data of the internal book.
 //
 package openingbook
 
@@ -72,30 +69,29 @@ const (
 	Pgn    BookFormat = iota
 )
 
-// Pair represents a tuple of two values
-// It is used in the book entry to group a move and a pointer to
-// the position the move leads to
-// p := Pair{"Hello", false}
-type successor struct {
-	move      types.Move
-	nextEntry *bookEntry
+// Successor  represents a tuple of a move
+// and a zobrist key of the position the
+// move leads to
+type Successor struct {
+	Move      uint32
+	NextEntry uint64
 }
 
 // BookEntry represents a data structure for a move in the opening book
 // data structure. It describes exactly one position defined by a zobrist
 // key and has links to other entries representing moves and successor
 // positions
-type bookEntry struct {
-	zobristKey position.Key
-	counter    int
-	moves      []successor
+type BookEntry struct {
+	ZobristKey uint64
+	Counter    int
+	Moves      []Successor
 }
 
 // Book represents a structure for chess opening books which can
 // be read from different file formats into an internal data structure.
 type Book struct {
-	bookMap     map[position.Key]*bookEntry
-	rootEntry   *bookEntry
+	bookMap     map[uint64]BookEntry
+	rootEntry   uint64
 	initialized bool
 }
 
@@ -108,13 +104,9 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool,
 		return nil
 	}
 
-	startTotal := time.Now()
+	log.Info("Initializing Opening Book")
 
-	if parallel {
-		log.Info("Initializing Opening Book (parallel processing).")
-	} else {
-		log.Info("Initializing Opening Book (non parallel processing).")
-	}
+	startTotal := time.Now()
 
 	// check file path
 	if _, err := os.Stat(bookPath); err != nil {
@@ -123,12 +115,18 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool,
 	}
 
 	// if cache enabled check if we have a cache file and load from cache
-	if useCache && !recreateCache && b.hasCache() {
-		err := b.loadFromCache()
-		if err == nil {
-			return nil
+	if useCache && !recreateCache {
+		startReading := time.Now()
+		hasCache, err := b.loadFromCache(bookPath)
+		elapsedReading := time.Since(startReading)
+		if err != nil {
+			log.Warningf("Cache could not be loaded. Reading original data from \"%s\"", bookPath)
 		}
-		log.Warningf("Cache could not be loaded. Reading original data from \"%s\"", bookPath)
+		if hasCache {
+			log.Infof("Finished reading cache from file in: %d ms\n", elapsedReading.Milliseconds())
+			log.Infof("Book from cache file contains %d entries\n", len(b.bookMap))
+			return nil
+		} // else no cache file just load the data from original file
 	}
 
 	// read book from file
@@ -144,12 +142,16 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool,
 
 	// add root position
 	startPosition := position.New()
-	b.bookMap = make(map[position.Key]*bookEntry)
-	b.rootEntry = &bookEntry{zobristKey: startPosition.ZobristKey(), counter: 0, moves: []successor{}}
-	b.bookMap[startPosition.ZobristKey()] = b.rootEntry
+	b.bookMap = make(map[uint64]BookEntry)
+	b.rootEntry = uint64(startPosition.ZobristKey())
+	b.bookMap[uint64(startPosition.ZobristKey())] = BookEntry{ZobristKey: uint64(startPosition.ZobristKey()), Counter: 0, Moves: []Successor{}}
 
 	// process lines
-	log.Infof("Processing %d lines with format: %v\n", len(*lines), bookFormat)
+	if parallel {
+		log.Infof("Processing %d lines in parallel with format: %v\n", len(*lines), bookFormat)
+	} else {
+		log.Infof("Processing %d lines sequential with format: %v\n", len(*lines), bookFormat)
+	}
 	startProcessing := time.Now()
 	err = b.process(lines, bookFormat)
 	if err != nil {
@@ -159,22 +161,23 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool,
 	elapsedProcessing := time.Since(startProcessing)
 	log.Infof("Finished processing %d lines in: %d ms\n", len(*lines), elapsedProcessing.Milliseconds())
 
-	log.Infof("Book contains %d entries\n", len(b.bookMap))
-
 	// finished
 	elapsedTotal := time.Since(startTotal)
+
+	log.Infof("Book contains %d entries\n", len(b.bookMap))
 	log.Infof("Total initialization time : %d ms\n", elapsedTotal.Milliseconds())
 
 	// saving to cache
 	if useCache {
 		log.Infof("Saving to cache...")
 		startSave := time.Now()
-		cacheFile, err := b.saveToCache(bookPath)
+		cacheFile, nBytes, err := b.saveToCache(bookPath)
 		if err != nil {
 			log.Errorf("Error while saving to cache: %s\n", err)
 		}
 		elapsedSave := time.Since(startSave)
-		log.Infof("Saved to cache %s in %d ms\n", cacheFile, elapsedSave.Milliseconds())
+		bytes := out.Sprintf("%d", nBytes/1_024)
+		log.Infof("Saved %s kB to cache %s in %d ms\n", bytes, cacheFile, elapsedSave.Milliseconds())
 	}
 
 	b.initialized = true
@@ -186,14 +189,21 @@ func (b *Book) NumberOfEntries() int {
 	return len(b.bookMap)
 }
 
-// GetEntry returns a pointer to the entry with the corresponding key
-func (b *Book) GetEntry(key position.Key) (*bookEntry, bool) {
-	entryPtr, ok := b.bookMap[key]
+// GetEntry returns a copy of the entry with the corresponding key
+func (b *Book) GetEntry(key position.Key) (BookEntry, bool) {
+	entryPtr, ok := b.bookMap[uint64(key)]
 	if ok {
 		return entryPtr, true
 	} else {
-		return nil, false
+		return entryPtr, false
 	}
+}
+
+// Reset resets the opening book so it can/must be initialized again
+func (b *Book) Reset() {
+	b.bookMap = map[uint64]BookEntry{}
+	b.rootEntry = 0
+	b.initialized = false
 }
 
 // /////////////////////////////////////////////////
@@ -222,7 +232,6 @@ func readFile(bookPath string) (*[]string, error) {
 		log.Errorf("Error while reading file \"%s\": %s\n", bookPath, err)
 		return nil, err
 	}
-
 	return &lines, nil
 }
 
@@ -279,7 +288,13 @@ func (b *Book) processSimpleLine(line string) {
 
 	// increase counter for root position
 	bookLock.Lock()
-	b.rootEntry.counter++
+	e, found := b.bookMap[b.rootEntry]
+	if found {
+		e.Counter++
+		b.bookMap[b.rootEntry] = e
+	} else {
+		panic("root entry of book map not found")
+	}
 	bookLock.Unlock()
 
 	// move gen to check moves
@@ -446,7 +461,13 @@ func (b *Book) processSanLine(line string) {
 
 	// increase counter for root position
 	bookLock.Lock()
-	b.rootEntry.counter++
+	e, found := b.bookMap[b.rootEntry]
+	if found {
+		e.Counter++
+		b.bookMap[b.rootEntry] = e
+	} else {
+		panic("root entry of book map not found")
+	}
 	bookLock.Unlock()
 
 	// move gen to check moves
@@ -482,18 +503,18 @@ func (b *Book) processSingleMove(s string, mgPtr *movegen.Movegen, posPtr *posit
 		return errors.New("Invalid move " + s)
 	}
 	// execute move on position and store the keys for the positions
-	curPosKey := posPtr.ZobristKey()
+	curPosKey := uint64(posPtr.ZobristKey())
 	posPtr.DoMove(move)
-	nextPosKey := posPtr.ZobristKey()
+	nextPosKey := uint64(posPtr.ZobristKey())
 	// add the move
-	b.addToBook(curPosKey, nextPosKey, move)
+	b.addToBook(curPosKey, nextPosKey, uint32(move))
 	// no error
 	return nil
 }
 
 // adds a move to the book
 // this function is thread save to be used in parallel
-func (b *Book) addToBook(curPosKey position.Key, nextPosKey position.Key, move types.Move) {
+func (b *Book) addToBook(curPosKey uint64, nextPosKey uint64, move uint32) {
 	// out.Printf("Add %s to position %s\n", move.StringUci(), p.StringFen())
 
 	// mutex to synchronize parallel access
@@ -501,58 +522,88 @@ func (b *Book) addToBook(curPosKey position.Key, nextPosKey position.Key, move t
 	defer bookLock.Unlock()
 
 	// find the current position's entry
-	currentPosEntryPtr, found := b.bookMap[curPosKey]
+	currentPosEntry, found := b.bookMap[curPosKey]
 	if !found {
 		log.Panic("Could not find current position in book.")
 		return
 	}
 
 	// create or update book entry
-	nextPosEntryPtr, found := b.bookMap[nextPosKey]
+	nextPosEntry, found := b.bookMap[nextPosKey]
 	if found { // entry already exists - update
-		nextPosEntryPtr.counter++
+		nextPosEntry.Counter++
+		b.bookMap[nextPosKey] = nextPosEntry
 		return
 	} else { // new entry
-		b.bookMap[nextPosKey] = &bookEntry{
-			zobristKey: nextPosKey,
-			counter:    1,
-			moves:      nil}
-		nextPosEntryPtr = b.bookMap[nextPosKey]
+		b.bookMap[nextPosKey] = BookEntry{
+			ZobristKey: nextPosKey,
+			Counter:    1,
+			Moves:      nil}
+		nextPosEntry = b.bookMap[nextPosKey]
 		// add move and link to child position entry to current entry
-		currentPosEntryPtr.moves = append(currentPosEntryPtr.moves, successor{move, nextPosEntryPtr})
+		currentPosEntry.Moves = append(currentPosEntry.Moves, Successor{move, nextPosEntry.ZobristKey})
+		b.bookMap[curPosKey] = currentPosEntry
 	}
 }
 
-func (b *Book) hasCache() bool {
-	panic("not yet implemented")
+func (b *Book) loadFromCache(bookPath string) (bool, error) {
+	// determine cache file name
+	cachePath := bookPath + ".cache"
+
+	// Read cache file
+	// Open a RO file
+	decodeFile, err := os.Open(cachePath)
+	if err != nil {
+		return false, err
+	}
+	defer decodeFile.Close()
+
+	// Create a decoder
+	decoder := gob.NewDecoder(decodeFile)
+
+	// Decode -- We need to pass a pointer otherwise accounts2 isn't modified
+	bookLock.Lock()
+	err = decoder.Decode(&b.bookMap)
+	if err != nil {
+		return false, err
+	}
+	bookLock.Unlock()
+
+	// set root entry key
+	p := position.New()
+	b.rootEntry = uint64(p.ZobristKey())
+
+	// no error
+	return true, nil
+
 }
 
-func (b *Book) loadFromCache() error {
-	panic("not yet implemented")
-}
-
-func (b *Book) saveToCache(bookPath string) (string, error) {
+func (b *Book) saveToCache(bookPath string) (string, int64, error) {
 	// determine cache file name
 	cachePath := bookPath + ".cache"
 
 	// Create a file for IO
 	encodeFile, err := os.Create(cachePath)
 	if err != nil {
-		return cachePath, err
+		return cachePath, 0, err
 	}
+	// create binary encoder
+	enc := gob.NewEncoder(encodeFile)
 
-	// create encoder with buffer
-	encoder := gob.NewEncoder(encodeFile)
-
-	// Encoding the map
-	// Write to the file
-	if err = encoder.Encode(b.bookMap); err != nil {
-		return cachePath, err
+	// encode bookMap
+	bookLock.Lock()
+	if err = enc.Encode(b.bookMap); err != nil {
+		panic(err)
 	}
-	if err = encodeFile.Close(); err != nil {
-		return cachePath, err
+	bookLock.Unlock()
+
+	// close and return
+	err = encodeFile.Close()
+	if err != nil {
+		return cachePath, 0, err
 	}
 
 	// no error
-	return cachePath, nil
+	fileInfo, _ := os.Stat(cachePath)
+	return cachePath, fileInfo.Size(), nil
 }
