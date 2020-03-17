@@ -725,6 +725,18 @@ func (p *Position) fen() string {
 	return fen.String()
 }
 
+// regex for first part of fen (position of pieces)
+var regexFenPos = regexp.MustCompile("[0-8pPnNbBrRqQkK/]+")
+
+// regex for next player color in fen
+var regexWorB = regexp.MustCompile("^[w|b]$")
+
+// regex for castling rights in fen
+var regexCastlingRights = regexp.MustCompile("^(K?Q?k?q?|-)$")
+
+// regex for en passent square in fen
+var regexEnPassant = regexp.MustCompile("^([a-h][1-8]|-)$")
+
 // setupBoard sets up a board based on a fen. This is basically
 // the only way to get a valid Position instance. Internal state
 // will be setup as well as all struct data is initialized to 0.
@@ -741,7 +753,7 @@ func (p *Position) setupBoard(fen string) error {
 	}
 
 	// make sure only valid chars are used
-	match, _ := regexp.MatchString("[0-8pPnNbBrRqQkK/]+", fenParts[0])
+	match := regexFenPos.MatchString(fenParts[0])
 	if !match {
 		err := errors.New("fen position contains invalid characters")
 		return err
@@ -780,7 +792,7 @@ func (p *Position) setupBoard(fen string) error {
 
 	// next player
 	if len(fenParts) >= 2 {
-		match, _ = regexp.MatchString("^[w|b]$", fenParts[1])
+		match = regexWorB.MatchString(fenParts[1])
 		if !match {
 			err := errors.New("fen next player contains invalid characters")
 			return err
@@ -799,7 +811,7 @@ func (p *Position) setupBoard(fen string) error {
 
 	// castling rights
 	if len(fenParts) >= 3 {
-		match, _ = regexp.MatchString("^(K?Q?k?q?|-)$", fenParts[2])
+		match = regexCastlingRights.MatchString(fenParts[2])
 		if !match {
 			err := errors.New("fen castling rights contains invalid characters")
 			return err
@@ -824,7 +836,7 @@ func (p *Position) setupBoard(fen string) error {
 
 	// en passant
 	if len(fenParts) >= 4 {
-		match, _ = regexp.MatchString("^([a-h][1-8]|-)$", fenParts[3])
+		match = regexEnPassant.MatchString(fenParts[3])
 		if !match {
 			err := errors.New("fen castling rights contains invalid characters")
 			return err
@@ -863,6 +875,11 @@ func (p *Position) setupBoard(fen string) error {
 // //////////////////////////////////////////////////////
 // // Getter and Setter functions
 // //////////////////////////////////////////////////////
+
+// ZobristKey returns the current zobrist key for this position
+func (p *Position) ZobristKey() Key {
+	return p.zobristKey
+}
 
 // NextPlayer returns the next player as Color for the position
 func (p *Position) NextPlayer() Color {

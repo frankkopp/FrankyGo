@@ -274,3 +274,39 @@ func TestTimingPseudoMoveGen(t *testing.T) {
 	// })
 }
 
+func TestMovegen_GetMoveFromUci(t *testing.T) {
+	Init()
+	pos := position.NewFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
+	mg := New()
+
+	// invalid pattern
+	move := mg.GetMoveFromUci(&pos, "8888")
+	assert.Equal(t, MoveNone, move)
+
+	// valid move
+	move = mg.GetMoveFromUci(&pos, "b7b5")
+	assert.Equal(t, CreateMove(SqB7, SqB5, Normal, PtNone), move)
+
+	// invalid move
+	move = mg.GetMoveFromUci(&pos, "a7a5")
+	assert.Equal(t, MoveNone, move)
+
+	// valid promotion
+	move = mg.GetMoveFromUci(&pos, "a2a1Q")
+	assert.Equal(t, CreateMove(SqA2, SqA1, Promotion, Queen), move)
+
+	// valid promotion (we allow lower case promotions)
+	move = mg.GetMoveFromUci(&pos, "a2a1q")
+	assert.Equal(t, CreateMove(SqA2, SqA1, Promotion, Queen), move)
+
+	// valid castling
+	move = mg.GetMoveFromUci(&pos, "e8c8")
+	assert.Equal(t, CreateMove(SqE8, SqC8, Castling, PtNone), move)
+
+	// invalid castling
+	move = mg.GetMoveFromUci(&pos, "e8g8")
+	assert.Equal(t, MoveNone, move)
+
+}
+
+

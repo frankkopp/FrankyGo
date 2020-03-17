@@ -35,8 +35,8 @@ import (
 var in *bufio.Scanner
 var out *bufio.Writer
 
-//Loop starts the main loop to receive commands through
-//input stream (pipe or user)
+// Loop starts the main loop to receive commands through
+// input stream (pipe or user)
 func Loop() {
 	in = bufio.NewScanner(os.Stdin)
 	out = bufio.NewWriter(os.Stdout)

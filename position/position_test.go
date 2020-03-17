@@ -109,6 +109,7 @@ func TestPositionEquality(t *testing.T) {
 func TestPosition_DoUndoMove(t *testing.T) {
 	Init()
 	p := New()
+	startZobrist := p.ZobristKey()
 	p.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
 	p.DoMove(CreateMove(SqD7, SqD5, Normal, PtNone))
 	p.DoMove(CreateMove(SqE4, SqD5, Normal, PtNone))
@@ -120,6 +121,7 @@ func TestPosition_DoUndoMove(t *testing.T) {
 	p.UndoMove()
 	p.UndoMove()
 	assert.Equal(t, StartFen, p.StringFen())
+	assert.Equal(t, startZobrist, p.ZobristKey())
 }
 
 func TestPosition_DoMoveNormal(t *testing.T) {

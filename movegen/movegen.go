@@ -29,6 +29,9 @@
 package movegen
 
 import (
+	"regexp"
+	"strings"
+
 	"github.com/frankkopp/FrankyGo/assert"
 	"github.com/frankkopp/FrankyGo/moveslice"
 	"github.com/frankkopp/FrankyGo/position"
@@ -75,6 +78,9 @@ const (
 	GenNonCap GenMode = 0b10
 	GenAll    GenMode = 0b11
 )
+
+// Regex for UCI notation (UCI)
+var regexUciMove = regexp.MustCompile("([a-h][1-8][a-h][1-8])([NBRQnbrq])?")
 
 // New creates a new instance of a move generator
 func New() movegen {
@@ -244,6 +250,36 @@ func (mg *movegen) HasLegalMove(position *position.Position) bool {
 
 	// no move found
 	return false
+}
+
+// GetMoveFromUci Generates all legal moves and matches the given UCI
+// move string against them. If there is a match the actual move is returned.
+// Otherwise MoveNone is returned.
+func (mg *movegen) GetMoveFromUci(posPtr *position.Position, move string) Move {
+	matches := regexUciMove.FindStringSubmatch(move)
+	if matches == nil {
+		return MoveNone
+	}
+
+	// get the parts from the pattern match
+	movePart := matches[1]
+	promotionPart := ""
+	if len(matches) == 3 {
+		// we allow lower case promotion letters
+		// not really UCI but many input files have this wrong
+		promotionPart = strings.ToUpper(matches[2])
+	}
+
+	// check against all legal moves on position
+	mg.GenerateLegalMoves(posPtr, GenAll)
+	for  _, m := range mg.legalMoves {
+		if m.StringUci() == movePart+promotionPart {
+			// move found
+			return m
+		}
+	}
+	// move not found
+	return MoveNone
 }
 
 func (mg *movegen) String() string {
