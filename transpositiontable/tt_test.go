@@ -25,6 +25,7 @@
 package transpositiontable
 
 import (
+	"math/rand"
 	"testing"
 	"time"
 	"unsafe"
@@ -39,8 +40,15 @@ import (
 var logTest = franky_logging.GetLog("test")
 
 func TestEntrySize(t *testing.T) {
-	e := TtEntry{}
-	assert.Equal(t, 16, unsafe.Sizeof(e))
+	e := TtEntry{
+		Key:        0,
+		Move:       0,
+		Depth:      0,
+		Age:        0,
+		Type:       0,
+		MateThreat: false,
+	}
+	assert.EqualValues(t, 16, unsafe.Sizeof(e))
 	logTest.Debugf("Size of Entry %d bytes", unsafe.Sizeof(e))
 }
 
@@ -49,6 +57,7 @@ func TestNew(t *testing.T) {
 	tt := New(2)
 	assert.Equal(t, uint64(131_072), tt.maxNumberOfEntries)
 	assert.Equal(t, 131_072, cap(tt.data))
+	log.Debug(tt.String())
 
 	tt = New(64)
 	assert.Equal(t, uint64(4_194_304), tt.maxNumberOfEntries)
@@ -76,6 +85,7 @@ func TestNew(t *testing.T) {
 
 func TestGetAndProbe(t *testing.T) {
 	// setup
+	Init()
 	tt := New(64)
 	assert.Equal(t, uint64(4_194_304), tt.maxNumberOfEntries)
 	assert.Equal(t, 4_194_304, cap(tt.data))
@@ -94,7 +104,7 @@ func TestGetAndProbe(t *testing.T) {
 
 	// test to get unaltered entry
 	e := tt.GetEntry(pos.ZobristKey())
-	assert.Equal(t, pos.ZobristKey(), e.Key )
+	assert.Equal(t, pos.ZobristKey(), e.Key)
 	assert.Equal(t, move, e.Move)
 	assert.EqualValues(t, 5, e.Depth)
 	assert.EqualValues(t, 1, e.Age)
@@ -102,7 +112,7 @@ func TestGetAndProbe(t *testing.T) {
 
 	// age must be reduced by 1
 	e = tt.Probe(pos.ZobristKey())
-	assert.Equal(t, pos.ZobristKey(), e.Key )
+	assert.Equal(t, pos.ZobristKey(), e.Key)
 	assert.Equal(t, move, e.Move)
 	assert.EqualValues(t, 5, e.Depth)
 	assert.EqualValues(t, 0, e.Age)
@@ -135,7 +145,7 @@ func TestClear(t *testing.T) {
 	tt.numberOfEntries++
 
 	e := tt.Probe(pos.ZobristKey())
-	assert.Equal(t, pos.ZobristKey(), e.Key )
+	assert.Equal(t, pos.ZobristKey(), e.Key)
 	assert.Equal(t, move, e.Move)
 	assert.EqualValues(t, 5, e.Depth)
 	assert.EqualValues(t, 0, e.Age)
@@ -152,7 +162,7 @@ func TestClear(t *testing.T) {
 
 func TestAge(t *testing.T) {
 	// setup
-	tt := New(5_000)
+	tt := New(20_000)
 
 	logTest.Debug("Filling tt")
 	startTime := time.Now()
@@ -163,6 +173,7 @@ func TestAge(t *testing.T) {
 	tt.data[0].Age = 0
 	elapsed := time.Since(startTime)
 	logTest.Debug(out.Sprintf("TT of %d elements filled in %d ms\n", len(tt.data), elapsed.Milliseconds()))
+	log.Debug(tt.String())
 
 	// test
 	assert.EqualValues(t, 0, tt.GetEntry(0).Age)
@@ -170,7 +181,7 @@ func TestAge(t *testing.T) {
 	assert.EqualValues(t, 1, tt.GetEntry(1_000).Age)
 	assert.EqualValues(t, 1, tt.GetEntry(position.Key(tt.maxNumberOfEntries-1)).Age)
 
-	logTest.Debug("Ageing entries")
+	logTest.Debug("Aging entries")
 	tt.ageEntries()
 
 	assert.EqualValues(t, 0, tt.GetEntry(0).Age)
@@ -179,3 +190,107 @@ func TestAge(t *testing.T) {
 	assert.EqualValues(t, 2, tt.GetEntry(position.Key(tt.maxNumberOfEntries-1)).Age)
 }
 
+func TestPut(t *testing.T) {
+	// setup
+	Init()
+	tt := New(4)
+	move := CreateMove(SqE2, SqE4, Normal, PtNone)
+
+	// test of put and probe
+	tt.Put(111, move, Value(111), 4, Valpha, false, false)
+	assert.EqualValues(t, 1, tt.Len())
+	assert.EqualValues(t, 1, tt.Stats.numberOfPuts)
+	e := tt.Probe(111)
+	assert.EqualValues(t, 111, e.Key)
+	assert.EqualValues(t, move, e.Move.MoveOf())
+	assert.EqualValues(t, 111, e.Move.ValueOf())
+	assert.EqualValues(t, 4, e.Depth)
+	assert.EqualValues(t, Valpha, e.Type)
+	assert.EqualValues(t, 0, e.Age)
+	assert.EqualValues(t, false, e.MateThreat)
+
+	// test of put update and probe
+	tt.Put(111, move, Value(112), 5, Vbeta, true, false)
+	assert.EqualValues(t, 1, tt.Len())
+	assert.EqualValues(t, 2, tt.Stats.numberOfPuts)
+	assert.EqualValues(t, 1, tt.Stats.numberOfUpdates)
+	assert.EqualValues(t, 0, tt.Stats.numberOfCollisions)
+	e = tt.Probe(111)
+	assert.EqualValues(t, 111, e.Key)
+	assert.EqualValues(t, move, e.Move.MoveOf())
+	assert.EqualValues(t, 112, e.Move.ValueOf())
+	assert.EqualValues(t, 5, e.Depth)
+	assert.EqualValues(t, Vbeta, e.Type)
+	assert.EqualValues(t, 0, e.Age)
+	assert.EqualValues(t, true, e.MateThreat)
+
+	// test of collision
+	collisionKey := position.Key(111 + tt.maxNumberOfEntries)
+	tt.Put(collisionKey, move, Value(113), 6, Vexact, false, false)
+	assert.EqualValues(t, 1, tt.Len())
+	assert.EqualValues(t, 3, tt.Stats.numberOfPuts)
+	assert.EqualValues(t, 1, tt.Stats.numberOfUpdates)
+	assert.EqualValues(t, 1, tt.Stats.numberOfCollisions)
+	assert.EqualValues(t, 1, tt.Stats.numberOfOverwrites)
+	e = tt.Probe(collisionKey)
+	assert.EqualValues(t, collisionKey, e.Key)
+	assert.EqualValues(t, move, e.Move.MoveOf())
+	assert.EqualValues(t, 113, e.Move.ValueOf())
+	assert.EqualValues(t, 6, e.Depth)
+	assert.EqualValues(t, Vexact, e.Type)
+	assert.EqualValues(t, 0, e.Age)
+	assert.EqualValues(t, false, e.MateThreat)
+
+	// test of collision lower depth
+	collisionKey2 := position.Key(111 + (tt.maxNumberOfEntries << 1))
+	tt.Put(collisionKey2, move, Value(114), 4, Vbeta, true, false)
+	assert.EqualValues(t, 1, tt.Len())
+	assert.EqualValues(t, 4, tt.Stats.numberOfPuts)
+	assert.EqualValues(t, 1, tt.Stats.numberOfUpdates)
+	assert.EqualValues(t, 2, tt.Stats.numberOfCollisions)
+	assert.EqualValues(t, 1, tt.Stats.numberOfOverwrites)
+	e = tt.Probe(collisionKey2)
+	assert.Nil(t, e)
+	e = tt.Probe(collisionKey)
+	assert.EqualValues(t, collisionKey, e.Key)
+	assert.EqualValues(t, move, e.Move.MoveOf())
+	assert.EqualValues(t, 113, e.Move.ValueOf())
+	assert.EqualValues(t, 6, e.Depth)
+	assert.EqualValues(t, Vexact, e.Type)
+	assert.EqualValues(t, 0, e.Age)
+	assert.EqualValues(t, false, e.MateThreat)
+}
+
+func TestPerformance(t *testing.T) {
+	// setup
+	Init()
+	tt := New(1_024)
+
+	move := CreateMove(SqE2, SqE4, Normal, PtNone)
+
+	const rounds = 5
+	const iterations uint64 = 10_000_000
+
+	for r := 1; r <= rounds; r++ {
+		out.Printf("Round %d\n", r)
+		key := position.Key(rand.Uint64())
+		depth := int8(rand.Int31n(128))
+		value:= Value(rand.Int31n(int32(ValueMax)))
+		valueType := ValueType(rand.Int31n(4))
+		start := time.Now()
+		for i := uint64(0); i < iterations; i++ {
+			tt.Put(key+position.Key(i), move, value, depth, valueType, false, true);
+		}
+		for i := uint64(0); i < iterations; i++ {
+			key := position.Key(rand.Uint64())
+			_ = tt.Probe(key)
+		}
+		elapsed := time.Since(start)
+		out.Println(tt.String())
+		out.Printf("TimingTT took %d ns for %d iterations (1 put 1 probe)\n", elapsed.Nanoseconds(), iterations)
+		out.Printf("1 put/probes in %d ns: %d tts\n",
+			elapsed.Nanoseconds()/int64(iterations),
+			(iterations*uint64(time.Second.Nanoseconds()))/uint64(elapsed.Nanoseconds()))
+
+	}
+}
