@@ -7,6 +7,7 @@ v 0.2 (in progress)
     - Continue to improve performance of perft
 
 - DONE
+    - OpeningBook base framework (reading and caching)
     - Improve performance of Perft - otherwise not worth continuing
     - Added MoveSlice - little optimization of MoveArray - usable directly as Slice
 
