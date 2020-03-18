@@ -269,7 +269,7 @@ func TestPerformance(t *testing.T) {
 	move := CreateMove(SqE2, SqE4, Normal, PtNone)
 
 	const rounds = 5
-	const iterations uint64 = 10_000_000
+	const iterations uint64 = 25_000_000
 
 	for r := 1; r <= rounds; r++ {
 		out.Printf("Round %d\n", r)
@@ -282,7 +282,7 @@ func TestPerformance(t *testing.T) {
 			tt.Put(key+position.Key(i), move, value, depth, valueType, false, true);
 		}
 		for i := uint64(0); i < iterations; i++ {
-			key := position.Key(rand.Uint64())
+			key := position.Key(key+position.Key(2*i))
 			_ = tt.Probe(key)
 		}
 		elapsed := time.Since(start)
