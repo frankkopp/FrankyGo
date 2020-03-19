@@ -1,9 +1,16 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/frankkopp/FrankyGo/types"
+)
 import "github.com/frankkopp/FrankyGo/uci"
 
 func main() {
 	fmt.Println("FrankyGo")
-	uci.Loop()
+
+	types.Init()
+	u := uci.New()
+	u.Loop()
 }

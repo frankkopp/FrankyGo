@@ -33,13 +33,13 @@ import (
 	"strings"
 
 	"github.com/frankkopp/FrankyGo/assert"
-	"github.com/frankkopp/FrankyGo/franky_logging"
+	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/moveslice"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
-var log = franky_logging.GetLog("movegen")
+var log = logging.GetLog("movegen")
 
 const (
 	// to let the compiler eliminate debugging out completely

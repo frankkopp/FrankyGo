@@ -34,13 +34,13 @@ import (
 	"golang.org/x/text/message"
 
 	"github.com/frankkopp/FrankyGo/assert"
-	"github.com/frankkopp/FrankyGo/franky_logging"
+	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
 var out = message.NewPrinter(language.German)
-var log = franky_logging.GetLog("tt")
+var log = logging.GetLog("tt")
 
 // TtEntry struct is the data structure for each entry in the transposition
 // table. Each entry has 16-bytes (128-bits)

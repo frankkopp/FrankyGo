@@ -58,7 +58,7 @@ func Test_StandardPerft(t *testing.T) {
 		{ 9, 2_439_530_234_167, 125_208_536_153, 319_496_827, 36_095_901_903,    400_191_963 }}
 	// @formatter:on
 
-	for i := 6; i <= maxDepth; i++ {
+	for i := 1; i <= maxDepth; i++ {
 		perft.StartPerft(StartFen, i)
 		assert.Equal(results[i][1], perft.Nodes)
 		assert.Equal(results[i][2], perft.CaptureCounter)

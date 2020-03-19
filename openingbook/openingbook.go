@@ -49,14 +49,14 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
-	"github.com/frankkopp/FrankyGo/franky_logging"
+	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/movegen"
 	"github.com/frankkopp/FrankyGo/position"
 	"github.com/frankkopp/FrankyGo/types"
 )
 
 var out = message.NewPrinter(language.German)
-var log = franky_logging.GetLog("openingbook")
+var log = logging.GetLog("openingbook")
 
 // setting to use multiple goroutines or not - useful for debugging
 const parallel = true

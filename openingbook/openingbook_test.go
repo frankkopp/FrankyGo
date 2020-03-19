@@ -29,12 +29,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/frankkopp/FrankyGo/franky_logging"
+	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
-var logTest = franky_logging.GetLog("test")
+var logTest = logging.GetLog("test")
 
 func Test_readingFile(t *testing.T) {
 	lines, err := readFile("../books/superbook.pgn")

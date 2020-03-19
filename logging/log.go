@@ -22,23 +22,39 @@
  * SOFTWARE.
  */
 
-package franky_logging
+package logging
 
 import (
+	"log"
 	"os"
 
-	. "github.com/op/go-logging"
+	"github.com/op/go-logging"
 )
 
-func GetLog (name string) *Logger {
-	log := MustGetLogger(name)
-	backend1 := NewLogBackend(os.Stdout, "", 0)
-	var format = MustStringFormatter(
-		`%{time:15:04:05.000} %{shortfile}:%{shortfunc} %{level:7s}:  %{message}`,
+func GetLog (name string) *logging.Logger {
+	l := logging.MustGetLogger(name)
+	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
+	var format = logging.MustStringFormatter(
+		`%{time:15:04:05.000} %{shortpkg:-8s}:%{shortfile:-14s} %{level:.7s}:  %{message}`,
+		// :%{shortfunc}
 	)
-	backend1Formatter := NewBackendFormatter(backend1, format)
-	backend1Leveled := AddModuleLevel(backend1Formatter)
-	backend1Leveled.SetLevel(DEBUG, "")
-	SetBackend(backend1Leveled)
-	return log
+	backend1Formatter := logging.NewBackendFormatter(backend1, format)
+	backend1Leveled := logging.AddModuleLevel(backend1Formatter)
+	backend1Leveled.SetLevel(logging.DEBUG, "")
+	l.SetBackend(backend1Leveled)
+	return l
+}
+
+
+func GetUciLog () *logging.Logger {
+	l := logging.MustGetLogger("UCI ")
+	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
+	var format = logging.MustStringFormatter(
+		`%{time:15:04:05.000} UCI %{message}`,
+	)
+	backend1Formatter := logging.NewBackendFormatter(backend1, format)
+	backend1Leveled := logging.AddModuleLevel(backend1Formatter)
+	backend1Leveled.SetLevel(logging.DEBUG, "")
+	l.SetBackend(backend1Leveled)
+	return l
 }

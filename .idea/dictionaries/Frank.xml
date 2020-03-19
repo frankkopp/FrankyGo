@@ -3,11 +3,13 @@
     <words>
       <w>abcdefgh</w>
       <w>castlings</w>
+      <w>cmds</w>
       <w>diagstart</w>
       <w>dosomething</w>
       <w>dsfile</w>
       <w>enpassant</w>
       <w>hashfull</w>
+      <w>isready</w>
       <w>kiwipete</w>
       <w>kopp</w>
       <w>kpnbrq</w>
@@ -20,8 +22,14 @@
       <w>passant</w>
       <w>perft</w>
       <w>permill</w>
+      <w>ponderhit</w>
       <w>pppppppp</w>
+      <w>readyok</w>
       <w>rnbqkbnr</w>
+      <w>setoption</w>
+      <w>startpos</w>
+      <w>ucihandler</w>
+      <w>ucinewgame</w>
       <w>uciok</w>
       <w>zobrist</w>
     </words>
