@@ -121,6 +121,7 @@ func (u *UciHandler) loop() {
 				log.Warningf("Error: Unknown command: %s", cmd)
 			}
 			log.Debugf("Processed command: %s", cmd)
+			log.Debugf("Waiting for command:")
 		}
 	}
 }
@@ -155,7 +156,7 @@ func (u *UciHandler) perftCommand(tokens []string) {
 			depth2 = tmp
 		}
 	}
-	go 	u.myPerft.StartPerftMulti(types.StartFen, depth, depth2)
+	go 	u.myPerft.StartPerftMulti(types.StartFen, depth, depth2, true)
 }
 
 func (u *UciHandler) goCommand(tokens []string) {

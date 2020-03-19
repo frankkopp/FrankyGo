@@ -59,7 +59,39 @@ func Test_StandardPerft(t *testing.T) {
 	// @formatter:on
 
 	for i := 1; i <= maxDepth; i++ {
-		perft.StartPerft(StartFen, i)
+		perft.StartPerft(StartFen, i, false)
+		assert.Equal(results[i][1], perft.Nodes)
+		assert.Equal(results[i][2], perft.CaptureCounter)
+		assert.Equal(results[i][3], perft.EnpassantCounter)
+		assert.Equal(results[i][4], perft.CheckCounter)
+		assert.Equal(results[i][5], perft.CheckMateCounter)
+	}
+}
+
+//noinspection GoImportUsedAsName
+func Test_StandardPerftOd(t *testing.T) {
+	Init()
+	maxDepth := 6
+	var perft Perft
+	assert := assert.New(t)
+
+	var results = [10][6]uint64{
+		// @formatter:off
+		// N             Nodes         Captures           EP          Checks           Mates
+		{ 0,                 1,               0,           0,              0,              0 },
+		{ 1,                20,               0,           0,              0,              0 },
+		{ 2,               400,               0,           0,              0,              0 },
+		{ 3,             8_902,              34,           0,             12,              0 },
+		{ 4,           197_281,           1_576,           0,            469,              8 },
+		{ 5,         4_865_609,          82_719,         258,         27_351,            347 },
+		{ 6,       119_060_324,       2_812_008,       5_248,        809_099,         10_828 },
+		{ 7,     3_195_901_860,     108_329_926,     319_617,     33_103_848,        435_767 },
+		{ 8,    84_998_978_956,   3_523_740_106,   7_187_977,    968_981_593,      9_852_036 },
+		{ 9, 2_439_530_234_167, 125_208_536_153, 319_496_827, 36_095_901_903,    400_191_963 }}
+	// @formatter:on
+
+	for i := 1; i <= maxDepth; i++ {
+		perft.StartPerft(StartFen, i, true)
 		assert.Equal(results[i][1], perft.Nodes)
 		assert.Equal(results[i][2], perft.CaptureCounter)
 		assert.Equal(results[i][3], perft.EnpassantCounter)
@@ -87,7 +119,7 @@ func Test_KiwipetePerft(t *testing.T) {
 		{ 6,     8_031_647_685,   1_558_445_089,   3_577_504,     92_238_050,        360_003, 	184_513_607,    56_627_920 }}
 
 	for depth := 1; depth <= maxDepth; depth++ {
-		perft.StartPerft("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ", depth)
+		perft.StartPerft("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ", depth, true)
 		assert.Equal(kiwipete[depth][1], perft.Nodes)
 		assert.Equal(kiwipete[depth][2], perft.CaptureCounter)
 		assert.Equal(kiwipete[depth][3], perft.EnpassantCounter)
@@ -119,7 +151,7 @@ func Test_MirrorPerft(t *testing.T) {
 
 	// white
 	for depth := 1; depth <= maxDepth; depth++ {
-		perft.StartPerft("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq -", depth)
+		perft.StartPerft("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq -", depth, false)
 		assert.Equal(mirrorPerft[depth][1], perft.Nodes)
 		assert.Equal(mirrorPerft[depth][2], perft.CaptureCounter)
 		assert.Equal(mirrorPerft[depth][3], perft.EnpassantCounter)
@@ -131,7 +163,7 @@ func Test_MirrorPerft(t *testing.T) {
 
 	// mirrored
 	for depth := 1; depth <= maxDepth; depth++ {
-		perft.StartPerft("r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ -", depth)
+		perft.StartPerft("r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ -", depth, false)
 		assert.Equal(mirrorPerft[depth][1], perft.Nodes)
 		assert.Equal(mirrorPerft[depth][2], perft.CaptureCounter)
 		assert.Equal(mirrorPerft[depth][3], perft.EnpassantCounter)
@@ -161,7 +193,7 @@ func Test_Pos5Perft(t *testing.T) {
 		{ 5,        89_941_194 }}
 
 	for depth := 1; depth <= maxDepth; depth++ {
-		perft.StartPerft("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ -", depth)
+		perft.StartPerft("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ -", depth, false)
 		assert.Equal(kiwipete[depth][1], perft.Nodes)
 	}
 }

@@ -553,6 +553,12 @@ func (p *Position) HasCheck() bool {
 	return check
 }
 
+// IsCapturingMove determines if a move on this position is a capturing move
+// incl. en passant
+func (p *Position) IsCapturingMove(move Move) bool {
+	return p.occupiedBb[p.nextPlayer.Flip()].Has(move.To()) || move.MoveType() == EnPassant
+}
+
 // String returns a string representing the board instance. This
 // includes the fen, a board matrix, game phase, material and pos values.
 func (p *Position) String() string {
