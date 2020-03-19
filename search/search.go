@@ -16,7 +16,7 @@ type Search struct {
 }
 
 func New() Search {
-	log.Info("Initializing search")
+	log.Debug("Initializing search")
 	s := Search{}
 	// TODO init
 	return s

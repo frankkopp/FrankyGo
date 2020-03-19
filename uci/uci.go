@@ -27,6 +27,7 @@ package uci
 import (
 	"bufio"
 	"os"
+	"regexp"
 	"strings"
 
 	"golang.org/x/text/language"
@@ -36,6 +37,7 @@ import (
 	"github.com/frankkopp/FrankyGo/movegen"
 	"github.com/frankkopp/FrankyGo/position"
 	"github.com/frankkopp/FrankyGo/search"
+	"github.com/frankkopp/FrankyGo/types"
 )
 
 var out = message.NewPrinter(language.German)
@@ -71,7 +73,7 @@ func (u *UciHandler) Loop() {
 func (u *UciHandler) loop() {
 	// infinite loop until "quit" command are aborted
 	for {
-		log.Info("Waiting for command:")
+		log.Debugf("Waiting for command:")
 
 		// read from stdin or other in stream
 		for u.InIo.Scan() {
@@ -79,11 +81,12 @@ func (u *UciHandler) loop() {
 			// get cmd line
 			cmd := u.InIo.Text()
 			strings.ToLower(cmd)
-			log.Infof("Received command: %s", cmd)
+			log.Debugf("Received command: %s", cmd)
 			uciLog.Infof("<< %s", cmd)
 
 			// find command and execute by calling command function
-			tokens := strings.Split(cmd, " ")
+			regexWhiteSpace := regexp.MustCompile("\\s+")
+			tokens := regexWhiteSpace.Split(cmd, -1)
 			strings.TrimSpace(tokens[0])
 			switch tokens[0] {
 			case "quit":
@@ -110,11 +113,10 @@ func (u *UciHandler) loop() {
 				u.debugCommand()
 			case "noop":
 			default:
-				log.Infof("Error: Unknown command: %s", cmd)
+				log.Warningf("Error: Unknown command: %s", cmd)
 			}
-			log.Infof("Processed command: %s", cmd)
+			log.Debugf("Processed command: %s", cmd)
 		}
-
 	}
 }
 
@@ -135,59 +137,58 @@ func (u *UciHandler) goCommand(tokens []string) {
 }
 
 func (u *UciHandler) positionCommand(tokens []string) {
-	// position [fen <fenstring> | startpos ]  moves <move1> .... <movei>
-	//	set up the position described in fenstring on the internal board and
-	//	play the moves on the internal chess board.
-	//	if the game was played  from the start position the string "startpos" will be sent
-	//	Note: no "new" command is needed. However, if this position is from a different game than
-	//	the last position sent to the engine, the GUI should have sent a "ucinewgame" in between.
-	// position startpos  moves   e2e4
-	// position fen 	 8/8/...8 moves e2e4
-
 	// build initial position
-	// for i, t := range tokens[1:] {
-	//
-	// }
+	fen := types.StartFen
+	i := 1
+	switch tokens[i] {
+	case "startpos":
+		i++
+	case "fen":
+		i++
+		var fenb strings.Builder
+		for i < len(tokens) && tokens[i] != "moves" {
+			fenb.WriteString(tokens[i])
+			fenb.WriteString(" ")
+			i++
+		}
+		fen = strings.TrimSpace(fenb.String())
+		if len(fen) > 0 {
+			break
+		}
+		// fen empty
+		fallthrough
+	default:
+		msg := out.Sprintf("Command 'position' malformed. %s", tokens)
+		u.sendInfoString(msg)
+		log.Warning(msg)
+		return
+	}
+	u.myPosition = position.NewFen(fen)
 
-	//
-	// index := 1
-	// if index < len(tokens) {
-	// 	switch tokens[index] {
-	// 	case "startpos":
-	// 		index = 2
-	// 		u.myPosition = position.New()
-	// 	case "fen":
-	// 		index = 2
-	// 		if index < len(tokens) {
-	// 			u.myPosition = position.NewFen(tokens[index])
-	// 			break
-	// 		}
-	// 		fallthrough
-	// 	default:
-	// 		msg := out.Sprintf("Command 'position' malformed. %s", tokens)
-	// 		u.sendInfoString(msg)
-	// 		log.Warning(msg)
-	// 	}
-	// } else { // we except a lonely position command for startpos
-	// 	u.myPosition = position.New()
-	// }
-	// log.Debugf("New position: %s", u.myPosition.StringFen())
-	//
-	// // get moves from command and execute them on position
-	// index++
-	// if len(tokens) > 3 && tokens[3] == "moves" {
-	// 	for i := 4; i < len(tokens); i++ {
-	// 		move := u.myMoveGen.GetMoveFromUci(&u.myPosition, tokens[i])
-	// 		if move.IsValid() {
-	// 			u.myPosition.DoMove(move)
-	// 			log.Debugf("Do move: %s", move.StringUci())
-	// 		} else {
-	// 			msg := out.Sprintf("Command 'position' malformed. Invalid moves. %s", tokens)
-	// 			u.sendInfoString(msg)
-	// 			log.Warning(msg)
-	// 		}
-	// 	}
-	// }
+	// check for moves to make
+	if i < len(tokens) {
+		if tokens[i] == "moves" {
+			i++
+			for i < len(tokens) && tokens[i] != "moves" {
+				move := u.myMoveGen.GetMoveFromUci(&u.myPosition, tokens[i])
+				if move.IsValid() {
+					u.myPosition.DoMove(move)
+				} else {
+					msg := out.Sprintf("Command 'position' malformed. Invalid move '%s' (%s)", move.String(), tokens)
+					u.sendInfoString(msg)
+					log.Warning(msg)
+					return
+				}
+				i++
+			}
+		} else {
+			msg := out.Sprintf("Command 'position' malformed moves. %s", tokens)
+			u.sendInfoString(msg)
+			log.Warning(msg)
+			return
+		}
+	}
+	log.Debugf("New position: %s", u.myPosition.StringFen())
 }
 
 func (u *UciHandler) uciNewGameCommand() {

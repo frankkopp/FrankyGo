@@ -35,11 +35,78 @@ import (
 	"github.com/frankkopp/FrankyGo/types"
 )
 
-func TestBasic(t *testing.T) {
+func TestUciCommand(t *testing.T) {
 	cmds := []string{
 		"uci",
 	}
+	_,result := sendUciCmds(cmds)
+	out.Print(result)
+	assert.Contains(t, result, "id name FrankyGo")
+	assert.Contains(t, result, "uciok")
+}
 
+func TestIsreadyCmd(t *testing.T) {
+	cmds := []string{
+		"isready",
+	}
+	_,result := sendUciCmds(cmds)
+	out.Print(result)
+	assert.Contains(t, result, "readyok")
+}
+
+func TestPositionCmd(t *testing.T) {
+	cmds := []string{ // startpos
+		"position startpos",
+	}
+	uh, result := sendUciCmds(cmds)
+	out.Print(result)
+	assert.EqualValues(t, types.StartFen, uh.myPosition.StringFen())
+
+	cmds = []string{ // position with fen no moves
+		"position fen "+types.StartFen,
+	}
+	uh, result = sendUciCmds(cmds)
+	out.Print(result)
+	assert.EqualValues(t, types.StartFen, uh.myPosition.StringFen())
+
+	cmds = []string{ // missing fen
+		"position fen",
+	}
+	uh, result = sendUciCmds(cmds)
+	out.Print(result)
+	assert.Contains(t, result, "Command 'position' malformed")
+
+	cmds = []string{ // position with fen and moves
+		"position fen "+types.StartFen+"  moves     e2e4 e7e5 g1f3 b8c6",
+	}
+	uh, result = sendUciCmds(cmds)
+	out.Print(result)
+	assert.EqualValues(t, "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3", uh.myPosition.StringFen())
+
+	cmds = []string{ // invalid moves
+		"position fen "+types.StartFen+"  moves e7e5 g1f3 b8c6",
+	}
+	uh, result = sendUciCmds(cmds)
+	out.Print(result)
+	assert.Contains(t, result, "Command 'position' malformed")
+
+	cmds = []string{ // position with fen and moves
+		"position startpos  moves  e2e4 e7e5 g1f3 b8c6",
+	}
+	uh, result = sendUciCmds(cmds)
+	out.Print(result)
+	assert.EqualValues(t, "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3", uh.myPosition.StringFen())
+
+}
+
+
+// //////////////////////////////////////
+// Helper for tests
+// //////////////////////////////////////
+
+// Takes an array of commands as strings an sends it to the UCI loop
+// Captures and returns the resulting response.
+func sendUciCmds(cmds []string) (*UciHandler, string) {
 	types.Init()
 	uh := New()
 	uh.InIo = bufio.NewScanner(strings.NewReader(cmdString(&cmds)))
@@ -47,14 +114,11 @@ func TestBasic(t *testing.T) {
 	uh.OutIo = bufio.NewWriter(buffer)
 	uh.Loop()
 	result := buffer.String()
-
-	out.Print(result)
-	assert.Contains(t, result, "id name FrankyGo")
-	assert.Contains(t, result, "uciok")
+	return &uh, result
 }
 
-
-
+// Creates a command string with newline between each command
+// and adding quit as the last command to stop the loop
 func cmdString(cmds *[]string) string {
 	var os strings.Builder
 	for _, c := range *cmds {
