@@ -28,6 +28,7 @@ import (
 	"bufio"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"golang.org/x/text/language"
@@ -52,6 +53,7 @@ type UciHandler struct {
 	myMoveGen  movegen.Movegen
 	mySearch   search.Search
 	myPosition position.Position
+	myPerft    movegen.Perft
 }
 
 // New creates a new UciHandler instance
@@ -61,6 +63,7 @@ func New() UciHandler {
 	u.OutIo = bufio.NewWriter(os.Stdout)
 	u.mySearch = search.New()
 	u.myMoveGen = movegen.New()
+	u.myPerft = movegen.Perft{}
 	return u
 }
 
@@ -111,6 +114,8 @@ func (u *UciHandler) loop() {
 				u.registerCommand()
 			case "debug":
 				u.debugCommand()
+			case "perft":
+				u.perftCommand(tokens)
 			case "noop":
 			default:
 				log.Warningf("Error: Unknown command: %s", cmd)
@@ -127,7 +132,21 @@ func (u *UciHandler) ponderHitCommand() {
 }
 
 func (u *UciHandler) stopCommand() {
+	log.Debug("Stop command")
 	u.mySearch.Stop()
+	u.myPerft.Stop()
+}
+
+func (u *UciHandler) perftCommand(tokens []string) {
+	depth := 4 // default
+	var err error = nil
+	if len(tokens) > 1 {
+		depth, err = strconv.Atoi(tokens[1])
+		if err != nil {
+			log.Warningf("Can't perft on depth='%s'", tokens[1])
+		}
+	}
+	go u.myPerft.StartPerft(types.StartFen, depth)
 }
 
 func (u *UciHandler) goCommand(tokens []string) {

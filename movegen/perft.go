@@ -48,13 +48,25 @@ type Perft struct {
 	EnpassantCounter uint64
 	CastleCounter    uint64
 	PromotionCounter uint64
+	stopFlag         bool
+}
+
+func (p *Perft) Stop() {
+	p.stopFlag = true
 }
 
 // StartPerft is using the "normal" move generation and doesn't divide the
 // the perft depths.
 //noinspection GoUnhandledErrorResult
 func (p *Perft) StartPerft(fen string, depth int) {
+	p.stopFlag = false
 
+	// set 1 as minimum
+	if depth == 0 {
+		depth = 1
+	}
+
+	// prepare
 	p.resetCounter()
 	pos := position.NewFen(fen)
 	mgList := make([]Movegen, depth+1)
@@ -72,6 +84,11 @@ func (p *Perft) StartPerft(fen string, depth int) {
 
 	elapsed := time.Since(start)
 
+	if result == 0 {
+		out.Print("Perft stopped\n")
+		return
+	}
+
 	out.Printf("Time         : %d ms\n", elapsed.Milliseconds())
 	out.Printf("NPS          : %d nps\n", (p.Nodes*ns)/uint64(elapsed.Nanoseconds()+1))
 	out.Printf("Results:\n")
@@ -83,6 +100,7 @@ func (p *Perft) StartPerft(fen string, depth int) {
 	out.Printf("   Castles   : %d\n", p.CastleCounter)
 	out.Printf("   Promotions: %d\n", p.PromotionCounter)
 	out.Printf("-----------------------------------------\n")
+	out.Printf("Finished PERFT Test for Depth %d\n", depth)
 
 }
 
@@ -110,6 +128,9 @@ func (p *Perft) miniMax(depth int, positionPtr *position.Position, mgListPtr *[]
 	// moves to search recursively
 	movesPtr := movegens[depth].GeneratePseudoLegalMoves(positionPtr, GenAll)
 	for _, move := range *movesPtr {
+		if p.stopFlag {
+			return 0
+		}
 		if depth > 1 {
 			positionPtr.DoMove(move)
 			if positionPtr.WasLegalMove() {
