@@ -146,7 +146,16 @@ func (u *UciHandler) perftCommand(tokens []string) {
 			log.Warningf("Can't perft on depth='%s'", tokens[1])
 		}
 	}
-	go u.myPerft.StartPerft(types.StartFen, depth)
+	depth2 := depth
+	if len(tokens) > 2 {
+		tmp, err := strconv.Atoi(tokens[2])
+		if err != nil {
+			log.Warningf("Can't use second perft depth2='%s'", tokens[2])
+		} else {
+			depth2 = tmp
+		}
+	}
+	go 	u.myPerft.StartPerftMulti(types.StartFen, depth, depth2)
 }
 
 func (u *UciHandler) goCommand(tokens []string) {

@@ -55,6 +55,17 @@ func (p *Perft) Stop() {
 	p.stopFlag = true
 }
 
+func (p *Perft) StartPerftMulti(fen string, startDepth int, endDepth int) {
+	p.stopFlag = false
+	for i := startDepth ; i <= endDepth; i++ {
+		if p.stopFlag {
+			out.Print("Perft multi depth stopped\n")
+			return
+		}
+		p.StartPerft(fen, i)
+	}
+}
+
 // StartPerft is using the "normal" move generation and doesn't divide the
 // the perft depths.
 //noinspection GoUnhandledErrorResult
@@ -100,7 +111,7 @@ func (p *Perft) StartPerft(fen string, depth int) {
 	out.Printf("   Castles   : %d\n", p.CastleCounter)
 	out.Printf("   Promotions: %d\n", p.PromotionCounter)
 	out.Printf("-----------------------------------------\n")
-	out.Printf("Finished PERFT Test for Depth %d\n", depth)
+	out.Printf("Finished PERFT Test for Depth %d\n\n", depth)
 
 }
 
