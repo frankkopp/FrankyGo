@@ -133,7 +133,6 @@ func (u *UciHandler) ponderHitCommand() {
 }
 
 func (u *UciHandler) stopCommand() {
-	log.Debug("Stop command")
 	u.mySearch.Stop()
 	u.myPerft.Stop()
 }
@@ -156,7 +155,7 @@ func (u *UciHandler) perftCommand(tokens []string) {
 			depth2 = tmp
 		}
 	}
-	go 	u.myPerft.StartPerftMulti(types.StartFen, depth, depth2, true)
+	go u.myPerft.StartPerftMulti(types.StartFen, depth, depth2, true)
 }
 
 func (u *UciHandler) goCommand(tokens []string) {

@@ -48,6 +48,9 @@ type Perft struct {
 	stopFlag         bool
 }
 
+// Stop can be used when perft has been started
+// in a goroutine to stops the currently running
+// perft test
 func (p *Perft) Stop() {
 	p.stopFlag = true
 }

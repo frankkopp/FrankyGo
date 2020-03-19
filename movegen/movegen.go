@@ -52,7 +52,7 @@ type Movegen struct {
 	pseudoLegalMoves   moveslice.MoveSlice
 	legalMoves         moveslice.MoveSlice
 	onDemandMoves      moveslice.MoveSlice
-	killerMoves        moveslice.MoveSlice
+	killerMoves        [2]Move
 	currentIteratorKey position.Key
 	takeIndex          int
 	pvMove             Move
@@ -97,7 +97,7 @@ func New() Movegen {
 		pseudoLegalMoves:   moveslice.New(MaxMoves),
 		legalMoves:         moveslice.New(MaxMoves),
 		onDemandMoves:      moveslice.New(MaxMoves),
-		killerMoves:        moveslice.New(4),
+		killerMoves:        [2]Move{MoveNone, MoveNone},
 		maxNumberOfKiller:  2, // default
 		pvMove:             MoveNone,
 		currentODStage:     odNew,
@@ -250,6 +250,29 @@ func (mg *Movegen) ResetOnDemand() {
 	mg.pvMove = MoveNone
 	mg.pvMovePushed = false
 	mg.takeIndex = 0
+}
+
+// SetPvMove sets a PV move which should be returned first by the OnDemand MoveGenerator.
+func (mg *Movegen) SetPvMove(move Move) {
+	mg.pvMove = move.MoveOf()
+}
+
+// StoreKiller provides the on demand move generator with a new killer move
+// which should be returned as soon as possible when generating moves with
+// the on demand generator.
+func (mg *Movegen) StoreKiller(move Move) {
+	// check if already stored in first slot - if so return
+	moveOf := move.MoveOf()
+	if mg.killerMoves[0] == moveOf {
+		return
+	} else if mg.killerMoves[1] == moveOf { // if in second slot move it to first
+		mg.killerMoves[1] = mg.killerMoves[0]
+		mg.killerMoves[0] = moveOf
+	} else {
+		// add it to first slot und move first to second
+		mg.killerMoves[1] = mg.killerMoves[0]
+		mg.killerMoves[0] = moveOf
+	}
 }
 
 // HasLegalMove determines if we have at least one legal move. We only have to find
@@ -642,7 +665,23 @@ func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode) {
 }
 
 func (mg *Movegen) pushKiller(m *moveslice.MoveSlice) {
+	// Killer may only be returned if they actually are valid moves
+	// in this position which we can't know as Killers are stored
+	// for the whole ply. Obviously checking if the killer move is valid
+	// is expensive (part of a whole move generation) so we only re-sort
+	// them to the top once they are actually generated
 
+	// Find the move in the list. If move not found ignore killer.
+	// Otherwise move element to the front.
+	for i := 0; i < len(*m); i++ {
+		move := &(*m)[i]
+		if mg.killerMoves[0] == move.MoveOf() {
+			(*move).SetValue(Value(-4000))
+		}
+		if mg.killerMoves[1] == move.MoveOf() {
+			(*move).SetValue(Value(-4001))
+		}
+	}
 }
 
 func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
