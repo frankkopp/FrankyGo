@@ -26,15 +26,8 @@
 // functionality we need for the chess engine.
 package types
 
-// MilliSec used for time value in milli sec
-// Could be large therefore 64-bit
-type MilliSec uint64
-
 // SqLength number of squares on a board
 const SqLength int = 64
-
-// StartFen is a string with the fen position for a standard chess game
-const StartFen string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 // MaxDepth max search depth
 const MaxDepth = 128
@@ -54,18 +47,15 @@ const GB uint64 = KB * MB
 var initialized = false
 
 // Init initializes pre computed data structures e.g. bitboards, etc.
-// Keeps an initialized flag To avoid multiple executions.
+// Keeps an initialized flag to avoid multiple executions.
 func Init() {
 	// defer util.TimeTrack(time.Now(), "Init")
 	if initialized {
 		return
 	}
-
 	// bitboards
 	initBb()
-
 	// pos values
 	initPosValues()
-
 	initialized = true
 }

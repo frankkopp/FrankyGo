@@ -22,6 +22,12 @@
  * SOFTWARE.
  */
 
+// Package transpositiontable implements a transposition table (cache)
+// data structure and functionality for a chess engine search.
+// The TtTable class is not thread safe and needs to be synchronized
+// externally if used from multiple threads. Is especially relevant
+// for Resize and Clear which should not be called in parallel
+// while searching.
 package transpositiontable
 
 import (
@@ -63,6 +69,7 @@ const (
 
 // TtTable is the actual transposition table
 // object holding data and state.
+// Create with NewTtTable()
 type TtTable struct {
 	data               []TtEntry
 	sizeInByte         uint64
@@ -82,10 +89,11 @@ type TtStats struct {
 	numberOfMisses     uint64
 }
 
-// New creates a new TtTable with the given number of bytes
+// NewTtTable creates a new TtTable with the given number of bytes
 // as a maximum of memory usage. Actual size will be determined
-// by the number of elements which need to be a power of 2
-func New(sizeInMByte int) *TtTable {
+// by the number of elements which need to be a power of 2 for
+// efficient hashing/addressing via bit masks
+func NewTtTable(sizeInMByte int) *TtTable {
 	tt := TtTable{
 		data:               nil,
 		sizeInByte:         0,
@@ -93,13 +101,15 @@ func New(sizeInMByte int) *TtTable {
 		maxNumberOfEntries: 0,
 		numberOfEntries:    0,
 	}
-
 	tt.Resize(sizeInMByte)
-
 	return &tt
 }
 
 // Resize resizes the tt table. All entries will be cleared.
+// The TtTable class is not thread safe and needs to be synchronized
+// externally if used from multiple threads. Is especially relevant
+// for Resize and Clear which should not be called in parallel
+// while searching.
 func (tt *TtTable) Resize(sizeInMByte int) {
 	if sizeInMByte > MaxSizeInMB {
 		log.Error(out.Sprintf("Requested size for TT of %d MB reduced to max of %d MB", sizeInMByte, MaxSizeInMB))
@@ -166,7 +176,7 @@ func (tt *TtTable) Put(key position.Key, move Move, value Value, depth int8, val
 	// encode value into the move
 	valueMove := move.SetValue(value)
 
-	// New entry
+	// NewTtTable entry
 	if entryDataPtr.Key == 0 {
 		tt.numberOfEntries++
 		entryDataPtr.Key = key
@@ -219,6 +229,10 @@ func (tt *TtTable) Put(key position.Key, move Move, value Value, depth int8, val
 }
 
 // Clear clears all entries of the tt
+// The TtTable class is not thread safe and needs to be synchronized
+// externally if used from multiple threads. Is especially relevant
+// for Resize and Clear which should not be called in parallel
+// while searching.
 func (tt *TtTable) Clear() {
 	// Create new slice/array - garbage collections takes care of cleanup
 	tt.data = make([]TtEntry, tt.maxNumberOfEntries, tt.maxNumberOfEntries)
@@ -234,6 +248,7 @@ func (tt *TtTable) Hashfull() int {
 	return int((1000 * tt.numberOfEntries) / tt.maxNumberOfEntries)
 }
 
+// String returns a string representation of this TtTable instance
 func (tt *TtTable) String() string {
 	return out.Sprintf("TT: size %d MB max entries %d of size %d Bytes entries %d (%d) puts %d "+
 		"updates %d collisions %d overwrites %d probes %d hits %d (%d) misses %d (%d)",

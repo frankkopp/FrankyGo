@@ -11,6 +11,6 @@ func main() {
 	fmt.Println("FrankyGo")
 
 	types.Init()
-	u := uci.New()
+	u := uci.NewUciHandler()
 	u.Loop()
 }

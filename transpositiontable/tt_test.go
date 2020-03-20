@@ -54,24 +54,24 @@ func TestEntrySize(t *testing.T) {
 
 func TestNew(t *testing.T) {
 
-	tt := New(2)
+	tt := NewTtTable(2)
 	assert.Equal(t, uint64(131_072), tt.maxNumberOfEntries)
 	assert.Equal(t, 131_072, cap(tt.data))
 	log.Debug(tt.String())
 
-	tt = New(64)
+	tt = NewTtTable(64)
 	assert.Equal(t, uint64(4_194_304), tt.maxNumberOfEntries)
 	assert.Equal(t, 4_194_304, cap(tt.data))
 
-	tt = New(100)
+	tt = NewTtTable(100)
 	assert.Equal(t, uint64(4_194_304), tt.maxNumberOfEntries)
 	assert.Equal(t, 4_194_304, cap(tt.data))
 
-	tt = New(4_096)
+	tt = NewTtTable(4_096)
 	assert.Equal(t, uint64(268_435_456), tt.maxNumberOfEntries)
 	assert.Equal(t, 268_435_456, cap(tt.data))
 
-	tt = New(35_000)
+	tt = NewTtTable(35_000)
 	assert.Equal(t, uint64(2_147_483_648), tt.maxNumberOfEntries)
 	assert.Equal(t, 2_147_483_648, cap(tt.data))
 	assert.Equal(t, 2_147_483_648, len(tt.data))
@@ -86,11 +86,11 @@ func TestNew(t *testing.T) {
 func TestGetAndProbe(t *testing.T) {
 	// setup
 	Init()
-	tt := New(64)
+	tt := NewTtTable(64)
 	assert.Equal(t, uint64(4_194_304), tt.maxNumberOfEntries)
 	assert.Equal(t, 4_194_304, cap(tt.data))
 
-	pos := position.New()
+	pos := position.NewPosition()
 	move := CreateMove(SqE2, SqE4, Normal, PtNone)
 	tt.data[tt.hash(pos.ZobristKey())] = TtEntry{
 		Key:        pos.ZobristKey(),
@@ -130,9 +130,9 @@ func TestGetAndProbe(t *testing.T) {
 
 func TestClear(t *testing.T) {
 	// setup
-	tt := New(1)
+	tt := NewTtTable(1)
 
-	pos := position.New()
+	pos := position.NewPosition()
 	move := CreateMove(SqE2, SqE4, Normal, PtNone)
 	tt.data[tt.hash(pos.ZobristKey())] = TtEntry{
 		Key:        pos.ZobristKey(),
@@ -162,7 +162,7 @@ func TestClear(t *testing.T) {
 
 func TestAge(t *testing.T) {
 	// setup
-	tt := New(20_000)
+	tt := NewTtTable(20_000)
 
 	logTest.Debug("Filling tt")
 	startTime := time.Now()
@@ -193,7 +193,7 @@ func TestAge(t *testing.T) {
 func TestPut(t *testing.T) {
 	// setup
 	Init()
-	tt := New(4)
+	tt := NewTtTable(4)
 	move := CreateMove(SqE2, SqE4, Normal, PtNone)
 
 	// test of put and probe
@@ -264,7 +264,7 @@ func TestPut(t *testing.T) {
 func TestPerformance(t *testing.T) {
 	// setup
 	Init()
-	tt := New(1_024)
+	tt := NewTtTable(1_024)
 
 	move := CreateMove(SqE2, SqE4, Normal, PtNone)
 

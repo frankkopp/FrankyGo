@@ -22,6 +22,9 @@
  * SOFTWARE.
  */
 
+// Package uci contains the UciHandler data structure and functionality to
+// handle the UCI protocol communication between the Chess User Interface
+// and the chess engine.
 package uci
 
 import (
@@ -38,7 +41,6 @@ import (
 	"github.com/frankkopp/FrankyGo/movegen"
 	"github.com/frankkopp/FrankyGo/position"
 	"github.com/frankkopp/FrankyGo/search"
-	"github.com/frankkopp/FrankyGo/types"
 )
 
 var out = message.NewPrinter(language.German)
@@ -46,7 +48,8 @@ var log = logging.GetLog("ucihandler")
 var uciLog = logging.GetUciLog()
 
 // UciHandler handles all communication with the chess ui via UCI
-// and controls options and search. Create an instance with New()
+// and controls options and search.
+// Create an instance with NewUciHandler()
 type UciHandler struct {
 	InIo       *bufio.Scanner
 	OutIo      *bufio.Writer
@@ -56,13 +59,22 @@ type UciHandler struct {
 	myPerft    movegen.Perft
 }
 
-// New creates a new UciHandler instance
-func New() UciHandler {
+// ///////////////////////////////////////////////////////////
+// Public
+// ///////////////////////////////////////////////////////////
+
+// NewUciHandler creates a new UciHandler instance.
+// Input / Output io can be replaced by changing the instance's
+// InIo and OutIo members.
+//  Example:
+// 		u.InIo = bufio.NewScanner(os.Stdin)
+//		u.OutIo = bufio.NewWriter(os.Stdout)
+func NewUciHandler() UciHandler {
 	u := UciHandler{}
 	u.InIo = bufio.NewScanner(os.Stdin)
 	u.OutIo = bufio.NewWriter(os.Stdout)
 	u.mySearch = search.New()
-	u.myMoveGen = movegen.New()
+	u.myMoveGen = movegen.NewMoveGen()
 	u.myPerft = movegen.Perft{}
 	return u
 }
@@ -72,6 +84,10 @@ func New() UciHandler {
 func (u *UciHandler) Loop() {
 	u.loop()
 }
+
+// ///////////////////////////////////////////////////////////
+// Private
+// ///////////////////////////////////////////////////////////
 
 func (u *UciHandler) loop() {
 	// infinite loop until "quit" command are aborted
@@ -155,7 +171,7 @@ func (u *UciHandler) perftCommand(tokens []string) {
 			depth2 = tmp
 		}
 	}
-	go u.myPerft.StartPerftMulti(types.StartFen, depth, depth2, true)
+	go u.myPerft.StartPerftMulti(position.StartFen, depth, depth2, true)
 }
 
 func (u *UciHandler) goCommand(tokens []string) {
@@ -166,7 +182,7 @@ func (u *UciHandler) goCommand(tokens []string) {
 
 func (u *UciHandler) positionCommand(tokens []string) {
 	// build initial position
-	fen := types.StartFen
+	fen := position.StartFen
 	i := 1
 	switch tokens[i] {
 	case "startpos":
@@ -191,7 +207,7 @@ func (u *UciHandler) positionCommand(tokens []string) {
 		log.Warning(msg)
 		return
 	}
-	u.myPosition = position.NewFen(fen)
+	u.myPosition = position.NewPositionFen(fen)
 
 	// check for moves to make
 	if i < len(tokens) {
@@ -221,7 +237,7 @@ func (u *UciHandler) positionCommand(tokens []string) {
 
 func (u *UciHandler) uciNewGameCommand() {
 	u.mySearch.Stop()
-	u.myPosition = position.New()
+	u.myPosition = position.NewPosition()
 	u.mySearch.NewGame()
 }
 

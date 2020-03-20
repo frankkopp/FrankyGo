@@ -1,12 +1,21 @@
 v 0.x (planned)
 ================================================================================
 
-v 0.2 (in progress)
+v 0.3 (planned)
 ================================================================================
 - TODO:
-    - Continue to improve performance of perft
+    - Implement simple Search
+    - Implement simple Evaluator
 
+v 0.2 (in progress)
+================================================================================
 - DONE
+    - CleanUp
+    - Added logging
+    - TranspositionTable
+    - Perft enhanced and more tests
+    - UCI Handler enhanced
+    - Completed MoveGen
     - OpeningBook base framework (reading and caching)
     - Improve performance of Perft - otherwise not worth continuing
     - Added MoveSlice - little optimization of MoveArray - usable directly as Slice

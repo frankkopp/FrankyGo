@@ -36,7 +36,7 @@ import (
 
 var out = message.NewPrinter(language.German)
 
-// Perft is an object to test move generation of the chess engine.
+// Perft is class to test move generation of the chess engine.
 type Perft struct {
 	Nodes            uint64
 	CheckCounter     uint64
@@ -49,7 +49,7 @@ type Perft struct {
 }
 
 // Stop can be used when perft has been started
-// in a goroutine to stops the currently running
+// in a goroutine to stop the currently running
 // perft test
 func (p *Perft) Stop() {
 	p.stopFlag = true
@@ -72,42 +72,42 @@ func (p *Perft) StartPerftMulti(fen string, startDepth int, endDepth int, onDema
 // StartPerft is using the "normal" move generation and doesn't divide the
 // the perft depths.
 // If this has been started in a go routine it can be stopped via Stop()
-//noinspection GoUnhandledErrorResult
 func (p *Perft) StartPerft(fen string, depth int, onDemandFlag bool) {
 	p.stopFlag = false
 
 	// set 1 as minimum
-	if depth == 0 {
+	if depth <= 0 {
 		depth = 1
 	}
 
 	// prepare
 	p.resetCounter()
-	pos := position.NewFen(fen)
+	pos := position.NewPositionFen(fen)
 	mgList := make([]Movegen, depth+1)
 	for i := 0; i <= depth; i++ {
-		mgList[i] = New()
+		mgList[i] = NewMoveGen()
 	}
 
 	out.Printf("Performing PERFT Test for Depth %d\n", depth)
 	out.Printf("-----------------------------------------\n")
 
-	start := time.Now()
-
 	result := uint64(0)
+
+	// the actual perft call
+	start := time.Now()
 	if onDemandFlag {
 		result = p.miniMaxOD(depth, &pos, &mgList)
 	} else {
 		result = p.miniMax(depth, &pos, &mgList)
 	}
-	p.Nodes = result
-
 	elapsed := time.Since(start)
 
 	if result == 0 {
 		out.Print("Perft stopped\n")
 		return
 	}
+
+	p.Nodes = result
 
 	out.Printf("Time         : %d ms\n", elapsed.Milliseconds())
 	out.Printf("NPS          : %d nps\n", (p.Nodes*uint64(time.Second.Nanoseconds()))/uint64(elapsed.Nanoseconds()+1))
@@ -121,7 +121,6 @@ func (p *Perft) StartPerft(fen string, depth int, onDemandFlag bool) {
 	out.Printf("   Promotions: %d\n", p.PromotionCounter)
 	out.Printf("-----------------------------------------\n")
 	out.Printf("Finished PERFT Test for Depth %d\n\n", depth)
-
 }
 
 func (p *Perft) miniMax(depth int, positionPtr *position.Position, mgListPtr *[]Movegen) uint64 {

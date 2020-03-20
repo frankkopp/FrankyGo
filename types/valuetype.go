@@ -24,10 +24,10 @@
 
 package types
 
-// ValueType is a set of constants for value types
+// ValueType is a set of constants for value types used in search and TtTable
 type ValueType int8
 
-// Orientation is a set of constants for moving squares within a Bb
+// ValueType is a set of constants for value types used in search and TtTable
 //noinspection GoVarAndConstTypeMayBeOmitted
 const (
 	Vnone   ValueType = 0

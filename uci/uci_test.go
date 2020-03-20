@@ -32,6 +32,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/frankkopp/FrankyGo/position"
 	"github.com/frankkopp/FrankyGo/types"
 )
 
@@ -60,14 +61,14 @@ func TestPositionCmd(t *testing.T) {
 	}
 	uh, result := sendUciCmds(cmds)
 	out.Print(result)
-	assert.EqualValues(t, types.StartFen, uh.myPosition.StringFen())
+	assert.EqualValues(t, position.StartFen, uh.myPosition.StringFen())
 
 	cmds = []string{ // position with fen no moves
-		"position fen "+types.StartFen,
+		"position fen "+ position.StartFen,
 	}
 	uh, result = sendUciCmds(cmds)
 	out.Print(result)
-	assert.EqualValues(t, types.StartFen, uh.myPosition.StringFen())
+	assert.EqualValues(t, position.StartFen, uh.myPosition.StringFen())
 
 	cmds = []string{ // missing fen
 		"position fen",
@@ -77,14 +78,14 @@ func TestPositionCmd(t *testing.T) {
 	assert.Contains(t, result, "Command 'position' malformed")
 
 	cmds = []string{ // position with fen and moves
-		"position fen "+types.StartFen+"  moves     e2e4 e7e5 g1f3 b8c6",
+		"position fen "+ position.StartFen +"  moves     e2e4 e7e5 g1f3 b8c6",
 	}
 	uh, result = sendUciCmds(cmds)
 	out.Print(result)
 	assert.EqualValues(t, "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3", uh.myPosition.StringFen())
 
 	cmds = []string{ // invalid moves
-		"position fen "+types.StartFen+"  moves e7e5 g1f3 b8c6",
+		"position fen "+ position.StartFen +"  moves e7e5 g1f3 b8c6",
 	}
 	uh, result = sendUciCmds(cmds)
 	out.Print(result)
@@ -108,7 +109,7 @@ func TestPositionCmd(t *testing.T) {
 // Captures and returns the resulting response.
 func sendUciCmds(cmds []string) (*UciHandler, string) {
 	types.Init()
-	uh := New()
+	uh := NewUciHandler()
 	uh.InIo = bufio.NewScanner(strings.NewReader(cmdString(&cmds)))
 	buffer := new(bytes.Buffer)
 	uh.OutIo = bufio.NewWriter(buffer)

@@ -54,7 +54,7 @@ func Test_processingEmpty(t *testing.T) {
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	assert.Equal(t, 1, book.NumberOfEntries())
 
-	startPos := position.New()
+	startPos := position.NewPosition()
 	entry, ok := book.GetEntry(startPos.ZobristKey())
 	assert.True(t, ok)
 	assert.EqualValues(t, entry.ZobristKey, startPos.ZobristKey())
@@ -72,7 +72,7 @@ func Test_processingSimpleSmall(t *testing.T) {
 	assert.Equal(t, 11_196, book.NumberOfEntries())
 
 	// get root entry
-	pos := position.New()
+	pos := position.NewPosition()
 	entry, found := book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
@@ -100,7 +100,7 @@ func Test_processingSimple(t *testing.T) {
 	assert.Equal(t, 273_578, book.NumberOfEntries())
 
 	// get root entry
-	pos := position.New()
+	pos := position.NewPosition()
 	entry, found := book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
@@ -132,7 +132,7 @@ func Test_processingSANSmall(t *testing.T) {
 	assert.Equal(t, 1_256, book.NumberOfEntries())
 
 	// get root entry
-	pos := position.New()
+	pos := position.NewPosition()
 	entry, found := book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
@@ -164,7 +164,7 @@ func Test_processingPGNSmall(t *testing.T) {
 	assert.Equal(t, 1_428, book.NumberOfEntries())
 
 	// get root entry
-	pos := position.New()
+	pos := position.NewPosition()
 	entry, found := book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
@@ -196,7 +196,7 @@ func Test_processingPGNLarge(t *testing.T) {
 	assert.Equal(t, 4_821_316, book.NumberOfEntries())
 
 	// get root entry
-	pos := position.New()
+	pos := position.NewPosition()
 	entry, found := book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
@@ -236,7 +236,7 @@ func Test_processingPGNCacheSmall(t *testing.T) {
 	assert.Equal(t, numberOfEntries, book.NumberOfEntries())
 
 	// get root entry
-	pos := position.New()
+	pos := position.NewPosition()
 	entry, found := book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
@@ -272,7 +272,7 @@ func Test_processingPGNCacheLarge(t *testing.T) {
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 
 	// get root entry
-	pos := position.New()
+	pos := position.NewPosition()
 	entry, found := book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)

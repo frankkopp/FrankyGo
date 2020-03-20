@@ -48,7 +48,7 @@ var (
 )
 
 func TestNew(t *testing.T) {
-	ma := New(MaxMoves)
+	ma := NewMoveSlice(MaxMoves)
 	log.Printf("Len=%d", len(ma))
 	log.Printf("Cap=%d", cap(ma))
 	assert.Equal(t, 0, len(ma))
@@ -57,7 +57,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestMoveArray_PushBack(t *testing.T) {
-	ma := New(MaxMoves)
+	ma := NewMoveSlice(MaxMoves)
 	ma.PushBack(e2e4)
 	ma.PushBack(d7d5)
 	ma.PushBack(e4d5)
@@ -83,7 +83,7 @@ func TestMoveArray_PushBack(t *testing.T) {
 }
 
 func TestMoveArray_PopBack(t *testing.T) {
-	ma := New(MaxMoves)
+	ma := NewMoveSlice(MaxMoves)
 	assert.Panics(t, func(){ ma.PopBack() })
 
 	ma.PushBack(e2e4)
@@ -110,7 +110,7 @@ func TestMoveArray_PopBack(t *testing.T) {
 
 
 func TestMoveArray_PushFront(t *testing.T) {
-	ma := New(MaxMoves)
+	ma := NewMoveSlice(MaxMoves)
 	ma.PushFront(e2e4)
 	ma.PushFront(d7d5)
 	ma.PushFront(e4d5)
@@ -128,7 +128,7 @@ func TestMoveArray_PushFront(t *testing.T) {
 }
 
 func TestMoveArray_PopFront(t *testing.T) {
-	ma := New(MaxMoves)
+	ma := NewMoveSlice(MaxMoves)
 	assert.Panics(t, func(){ ma.PopFront() })
 	ma.PushFront(e2e4)
 	ma.PushFront(d7d5)
@@ -152,7 +152,7 @@ func TestMoveArray_PopFront(t *testing.T) {
 }
 
 func TestMoveArray_Clear(t *testing.T) {
-	ma := New(MaxMoves)
+	ma := NewMoveSlice(MaxMoves)
 	ma.PushBack(e2e4)
 	ma.PushBack(d7d5)
 	ma.PushBack(e4d5)
@@ -168,7 +168,7 @@ func TestMoveArray_Clear(t *testing.T) {
 }
 
 func TestMoveArray_Access(t *testing.T) {
-	ma := New(MaxMoves)
+	ma := NewMoveSlice(MaxMoves)
 	ma.PushBack(e2e4)
 	ma.PushBack(d7d5)
 	ma.PushBack(e4d5)
@@ -189,7 +189,7 @@ func TestMoveArray_Access(t *testing.T) {
 }
 
 func TestMoveArray_String(t *testing.T) {
-	ma := New(MaxMoves)
+	ma := NewMoveSlice(MaxMoves)
 	ma.PushBack(e2e4)
 	ma.PushBack(d7d5)
 	ma.PushBack(e4d5)
@@ -205,7 +205,7 @@ func TestMoveArray_String(t *testing.T) {
 }
 
 func TestMoveArray_Sort(t *testing.T) {
-	ma := New(MaxMoves)
+	ma := NewMoveSlice(MaxMoves)
 	ma.PushBack(e2e4)
 	ma.PushBack(d7d5)
 	ma.PushBack(e4d5)
@@ -233,7 +233,7 @@ func TestMoveArray_Sort(t *testing.T) {
 func TestMoveArray_SortRandom(t *testing.T) {
 	out := message.NewPrinter(language.German)
 
-	ma := New(MaxMoves)
+	ma := NewMoveSlice(MaxMoves)
 	items := 10_000
 
 	// generate random moves
@@ -258,7 +258,7 @@ func TestMoveArray_SortRandom(t *testing.T) {
 
 
 func TestMoveArray_Filter(t *testing.T) {
-	ma := New(MaxMoves)
+	ma := NewMoveSlice(MaxMoves)
 	ma.PushBack(e2e4)
 	ma.PushBack(d7d5)
 	ma.PushBack(e4d5)
@@ -279,7 +279,7 @@ func TestMoveArray_Filter(t *testing.T) {
 }
 
 func TestMoveArray_FilterCopy(t *testing.T) {
-	ma := New(MaxMoves)
+	ma := NewMoveSlice(MaxMoves)
 	ma.PushBack(e2e4)
 	ma.PushBack(d7d5)
 	ma.PushBack(e4d5)
@@ -290,7 +290,7 @@ func TestMoveArray_FilterCopy(t *testing.T) {
 	assert.Equal(t, MaxMoves, cap(ma))
 	assert.Equal(t, "e2e4 d7d5 e4d5 d8d5 b1c3", ma.StringUci())
 
-	ma2 := New(cap(ma))
+	ma2 := NewMoveSlice(cap(ma))
 	ma.FilterCopy(&ma2, func(i int) bool {
 		return ma.At(i) != e4d5
 	})
@@ -307,7 +307,7 @@ func TestMoveArray_FilterCopy(t *testing.T) {
 func TestForEach(t *testing.T) {
 	// fill array
 	noOfItems := 1_000
-	ma := New(noOfItems)
+	ma := NewMoveSlice(noOfItems)
 	for i := 0; i < noOfItems; i++ {
 		ma.PushBack(e2e4)
 	}
@@ -351,7 +351,7 @@ func TestForEach(t *testing.T) {
 func Test_GoLand_WithVeryLongName(t *testing.T) {
 	// fill array
 	noOfItems := 1_000
-	ma := New(noOfItems)
+	ma := NewMoveSlice(noOfItems)
 	for i := 0; i < noOfItems; i++ {
 		ma.PushBack(e2e4)
 	}

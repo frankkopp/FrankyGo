@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-// Package moveslice provides an array (slice) facade to be used with
-// chess moves.
+// Package moveslice provides helper functionality for slices
+// of type Move (chess moves).
 package moveslice
 
 import (
@@ -37,24 +37,27 @@ import (
 // MoveSlice represents a data structure (go slice) for Move.
 type MoveSlice []Move
 
-
-// New creates a new move slice with the given capacity and 0 elements
+// NewMoveSlice creates a new move slice with the given capacity
+// and 0 elements.
 // Is identical to MoveSlice(make([]Move, 0, cap))
-func New(cap int) MoveSlice {
+func NewMoveSlice(cap int) MoveSlice {
 	return make([]Move, 0, cap)
 }
 
-// Len returns the number of moves currently stored in the slice
+// Len returns the number of moves currently stored in the slice.
+// Equivalent to len(ms)
 func (ms *MoveSlice) Len() int {
 	return len(*ms)
 }
 
 // Cap returns the capacity of the slice
+// Equivalent to cap(ms)
 func (ms *MoveSlice) Cap() int {
 	return cap(*ms)
 }
 
 // PushBack appends an element at the end of the slice
+// Equivalent to append(ms, m)
 func (ms *MoveSlice) PushBack(m Move) {
 	*ms = append(*ms, m)
 }
@@ -72,6 +75,8 @@ func (ms *MoveSlice) PopBack() Move {
 
 // PushFront prepends an element at the beginning of the slice using
 // the underlying array (does not create a new array)
+// Moves (copies) all elements by one index slot and adds the new move at
+// the front.
 func (ms *MoveSlice) PushFront(m Move) {
 	*ms = append(*ms, MoveNone)
 	copy((*ms)[1:], *ms)
@@ -80,7 +85,8 @@ func (ms *MoveSlice) PushFront(m Move) {
 
 // PopFront removes and returns the move from the front of the slice.
 // If the slice is empty, the call panics.
-// Shrinks the capacity of the slice and might lead to earlier
+// Shrinks the capacity of the slice as it only shifts the start of
+// the slice within the underlying array. Might lead to earlier
 // re-allocations
 func (ms *MoveSlice) PopFront() Move {
 	if len(*ms) <= 0 {
@@ -91,9 +97,9 @@ func (ms *MoveSlice) PopFront() Move {
 	return frontMove
 }
 
-// Front returns the move at the front of the slice.  This is the element
-// that would be returned by PopFront(). This call panics if the slice is
-// empty.
+// Front returns the move at the front of the slice. This is the element
+// that would be returned by ms[0].
+// This call panics if the slice is empty.
 func (ms *MoveSlice) Front() Move {
 	if len(*ms) <= 0 {
 		panic("MoveSlice: Front() called when empty")
@@ -101,9 +107,9 @@ func (ms *MoveSlice) Front() Move {
 	return (*ms)[0]
 }
 
-// Back returns the move at the back of the slice.  This is the element
-// that would be returned by PopBack().  This call panics if the slice is
-// empty.
+// Back returns the move at the back of the slice. This is the element
+// that would be returned by ms[len[ms)-1].
+// This call panics if the slice is empty.
 func (ms *MoveSlice) Back() Move {
 	if len(*ms) <= 0 {
 		panic("MoveSlice: Back() called when empty")
@@ -114,16 +120,22 @@ func (ms *MoveSlice) Back() Move {
 // At returns the move at index i in the slice without removing the move
 // from the slice. At(0) refers to the first move and is the same as Front().
 // At(Len()-1) refers to the last move and is the same as Back().
-// Index will not be checked against bounds.
+// Index will be checked against bounds and panics if out of bounds
 func (ms *MoveSlice) At(i int) Move {
+	if len(*ms) == 0 || i < 0 || i >= len(*ms) {
+		panic("MoveSlice: Index out of bounds")
+	}
 	return (*ms)[i]
 }
 
 // Set puts a move at index i in the slice. Set shares the same purpose
 // than At() but perform the opposite operation. The index i is the same
 // index defined by At().
-// Index will not be checked against bounds.
+// Index will be checked against bounds and panics if out of bounds
 func (ms *MoveSlice) Set(i int, move Move) {
+	if len(*ms) == 0 || i < 0 || i >= len(*ms) {
+		panic("MoveSlice: Index out of bounds")
+	}
 	(*ms)[i] = move
 }
 
@@ -164,7 +176,7 @@ func (ms *MoveSlice) ForEach(f func(index int)) {
 // ForEachParallel simple loop over all elements calling a goroutine
 // which calls the given func with the index of the current element
 // as a parameter.
-// Waits until all elements have been processed. There is not
+// Waits until all elements have been processed. There is no
 // synchronization for the parallel execution. This needs to done
 // in the provided function
 func (ms *MoveSlice) ForEachParallel(f func(index int)) {

@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+// Package util provides some additional useful
+// functions not available in GO
 package util
 
 import (

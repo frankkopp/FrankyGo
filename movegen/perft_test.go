@@ -29,6 +29,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
@@ -59,7 +60,7 @@ func Test_StandardPerft(t *testing.T) {
 	// @formatter:on
 
 	for i := 1; i <= maxDepth; i++ {
-		perft.StartPerft(StartFen, i, false)
+		perft.StartPerft(position.StartFen, i, false)
 		assert.Equal(results[i][1], perft.Nodes)
 		assert.Equal(results[i][2], perft.CaptureCounter)
 		assert.Equal(results[i][3], perft.EnpassantCounter)
@@ -91,7 +92,7 @@ func Test_StandardPerftOd(t *testing.T) {
 	// @formatter:on
 
 	for i := 1; i <= maxDepth; i++ {
-		perft.StartPerft(StartFen, i, true)
+		perft.StartPerft(position.StartFen, i, true)
 		assert.Equal(results[i][1], perft.Nodes)
 		assert.Equal(results[i][2], perft.CaptureCounter)
 		assert.Equal(results[i][3], perft.EnpassantCounter)

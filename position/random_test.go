@@ -34,7 +34,7 @@ import (
 func Test_random(t *testing.T) {
 	r := NewRandom(1234)
 	for i := 0; i < 100; i++ {
-		fmt.Printf("Random: %.d\n", r.rand64())
-		assert.IsType(t, uint64(0), r.rand64())
+		fmt.Printf("Random: %.d\n", r.Rand64())
+		assert.IsType(t, uint64(0), r.Rand64())
 	}
 }

@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+// Package logging is a helper for the "github.com/op/go-logging" package
+// to reduce the lines of code within each go file to one line.
+// The functions return Logger instances which are configured with
+// the necessary backends and formatters.
 package logging
 
 import (
@@ -31,6 +35,8 @@ import (
 	"github.com/op/go-logging"
 )
 
+// GetLog returns an instance of a standard Logger preconfigured with a
+// os.Stdout backend and a "normal" logging format (e.g. time - file - level)
 func GetLog (name string) *logging.Logger {
 	l := logging.MustGetLogger(name)
 	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
@@ -45,7 +51,9 @@ func GetLog (name string) *logging.Logger {
 	return l
 }
 
-
+// GetUciLog returns an instance of a special Logger preconfigured for
+// logging all UCI protocol communication to os.Stdout or file
+// Format is very simple "time UCI <uci command>"
 func GetUciLog () *logging.Logger {
 	l := logging.MustGetLogger("UCI ")
 	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)

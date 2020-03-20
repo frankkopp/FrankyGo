@@ -31,23 +31,42 @@ import (
 // Piece is a set of constants for pieces in chess
 type Piece int8
 
-// Orientation is a set of constants for moving squares within a Bb
-//noinspection GoVarAndConstTypeMayBeOmitted
+// Pieces are a set of constants to represent the different pieces
+// of a chess game.
+//
+// Can be used with masks:
+//  No Piece = 0
+//  White Piece is a non zero value with piece & 0b1000 == 0
+//  Black Piece is a non zero value with piece & 0b1000 == 1
+//  PieceNone  = 0b0000
+//  WhiteKing  = 0b0001
+//  WhitePawn  = 0b0010
+//  WhiteKnight= 0b0011
+//  WhiteBishop= 0b0100
+//  WhiteRook  = 0b0101
+//  WhiteQueen = 0b0110
+//  BlackKing  = 0b1001
+//  BlackPawn  = 0b1010
+//  BlackKnight= 0b1011
+//  BlackBishop= 0b1100
+//  BlackRook  = 0b1101
+//  BlackQueen = 0b1110
+//  PieceLength= 0b10000
 const (
-	PieceNone   Piece = 0  // 0b0000
-	WhiteKing   Piece = 1  // 0b0001
-	WhitePawn   Piece = 2  // 0b0010
-	WhiteKnight Piece = 3  // 0b0011
-	WhiteBishop Piece = 4  // 0b0100
-	WhiteRook   Piece = 5  // 0b0101
-	WhiteQueen  Piece = 6  // 0b0110
-	BlackKing   Piece = 9  // 0b1001
-	BlackPawn   Piece = 10 // 0b1010
-	BlackKnight Piece = 11 // 0b1011
-	BlackBishop Piece = 12 // 0b1100
-	BlackRook   Piece = 13 // 0b1101
-	BlackQueen  Piece = 14 // 0b1110
-	PieceLength Piece = 16 // 0b10000
+	PieceNone   Piece = 0
+	WhiteKing   Piece = 1
+	WhitePawn   Piece = 2
+	WhiteKnight Piece = 3
+	WhiteBishop Piece = 4
+	WhiteRook   Piece = 5
+	WhiteQueen  Piece = 6
+	BlackKing   Piece = 9
+	BlackPawn   Piece = 10
+	BlackKnight Piece = 11
+	BlackBishop Piece = 12
+	BlackRook   Piece = 13
+	BlackQueen  Piece = 14
+	PieceLength Piece = 16
 )
 
 // array of string labels for piece types

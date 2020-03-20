@@ -29,9 +29,15 @@
       <w>rnbqkbnr</w>
       <w>setoption</w>
       <w>startpos</w>
+      <w>stockfish</w>
       <w>ucihandler</w>
       <w>ucinewgame</w>
       <w>uciok</w>
+      <w>valpha</w>
+      <w>vbeta</w>
+      <w>vexact</w>
+      <w>vlength</w>
+      <w>vnone</w>
       <w>zobrist</w>
     </words>
   </dictionary>

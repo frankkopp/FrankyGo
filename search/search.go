@@ -11,6 +11,7 @@ import (
 var out = message.NewPrinter(language.German)
 var log = logging.GetLog("search")
 
+// Search not implemented yet
 type Search struct {
 	stopFlag bool
 }

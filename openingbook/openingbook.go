@@ -97,10 +97,13 @@ type Book struct {
 	initialized bool
 }
 
-// to test found moves against positions
+// mutex to support concurrent writing to the book data structure
 var bookLock sync.Mutex
 
-//noinspection GoUnhandledErrorResult
+// Initialize reads game data from the given file into the internal data structure.
+// A binary cache file will be created in the same folder (postfix .cache) to
+// speedup subsequent loading if the opening book. Initialization only occurs once
+// multiple calls will be ignored. To re-initialize call Reset() first.
 func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool, recreateCache bool) error {
 	if b.initialized {
 		return nil
@@ -143,7 +146,7 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool,
 	log.Infof("Finished reading %d lines from file in: %d ms\n", len(*lines), elapsedReading.Milliseconds())
 
 	// add root position
-	startPosition := position.New()
+	startPosition := position.NewPosition()
 	b.bookMap = make(map[uint64]BookEntry)
 	b.rootEntry = uint64(startPosition.ZobristKey())
 	b.bookMap[uint64(startPosition.ZobristKey())] = BookEntry{ZobristKey: uint64(startPosition.ZobristKey()), Counter: 0, Moves: []Successor{}}
@@ -287,7 +290,7 @@ func (b *Book) processSimpleLine(line string) {
 	}
 
 	// start with root position
-	pos := position.New()
+	pos := position.NewPosition()
 
 	// increase counter for root position
 	bookLock.Lock()
@@ -302,7 +305,7 @@ func (b *Book) processSimpleLine(line string) {
 
 	// move gen to check moves
 	// movegen is not thread safe therefore we create a new instance for every line
-	var mg = movegen.New()
+	var mg = movegen.NewMoveGen()
 
 	// add all matches to book
 	for _, moveString := range matches {
@@ -467,7 +470,7 @@ func (b *Book) processSanLine(line string) {
 	}
 
 	// start with root position
-	pos := position.New()
+	pos := position.NewPosition()
 
 	// increase counter for root position
 	bookLock.Lock()
@@ -482,7 +485,7 @@ func (b *Book) processSanLine(line string) {
 
 	// move gen to check moves
 	// movegen is not thread safe therefore we create a new instance for every line
-	var mg = movegen.New()
+	var mg = movegen.NewMoveGen()
 
 	for _, moveString := range moveStrings {
 		err := b.processSingleMove(moveString, &mg, &pos)
@@ -580,7 +583,7 @@ func (b *Book) loadFromCache(bookPath string) (bool, error) {
 	bookLock.Unlock()
 
 	// set root entry key
-	p := position.New()
+	p := position.NewPosition()
 	b.rootEntry = uint64(p.ZobristKey())
 
 	// no error
