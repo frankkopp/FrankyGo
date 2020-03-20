@@ -73,7 +73,7 @@ func NewUciHandler() UciHandler {
 	u := UciHandler{}
 	u.InIo = bufio.NewScanner(os.Stdin)
 	u.OutIo = bufio.NewWriter(os.Stdout)
-	u.mySearch = search.New()
+	u.mySearch = search.NewSearch()
 	u.myMoveGen = movegen.NewMoveGen()
 	u.myPerft = movegen.Perft{}
 	return u

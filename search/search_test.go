@@ -23,3 +23,44 @@
  */
 
 package search
+
+import (
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/frankkopp/FrankyGo/logging"
+)
+
+var logTest = logging.GetLog("test")
+
+func TestWaitWhileSearching(t *testing.T) {
+	search := NewSearch()
+	start := time.Now()
+	// FIXME: Prototype
+	search.Start()
+	logTest.Debug("Search started...waiting to finish")
+	search.WaitWhileSearching()
+	logTest.Debug("Search finished")
+	elapsed := time.Since(start)
+	out.Printf("Time %d ms\n", elapsed.Milliseconds())
+	assert.GreaterOrEqual(t, elapsed.Milliseconds(), int64(2_000))
+}
+
+func TestIsSearching(t *testing.T) {
+	search := NewSearch()
+	start := time.Now()
+	// FIXME: Prototype
+	search.Start()
+	logTest.Debug("Check searching in 1 sec")
+	time.Sleep(time.Second)
+	assert.True(t, search.IsSearching())
+	logTest.Debugf("Is searching = %v", search.IsSearching())
+	search.WaitWhileSearching()
+	elapsed := time.Since(start)
+	out.Printf("Time %d ms\n", elapsed.Milliseconds())
+	assert.False(t, search.IsSearching())
+	logTest.Debugf("Is searching = %v", search.IsSearching())
+	assert.GreaterOrEqual(t, elapsed.Milliseconds(), int64(2_000))
+}
