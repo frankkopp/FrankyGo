@@ -79,8 +79,8 @@ func TestSquareStr(t *testing.T) {
 	}{
 		{SqA1, "a1"},
 		{SqH8, "h8"},
-		{SqNone, "--"},
-		{Square(100), "--"},
+		{SqNone, "-"},
+		{Square(100), "-"},
 	}
 	var got string
 	for _, test := range tests {

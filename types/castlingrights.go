@@ -50,39 +50,39 @@ const (
 
 // Has checks if the state has the bit for the Castling right set and
 // therefore this castling is available
-func (lhs CastlingRights) Has(rhs CastlingRights) bool {
-	return lhs&rhs != 0
+func (cr CastlingRights) Has(rhs CastlingRights) bool {
+	return cr&rhs != 0
 }
 
 // Remove removes a castling right from the input state (deletes right)
-func (lhs *CastlingRights) Remove(rhs CastlingRights) CastlingRights {
-	*lhs = *lhs &^ rhs
-	return *lhs
+func (cr *CastlingRights) Remove(rhs CastlingRights) CastlingRights {
+	*cr = *cr &^ rhs
+	return *cr
 }
 
 // Add adds a castling right ti the state
-func (lhs *CastlingRights) Add(rhs CastlingRights) CastlingRights {
-	*lhs = *lhs | rhs
-	return *lhs
+func (cr *CastlingRights) Add(rhs CastlingRights) CastlingRights {
+	*cr = *cr | rhs
+	return *cr
 }
 
 // String returns a string representation for the castling right instance
 // which can be used directly in a fen (e.g. "KQkq")
-func (c CastlingRights) String() string {
-	if c == CastlingNone {
+func (cr CastlingRights) String() string {
+	if cr == CastlingNone {
 		return "-"
 	}
 	var os strings.Builder
-	if c.Has(CastlingWhiteOO) {
+	if cr.Has(CastlingWhiteOO) {
 		os.WriteString("K")
 	}
-	if c.Has(CastlingWhiteOOO) {
+	if cr.Has(CastlingWhiteOOO) {
 		os.WriteString("Q")
 	}
-	if c.Has(CastlingBlackOO) {
+	if cr.Has(CastlingBlackOO) {
 		os.WriteString("k")
 	}
-	if c.Has(CastlingBlackOOO) {
+	if cr.Has(CastlingBlackOOO) {
 		os.WriteString("q")
 	}
 	return os.String()

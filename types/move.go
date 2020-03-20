@@ -31,7 +31,8 @@ import (
 	"github.com/frankkopp/FrankyGo/assert"
 )
 
-// Move 16 bits for move encoding - 16 bits for sort value
+// Move is a 32bit unsigned int type for encoding chess moves as a primitive data type
+// 16 bits for move encoding - 16 bits for sort value
 type Move uint32
 
 const (
@@ -39,7 +40,7 @@ const (
 	MoveNone Move = 0
 )
 
-// CreateMove creates a move
+// CreateMove returns an encoded Move instance
 func CreateMove(from Square, to Square, t MoveType, promType PieceType) Move {
 	if promType < Knight {
 		promType = Knight
@@ -59,7 +60,7 @@ func CreateMove(from Square, to Square, t MoveType, promType PieceType) Move {
 		Move(t)<<typeShift
 }
 
-// CreateMoveValue creates a move with a sort value
+// CreateMoveValue returns an encoded Move instance including a sort value
 func CreateMoveValue(from Square, to Square, t MoveType, promType PieceType, value Value) Move {
 	if promType < Knight {
 		promType = Knight
@@ -80,7 +81,7 @@ func CreateMoveValue(from Square, to Square, t MoveType, promType PieceType, val
 		Move(t)<<typeShift
 }
 
-// MoveType is the type of the move as defined in MoveType
+// MoveType returns the type of the move as defined in MoveType
 // Normal, Promotion, EnPassant, Castling
 func (m Move) MoveType() MoveType {
 	return MoveType((m & moveTypeMask) >> typeShift)
@@ -142,6 +143,9 @@ func (m Move) IsValid() bool {
 
 // String string representation of a move which is UCI compatible
 func (m Move) String() string {
+	if m == MoveNone {
+		return "Move: { MoveNone }"
+	}
 	return fmt.Sprintf("Move: { %s type:%s prom:%s value:%d (%d) }",
 		m.StringUci(), m.MoveType().String(), m.PromotionType().Char(),m.ValueOf(), m)
 }

@@ -22,6 +22,9 @@
  * SOFTWARE.
  */
 
+// Package assert is a helper to allow assert tests in a more standardized
+// and simple manner. Using it makes it clear the this is an assertion
+// used in non production setting.
 package assert
 
 import (
@@ -32,9 +35,20 @@ import (
 const DEBUG = false
 
 // Assert checks if DEBUG is set and then tests bool. Throws
-// panic with message if bool is false
+// panic with message if the test evaluates to false
+// Unfortunately GO still executes parameters (e.g. value.String()
+// of calls to this even if the function is a null function when
+// DEBUG is set to false. So it is necessary to also have a if assert.DEBUG {]
+// wrapper around calls to this to really avoid any run time
+// impact. The GO compiler will then eliminate the whole statement
+// if DEBUG as a const is set to false.
+// Example:
+//
+//  if assert.DEBUG {
+//	  assert.Assert(value > 0, "Error message if test fails %s", value.String())
+//  }
 func Assert(test bool, msg string, a ...interface{}) {
 	if DEBUG && !test {
-		panic(fmt.Sprintf(msg, a))
+		panic(fmt.Sprint(msg, a))
 	}
 }

@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+// Package util provides some additional useful
+// functions not available in GO
 package util
 
 import (
@@ -31,9 +33,9 @@ import (
 	"golang.org/x/text/message"
 )
 
-// Abs - non branching Abs function for determine the absolute value of an int64
+// Abs - non branching Abs function for determine the absolute value of an int
 func Abs(n int) int {
-	y := n >> 63
+	y := n >> 31
 	return (n ^ y) - y
 }
 
