@@ -32,7 +32,7 @@ import (
 
 func TestCastlingRights_Has(t *testing.T) {
 	assert := assert.New(t)
-	var cr GetCastlingRights
+	var cr CastlingRights
 	cr.Add(CastlingAny)
 	assert.Equal(CastlingAny, cr)
 

@@ -110,11 +110,7 @@ func TestBitboardStrBoard(t *testing.T) {
 	Init()
 	if verbose {
 		fmt.Println(BbZero.StringBoard())
-	}
-	if verbose {
 		fmt.Println(BbOne.StringBoard())
-	}
-	if verbose {
 		fmt.Println(BbAll.StringBoard())
 	}
 }
@@ -123,11 +119,7 @@ func TestBitboardStrGrp(t *testing.T) {
 	Init()
 	if verbose {
 		fmt.Println(BbZero.StringGrouped())
-	}
-	if verbose {
 		fmt.Println(BbOne.StringGrouped())
-	}
-	if verbose {
 		fmt.Println(BbAll.StringGrouped())
 	}
 

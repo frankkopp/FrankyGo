@@ -25,8 +25,6 @@
 package movegen
 
 import (
-	"fmt"
-	"reflect"
 	"testing"
 	"time"
 
@@ -41,12 +39,6 @@ import (
 )
 
 var logTest = logging.GetLog("test")
-
-func TestConstruction(t *testing.T) {
-	Init()
-	mg := New()
-	fmt.Printf("%s type of %s", mg.String(), reflect.TypeOf(mg))
-}
 
 func Test_movegen_generatePawnMoves(t *testing.T) {
 	Init()

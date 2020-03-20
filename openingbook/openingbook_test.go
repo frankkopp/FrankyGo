@@ -57,11 +57,11 @@ func Test_processingEmpty(t *testing.T) {
 	startPos := position.New()
 	entry, ok := book.GetEntry(startPos.ZobristKey())
 	assert.True(t, ok)
-	assert.Equal(t, entry.ZobristKey, startPos.ZobristKey())
+	assert.EqualValues(t, entry.ZobristKey, startPos.ZobristKey())
 
 	entry, ok = book.GetEntry(position.Key(1234))
 	assert.False(t, ok)
-	assert.Nil(t, entry)
+	assert.True(t, entry.ZobristKey == 0)
 }
 
 func Test_processingSimpleSmall(t *testing.T) {
@@ -76,7 +76,7 @@ func Test_processingSimpleSmall(t *testing.T) {
 	entry, found := book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
-	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.EqualValues(t, entry.ZobristKey, pos.ZobristKey())
 	assert.Equal(t, 10, len(entry.Moves))
 
 	// get next entry from the first found entry
@@ -84,7 +84,7 @@ func Test_processingSimpleSmall(t *testing.T) {
 	entry, found = book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
-	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.EqualValues(t, entry.ZobristKey, pos.ZobristKey())
 	assert.Equal(t, 10, len(entry.Moves))
 
 	// for _, p := range entry.moves {
@@ -105,7 +105,7 @@ func Test_processingSimple(t *testing.T) {
 	assert.True(t, found)
 	assert.NotNil(t, entry)
 	assert.Equal(t, book.rootEntry, entry.ZobristKey)
-	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.EqualValues(t, entry.ZobristKey, pos.ZobristKey())
 	assert.Equal(t, 15, len(entry.Moves))
 	assert.Equal(t, 61_217, entry.Counter)
 
@@ -113,7 +113,7 @@ func Test_processingSimple(t *testing.T) {
 	entry, found = book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
-	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.EqualValues(t, entry.ZobristKey, pos.ZobristKey())
 	assert.Equal(t, 11, len(entry.Moves))
 	assert.Equal(t, 24_350, entry.Counter)
 
@@ -137,7 +137,7 @@ func Test_processingSANSmall(t *testing.T) {
 	assert.True(t, found)
 	assert.NotNil(t, entry)
 	assert.Equal(t, book.rootEntry, entry.ZobristKey)
-	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.EqualValues(t, entry.ZobristKey, pos.ZobristKey())
 	assert.Equal(t, 8, len(entry.Moves))
 	assert.Equal(t, 149, entry.Counter)
 
@@ -145,7 +145,7 @@ func Test_processingSANSmall(t *testing.T) {
 	entry, found = book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
-	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.EqualValues(t, entry.ZobristKey, pos.ZobristKey())
 	assert.Equal(t, 8, len(entry.Moves))
 	assert.Equal(t, 94, entry.Counter)
 
@@ -169,7 +169,7 @@ func Test_processingPGNSmall(t *testing.T) {
 	assert.True(t, found)
 	assert.NotNil(t, entry)
 	assert.Equal(t, book.rootEntry, entry.ZobristKey)
-	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.EqualValues(t, entry.ZobristKey, pos.ZobristKey())
 	assert.Equal(t, 2, len(entry.Moves))
 	assert.Equal(t, 18, entry.Counter)
 
@@ -177,7 +177,7 @@ func Test_processingPGNSmall(t *testing.T) {
 	entry, found = book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
-	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.EqualValues(t, entry.ZobristKey, pos.ZobristKey())
 	assert.Equal(t, 4, len(entry.Moves))
 	assert.Equal(t, 12, entry.Counter)
 
@@ -201,7 +201,7 @@ func Test_processingPGNLarge(t *testing.T) {
 	assert.True(t, found)
 	assert.NotNil(t, entry)
 	assert.Equal(t, book.rootEntry, entry.ZobristKey)
-	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.EqualValues(t, entry.ZobristKey, pos.ZobristKey())
 	assert.Equal(t, 20, len(entry.Moves))
 	assert.Equal(t, 190_775, entry.Counter)
 
@@ -209,7 +209,7 @@ func Test_processingPGNLarge(t *testing.T) {
 	entry, found = book.GetEntry(pos.ZobristKey())
 	assert.True(t, found)
 	assert.NotNil(t, entry)
-	assert.Equal(t, entry.ZobristKey, pos.ZobristKey())
+	assert.EqualValues(t, entry.ZobristKey, pos.ZobristKey())
 	assert.Equal(t, 18, len(entry.Moves))
 	assert.Equal(t, 89_615, entry.Counter)
 

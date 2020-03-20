@@ -35,6 +35,6 @@ const DEBUG = false
 // panic with message if bool is false
 func Assert(test bool, msg string, a ...interface{}) {
 	if DEBUG && !test {
-		panic(fmt.Sprintf(msg, a))
+		panic(fmt.Sprint(msg, a))
 	}
 }
