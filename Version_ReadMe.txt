@@ -7,7 +7,7 @@ v 0.3 (planned)
     - Implement simple Search
     - Implement simple Evaluator
 
-v 0.2 (in progress)
+v 0.2 (done)
 ================================================================================
 - DONE
     - CleanUp
