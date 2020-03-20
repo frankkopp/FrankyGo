@@ -30,7 +30,7 @@ import (
 	"github.com/frankkopp/FrankyGo/assert"
 )
 
-// Square A square represent exactly on square on a chess board.
+// Square represent exactly on square on a chess board.
 type Square uint8
 
 //noinspection GoUnusedConst
@@ -103,7 +103,7 @@ const (
 )
 
 // IsValid checks a value of type square if it represents a valid
-// square on a chess board (e.q. sq < 63).
+// square on a chess board (e.q. sq < 64).
 func (sq Square) IsValid() bool {
 	return sq < SqNone
 }

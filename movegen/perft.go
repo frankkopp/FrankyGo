@@ -36,71 +36,102 @@ import (
 
 var out = message.NewPrinter(language.German)
 
-const (
-	ns uint64 = 1_000_000_000
-)
-
+// Perft is class to test move generation of the chess engine.
 type Perft struct {
 	Nodes            uint64
 	CheckCounter     uint64
 	CheckMateCounter uint64
 	CaptureCounter   uint64
 	EnpassantCounter uint64
+	CastleCounter    uint64
+	PromotionCounter uint64
+	stopFlag         bool
+}
+
+// Stop can be used when perft has been started
+// in a goroutine to stop the currently running
+// perft test
+func (p *Perft) Stop() {
+	p.stopFlag = true
+}
+
+// StartPerftMulti is using the "normal" move generation and doesn't divide the
+// the perft depths. It iterates through the given start to end depths.
+// If this has been started in a go routine it can be stopped via Stop()
+func (p *Perft) StartPerftMulti(fen string, startDepth int, endDepth int, onDemandFlag bool) {
+	p.stopFlag = false
+	for i := startDepth; i <= endDepth; i++ {
+		if p.stopFlag {
+			out.Print("Perft multi depth stopped\n")
+			return
+		}
+		p.StartPerft(fen, i, onDemandFlag)
+	}
 }
 
 // StartPerft is using the "normal" move generation and doesn't divide the
 // the perft depths.
-//noinspection GoUnhandledErrorResult
-func (p *Perft) StartPerft(fen string, depth int) {
+// If this has been started in a go routine it can be stopped via Stop()
+func (p *Perft) StartPerft(fen string, depth int, onDemandFlag bool) {
+	p.stopFlag = false
 
+	// set 1 as minimum
+	if depth <= 0 {
+		depth = 1
+	}
+
+	// prepare
 	p.resetCounter()
-	pos := position.NewFen(fen)
-	mgList := make([]movegen, depth+1)
+	pos := position.NewPositionFen(fen)
+	mgList := make([]Movegen, depth+1)
 	for i := 0; i <= depth; i++ {
-		mgList[i] = New()
+		mgList[i] = NewMoveGen()
 	}
 
 	out.Printf("Performing PERFT Test for Depth %d\n", depth)
 	out.Printf("-----------------------------------------\n")
-	start := time.Now()
 
-	result := p.miniMax(depth, &pos, &mgList)
+	result := uint64(0)
+
+	// the actual perft call
+	start := time.Now()
+	if onDemandFlag {
+		result = p.miniMaxOD(depth, &pos, &mgList)
+	} else {
+		result = p.miniMax(depth, &pos, &mgList)
+	}
+	elapsed := time.Since(start)
+
+	if result == 0 {
+		out.Print("Perft stopped\n")
+		return
+	}
+
 	p.Nodes = result
 
-	elapsed := time.Since(start)
 	out.Printf("Time         : %d ms\n", elapsed.Milliseconds())
-	out.Printf("NPS          : %d nps\n", (result*ns)/uint64(elapsed.Nanoseconds()+1))
+	out.Printf("NPS          : %d nps\n", (p.Nodes*uint64(time.Second.Nanoseconds()))/uint64(elapsed.Nanoseconds()+1))
 	out.Printf("Results:\n")
 	out.Printf("   Nodes     : %d\n", p.Nodes)
 	out.Printf("   Captures  : %d\n", p.CaptureCounter)
 	out.Printf("   EnPassant : %d\n", p.EnpassantCounter)
 	out.Printf("   Checks    : %d\n", p.CheckCounter)
 	out.Printf("   CheckMates: %d\n", p.CheckMateCounter)
+	out.Printf("   Castles   : %d\n", p.CastleCounter)
+	out.Printf("   Promotions: %d\n", p.PromotionCounter)
 	out.Printf("-----------------------------------------\n")
-
+	out.Printf("Finished PERFT Test for Depth %d\n\n", depth)
 }
 
-func (p *Perft) StartPerftOD(fen string, maxdepth int) {
-
-}
-
-func (p *Perft) StartPerftDevide(fen string, maxdepth int) {
-
-}
-
-func (p *Perft) resetCounter() {
-	p.Nodes = 0
-	p.CheckCounter = 0
-	p.CheckMateCounter = 0
-	p.CaptureCounter = 0
-	p.EnpassantCounter = 0
-}
-
-func (p *Perft) miniMax(depth int, positionPtr *position.Position, mgListPtr *[]movegen) uint64 {
+func (p *Perft) miniMax(depth int, positionPtr *position.Position, mgListPtr *[]Movegen) uint64 {
 	totalNodes := uint64(0)
+	movegens := *mgListPtr
 	// moves to search recursively
-	moves := (*mgListPtr)[depth].GeneratePseudoLegalMoves(positionPtr, GenAll)
-	for _, move := range moves.Data() {
+	movesPtr := movegens[depth].GeneratePseudoLegalMoves(positionPtr, GenAll)
+	for _, move := range *movesPtr {
+		if p.stopFlag {
+			return 0
+		}
 		if depth > 1 {
 			positionPtr.DoMove(move)
 			if positionPtr.WasLegalMove() {
@@ -110,6 +141,8 @@ func (p *Perft) miniMax(depth int, positionPtr *position.Position, mgListPtr *[]
 		} else {
 			capture := positionPtr.GetPiece(move.To()) != PieceNone
 			enpassant := move.MoveType() == EnPassant
+			castling := move.MoveType() == Castling
+			promotion := move.MoveType() == Promotion
 			positionPtr.DoMove(move)
 			if positionPtr.WasLegalMove() {
 				totalNodes++
@@ -120,10 +153,16 @@ func (p *Perft) miniMax(depth int, positionPtr *position.Position, mgListPtr *[]
 				if capture {
 					p.CaptureCounter++
 				}
+				if castling {
+					p.CastleCounter++
+				}
+				if promotion {
+					p.PromotionCounter++
+				}
 				if positionPtr.HasCheck() {
 					p.CheckCounter++
 				}
-				if !(*mgListPtr)[0].HasLegalMove(positionPtr) {
+				if !movegens[0].HasLegalMove(positionPtr) {
 					p.CheckMateCounter++
 				}
 			}
@@ -133,7 +172,61 @@ func (p *Perft) miniMax(depth int, positionPtr *position.Position, mgListPtr *[]
 	return totalNodes
 }
 
-func (p *Perft) miniMaxOD(d int, position *position.Position, moveGenList *[]movegen) uint64 {
+func (p *Perft) miniMaxOD(depth int, positionPtr *position.Position,  mgListPtr *[]Movegen) uint64 {
+	totalNodes := uint64(0)
+	movegens := *mgListPtr
+	// moves to search recursively
+	mg := movegens[depth]
+	for move := mg.GetNextMove(positionPtr, GenAll); move != MoveNone; move = mg.GetNextMove(positionPtr, GenAll) {
+		if p.stopFlag {
+			return 0
+		}
+		if depth > 1 {
+			positionPtr.DoMove(move)
+			if positionPtr.WasLegalMove() {
+				totalNodes += p.miniMaxOD(depth-1, positionPtr, mgListPtr)
+			}
+			positionPtr.UndoMove()
+		} else {
+			capture := positionPtr.GetPiece(move.To()) != PieceNone
+			enpassant := move.MoveType() == EnPassant
+			castling := move.MoveType() == Castling
+			promotion := move.MoveType() == Promotion
+			positionPtr.DoMove(move)
+			if positionPtr.WasLegalMove() {
+				totalNodes++
+				if enpassant {
+					p.EnpassantCounter++
+					p.CaptureCounter++
+				}
+				if capture {
+					p.CaptureCounter++
+				}
+				if castling {
+					p.CastleCounter++
+				}
+				if promotion {
+					p.PromotionCounter++
+				}
+				if positionPtr.HasCheck() {
+					p.CheckCounter++
+				}
+				if !movegens[0].HasLegalMove(positionPtr) {
+					p.CheckMateCounter++
+				}
+			}
+			positionPtr.UndoMove()
+		}
+	}
+	return totalNodes
+}
 
-	return 0
+func (p *Perft) resetCounter() {
+	p.Nodes = 0
+	p.CheckCounter = 0
+	p.CheckMateCounter = 0
+	p.CaptureCounter = 0
+	p.EnpassantCounter = 0
+	p.CastleCounter = 0
+	p.PromotionCounter = 0
 }

@@ -42,7 +42,8 @@ type random struct {
 	s uint64
 }
 
-// NewRandom creates a random object with a seed. Seed must not be negative or zero.
+// NewRandom creates a random object with a seed.
+// Seed must not be negative or zero.
 func NewRandom( seed uint64) random {
 	if seed == 0 {
 		panic("Seed of random cannot be 0")
@@ -51,7 +52,9 @@ func NewRandom( seed uint64) random {
 	return r
 }
 
-func (r *random) rand64() uint64 {
+// Rand64 returns a 64-bit random number.
+// Create instance with NewRandom()
+func (r *random) Rand64() uint64 {
 	r.s ^= r.s << 25
 	r.s ^= r.s >> 27
 	r.s ^= r.s >> 12

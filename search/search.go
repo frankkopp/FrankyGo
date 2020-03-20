@@ -1,27 +1,51 @@
 package search
 
-import "log"
+import (
 
-var stopFlag = false
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 
-func Start() {
-	dosomething()
+	"github.com/frankkopp/FrankyGo/logging"
+)
+
+var out = message.NewPrinter(language.German)
+var log = logging.GetLog("search")
+
+// Search not implemented yet
+type Search struct {
+	stopFlag bool
 }
 
-func Stop() {
-	stopFlag = true
+func New() Search {
+	log.Debug("Initializing search")
+	s := Search{}
+	// TODO init
+	return s
 }
 
-func dosomething() {
-	log.Printf("Search started.")
-	defer log.Printf("Search stopped.")
-	for !stopFlag {
+func (u *Search) NewGame() {
+	log.Info("New game")
+}
+
+func (s *Search) Start() {
+	go s.run()
+}
+
+func(s *Search) Stop() {
+	s.stopFlag = true
+}
+
+func (s *Search) run() {
+	log.Info("Search started.")
+	defer log.Info("Search stopped.")
+	for !s.stopFlag {
 		// simulate cpu intense calculation
 		f := 100000000.0
 		for f > 1 {
 			f /= 1.00000001
 		}
-		log.Printf("Still searching...")
+		log.Info("Still searching...")
 	}
 	return
 }
+

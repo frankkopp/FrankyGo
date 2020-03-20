@@ -2,19 +2,42 @@
   <dictionary name="Frank">
     <words>
       <w>abcdefgh</w>
+      <w>castlings</w>
+      <w>cmds</w>
       <w>diagstart</w>
       <w>dosomething</w>
       <w>dsfile</w>
       <w>enpassant</w>
+      <w>fenb</w>
+      <w>hashfull</w>
+      <w>isready</w>
+      <w>kiwipete</w>
       <w>kopp</w>
       <w>kpnbrq</w>
       <w>movearray</w>
       <w>movegen</w>
+      <w>movegens</w>
+      <w>moveslice</w>
       <w>noninfringement</w>
+      <w>openingbook</w>
       <w>passant</w>
+      <w>perft</w>
+      <w>permill</w>
+      <w>ponderhit</w>
       <w>pppppppp</w>
+      <w>readyok</w>
       <w>rnbqkbnr</w>
+      <w>setoption</w>
+      <w>startpos</w>
+      <w>stockfish</w>
+      <w>ucihandler</w>
+      <w>ucinewgame</w>
       <w>uciok</w>
+      <w>valpha</w>
+      <w>vbeta</w>
+      <w>vexact</w>
+      <w>vlength</w>
+      <w>vnone</w>
       <w>zobrist</w>
     </words>
   </dictionary>

@@ -28,6 +28,7 @@ import (
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
+// helper data structure for Zobrist IDs for chess positions
 type zobrist struct {
 	pieces         [PieceLength][SqLength]Key
 	castlingRights [CastlingRightsLength]Key
@@ -42,14 +43,14 @@ func initZobrist() {
 	r := NewRandom(1070372)
 	for pc := PieceNone; pc < PieceLength; pc++ {
 		for sq := SqA1; sq <= SqH8; sq++ {
-			zobristBase.pieces[pc][sq] = Key(r.rand64())
+			zobristBase.pieces[pc][sq] = Key(r.Rand64())
 		}
 	}
 	for cr := CastlingNone; cr <= CastlingAny; cr++ {
-		zobristBase.castlingRights[cr] = Key(r.rand64())
+		zobristBase.castlingRights[cr] = Key(r.Rand64())
 	}
 	for f := FileA; f <= FileH; f++ {
-		zobristBase.enPassantFile[f] = Key(r.rand64())
+		zobristBase.enPassantFile[f] = Key(r.Rand64())
 	}
-	zobristBase.nextPlayer = Key(r.rand64())
+	zobristBase.nextPlayer = Key(r.Rand64())
 }

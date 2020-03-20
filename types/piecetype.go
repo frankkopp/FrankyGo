@@ -27,17 +27,26 @@ package types
 // PieceType is a set of constants for piece types in chess
 type PieceType int8
 
-// Orientation is a set of constants for moving squares within a Bb
-//noinspection GoVarAndConstTypeMayBeOmitted
+// PieceType is a set of constants for piece types in chess
+//  test for non sliding pt & 0b0100 == 0 (must be none zero)
+//  test for sliding pt & 0b0100 == 1 (must be < 7)
+//  PtNone   = 0b0000
+//  King     = 0b0001 // non sliding
+//  Pawn     = 0b0010
+//  Knight   = 0b0011
+//  Bishop   = 0b0100 // sliding
+//  Rook     = 0b0101 // sliding
+//  Queen    = 0b0110 // sliding
+//  PtLength = 0b0111
 const (
-	PtNone   PieceType = 0 //
-	King     PieceType = 1 // Non sliding
-	Pawn     PieceType = 2 // Non sliding
-	Knight   PieceType = 3 // Non sliding 0x0011
-	Bishop   PieceType = 4 // Sliding     0x0100
-	Rook     PieceType = 5 // Sliding
-	Queen    PieceType = 6 // Sliding
-	PtLength PieceType = 7
+	PtNone   PieceType = 0b0000
+	King     PieceType = 0b0001
+	Pawn     PieceType = 0b0010
+	Knight   PieceType = 0b0011
+	Bishop   PieceType = 0b0100
+	Rook     PieceType = 0b0101
+	Queen    PieceType = 0b0110
+	PtLength PieceType = 0b0111
 )
 
 // array of string labels for piece types
