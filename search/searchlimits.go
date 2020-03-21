@@ -22,18 +22,41 @@
  * SOFTWARE.
  */
 
-package types
+package search
 
 import (
-	"testing"
+	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/frankkopp/FrankyGo/moveslice"
 )
 
-func Test(t *testing.T) {
-	assert.Equal(t, Value(-30), PosMidValue(WhitePawn, SqE2))
-	assert.Equal(t, Value(10), PosEndValue(WhitePawn, SqE2))
-	assert.Equal(t, Value(-30), PosValue(WhitePawn, SqE2, 24))
-	assert.Equal(t, Value(10), PosValue(WhitePawn, SqE2, 0))
-	assert.Equal(t, Value(-10), PosValue(WhitePawn, SqE2, 12))
+// SearchLimits is data structure to hold all information about how
+// a search of the chess games shall be controlled.
+// Search needs to read these an determine the necessary limits.
+// E.g. time controlled game or not
+type SearchLimits struct {
+	//  time control
+	WhiteTime   time.Duration
+	BlackTime   time.Duration
+	WhiteInc    time.Duration
+	BlackInc    time.Duration
+	MoveTime    time.Duration
+	MovesToGo   int
+	TimeControl bool
+
+	// extra limits
+	Depth int
+	Nodes int64
+	Moves moveslice.MoveSlice
+
+	// no time control
+	Mate     int
+	Ponder   bool
+	Infinite bool
+}
+
+// NewSearchLimits creates a new empty SearchLimits
+// instance and returns a pointer to it
+func NewSearchLimits() *SearchLimits {
+	return &SearchLimits{}
 }

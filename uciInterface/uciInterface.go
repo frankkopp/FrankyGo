@@ -22,18 +22,24 @@
  * SOFTWARE.
  */
 
-package types
+package uciInterface
 
 import (
-	"testing"
+	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/frankkopp/FrankyGo/moveslice"
+	"github.com/frankkopp/FrankyGo/types"
 )
 
-func Test(t *testing.T) {
-	assert.Equal(t, Value(-30), PosMidValue(WhitePawn, SqE2))
-	assert.Equal(t, Value(10), PosEndValue(WhitePawn, SqE2))
-	assert.Equal(t, Value(-30), PosValue(WhitePawn, SqE2, 24))
-	assert.Equal(t, Value(10), PosValue(WhitePawn, SqE2, 0))
-	assert.Equal(t, Value(-10), PosValue(WhitePawn, SqE2, 12))
+// UciDriver the defines an interface for the search to be able to send
+// uci protocol messages through a uciHandler which implements this interface
+type UciDriver interface{
+	SendReadyOk()
+	SendInfoString(info string)
+	SendIterationEndInfo(depth int, seldepth int, value types.Value, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice)
+	SendAspirationResearchInfo(depth int, seldepth int, value types.Value, valueType types.ValueType, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice)
+	SendCurrentRootMove(currMove types.Move, moveNumber int)
+	SendSearchUpdate(depth int, seldepth int, nodes uint64, nps uint64, time time.Duration, hashfull int)
+	SendCurrentLine(moveList moveslice.MoveSlice)
+	SendResult(bestMove types.Move, ponderMove types.Move)
 }

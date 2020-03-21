@@ -32,8 +32,22 @@ import (
 	"strings"
 
 	"github.com/frankkopp/FrankyGo/assert"
+	"github.com/frankkopp/FrankyGo/logging"
 	. "github.com/frankkopp/FrankyGo/types"
 )
+
+var log = logging.GetLog("position")
+
+var initialized = false
+
+// initialize package
+func init() {
+	if !initialized {
+		log.Debug("Initializing position")
+		initZobrist()
+		initialized = true
+	}
+}
 
 // StartFen is a string with the fen position for a standard chess game
 const StartFen string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -119,25 +133,20 @@ const (
 	flagTrue  int = 2
 )
 
-var initialized = false
-
 // //////////////////////////////////////////////////////
 // // Public
 // //////////////////////////////////////////////////////
 
 // NewPosition creates a new position with Start Fen as default
-func NewPosition() Position {
+func NewPosition() *Position {
 	return NewPositionFen(StartFen)
 }
 
 // NewPositionFen creates a new position with the given fen string
 // as board position
-func NewPositionFen(fen string) Position {
-	if !initialized {
-		initZobrist()
-		initialized = true
-	}
-	p := Position{}
+func NewPositionFen(fen string) *Position {
+
+	p := &Position{}
 	if e := p.setupBoard(fen); e != nil {
 		panic(fmt.Sprintf("fen for position setup not valid and position can't be created: %s", e))
 	}
@@ -940,6 +949,3 @@ func (p *Position) CastlingRights() CastlingRights {
 func (p *Position) KingSquare(c Color) Square {
 	return p.kingSquare[c]
 }
-
-
-

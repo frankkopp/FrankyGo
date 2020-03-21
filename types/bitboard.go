@@ -41,9 +41,6 @@ type Bitboard uint64
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func (sq Square) Bb() Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
 	return sqBb[sq]
 }
 
@@ -105,9 +102,6 @@ func ShiftBitboard(b Bitboard, d Direction) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func GetMovesOnRank(sq Square, content Bitboard) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
 	// content = the pieces currently on the board and maybe blocking the moves
 	// no rotation necessary for ranks - their squares are already in a row
 	// shift to the least significant bit
@@ -123,9 +117,6 @@ func GetMovesOnRank(sq Square, content Bitboard) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func GetMovesOnFileRotated(sq Square, rotated Bitboard) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
 	// shift to the lsb
 	contentIdx := rotated >> (int(sq.FileOf()) * 8)
 	// retrieve all possible moves for this square with the current content
@@ -140,9 +131,6 @@ func GetMovesOnFileRotated(sq Square, rotated Bitboard) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func GetMovesOnFile(sq Square, content Bitboard) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
 	// content = the pieces currently on the board and maybe blocking the moves
 	// rotate the content of the board to get all file squares in a row
 	return GetMovesOnFileRotated(sq, RotateL90(content))
@@ -154,9 +142,6 @@ func GetMovesOnFile(sq Square, content Bitboard) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func GetMovesDiagUpRotated(sq Square, rotated Bitboard) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
 	// shift the correct row to the lsb
 	shifted := rotated >> shiftsDiagUp[sq]
 	// mask the content with the length of the diagonal to erase any other
@@ -172,9 +157,6 @@ func GetMovesDiagUpRotated(sq Square, rotated Bitboard) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func GetMovesDiagUp(sq Square, content Bitboard) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
 	// content = the pieces currently on the board and maybe blocking the moves
 	// rotate the content of the board to get all diagonals in a row
 	return GetMovesDiagUpRotated(sq, RotateR45(content))
@@ -295,9 +277,7 @@ func RankDistance(r1 Rank, r2 Rank) int {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func SquareDistance(s1 Square, s2 Square) int {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return squareDistance[s1][s2]
 }
 
@@ -305,9 +285,7 @@ func SquareDistance(s1 Square, s2 Square) int {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func (sq Square) CenterDistance() int {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return centerDistance[sq]
 }
 
@@ -315,9 +293,7 @@ func (sq Square) CenterDistance() int {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func RotateR90(b Bitboard) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return rotate(b, &rotateMapR90)
 }
 
@@ -325,9 +301,7 @@ func RotateR90(b Bitboard) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func RotateL90(b Bitboard) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return rotate(b, &rotateMapL90)
 }
 
@@ -338,9 +312,7 @@ func RotateL90(b Bitboard) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func RotateR45(b Bitboard) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return rotate(b, &rotateMapR45)
 }
 
@@ -351,9 +323,7 @@ func RotateR45(b Bitboard) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func RotateL45(b Bitboard) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return rotate(b, &rotateMapL45)
 }
 
@@ -362,9 +332,7 @@ func RotateL45(b Bitboard) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func RotateSquareR90(sq Square) Square {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return indexMapR90[sq]
 }
 
@@ -373,9 +341,7 @@ func RotateSquareR90(sq Square) Square {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func RotateSquareL90(sq Square) Square {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return indexMapL90[sq]
 }
 
@@ -384,9 +350,7 @@ func RotateSquareL90(sq Square) Square {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func RotateSquareR45(sq Square) Square {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return indexMapR45[sq]
 }
 
@@ -395,9 +359,7 @@ func RotateSquareR45(sq Square) Square {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func RotateSquareL45(sq Square) Square {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return indexMapL45[sq]
 }
 
@@ -406,9 +368,7 @@ func RotateSquareL45(sq Square) Square {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func GetPseudoAttacks(pt PieceType, sq Square) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	if assert.DEBUG {
 		assert.Assert(!(pt == PtNone || pt == Pawn || pt > Queen), "Invalid piece type for GetPseudoAttacks()")
 	}
@@ -419,9 +379,7 @@ func GetPseudoAttacks(pt PieceType, sq Square) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func GetPawnAttacks(c Color, sq Square) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return pawnAttacks[c][sq]
 }
 
@@ -429,9 +387,7 @@ func GetPawnAttacks(c Color, sq Square) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func (sq Square) FilesWestMask() Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return filesWestMask[sq]
 }
 
@@ -439,9 +395,7 @@ func (sq Square) FilesWestMask() Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func (sq Square) FilesEastMask() Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return filesEastMask[sq]
 }
 
@@ -449,9 +403,7 @@ func (sq Square) FilesEastMask() Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func (sq Square) FileWestMask() Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return fileWestMask[sq]
 }
 
@@ -459,9 +411,7 @@ func (sq Square) FileWestMask() Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func (sq Square) FileEastMask() Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return fileEastMask[sq]
 }
 
@@ -469,9 +419,7 @@ func (sq Square) FileEastMask() Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func (sq Square) RanksNorthMask() Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return ranksNorthMask[sq]
 }
 
@@ -479,9 +427,7 @@ func (sq Square) RanksNorthMask() Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func (sq Square) RanksSouthMask() Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return ranksSouthMask[sq]
 }
 
@@ -489,9 +435,7 @@ func (sq Square) RanksSouthMask() Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func (sq Square) NeighbourFilesMask() Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return neighbourFilesMask[sq]
 }
 
@@ -500,9 +444,7 @@ func (sq Square) NeighbourFilesMask() Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func (sq Square) Ray(o Orientation) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return rays[o][sq]
 }
 
@@ -511,9 +453,7 @@ func (sq Square) Ray(o Orientation) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func Intermediate(sq1 Square, sq2 Square) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return intermediate[sq1][sq2]
 }
 
@@ -522,9 +462,7 @@ func Intermediate(sq1 Square, sq2 Square) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func (sq Square) Intermediate(sqTo Square) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return intermediate[sq][sqTo]
 }
 
@@ -535,9 +473,7 @@ func (sq Square) Intermediate(sqTo Square) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func (sq Square) PassedPawnMask(c Color) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return passedPawnMask[c][sq]
 }
 
@@ -546,9 +482,7 @@ func (sq Square) PassedPawnMask(c Color) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func KingSideCastleMask(c Color) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return kingSideCastleMask[c]
 }
 
@@ -557,9 +491,7 @@ func KingSideCastleMask(c Color) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func QueenSideCastMask(c Color) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return queenSideCastleMask[c]
 }
 
@@ -568,9 +500,7 @@ func QueenSideCastMask(c Color) Bitboard {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func GetCastlingRights(sq Square) CastlingRights {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return castlingRights[sq]
 }
 
@@ -579,9 +509,7 @@ func GetCastlingRights(sq Square) CastlingRights {
 // Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
 // throws panic if initialized.
 func SquaresBb(c Color) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(initialized, "Bitboards have not been initialized. Please call types.Init() first.")
-	}
+
 	return squaresBb[c]
 }
 

@@ -85,7 +85,7 @@ func TestNew(t *testing.T) {
 
 func TestGetAndProbe(t *testing.T) {
 	// setup
-	Init()
+
 	tt := NewTtTable(64)
 	assert.Equal(t, uint64(4_194_304), tt.maxNumberOfEntries)
 	assert.Equal(t, 4_194_304, cap(tt.data))
@@ -192,7 +192,7 @@ func TestAge(t *testing.T) {
 
 func TestPut(t *testing.T) {
 	// setup
-	Init()
+
 	tt := NewTtTable(4)
 	move := CreateMove(SqE2, SqE4, Normal, PtNone)
 
@@ -263,7 +263,7 @@ func TestPut(t *testing.T) {
 
 func TestPerformance(t *testing.T) {
 	// setup
-	Init()
+
 	tt := NewTtTable(1_024)
 
 	move := CreateMove(SqE2, SqE4, Normal, PtNone)

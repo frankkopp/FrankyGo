@@ -48,6 +48,11 @@ type Perft struct {
 	stopFlag         bool
 }
 
+// NewPerft creates a new empty Perft instance
+func NewPerft() *Perft {
+	return &Perft{}
+}
+
 // Stop can be used when perft has been started
 // in a goroutine to stop the currently running
 // perft test
@@ -82,8 +87,8 @@ func (p *Perft) StartPerft(fen string, depth int, onDemandFlag bool) {
 
 	// prepare
 	p.resetCounter()
-	pos := position.NewPositionFen(fen)
-	mgList := make([]Movegen, depth+1)
+	posPtr := position.NewPositionFen(fen)
+	mgList := make([]*Movegen, depth+1)
 	for i := 0; i <= depth; i++ {
 		mgList[i] = NewMoveGen()
 	}
@@ -96,9 +101,9 @@ func (p *Perft) StartPerft(fen string, depth int, onDemandFlag bool) {
 	// the actual perft call
 	start := time.Now()
 	if onDemandFlag {
-		result = p.miniMaxOD(depth, &pos, &mgList)
+		result = p.miniMaxOD(depth, posPtr, &mgList)
 	} else {
-		result = p.miniMax(depth, &pos, &mgList)
+		result = p.miniMax(depth, posPtr, &mgList)
 	}
 	elapsed := time.Since(start)
 
@@ -123,7 +128,7 @@ func (p *Perft) StartPerft(fen string, depth int, onDemandFlag bool) {
 	out.Printf("Finished PERFT Test for Depth %d\n\n", depth)
 }
 
-func (p *Perft) miniMax(depth int, positionPtr *position.Position, mgListPtr *[]Movegen) uint64 {
+func (p *Perft) miniMax(depth int, positionPtr *position.Position, mgListPtr *[]*Movegen) uint64 {
 	totalNodes := uint64(0)
 	movegens := *mgListPtr
 	// moves to search recursively
@@ -172,7 +177,7 @@ func (p *Perft) miniMax(depth int, positionPtr *position.Position, mgListPtr *[]
 	return totalNodes
 }
 
-func (p *Perft) miniMaxOD(depth int, positionPtr *position.Position,  mgListPtr *[]Movegen) uint64 {
+func (p *Perft) miniMaxOD(depth int, positionPtr *position.Position,  mgListPtr *[]*Movegen) uint64 {
 	totalNodes := uint64(0)
 	movegens := *mgListPtr
 	// moves to search recursively

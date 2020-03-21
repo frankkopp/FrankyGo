@@ -33,14 +33,18 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
 	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/movegen"
+	"github.com/frankkopp/FrankyGo/moveslice"
 	"github.com/frankkopp/FrankyGo/position"
 	"github.com/frankkopp/FrankyGo/search"
+	. "github.com/frankkopp/FrankyGo/types"
+	"github.com/frankkopp/FrankyGo/uciInterface"
 )
 
 var out = message.NewPrinter(language.German)
@@ -53,10 +57,10 @@ var uciLog = logging.GetUciLog()
 type UciHandler struct {
 	InIo       *bufio.Scanner
 	OutIo      *bufio.Writer
-	myMoveGen  movegen.Movegen
-	mySearch   search.Search
-	myPosition position.Position
-	myPerft    movegen.Perft
+	myMoveGen  *movegen.Movegen
+	mySearch   *search.Search
+	myPosition *position.Position
+	myPerft    *movegen.Perft
 }
 
 // ///////////////////////////////////////////////////////////
@@ -69,13 +73,17 @@ type UciHandler struct {
 //  Example:
 // 		u.InIo = bufio.NewScanner(os.Stdin)
 //		u.OutIo = bufio.NewWriter(os.Stdout)
-func NewUciHandler() UciHandler {
-	u := UciHandler{}
+func NewUciHandler() *UciHandler {
+	u := &UciHandler{}
 	u.InIo = bufio.NewScanner(os.Stdin)
 	u.OutIo = bufio.NewWriter(os.Stdout)
 	u.mySearch = search.NewSearch()
+	u.myPosition = position.NewPosition()
 	u.myMoveGen = movegen.NewMoveGen()
-	u.myPerft = movegen.Perft{}
+	u.myPerft = movegen.NewPerft()
+	var uciDriver uciInterface.UciDriver
+	uciDriver = u
+	u.mySearch.SetUciHandler(uciDriver)
 	return u
 }
 
@@ -83,6 +91,38 @@ func NewUciHandler() UciHandler {
 // input stream (pipe or user)
 func (u *UciHandler) Loop() {
 	u.loop()
+}
+
+func (u *UciHandler) SendReadyOk() {
+	u.send("readyok")
+}
+
+func (u *UciHandler) SendInfoString(info string) {
+	u.sendInfoString(info)
+}
+
+func (u *UciHandler) SendIterationEndInfo(depth int, seldepth int, value Value, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice) {
+	panic("implement me")
+}
+
+func (u *UciHandler) SendAspirationResearchInfo(depth int, seldepth int, value Value, valueType ValueType, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice) {
+	panic("implement me")
+}
+
+func (u *UciHandler) SendCurrentRootMove(currMove Move, moveNumber int) {
+	panic("implement me")
+}
+
+func (u *UciHandler) SendSearchUpdate(depth int, seldepth int, nodes uint64, nps uint64, time time.Duration, hashfull int) {
+	panic("implement me")
+}
+
+func (u *UciHandler) SendCurrentLine(moveList moveslice.MoveSlice) {
+	panic("implement me")
+}
+
+func (u *UciHandler) SendResult(bestMove Move, ponderMove Move) {
+	panic("implement me")
 }
 
 // ///////////////////////////////////////////////////////////
@@ -149,7 +189,7 @@ func (u *UciHandler) ponderHitCommand() {
 }
 
 func (u *UciHandler) stopCommand() {
-	u.mySearch.Stop()
+	u.mySearch.StopSearch()
 	u.myPerft.Stop()
 }
 
@@ -175,9 +215,157 @@ func (u *UciHandler) perftCommand(tokens []string) {
 }
 
 func (u *UciHandler) goCommand(tokens []string) {
-	log.Info("Search starting...")
-	u.mySearch.Start()
-	log.Info("...started")
+	searchLimits, err := u.readSearchLimits(tokens)
+	if err {
+		return
+	}
+	// start the search
+	u.mySearch.StartSearch(*u.myPosition, *searchLimits)
+}
+
+func (u *UciHandler) readSearchLimits(tokens []string) (*search.SearchLimits, bool) {
+	searchLimits := search.NewSearchLimits()
+	i := 1
+	for i < len(tokens) {
+		var err error = nil
+		switch tokens[i] {
+		case "moves":
+			i++
+			for i < len(tokens) {
+				move := u.myMoveGen.GetMoveFromUci(u.myPosition, tokens[i])
+				if move.IsValid() {
+					searchLimits.Moves.PushBack(move)
+					i++
+				} else {
+					break
+				}
+			}
+		case "infinite":
+			i++
+			searchLimits.Infinite = true
+		case "ponder":
+			i++
+			searchLimits.Ponder = true
+		case "depth":
+			i++
+			searchLimits.Depth, err = strconv.Atoi(tokens[i])
+			if err != nil {
+				msg := out.Sprintf("UCI command go malformed. Depth value not an number: %s", tokens[i])
+				u.sendInfoString(msg)
+				log.Warning(msg)
+				return nil, true
+			}
+			i++
+		case "nodes":
+			i++
+			searchLimits.Nodes, err = strconv.ParseInt(tokens[i], 10, 64)
+			if err != nil {
+				msg := out.Sprintf("UCI command go malformed. Nodes value not an number: %s", tokens[i])
+				u.sendInfoString(msg)
+				log.Warning(msg)
+				return nil, true
+			}
+			i++
+		case "mate":
+			i++
+			searchLimits.Mate, err = strconv.Atoi(tokens[i])
+			if err != nil {
+				msg := out.Sprintf("UCI command go malformed. Mate value not an number: %s", tokens[i])
+				u.sendInfoString(msg)
+				log.Warning(msg)
+				return nil, true
+			}
+			i++
+		case "moveTime":
+			i++
+			parseInt, err := strconv.ParseInt(tokens[i], 10, 64)
+			if err != nil {
+				msg := out.Sprintf("UCI command go malformed. MoveTime value not an number: %s", tokens[i])
+				u.sendInfoString(msg)
+				log.Warning(msg)
+				return nil, true
+			}
+			searchLimits.MoveTime = time.Duration(parseInt * 1_000_000)
+			searchLimits.TimeControl = true
+			i++
+		case "wtime":
+			i++
+			parseInt, err := strconv.ParseInt(tokens[i], 10, 64)
+			if err != nil {
+				msg := out.Sprintf("UCI command go malformed. WhiteTime value not an number: %s", tokens[i])
+				u.sendInfoString(msg)
+				log.Warning(msg)
+				return nil, true
+			}
+			searchLimits.WhiteTime = time.Duration(parseInt * 1_000_000)
+			searchLimits.TimeControl = true
+			i++
+		case "btime":
+			i++
+			parseInt, err := strconv.ParseInt(tokens[i], 10, 64)
+			if err != nil {
+				msg := out.Sprintf("UCI command go malformed. Black value not an number: %s", tokens[i])
+				u.sendInfoString(msg)
+				log.Warning(msg)
+				return nil, true
+			}
+			searchLimits.BlackTime = time.Duration(parseInt * 1_000_000)
+			searchLimits.TimeControl = true
+			i++
+		case "winc":
+			i++
+			parseInt, err := strconv.ParseInt(tokens[i], 10, 64)
+			if err != nil {
+				msg := out.Sprintf("UCI command go malformed. WhiteInc value not an number: %s", tokens[i])
+				u.sendInfoString(msg)
+				log.Warning(msg)
+				return nil, true
+			}
+			searchLimits.WhiteInc = time.Duration(parseInt * 1_000_000)
+			i++
+		case "binc":
+			i++
+			parseInt, err := strconv.ParseInt(tokens[i], 10, 64)
+			if err != nil {
+				msg := out.Sprintf("UCI command go malformed. BlackInc value not an number: %s", tokens[i])
+				u.sendInfoString(msg)
+				log.Warning(msg)
+				return nil, true
+			}
+			searchLimits.BlackInc = time.Duration(parseInt * 1_000_000)
+			i++
+		case "movestogo":
+			i++
+			searchLimits.MovesToGo, err = strconv.Atoi(tokens[i])
+			if err != nil {
+				msg := out.Sprintf("UCI command go malformed. Movestogo value not an number: %s", tokens[i])
+				u.sendInfoString(msg)
+				log.Warning(msg)
+				return nil, true
+			}
+			i++
+		default:
+			msg := out.Sprintf("UCI command go malformed. Invalid subcommand: %s", tokens[i])
+			u.sendInfoString(msg)
+			log.Warning(msg)
+			return nil, true
+		}
+	}
+	// sanity check / minimum settings
+	if !(searchLimits.Infinite ||
+		searchLimits.Ponder ||
+		searchLimits.Depth > 0 ||
+		searchLimits.Nodes > 0 ||
+		searchLimits.Mate > 0 ||
+		searchLimits.TimeControl) {
+
+		msg := out.Sprintf("UCI command go malformed. No effective limits set %s", tokens)
+		u.sendInfoString(msg)
+		log.Warning(msg)
+		return nil, true
+	}
+
+	return searchLimits, false
 }
 
 func (u *UciHandler) positionCommand(tokens []string) {
@@ -214,7 +402,7 @@ func (u *UciHandler) positionCommand(tokens []string) {
 		if tokens[i] == "moves" {
 			i++
 			for i < len(tokens) && tokens[i] != "moves" {
-				move := u.myMoveGen.GetMoveFromUci(&u.myPosition, tokens[i])
+				move := u.myMoveGen.GetMoveFromUci(u.myPosition, tokens[i])
 				if move.IsValid() {
 					u.myPosition.DoMove(move)
 				} else {
@@ -236,7 +424,7 @@ func (u *UciHandler) positionCommand(tokens []string) {
 }
 
 func (u *UciHandler) uciNewGameCommand() {
-	u.mySearch.Stop()
+	u.mySearch.StopSearch()
 	u.myPosition = position.NewPosition()
 	u.mySearch.NewGame()
 }
@@ -248,7 +436,7 @@ func (u *UciHandler) setOptionCommand(tokens []string) {
 }
 
 func (u *UciHandler) isReadyCommand() {
-	u.send("readyok")
+	u.mySearch.IsReady()
 }
 
 func (u *UciHandler) uciCommand() {

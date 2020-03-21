@@ -78,8 +78,8 @@ const (
 )
 
 // NewMoveGen creates a new instance of a move generator
-func NewMoveGen() Movegen {
-	tmpMg := Movegen{
+func NewMoveGen() *Movegen {
+	tmpMg := &Movegen{
 		pseudoLegalMoves:   moveslice.NewMoveSlice(MaxMoves),
 		legalMoves:         moveslice.NewMoveSlice(MaxMoves),
 		onDemandMoves:      moveslice.NewMoveSlice(MaxMoves),

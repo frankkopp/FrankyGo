@@ -31,15 +31,23 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/frankkopp/FrankyGo/logging"
+	"github.com/frankkopp/FrankyGo/position"
 )
 
 var logTest = logging.GetLog("test")
 
+func TestSearch_IsReady(t *testing.T) {
+	search := NewSearch()
+	search.IsReady()
+}
+
 func TestWaitWhileSearching(t *testing.T) {
 	search := NewSearch()
+	p := position.NewPosition()
+	sl := NewSearchLimits()
 	start := time.Now()
 	// FIXME: Prototype
-	search.Start()
+	search.StartSearch(*p, *sl)
 	logTest.Debug("Search started...waiting to finish")
 	search.WaitWhileSearching()
 	logTest.Debug("Search finished")
@@ -50,9 +58,11 @@ func TestWaitWhileSearching(t *testing.T) {
 
 func TestIsSearching(t *testing.T) {
 	search := NewSearch()
+	p := position.NewPosition()
+	sl := NewSearchLimits()
 	start := time.Now()
 	// FIXME: Prototype
-	search.Start()
+	search.StartSearch(*p, *sl)
 	logTest.Debug("Check searching in 1 sec")
 	time.Sleep(time.Second)
 	assert.True(t, search.IsSearching())

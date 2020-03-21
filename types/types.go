@@ -26,6 +26,28 @@
 // functionality we need for the chess engine.
 package types
 
+import (
+	"github.com/frankkopp/FrankyGo/logging"
+)
+
+var log = logging.GetLog("types")
+
+var initialized = false
+
+// Init initializes pre computed data structures e.g. bitboards, etc.
+// Keeps an initialized flag to avoid multiple executions.
+func init() {
+	if initialized {
+		return
+	}
+	log.Debug("Initializing data types")
+	// bitboards
+	initBb()
+	// pos values
+	initPosValues()
+	initialized = true
+}
+
 // SqLength number of squares on a board
 const SqLength int = 64
 
@@ -43,19 +65,3 @@ const MB uint64 = KB * KB
 
 // GB = KB * MB
 const GB uint64 = KB * MB
-
-var initialized = false
-
-// Init initializes pre computed data structures e.g. bitboards, etc.
-// Keeps an initialized flag to avoid multiple executions.
-func Init() {
-	// defer util.TimeTrack(time.Now(), "Init")
-	if initialized {
-		return
-	}
-	// bitboards
-	initBb()
-	// pos values
-	initPosValues()
-	initialized = true
-}

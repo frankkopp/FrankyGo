@@ -48,7 +48,7 @@ func Test_readingNonExistingFile(t *testing.T) {
 }
 
 func Test_processingEmpty(t *testing.T) {
-	Init()
+
 	var book Book
 	err := book.Initialize("../books/empty.txt", Simple, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
@@ -65,7 +65,7 @@ func Test_processingEmpty(t *testing.T) {
 }
 
 func Test_processingSimpleSmall(t *testing.T) {
-	Init()
+
 	var book Book
 	err := book.Initialize("../books/book_smalltest.txt", Simple, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
@@ -93,7 +93,7 @@ func Test_processingSimpleSmall(t *testing.T) {
 }
 
 func Test_processingSimple(t *testing.T) {
-	Init()
+
 	var book Book
 	err := book.Initialize("../books/book.txt", Simple, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
@@ -125,7 +125,7 @@ func Test_processingSimple(t *testing.T) {
 
 func Test_processingSANSmall(t *testing.T) {
 	logTest.Info("Starting SAN small test")
-	Init()
+
 	var book Book
 	err := book.Initialize("../books/book_graham.txt", San, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
@@ -157,7 +157,7 @@ func Test_processingSANSmall(t *testing.T) {
 
 func Test_processingPGNSmall(t *testing.T) {
 	logTest.Info("Starting PGN small test")
-	Init()
+
 	var book Book
 	err := book.Initialize("../books/pgn_test.pgn", Pgn, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
@@ -189,7 +189,7 @@ func Test_processingPGNSmall(t *testing.T) {
 
 func Test_processingPGNLarge(t *testing.T) {
 	logTest.Info("Starting PGN large test")
-	Init()
+
 	var book Book
 	err := book.Initialize("../books/superbook.pgn", Pgn, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
@@ -221,7 +221,7 @@ func Test_processingPGNLarge(t *testing.T) {
 
 func Test_processingPGNCacheSmall(t *testing.T) {
 	logTest.Info("Starting PGN cache test")
-	Init()
+
 	var book Book
 	err := book.Initialize("../books/pgn_test.pgn", Pgn, true, true)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
@@ -261,7 +261,7 @@ func Test_processingPGNCacheSmall(t *testing.T) {
 
 func Test_processingPGNCacheLarge(t *testing.T) {
 	logTest.Info("Starting PGN large cache test")
-	Init()
+
 	var book Book
 	err := book.Initialize("../books/superbook.pgn", Pgn, true, true)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
