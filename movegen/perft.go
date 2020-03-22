@@ -60,8 +60,8 @@ func (p *Perft) Stop() {
 	p.stopFlag = true
 }
 
-// StartPerftMulti is using the "normal" move generation and doesn't divide the
-// the perft depths. It iterates through the given start to end depths.
+// StartPerftMulti is using normal or on demand move generation and doesn't
+// divide the the perft depths. It iterates through the given start to end depths.
 // If this has been started in a go routine it can be stopped via Stop()
 func (p *Perft) StartPerftMulti(fen string, startDepth int, endDepth int, onDemandFlag bool) {
 	p.stopFlag = false
@@ -74,8 +74,8 @@ func (p *Perft) StartPerftMulti(fen string, startDepth int, endDepth int, onDema
 	}
 }
 
-// StartPerft is using the "normal" move generation and doesn't divide the
-// the perft depths.
+// StartPerft is using normal or on demand move generation and doesn't
+// divide the the perft depths.
 // If this has been started in a go routine it can be stopped via Stop()
 func (p *Perft) StartPerft(fen string, depth int, onDemandFlag bool) {
 	p.stopFlag = false

@@ -22,6 +22,12 @@
  * SOFTWARE.
  */
 
+// Package uciInterface defines the functions necessary to be implemented
+// in a class to be used as a uci handler for the search class.
+// This is necessary as GO does not allow circular imports.
+// uci is importing Search to hold an instance of Search and Search needs
+// a call back reference to a uci handler to be able to send UCI
+// information to the UCI ui.
 package uciInterface
 
 import (

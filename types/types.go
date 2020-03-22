@@ -24,6 +24,7 @@
 
 // Package types contains various user defined data types and their corresponding
 // functionality we need for the chess engine.
+// Many of these would be perfect enum candidates but GO does not provide enums
 package types
 
 import (
@@ -48,20 +49,28 @@ func init() {
 	initialized = true
 }
 
-// SqLength number of squares on a board
-const SqLength int = 64
+const (
+	// SqLength number of squares on a board
+	SqLength int = 64
 
-// MaxDepth max search depth
-const MaxDepth = 128
+	// MaxDepth max search depth
+	MaxDepth = 128
 
-// MaxMoves max number of moves for a game
-const MaxMoves = 512
+	// MaxMoves max number of moves for a game
+	MaxMoves = 512
 
-// KB = 1.024 bytes
-const KB uint64 = 1024
+	// KB = 1.024 bytes
+	KB uint64 = 1024
 
-// MB = KB * KB
-const MB uint64 = KB * KB
+	// MB = KB * KB
+	MB uint64 = KB * KB
 
-// GB = KB * MB
-const GB uint64 = KB * MB
+	// GB = KB * MB
+	GB uint64 = KB * MB
+
+	// GamePhaseMax maximum game phase value. Game phase is used to
+	// determine if we are in the beginning or end phase of a chess game
+	// Game phase is calculated be the number of officers on the board
+	// with this maximum
+	GamePhaseMax = 24
+)

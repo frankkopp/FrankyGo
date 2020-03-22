@@ -152,6 +152,9 @@ func (m Move) String() string {
 
 // StringUci string representation of a move which is UCI compatible
 func (m Move) StringUci() string {
+	if m == MoveNone {
+		return "NoMove"
+	}
 	var os strings.Builder
 	os.WriteString(m.From().String())
 	os.WriteString(m.To().String())

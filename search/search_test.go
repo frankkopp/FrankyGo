@@ -41,6 +41,67 @@ func TestSearch_IsReady(t *testing.T) {
 	search.IsReady()
 }
 
+func TestSetupTimeControl(t *testing.T) {
+	s := NewSearch()
+	p := position.NewPosition()
+	sl := &Limits{
+		Infinite:    false,
+		Ponder:      false,
+		Mate:        0,
+		Depth:       0,
+		Nodes:       0,
+		Moves:       nil,
+		TimeControl: true,
+		WhiteTime:   60 * time.Second,
+		BlackTime:   60 * time.Second,
+		WhiteInc:    2 * time.Second,
+		BlackInc:    2 * time.Second,
+		MoveTime:    0,
+		MovesToGo:   20,
+	}
+	timeLimit := s.setupTimeControl(p,sl)
+	assert.EqualValues(t, 4500, timeLimit.Milliseconds())
+
+	p = position.NewPosition()
+	sl = &Limits{
+		Infinite:    false,
+		Ponder:      false,
+		Mate:        0,
+		Depth:       0,
+		Nodes:       0,
+		Moves:       nil,
+		TimeControl: true,
+		WhiteTime:   60 * time.Second,
+		BlackTime:   60 * time.Second,
+		WhiteInc:    2 * time.Second,
+		BlackInc:    2 * time.Second,
+		MoveTime:    0,
+		MovesToGo:   0,
+	}
+	timeLimit = s.setupTimeControl(p,sl)
+	assert.EqualValues(t, 3150, timeLimit.Milliseconds())
+
+	// game phase 0
+	p = position.NewPositionFen("8/2P1P1P1/3PkP2/8/4K3/8/8/8 w - - 0 1")
+	sl = &Limits{
+		Infinite:    false,
+		Ponder:      false,
+		Mate:        0,
+		Depth:       0,
+		Nodes:       0,
+		Moves:       nil,
+		TimeControl: true,
+		WhiteTime:   60 * time.Second,
+		BlackTime:   60 * time.Second,
+		WhiteInc:    0 * time.Second,
+		BlackInc:    0 * time.Second,
+		MoveTime:    0,
+		MovesToGo:   0,
+	}
+	timeLimit = s.setupTimeControl(p,sl)
+	assert.EqualValues(t, 5400, timeLimit.Milliseconds())
+}
+
 func TestWaitWhileSearching(t *testing.T) {
 	search := NewSearch()
 	p := position.NewPosition()

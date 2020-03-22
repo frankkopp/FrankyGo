@@ -30,7 +30,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/frankkopp/FrankyGo/position"
-	. "github.com/frankkopp/FrankyGo/types"
 )
 
 // ///////////////////////////////////////////////////////////////

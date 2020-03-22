@@ -1,11 +1,21 @@
 v 0.x (planned)
 ================================================================================
 
+v 0.4 (planned)
+================================================================================
+    - Implement simple Search
+    - Implement simple Evaluator
+
 v 0.3 (in progress)
 ================================================================================
 - TODO:
-    - Implement simple Search
-    - Implement simple Evaluator
+    - search handling
+    - limits
+    - time control
+
+- DONE:
+    - starting / stopping
+
 
 v 0.2 (in progress)
 ================================================================================

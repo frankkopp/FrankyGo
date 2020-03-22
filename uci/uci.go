@@ -45,6 +45,7 @@ import (
 	"github.com/frankkopp/FrankyGo/search"
 	. "github.com/frankkopp/FrankyGo/types"
 	"github.com/frankkopp/FrankyGo/uciInterface"
+	"github.com/frankkopp/FrankyGo/version"
 )
 
 var out = message.NewPrinter(language.German)
@@ -105,26 +106,31 @@ func (u *UciHandler) SendInfoString(info string) {
 
 // SendIterationEndInfo sends information about the last search depth iteration to the UCI ui
 func (u *UciHandler) SendIterationEndInfo(depth int, seldepth int, value Value, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice) {
+	// TODO
 	panic("implement me")
 }
 
 // SendAspirationResearchInfo sends information about Aspiration researches to the UCI ui
 func (u *UciHandler) SendAspirationResearchInfo(depth int, seldepth int, value Value, valueType ValueType, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice) {
+	// TODO
 	panic("implement me")
 }
 
 // SendCurrentRootMove sends the currently searched root move to the UCI ui
 func (u *UciHandler) SendCurrentRootMove(currMove Move, moveNumber int) {
+	// TODO
 	panic("implement me")
 }
 
 // SendSearchUpdate sends a periodically update about search stats to the UCI ui
 func (u *UciHandler) SendSearchUpdate(depth int, seldepth int, nodes uint64, nps uint64, time time.Duration, hashfull int) {
+	// TODO
 	panic("implement me")
 }
 
 // SendCurrentLine sends a periodically update about the currently searched variation ti the UCI ui
 func (u *UciHandler) SendCurrentLine(moveList moveslice.MoveSlice) {
+	// TODO
 	panic("implement me")
 }
 
@@ -145,7 +151,7 @@ func (u *UciHandler) SendResult(bestMove Move, ponderMove Move) {
 // ///////////////////////////////////////////////////////////
 
 func (u *UciHandler) loop() {
-	// infinite loop until "quit" command are aborted
+	// infinite loop until "quit" command is received
 	for {
 		log.Debugf("Waiting for command:")
 
@@ -238,7 +244,7 @@ func (u *UciHandler) goCommand(tokens []string) {
 	u.mySearch.StartSearch(*u.myPosition, *searchLimits)
 }
 
-func (u *UciHandler) readSearchLimits(tokens []string) (*search.SearchLimits, bool) {
+func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 	searchLimits := search.NewSearchLimits()
 	i := 1
 	for i < len(tokens) {
@@ -379,7 +385,20 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.SearchLimits, bo
 		log.Warning(msg)
 		return nil, true
 	}
-
+	// sanity check time control
+	if searchLimits.TimeControl && searchLimits.MoveTime == 0 {
+		if u.myPosition.NextPlayer() == White && searchLimits.WhiteTime == 0 {
+			msg := out.Sprintf("UCI command go invalid. White to move but time for white is zero! %s", tokens)
+			u.sendInfoString(msg)
+			log.Warning(msg)
+			return nil, true
+		} else if u.myPosition.NextPlayer() == Black && searchLimits.BlackTime == 0 {
+			msg := out.Sprintf("UCI command go invalid. Black to move but time for white is zero! %s", tokens)
+			u.sendInfoString(msg)
+			log.Warning(msg)
+			return nil, true
+		}
+	}
 	return searchLimits, false
 }
 
@@ -402,7 +421,7 @@ func (u *UciHandler) positionCommand(tokens []string) {
 		if len(fen) > 0 {
 			break
 		}
-		// fen empty
+		// fen empty fall through to err msg
 		fallthrough
 	default:
 		msg := out.Sprintf("Command 'position' malformed. %s", tokens)
@@ -455,7 +474,7 @@ func (u *UciHandler) isReadyCommand() {
 }
 
 func (u *UciHandler) uciCommand() {
-	u.send("id name FrankyGo")
+	u.send("id name FrankyGo " + version.Version())
 	u.send("id author Frank Kopp, Germany")
 	u.send("uciok")
 }

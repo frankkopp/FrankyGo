@@ -3,6 +3,9 @@
     <words>
       <w>abcdefgh</w>
       <w>bestmove</w>
+      <w>binc</w>
+      <w>btime</w>
+      <w>bufio</w>
       <w>castlings</w>
       <w>cmds</w>
       <w>diagstart</w>
@@ -35,6 +38,7 @@
       <w>startpos</w>
       <w>stockfish</w>
       <w>subcommand</w>
+      <w>transpositiontable</w>
       <w>ucihandler</w>
       <w>ucinewgame</w>
       <w>uciok</w>
@@ -43,6 +47,7 @@
       <w>vexact</w>
       <w>vlength</w>
       <w>vnone</w>
+      <w>winc</w>
       <w>wtime</w>
       <w>zobrist</w>
     </words>

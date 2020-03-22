@@ -49,8 +49,10 @@ func init() {
 	}
 }
 
-// StartFen is a string with the fen position for a standard chess game
-const StartFen string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+const (
+	// StartFen is a string with the fen position for a standard chess game
+	StartFen string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+)
 
 // Key is used for zobrist keys in chess positions.
 // Zobrist keys need all 64 bits for distribution
@@ -63,7 +65,6 @@ type Key uint64
 //
 // Needs to be created with NewPosition() or NewPosition(fen string)
 type Position struct {
-
 	// The zobrist key to use as a hash key in transposition tables
 	// The zobrist key will be updated incrementally every time one of the the
 	// state variables change.
@@ -145,7 +146,6 @@ func NewPosition() *Position {
 // NewPositionFen creates a new position with the given fen string
 // as board position
 func NewPositionFen(fen string) *Position {
-
 	p := &Position{}
 	if e := p.setupBoard(fen); e != nil {
 		panic(fmt.Sprintf("fen for position setup not valid and position can't be created: %s", e))
@@ -330,7 +330,7 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 	return false
 }
 
-// IsLegalMove test a move if it is legal on the current position.
+// IsLegalMove tests a move if it is legal on the current position.
 // Basically tests if the king would be left in check after the move
 // or if the king crosses an attacked square during castling.
 func (p *Position) IsLegalMove(move Move) bool {
@@ -645,8 +645,8 @@ func (p *Position) putPiece(piece Piece, square Square) {
 	p.zobristKey ^= zobristBase.pieces[piece][square]
 	// game phase
 	p.gamePhase += pieceType.GamePhaseValue()
-	if p.gamePhase > 24 {
-		p.gamePhase = 24
+	if p.gamePhase > GamePhaseMax {
+		p.gamePhase = GamePhaseMax
 	}
 	// material
 	p.material[color] += pieceType.ValueOf()

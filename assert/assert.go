@@ -48,6 +48,7 @@ const DEBUG = false
 //	  assert.Assert(value > 0, "Error message if test fails %s", value.String())
 //  }
 func Assert(test bool, msg string, a ...interface{}) {
+	//noinspection GoBoolExpressions
 	if DEBUG && !test {
 		panic(fmt.Sprint(msg, a))
 	}

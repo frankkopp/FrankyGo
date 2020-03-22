@@ -385,6 +385,9 @@ var regexUciMove = regexp.MustCompile("([a-h][1-8][a-h][1-8])([NBRQnbrq])?")
 // GetMoveFromUci Generates all legal moves and matches the given UCI
 // move string against them. If there is a match the actual move is returned.
 // Otherwise MoveNone is returned.
+//
+// As this uses string creation and comparison this is not very efficient.
+// Use only when performance is not critical.
 func (mg *Movegen) GetMoveFromUci(posPtr *position.Position, uciMove string) Move {
 	matches := regexUciMove.FindStringSubmatch(uciMove)
 	if matches == nil {
@@ -417,6 +420,9 @@ var regexSanMove = regexp.MustCompile("([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O
 // GetMoveFromSan Generates all legal moves and matches the given SAN
 // move string against them. If there is a match the actual move is returned.
 // Otherwise MoveNone is returned.
+//
+// As this uses string creation and comparison this is not very efficient.
+// Use only when performance is not critical.
 func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Move {
 	matches := regexSanMove.FindStringSubmatch(sanMove)
 	if matches == nil {
@@ -594,6 +600,8 @@ const (
 	odEnd = iota
 )
 
+// This calls the actual generation of moves in phases. The phases match roughly
+// the order of most promising moves first.
 func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode) {
 	for len(mg.onDemandMoves) == 0 && mg.currentODStage < odEnd {
 		switch mg.currentODStage {
@@ -707,11 +715,12 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 		// and ANDs it with the opponents pieces. With this we get all possible captures
 		// and can easily create the moves by using a loop over all captures and using
 		// the backward shift for the from-Square.
-		// All moves get stable_sort values so that stable_sort order should be:
+		// All moves get sort values so that sort order should be:
 		//   captures: most value victim least value attacker - promotion piece value
 		//   non captures: killer (TBD), promotions, castling, normal moves (position value)
-		// Values for sorting are descending - the most valuable move has the highest value
-		// values are not compatible to position evaluation values.
+		// Values for sorting are descending - the most valuable move has the highest value.
+		// Values are not compatible to position evaluation values outside of the move
+		// generator.
 
 		var tmpCaptures, promCaptures Bitboard
 
@@ -887,10 +896,17 @@ func (mg *Movegen) generateKingMoves(position *position.Position, mode GenMode, 
 	}
 }
 
+// generates officers moves
 func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
 	nextPlayer := position.NextPlayer()
 	gamePhase := position.GamePhase()
 	occupiedBb := position.OccupiedAll()
+
+	// loop through all piece types, get pseudo attacks for the piece and
+	// AND it with the opponents pieces.
+	// For sliding pieces check if there are other pieces in between the
+	// piece and the target square. If free this is a valid move (or
+	// capture)
 
 	for pt := Knight; pt <= Queen; pt++ {
 		pieces := position.PiecesBb(nextPlayer, pt)

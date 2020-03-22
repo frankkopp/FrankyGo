@@ -274,10 +274,12 @@ func TestReadSearchLimits(t *testing.T) {
 	assert.True(t, err)
 }
 
-func TestGoCommand(t *testing.T) {
+func TestFullSearchProcess(t *testing.T) {
 	uh := NewUciHandler()
 
 	cmds := []string{ // startpos
+		"uci",
+		"isready",
 		"position startpos",
 	}
 	result := sendUciCmds(uh, cmds)
@@ -285,7 +287,7 @@ func TestGoCommand(t *testing.T) {
 	assert.EqualValues(t, position.StartFen, uh.myPosition.StringFen())
 
 	cmds = []string{ // startpos
-		"go infinite",
+		"go wtime 60000 btime 60000 winc 2000 binc 2000 depth 6 nodes 1000000 movestogo 20 moves e2e4 d2d4 g1f3",
 	}
 	result = sendUciCmds(uh, cmds)
 

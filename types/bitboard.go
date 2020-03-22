@@ -38,8 +38,6 @@ type Bitboard uint64
 
 // Bb returns a Bitboard of the square by accessing the pre calculated
 // square to bitboard array.
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func (sq Square) Bb() Bitboard {
 	return sqBb[sq]
 }
@@ -274,34 +272,22 @@ func RankDistance(r1 Rank, r2 Rank) int {
 }
 
 // SquareDistance returns the absolute distance in squares between two squares
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func SquareDistance(s1 Square, s2 Square) int {
-
 	return squareDistance[s1][s2]
 }
 
 // CenterDistance returns the distance to the nearest center square
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func (sq Square) CenterDistance() int {
-
 	return centerDistance[sq]
 }
 
 // RotateR90 rotates a Bb by 90 degrees clockwise
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func RotateR90(b Bitboard) Bitboard {
-
 	return rotate(b, &rotateMapR90)
 }
 
 // RotateL90 rotates a Bb by 90 degrees counter clockwise
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func RotateL90(b Bitboard) Bitboard {
-
 	return rotate(b, &rotateMapL90)
 }
 
@@ -309,10 +295,7 @@ func RotateL90(b Bitboard) Bitboard {
 // to get all upward diagonals in compact block of bits
 // This is used to create a mask to find moves for
 // queen and bishop on the upward diagonal
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func RotateR45(b Bitboard) Bitboard {
-
 	return rotate(b, &rotateMapR45)
 }
 
@@ -320,55 +303,37 @@ func RotateR45(b Bitboard) Bitboard {
 // to get all downward diagonals in compact block of bits
 // This is used to create a mask to find moves for
 // queen and bishop on the downward diagonal
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func RotateL45(b Bitboard) Bitboard {
-
 	return rotate(b, &rotateMapL45)
 }
 
 // RotateSquareR90 maps squares to the sq of the rotated board. E.g. when rotating
 // clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func RotateSquareR90(sq Square) Square {
-
 	return indexMapR90[sq]
 }
 
 // RotateSquareL90 maps squares to the sq of the rotated board. E.g. when rotating
 // clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func RotateSquareL90(sq Square) Square {
-
 	return indexMapL90[sq]
 }
 
 // RotateSquareR45 maps squares to the sq of the rotated board. E.g. when rotating
 // clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func RotateSquareR45(sq Square) Square {
-
 	return indexMapR45[sq]
 }
 
 // RotateSquareL45 maps squares to the sq of the rotated board. E.g. when rotating
 // clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func RotateSquareL45(sq Square) Square {
-
 	return indexMapL45[sq]
 }
 
 // GetPseudoAttacks returns a Bb of possible attacks of a piece
 // as if on an empty board
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func GetPseudoAttacks(pt PieceType, sq Square) Bitboard {
-
 	if assert.DEBUG {
 		assert.Assert(!(pt == PtNone || pt == Pawn || pt > Queen), "Invalid piece type for GetPseudoAttacks()")
 	}
@@ -376,93 +341,60 @@ func GetPseudoAttacks(pt PieceType, sq Square) Bitboard {
 }
 
 // GetPawnAttacks returns a Bb of possible attacks of a pawn
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func GetPawnAttacks(c Color, sq Square) Bitboard {
-
 	return pawnAttacks[c][sq]
 }
 
 // FilesWestMask returns a Bb of the files west of the square
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func (sq Square) FilesWestMask() Bitboard {
-
 	return filesWestMask[sq]
 }
 
 // FilesEastMask returns a Bb of the files east of the square
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func (sq Square) FilesEastMask() Bitboard {
-
 	return filesEastMask[sq]
 }
 
 // FileWestMask returns a Bb of the file west of the square
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func (sq Square) FileWestMask() Bitboard {
-
 	return fileWestMask[sq]
 }
 
 // FileEastMask returns a Bb of the file east of the square
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func (sq Square) FileEastMask() Bitboard {
-
 	return fileEastMask[sq]
 }
 
 // RanksNorthMask returns a Bb of the ranks north of the square
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func (sq Square) RanksNorthMask() Bitboard {
-
 	return ranksNorthMask[sq]
 }
 
 // RanksSouthMask returns a Bb of the ranks south of the square
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func (sq Square) RanksSouthMask() Bitboard {
-
 	return ranksSouthMask[sq]
 }
 
 // NeighbourFilesMask returns a Bb of the file east and west of the square
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func (sq Square) NeighbourFilesMask() Bitboard {
-
 	return neighbourFilesMask[sq]
 }
 
 // Ray returns a Bb of squares outgoing from the
 // square in direction of the orientation
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func (sq Square) Ray(o Orientation) Bitboard {
-
 	return rays[o][sq]
 }
 
 // Intermediate returns a Bb of squares between
 // the given two squares
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func Intermediate(sq1 Square, sq2 Square) Bitboard {
-
 	return intermediate[sq1][sq2]
 }
 
 // Intermediate returns a Bb of squares between
 // the given two squares
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func (sq Square) Intermediate(sqTo Square) Bitboard {
-
 	return intermediate[sq][sqTo]
 }
 
@@ -470,46 +402,31 @@ func (sq Square) Intermediate(sqTo Square) Bitboard {
 // which have an opponents pawn which could stop this pawn.
 // Use this mask and AND it with the opponents pawns bitboards
 // to see if a pawn has passed.
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func (sq Square) PassedPawnMask(c Color) Bitboard {
-
 	return passedPawnMask[c][sq]
 }
 
 // KingSideCastleMask returns a Bb with the kings side
 // squares used in castling without the king square
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func KingSideCastleMask(c Color) Bitboard {
-
 	return kingSideCastleMask[c]
 }
 
 // QueenSideCastMask returns a Bb with the queen side
 // squares used in castling without the king square
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func QueenSideCastMask(c Color) Bitboard {
-
 	return queenSideCastleMask[c]
 }
 
 // GetCastlingRights returns the CastlingRights for
 // changes on this square.
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func GetCastlingRights(sq Square) CastlingRights {
-
 	return castlingRights[sq]
 }
 
 // SquaresBb returns a Bb of all squares of the given color.
 // E.g. can be used to find bishops of the same "color" for draw detection.
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func SquaresBb(c Color) Bitboard {
-
 	return squaresBb[c]
 }
 
@@ -573,10 +490,6 @@ const (
 	DiagDownC1 Bitboard = (DiagDownD1 >> 1) & FileHMask
 	DiagDownB1 Bitboard = (DiagDownC1 >> 1) & FileHMask
 	DiagDownA1 Bitboard = (DiagDownB1 >> 1) & FileHMask
-
-	CastlingMask Bitboard = (BbOne << SqE1) | (BbOne << SqA1) |
-		(BbOne << SqH1) | (BbOne << SqE8) |
-		(BbOne << SqA8) | (BbOne << SqH8)
 )
 
 // ////////////////////

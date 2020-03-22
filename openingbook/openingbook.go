@@ -91,10 +91,16 @@ type BookEntry struct {
 
 // Book represents a structure for chess opening books which can
 // be read from different file formats into an internal data structure.
+//  Create new book instance with NewBook()
 type Book struct {
 	bookMap     map[uint64]BookEntry
 	rootEntry   uint64
 	initialized bool
+}
+
+// NewBook create as new opening book instance.
+func NewBook() *Book {
+	return &Book{}
 }
 
 // mutex to support concurrent writing to the book data structure
@@ -309,7 +315,7 @@ func (b *Book) processSimpleLine(line string) {
 
 	// add all matches to book
 	for _, moveString := range matches {
-		err := b.processSingleMove(moveString, &mg, &pos)
+		err := b.processSingleMove(moveString, mg, pos)
 		// stop processing further matches when we had an error as it
 		// would probably be fruitless as position will be wrong
 		if err != nil {
@@ -488,7 +494,7 @@ func (b *Book) processSanLine(line string) {
 	var mg = movegen.NewMoveGen()
 
 	for _, moveString := range moveStrings {
-		err := b.processSingleMove(moveString, &mg, &pos)
+		err := b.processSingleMove(moveString, mg, pos)
 		// stop processing further matches when we had an error as it
 		// would probably be fruitless as position will be wrong
 		if err != nil {
