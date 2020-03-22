@@ -9,6 +9,7 @@ import (
 
 	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/position"
+	. "github.com/frankkopp/FrankyGo/types"
 	"github.com/frankkopp/FrankyGo/uciInterface"
 )
 
@@ -123,21 +124,67 @@ func (s *Search) IsReady() {
 // or the search has been stopped by StopSearch()
 func (s *Search) run(position *position.Position, searchLimits *SearchLimits) {
 	// check if there is already a search running
+	// and if not grab the isRunning semaphore
 	if !s.isRunning.TryAcquire(1) {
 		log.Error("Search already running")
 		return
 	}
-	// release the running lock after the search has ended
+	// release the running semaphore after the search has ended
 	defer func() {
 		s.isRunning.Release(1)
 	}()
 
+	// start search timer
+	// TODO
+
+	// init new search run
+	// TODO
+
 	// setup search limits
-	// TODO setup search limits
+	log.Debug(*searchLimits)
+	// TODO setup search limits / time control
+
+	// set defaults
+	bestMove := MoveNone
+	ponderMove := MoveNone
+
+	// check opening book
+	// TODO
+
+	// Initialize ply based data
+	// TODO
+
+	// age TT entries
+	// TODO
 
 	// release the init phase lock to signal the call waiting in
 	// StartSearch() to return
 	s.initSemaphore.Release(1)
+
+	// Start the actual search with iteration deepening
+	bestMove, ponderMove = s.iterativeDeepening(position)
+
+	// If we arrive here and the search is not stopped it means that the search
+	// was finished before it has been stopped (by stopSearchFlag or ponderhit)
+	// We wait here until search has completed.
+	// TODO
+
+	// send final search info update
+	// TODO
+
+	// At the end of a search we send the result in any case even if
+	// searched has been stopped. Best move is the best move so far.
+	s.uciHandlerPtr.SendResult(bestMove, ponderMove)
+
+	// print result to log
+	// TODO
+
+	// cleanup
+	// TODO
+
+}
+
+func (s *Search) iterativeDeepening(p *position.Position) (Move, Move) {
 
 	// FIXME: prototype/DUMMY
 	i := 0
@@ -150,5 +197,7 @@ func (s *Search) run(position *position.Position, searchLimits *SearchLimits) {
 		log.Info("Searching...")
 		i++
 	}
-	// TODO: search DUMMY
+
+
+	return MoveNone, MoveNone
 }

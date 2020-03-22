@@ -35,24 +35,27 @@ import (
 // Search needs to read these an determine the necessary limits.
 // E.g. time controlled game or not
 type SearchLimits struct {
-	//  time control
-	WhiteTime   time.Duration
-	BlackTime   time.Duration
-	WhiteInc    time.Duration
-	BlackInc    time.Duration
-	MoveTime    time.Duration
-	MovesToGo   int
-	TimeControl bool
+	// no time control
+	Infinite bool
+	Ponder   bool
+	Mate     int
 
 	// extra limits
 	Depth int
 	Nodes int64
-	Moves moveslice.MoveSlice
 
-	// no time control
-	Mate     int
-	Ponder   bool
-	Infinite bool
+	//  time control
+	TimeControl bool
+	WhiteTime   time.Duration
+	BlackTime   time.Duration
+	WhiteInc    time.Duration
+
+	// parameter
+	Moves moveslice.MoveSlice
+	MovesToGo   int
+	BlackInc    time.Duration
+	MoveTime    time.Duration
+
 }
 
 // NewSearchLimits creates a new empty SearchLimits

@@ -93,36 +93,51 @@ func (u *UciHandler) Loop() {
 	u.loop()
 }
 
+// SendReadyOk tells the UciDriver to send the uci response "readyok" to the UCI user interface
 func (u *UciHandler) SendReadyOk() {
 	u.send("readyok")
 }
 
+// SendInfoString send a arbitrary string to the UCI user interface
 func (u *UciHandler) SendInfoString(info string) {
 	u.sendInfoString(info)
 }
 
+// SendIterationEndInfo sends information about the last search depth iteration to the UCI ui
 func (u *UciHandler) SendIterationEndInfo(depth int, seldepth int, value Value, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice) {
 	panic("implement me")
 }
 
+// SendAspirationResearchInfo sends information about Aspiration researches to the UCI ui
 func (u *UciHandler) SendAspirationResearchInfo(depth int, seldepth int, value Value, valueType ValueType, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice) {
 	panic("implement me")
 }
 
+// SendCurrentRootMove sends the currently searched root move to the UCI ui
 func (u *UciHandler) SendCurrentRootMove(currMove Move, moveNumber int) {
 	panic("implement me")
 }
 
+// SendSearchUpdate sends a periodically update about search stats to the UCI ui
 func (u *UciHandler) SendSearchUpdate(depth int, seldepth int, nodes uint64, nps uint64, time time.Duration, hashfull int) {
 	panic("implement me")
 }
 
+// SendCurrentLine sends a periodically update about the currently searched variation ti the UCI ui
 func (u *UciHandler) SendCurrentLine(moveList moveslice.MoveSlice) {
 	panic("implement me")
 }
 
+// SendResult send the search result to the UCI ui after the search has ended are has been stopped
 func (u *UciHandler) SendResult(bestMove Move, ponderMove Move) {
-	panic("implement me")
+	var resultStr strings.Builder
+	resultStr.WriteString("bestmove ")
+	resultStr.WriteString(bestMove.StringUci())
+	if ponderMove != MoveNone {
+		resultStr.WriteString(" ")
+		resultStr.WriteString(ponderMove.StringUci())
+	}
+	u.send(resultStr.String())
 }
 
 // ///////////////////////////////////////////////////////////
