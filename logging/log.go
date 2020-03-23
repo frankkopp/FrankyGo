@@ -41,7 +41,7 @@ func GetLog (name string) *logging.Logger {
 	l := logging.MustGetLogger(name)
 	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
 	var format = logging.MustStringFormatter(
-		`%{time:15:04:05.000} %{shortpkg:-8s}:%{shortfile:-14s} %{level:.7s}:  %{message}`,
+		`%{time:15:04:05.000} %{shortpkg:-8.8s}:%{shortfile:-14.14s} %{level:-7.7s}:  %{message}`,
 		// :%{shortfunc}
 	)
 	backend1Formatter := logging.NewBackendFormatter(backend1, format)

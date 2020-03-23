@@ -43,6 +43,7 @@ import (
 	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
+	"github.com/frankkopp/FrankyGo/util"
 )
 
 var out = message.NewPrinter(language.German)
@@ -136,6 +137,7 @@ func (tt *TtTable) Resize(sizeInMByte int) {
 
 	log.Info(out.Sprintf("TT Size %d MByte, Capacity %d entries (size=%dByte) (Requested were %d MBytes)",
 		tt.sizeInByte/MB, tt.maxNumberOfEntries, unsafe.Sizeof(TtEntry{}), sizeInMByte))
+	log.Debug(util.MemStat())
 }
 
 // GetEntry returns a pointer to the corresponding tt entry.

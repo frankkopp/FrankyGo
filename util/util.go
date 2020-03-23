@@ -27,11 +27,17 @@
 package util
 
 import (
+	"runtime"
 	"time"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
+
+	"github.com/frankkopp/FrankyGo/logging"
 )
+
+var out = message.NewPrinter(language.German)
+var log = logging.GetLog("util")
 
 // Abs - non branching Abs function for determine the absolute value of an int
 func Abs(n int) int {
@@ -83,4 +89,22 @@ func TimeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
 	_, _ = out.Printf("%s took %d ns\n", name, elapsed.Nanoseconds())
 }
-var out = message.NewPrinter(language.German)
+
+// MemStat returns a string with information about the applications memory usage and GC activity
+func MemStat() string {
+	var mem runtime.MemStats
+	runtime.ReadMemStats(&mem)
+	return out.Sprintf("Alloc: %d TotalAlloc: %d HeapAlloc: %d HeapObjects: %d NumGC: %d",
+		mem.Alloc, mem.TotalAlloc, mem.HeapAlloc, mem.HeapObjects, mem.NumGC)
+}
+
+// GcWithStats performs a forced garbage collection measuring
+// duration and pre- and post-memory statistics.
+func GcWithStats() {
+	log.Debugf("Mem stats: %s\n", MemStat())
+	startGC := time.Now()
+	runtime.GC()
+	elapsed := time.Since(startGC)
+	log.Debugf("GC took  : %d ms\n", elapsed.Milliseconds())
+	log.Debugf("Mem stats: %s\n", MemStat())
+}

@@ -53,6 +53,7 @@ import (
 	"github.com/frankkopp/FrankyGo/movegen"
 	"github.com/frankkopp/FrankyGo/position"
 	"github.com/frankkopp/FrankyGo/types"
+	"github.com/frankkopp/FrankyGo/util"
 )
 
 var out = message.NewPrinter(language.German)
@@ -114,9 +115,13 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool,
 	if b.initialized {
 		return nil
 	}
-
 	log.Info("Initializing Opening Book")
+	err := b.initialize(bookPath, bookFormat, useCache, recreateCache)
+	util.GcWithStats()
+	return err
+}
 
+func (b *Book) initialize(bookPath string, bookFormat BookFormat, useCache bool, recreateCache bool) error {
 	startTotal := time.Now()
 
 	// check file path
@@ -124,6 +129,8 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool,
 		log.Errorf("File \"%s\" does not exist\n", bookPath)
 		return err
 	}
+
+	log.Debugf("Memory statistics: %s", util.MemStat())
 
 	// if cache enabled check if we have a cache file and load from cache
 	if useCache && !recreateCache {
@@ -140,6 +147,8 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool,
 		} // else no cache file just load the data from original file
 	}
 
+	log.Debugf("Memory statistics: %s", util.MemStat())
+
 	// read book from file
 	log.Infof("Reading opening book file: %s\n", bookPath)
 	startReading := time.Now()
@@ -150,12 +159,14 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool,
 	}
 	elapsedReading := time.Since(startReading)
 	log.Infof("Finished reading %d lines from file in: %d ms\n", len(*lines), elapsedReading.Milliseconds())
+	log.Debugf("Memory statistics: %s", util.MemStat())
 
 	// add root position
 	startPosition := position.NewPosition()
 	b.bookMap = make(map[uint64]BookEntry)
 	b.rootEntry = uint64(startPosition.ZobristKey())
 	b.bookMap[uint64(startPosition.ZobristKey())] = BookEntry{ZobristKey: uint64(startPosition.ZobristKey()), Counter: 0, Moves: []Successor{}}
+	log.Debugf("Memory statistics: %s", util.MemStat())
 
 	// process lines
 	if parallel {
@@ -171,6 +182,7 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool,
 	}
 	elapsedProcessing := time.Since(startProcessing)
 	log.Infof("Finished processing %d lines in: %d ms\n", len(*lines), elapsedProcessing.Milliseconds())
+	log.Debugf("Memory statistics: %s", util.MemStat())
 
 	// finished
 	elapsedTotal := time.Since(startTotal)
@@ -190,6 +202,7 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool,
 		bytes := out.Sprintf("%d", nBytes/1_024)
 		log.Infof("Saved %s kB to cache %s in %d ms\n", bytes, cacheFile, elapsedSave.Milliseconds())
 	}
+	log.Debugf("Memory statistics: %s", util.MemStat())
 
 	b.initialized = true
 	return nil

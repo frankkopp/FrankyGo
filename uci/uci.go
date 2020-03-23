@@ -29,6 +29,7 @@ package uci
 
 import (
 	"bufio"
+	"bytes"
 	"os"
 	"regexp"
 	"strconv"
@@ -94,6 +95,19 @@ func (u *UciHandler) Loop() {
 	u.loop()
 }
 
+// Command handles a single line of UCI protocol aka command.
+// Returns the uci response as string output.
+// Mostly useful for debugging and unit testing.
+func (u *UciHandler) Command(cmd string) string {
+	tmp := u.OutIo
+	buffer := new(bytes.Buffer)
+	u.OutIo = bufio.NewWriter(buffer)
+	strings.ToLower(cmd)
+	u.handleReceivedCommand(cmd)
+	u.OutIo = tmp
+	return buffer.String()
+}
+
 // SendReadyOk tells the UciDriver to send the uci response "readyok" to the UCI user interface
 func (u *UciHandler) SendReadyOk() {
 	u.send("readyok")
@@ -154,56 +168,56 @@ func (u *UciHandler) loop() {
 	// infinite loop until "quit" command is received
 	for {
 		log.Debugf("Waiting for command:")
-
 		// read from stdin or other in stream
 		for u.InIo.Scan() {
-
-			// get cmd line
-			cmd := u.InIo.Text()
-			strings.ToLower(cmd)
-			log.Debugf("Received command: %s", cmd)
-			uciLog.Infof("<< %s", cmd)
-
-			// find command and execute by calling command function
-			regexWhiteSpace := regexp.MustCompile("\\s+")
-			tokens := regexWhiteSpace.Split(cmd, -1)
-			strings.TrimSpace(tokens[0])
-			switch tokens[0] {
-			case "quit":
-				return
-			case "uci":
-				u.uciCommand()
-			case "isready":
-				u.isReadyCommand()
-			case "setoption":
-				u.setOptionCommand(tokens)
-			case "ucinewgame":
-				u.uciNewGameCommand()
-			case "position":
-				u.positionCommand(tokens)
-			case "go":
-				u.goCommand(tokens)
-			case "stop":
-				u.stopCommand()
-			case "ponderhit":
-				u.ponderHitCommand()
-			case "register":
-				u.registerCommand()
-			case "debug":
-				u.debugCommand()
-			case "perft":
-				u.perftCommand(tokens)
-			case "noop":
-			default:
-				log.Warningf("Error: Unknown command: %s", cmd)
-			}
-			log.Debugf("Processed command: %s", cmd)
+			u.handleReceivedCommand(u.InIo.Text())
 			log.Debugf("Waiting for command:")
 		}
 	}
 }
 
+var regexWhiteSpace = regexp.MustCompile("\\s+")
+
+func (u *UciHandler) handleReceivedCommand(cmd string) {
+	log.Debugf("Received command: %s", cmd)
+	uciLog.Infof("<< %s", cmd)
+	// find command and execute by calling command function
+	tokens := regexWhiteSpace.Split(cmd, -1)
+	strings.TrimSpace(tokens[0])
+	switch tokens[0] {
+	case "quit":
+		return
+	case "uci":
+		u.uciCommand()
+	case "isready":
+		u.isReadyCommand()
+	case "setoption":
+		u.setOptionCommand(tokens)
+	case "ucinewgame":
+		u.uciNewGameCommand()
+	case "position":
+		u.positionCommand(tokens)
+	case "go":
+		u.goCommand(tokens)
+	case "stop":
+		u.stopCommand()
+	case "ponderhit":
+		u.ponderHitCommand()
+	case "register":
+		u.registerCommand()
+	case "debug":
+		u.debugCommand()
+	case "perft":
+		u.perftCommand(tokens)
+	case "noop":
+	default:
+		log.Warningf("Error: Unknown command: %s", cmd)
+	}
+	log.Debugf("Processed command: %s", cmd)
+}
+
 func (u *UciHandler) ponderHitCommand() {
+	// TODO
 	msg := "Command 'ponderhit' not yet implemented"
 	u.sendInfoString(msg)
 	log.Warning(msg)
@@ -242,6 +256,108 @@ func (u *UciHandler) goCommand(tokens []string) {
 	}
 	// start the search
 	u.mySearch.StartSearch(*u.myPosition, *searchLimits)
+}
+
+func (u *UciHandler) positionCommand(tokens []string) {
+	// build initial position
+	fen := position.StartFen
+	i := 1
+	switch tokens[i] {
+	case "startpos":
+		i++
+	case "fen":
+		i++
+		var fenb strings.Builder
+		for i < len(tokens) && tokens[i] != "moves" {
+			fenb.WriteString(tokens[i])
+			fenb.WriteString(" ")
+			i++
+		}
+		fen = strings.TrimSpace(fenb.String())
+		if len(fen) > 0 {
+			break
+		}
+		// fen empty fall through to err msg
+		fallthrough
+	default:
+		msg := out.Sprintf("Command 'position' malformed. %s", tokens)
+		u.sendInfoString(msg)
+		log.Warning(msg)
+		return
+	}
+	u.myPosition = position.NewPositionFen(fen)
+
+	// check for moves to make
+	if i < len(tokens) {
+		if tokens[i] == "moves" {
+			i++
+			for i < len(tokens) && tokens[i] != "moves" {
+				move := u.myMoveGen.GetMoveFromUci(u.myPosition, tokens[i])
+				if move.IsValid() {
+					u.myPosition.DoMove(move)
+				} else {
+					msg := out.Sprintf("Command 'position' malformed. Invalid move '%s' (%s)", move.String(), tokens)
+					u.sendInfoString(msg)
+					log.Warning(msg)
+					return
+				}
+				i++
+			}
+		} else {
+			msg := out.Sprintf("Command 'position' malformed moves. %s", tokens)
+			u.sendInfoString(msg)
+			log.Warning(msg)
+			return
+		}
+	}
+	log.Debugf("New position: %s", u.myPosition.StringFen())
+}
+
+func (u *UciHandler) uciNewGameCommand() {
+	u.mySearch.StopSearch()
+	u.myPosition = position.NewPosition()
+	u.mySearch.NewGame()
+}
+
+func (u *UciHandler) setOptionCommand(tokens []string) {
+	// TODO
+	msg := "Command 'setoption' not yet implemented"
+	u.sendInfoString(msg)
+	log.Warning(msg)
+}
+
+func (u *UciHandler) isReadyCommand() {
+	u.mySearch.IsReady()
+}
+
+func (u *UciHandler) uciCommand() {
+	u.send("id name FrankyGo " + version.Version())
+	u.send("id author Frank Kopp, Germany")
+	u.send("uciok")
+}
+
+func (u *UciHandler) debugCommand() {
+	msg := "Command 'debug' not implemented"
+	u.sendInfoString(msg)
+	log.Warning(msg)
+}
+
+func (u *UciHandler) registerCommand() {
+	msg := "Command 'register' not implemented"
+	u.sendInfoString(msg)
+	log.Warning(msg)
+}
+
+func (u *UciHandler) sendInfoString(s string) {
+	u.send(out.Sprintf("info string %s", s))
+	_, _ = u.OutIo.WriteString(s + "\n")
+	_ = u.OutIo.Flush()
+}
+
+func (u *UciHandler) send(s string) {
+	uciLog.Infof(">> %s", s)
+	_, _ = u.OutIo.WriteString(s + "\n")
+	_ = u.OutIo.Flush()
 }
 
 func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
@@ -400,105 +516,4 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 		}
 	}
 	return searchLimits, false
-}
-
-func (u *UciHandler) positionCommand(tokens []string) {
-	// build initial position
-	fen := position.StartFen
-	i := 1
-	switch tokens[i] {
-	case "startpos":
-		i++
-	case "fen":
-		i++
-		var fenb strings.Builder
-		for i < len(tokens) && tokens[i] != "moves" {
-			fenb.WriteString(tokens[i])
-			fenb.WriteString(" ")
-			i++
-		}
-		fen = strings.TrimSpace(fenb.String())
-		if len(fen) > 0 {
-			break
-		}
-		// fen empty fall through to err msg
-		fallthrough
-	default:
-		msg := out.Sprintf("Command 'position' malformed. %s", tokens)
-		u.sendInfoString(msg)
-		log.Warning(msg)
-		return
-	}
-	u.myPosition = position.NewPositionFen(fen)
-
-	// check for moves to make
-	if i < len(tokens) {
-		if tokens[i] == "moves" {
-			i++
-			for i < len(tokens) && tokens[i] != "moves" {
-				move := u.myMoveGen.GetMoveFromUci(u.myPosition, tokens[i])
-				if move.IsValid() {
-					u.myPosition.DoMove(move)
-				} else {
-					msg := out.Sprintf("Command 'position' malformed. Invalid move '%s' (%s)", move.String(), tokens)
-					u.sendInfoString(msg)
-					log.Warning(msg)
-					return
-				}
-				i++
-			}
-		} else {
-			msg := out.Sprintf("Command 'position' malformed moves. %s", tokens)
-			u.sendInfoString(msg)
-			log.Warning(msg)
-			return
-		}
-	}
-	log.Debugf("New position: %s", u.myPosition.StringFen())
-}
-
-func (u *UciHandler) uciNewGameCommand() {
-	u.mySearch.StopSearch()
-	u.myPosition = position.NewPosition()
-	u.mySearch.NewGame()
-}
-
-func (u *UciHandler) setOptionCommand(tokens []string) {
-	msg := "Command 'setoption' not yet implemented"
-	u.sendInfoString(msg)
-	log.Warning(msg)
-}
-
-func (u *UciHandler) isReadyCommand() {
-	u.mySearch.IsReady()
-}
-
-func (u *UciHandler) uciCommand() {
-	u.send("id name FrankyGo " + version.Version())
-	u.send("id author Frank Kopp, Germany")
-	u.send("uciok")
-}
-
-func (u *UciHandler) debugCommand() {
-	msg := "Command 'debug' not implemented"
-	u.sendInfoString(msg)
-	log.Warning(msg)
-}
-
-func (u *UciHandler) registerCommand() {
-	msg := "Command 'register' not implemented"
-	u.sendInfoString(msg)
-	log.Warning(msg)
-}
-
-func (u *UciHandler) sendInfoString(s string) {
-	u.send(out.Sprintf("info string %s", s))
-	_, _ = u.OutIo.WriteString(s + "\n")
-	_ = u.OutIo.Flush()
-}
-
-func (u *UciHandler) send(s string) {
-	uciLog.Infof(">> %s", s)
-	_, _ = u.OutIo.WriteString(s + "\n")
-	_ = u.OutIo.Flush()
 }

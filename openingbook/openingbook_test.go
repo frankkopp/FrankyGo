@@ -32,6 +32,7 @@ import (
 	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
+	"github.com/frankkopp/FrankyGo/util"
 )
 
 var logTest = logging.GetLog("test")
@@ -191,7 +192,10 @@ func Test_processingPGNLarge(t *testing.T) {
 	logTest.Info("Starting PGN large test")
 
 	book := NewBook()
+	log.Debugf("Memory statistics: %s", util.MemStat())
 	err := book.Initialize("../books/superbook.pgn", Pgn, false, false)
+	util.GcWithStats()
+
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	assert.Equal(t, 4_821_316, book.NumberOfEntries())
 
