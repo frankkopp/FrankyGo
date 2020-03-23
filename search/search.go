@@ -1,3 +1,29 @@
+/*
+ * FrankyGo - UCI chess engine in GO for learning purposes
+ *
+ * MIT License
+ *
+ * Copyright (c) 2018-2020 Frank Kopp
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package search
 
 import (
@@ -36,11 +62,15 @@ type Search struct {
 
 	// current search
 	stopFlag        bool
+	startTime       time.Time
 	hasResult       bool
 	currentPosition *position.Position
 	searchLimits    *Limits
 	timeLimit       time.Duration
 	extraTime       time.Duration
+	nodesVisited    int64
+	curDepth		int
+	curExtraDepth	int
 }
 
 // //////////////////////////////////////////////////////
@@ -58,11 +88,15 @@ func NewSearch() *Search {
 		tt:               nil,
 		lastSearchResult: nil,
 		stopFlag:         false,
+		startTime:        time.Time{},
 		hasResult:        false,
 		currentPosition:  nil,
 		searchLimits:     nil,
 		timeLimit:        0,
 		extraTime:        0,
+		nodesVisited:     0,
+		curDepth:         0,
+		curExtraDepth:    0,
 	}
 	return s
 }
@@ -164,7 +198,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	}()
 
 	// start search timer
-	startTime := time.Now()
+	s.startTime = time.Now()
 
 	// init new search run
 	s.initialize()
@@ -172,6 +206,9 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 
 	// setup and report search limits
 	s.setupSearchLimits(position, sl)
+	if s.searchLimits.TimeControl {
+		s.startTimer()
+	}
 
 	// check opening book when we have a time controlled game
 	if s.book != nil && sl.TimeControl {
@@ -200,12 +237,17 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	searchResult := s.iterativeDeepening(position)
 
 	// If we arrive here and the search is not stopped it means that the search
-	// was finished before it has been stopped (by stopSearchFlag or ponderhit)
+	// was finished before it has been stopped by stopSearchFlag or ponderhit,
 	// We wait here until search has completed.
-	// TODO
+	if !s.stopFlag && (s.searchLimits.Ponder || s.searchLimits.Infinite) {
+		log.Debug("Search finished before stopped or ponderhit! Waiting for stop/ponderhit to send result")
+		for !s.stopFlag && (s.searchLimits.Ponder || s.searchLimits.Infinite) {
+			time.Sleep(5*time.Millisecond)
+		}
+	}
 
 	// update search result with search time
-	searchResult.searchTime = time.Since(startTime)
+	searchResult.searchTime = time.Since(s.startTime)
 
 	// send final search info update
 	// TODO
@@ -218,25 +260,29 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.lastSearchResult = searchResult
 	s.hasResult = true
 
+	// print stats to log
+	log.Info(out.Sprintf("Search finished after %d ms ", searchResult.searchTime.Milliseconds()))
+	log.Info(out.Sprintf("Search depth was %d(%d) with %d nodes visited. NPS = %d nps",
+		s.curDepth, s.curExtraDepth, s.nodesVisited, (s.nodesVisited*time.Second.Nanoseconds())/searchResult.searchTime.Nanoseconds()))
+
 	// print result to log
 	log.Infof("Search result: %s", searchResult.String())
 
-	// cleanup
-	// TODO
-
+	// Clean up
+	// make sure timer stops as this could potentially still be running
+	// when search finished without any stop signal/limit
+	s.stopFlag = true
 }
 
 func (s *Search) iterativeDeepening(p *position.Position) *Result {
 	// FIXME: prototype/DUMMY
-	i := 0
-	for !s.stopFlag && i < 5 {
-		// simulate cpu intense calculation
-		f := 10000000.0
-		for f > 1 {
-			f /= 1.0000001
+	for !s.stopConditions()  {
+		s.nodesVisited++
+		if  s.nodesVisited % 100 == 0 {
+			log.Info("Simulating search...")
+			break
 		}
-		log.Info("Searching...")
-		i++
+		time.Sleep(5 * time.Millisecond)
 	}
 	mg := movegen.NewMoveGen()
 	moves := mg.GenerateLegalMoves(p, movegen.GenAll)
@@ -249,6 +295,7 @@ func (s *Search) iterativeDeepening(p *position.Position) *Result {
 		searchDepth: 0,
 		extraDepth:  0,
 	}
+	// FIXME: prototype/DUMMY
 	return result
 }
 
@@ -275,6 +322,16 @@ func (s *Search) initialize() {
 		sizeInMByte := 256 // TODO config option
 		s.tt = transpositiontable.NewTtTable(sizeInMByte)
 	}
+}
+
+func (s *Search) stopConditions() bool {
+	if s.stopFlag {
+		return true
+	}
+	if s.searchLimits.Nodes > 0 && s.nodesVisited >= s.searchLimits.Nodes {
+		s.stopFlag = true
+	}
+	return s.stopFlag
 }
 
 func (s *Search) setupSearchLimits(position *position.Position, sl *Limits) {
@@ -354,6 +411,25 @@ func (s *Search) addExtraTime(f float64) {
 		log.Debugf(out.Sprintf("Time added/reduced by %d ms to %d ms",
 			duration.Milliseconds(), (s.timeLimit + s.extraTime).Milliseconds()))
 	}
+}
+
+func (s *Search) startTimer() {
+	go func() {
+		log.Debugf("Timer started with time limit of %d ms", s.timeLimit.Milliseconds())
+		// relaxed busy wait
+		// as timeLimit changes due to extra times we can't set a fixed timeout
+		for time.Since(s.startTime) < s.timeLimit+s.extraTime && !s.stopFlag {
+			time.Sleep(5 * time.Millisecond)
+		}
+		if s.stopFlag {
+			log.Debugf("Timer stopped early after wall time: %d ms (time limit %d ms and extra time %d)",
+				time.Since(s.startTime).Milliseconds(), s.timeLimit.Milliseconds(), s.extraTime.Milliseconds())
+		} else {
+			log.Debugf("Timer stops search after wall time: %d ms (time limit %d ms and extra time %d)",
+				time.Since(s.startTime).Milliseconds(), s.timeLimit.Milliseconds(), s.extraTime.Milliseconds())
+			s.stopFlag = true
+		}
+	}()
 }
 
 func (s *Search) sendResult(searchResult *Result) {

@@ -1,4 +1,6 @@
 /*
+ * FrankyGo - UCI chess engine in GO for learning purposes
+ *
  * MIT License
  *
  * Copyright (c) 2018-2020 Frank Kopp
@@ -261,18 +263,40 @@ func TestFullSearchProcess(t *testing.T) {
 	result = uh.Command("isready")
 	assert.Contains(t, result, "readyok")
 
-	uh.Command("position startpos")
-	assert.EqualValues(t, position.StartFen, uh.myPosition.StringFen())
+	uh.Command("position startpos moves e2e4 e7e5")
+	assert.EqualValues(t, "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2", uh.myPosition.StringFen())
 
-	result = uh.Command("go wtime 60000 btime 60000 winc 2000 binc 2000 depth 6 nodes 1000000 movestogo 20 moves e2e4 d2d4 g1f3")
+	result = uh.Command("go wtime 60000 btime 60000 winc 2000 binc 2000 depth 6 nodes 10000 movestogo 20 moves d2d4 g1f3")
 	assert.True(t, uh.mySearch.IsSearching())
 	time.Sleep(2 * time.Second)
-
-	result = uh.Command("stop")
 	uh.mySearch.WaitWhileSearching()
-	assert.False(t, uh.mySearch.IsSearching())
-	time.Sleep(time.Second)
 
 	result = uh.Command("quit")
 	assert.EqualValues(t, position.StartFen, uh.myPosition.StringFen())
 }
+
+func TestInfiniteFinishedBeforeStop(t *testing.T) {
+	uh := NewUciHandler()
+
+	result := uh.Command("uci")
+	assert.Contains(t, result, "id name FrankyGo")
+	assert.Contains(t, result, "uciok")
+
+	result = uh.Command("isready")
+	assert.Contains(t, result, "readyok")
+
+	uh.Command("position startpos moves e2e4 e7e5")
+	assert.EqualValues(t, "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2", uh.myPosition.StringFen())
+
+	result = uh.Command("go infinite")
+	assert.True(t, uh.mySearch.IsSearching())
+
+	time.Sleep(3 * time.Second)
+
+	result = uh.Command("stop")
+	uh.mySearch.WaitWhileSearching()
+	assert.False(t, uh.mySearch.IsSearching())
+
+	result = uh.Command("quit")
+}
+
