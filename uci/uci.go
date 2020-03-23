@@ -170,7 +170,10 @@ func (u *UciHandler) loop() {
 		log.Debugf("Waiting for command:")
 		// read from stdin or other in stream
 		for u.InIo.Scan() {
-			u.handleReceivedCommand(u.InIo.Text())
+			if u.handleReceivedCommand(u.InIo.Text()) {
+				// quit command received
+				return
+			}
 			log.Debugf("Waiting for command:")
 		}
 	}
@@ -178,7 +181,7 @@ func (u *UciHandler) loop() {
 
 var regexWhiteSpace = regexp.MustCompile("\\s+")
 
-func (u *UciHandler) handleReceivedCommand(cmd string) {
+func (u *UciHandler) handleReceivedCommand(cmd string) bool {
 	log.Debugf("Received command: %s", cmd)
 	uciLog.Infof("<< %s", cmd)
 	// find command and execute by calling command function
@@ -186,7 +189,7 @@ func (u *UciHandler) handleReceivedCommand(cmd string) {
 	strings.TrimSpace(tokens[0])
 	switch tokens[0] {
 	case "quit":
-		return
+		return true
 	case "uci":
 		u.uciCommand()
 	case "isready":
@@ -214,6 +217,7 @@ func (u *UciHandler) handleReceivedCommand(cmd string) {
 		log.Warningf("Error: Unknown command: %s", cmd)
 	}
 	log.Debugf("Processed command: %s", cmd)
+	return false
 }
 
 func (u *UciHandler) ponderHitCommand() {

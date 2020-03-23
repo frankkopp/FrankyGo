@@ -25,6 +25,8 @@
 package uci
 
 import (
+	"bufio"
+	"bytes"
 	"regexp"
 	"strings"
 	"testing"
@@ -38,6 +40,16 @@ import (
 func TestNewUciHandler(t *testing.T) {
 	u := NewUciHandler()
 	assert.Same(t, u, u.mySearch.GetUciHandlerPtr())
+}
+
+func TestUciHandler_Loop(t *testing.T) {
+	uh := NewUciHandler()
+	uh.InIo = bufio.NewScanner(strings.NewReader("uci\nquit\n"))
+	buffer := new(bytes.Buffer)
+	uh.OutIo = bufio.NewWriter(buffer)
+	uh.Loop()
+	result := buffer.String()
+	assert.Contains(t, result, "uciok")
 }
 
 func TestUciCommand(t *testing.T) {
