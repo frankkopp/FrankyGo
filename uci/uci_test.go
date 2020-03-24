@@ -272,7 +272,6 @@ func TestFullSearchProcess(t *testing.T) {
 	uh.mySearch.WaitWhileSearching()
 
 	result = uh.Command("quit")
-	assert.EqualValues(t, position.StartFen, uh.myPosition.StringFen())
 }
 
 func TestInfiniteFinishedBeforeStop(t *testing.T) {

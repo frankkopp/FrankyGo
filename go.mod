@@ -3,6 +3,7 @@ module github.com/frankkopp/FrankyGo
 go 1.14
 
 require (
+	github.com/BurntSushi/toml v0.3.1
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/stretchr/testify v1.5.1

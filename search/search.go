@@ -35,6 +35,7 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
+	"github.com/frankkopp/FrankyGo/config"
 	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/movegen"
 	"github.com/frankkopp/FrankyGo/openingbook"
@@ -45,7 +46,7 @@ import (
 )
 
 var out = message.NewPrinter(language.German)
-var log = logging.GetLog("search")
+var log = logging.GetSearchLog()
 
 // Search represents the data structure for a chess engine search
 //  Create new instance with NewSearch()
@@ -229,8 +230,8 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	// Initialize ply based data
 	// TODO
 
-	// release the init phase lock to signal the call waiting in
-	// StartSearch() to return
+	// release the init phase lock to signal the calling go routine
+	// waiting in StartSearch() to return
 	s.initSemaphore.Release(1)
 
 	// Start the actual search with iteration deepening
@@ -241,6 +242,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	// We wait here until search has completed.
 	if !s.stopFlag && (s.searchLimits.Ponder || s.searchLimits.Infinite) {
 		log.Debug("Search finished before stopped or ponderhit! Waiting for stop/ponderhit to send result")
+		// relaxed busy wait
 		for !s.stopFlag && (s.searchLimits.Ponder || s.searchLimits.Infinite) {
 			time.Sleep(5*time.Millisecond)
 		}
@@ -280,7 +282,6 @@ func (s *Search) iterativeDeepening(p *position.Position) *Result {
 		s.nodesVisited++
 		if  s.nodesVisited % 100 == 0 {
 			log.Info("Simulating search...")
-			break
 		}
 		time.Sleep(5 * time.Millisecond)
 	}
@@ -305,8 +306,7 @@ func (s *Search) iterativeDeepening(p *position.Position) *Result {
 // initialization again
 func (s *Search) initialize() {
 	// init opening book
-	// TODO add option check here
-	if s.book == nil {
+	if config.Settings.Search.UseBook && s.book == nil {
 		s.book = openingbook.NewBook()
 		bookPath := "../books/book.txt" // TODO config option
 		err := s.book.Initialize(bookPath, openingbook.Simple, true, false)
@@ -317,9 +317,11 @@ func (s *Search) initialize() {
 	}
 
 	// init transposition table
-	// TODO add option check here
-	if s.tt == nil {
-		sizeInMByte := 256 // TODO config option
+	if config.Settings.Search.UseTT && s.tt == nil {
+		sizeInMByte := config.Settings.Search.TTSize
+		if sizeInMByte == 0 {
+			sizeInMByte = 64
+		}
 		s.tt = transpositiontable.NewTtTable(sizeInMByte)
 	}
 }

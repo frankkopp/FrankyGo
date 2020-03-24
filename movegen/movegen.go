@@ -42,7 +42,7 @@ import (
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
-var log = logging.GetLog("movegen")
+var log = logging.GetLog()
 
 const (
 	// to let the compiler eliminate debugging output completely

@@ -27,14 +27,29 @@
 package main
 
 import (
-	"fmt"
+	"runtime"
 
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
+
+	"github.com/frankkopp/FrankyGo/config"
 	"github.com/frankkopp/FrankyGo/uci"
 	"github.com/frankkopp/FrankyGo/version"
 )
 
+var out = message.NewPrinter(language.German)
+
 func main() {
-	fmt.Printf("FrankyGo %s", version.Version())
+	out.Printf("FrankyGo %s\n", version.Version())
+	out.Println("Environment:")
+	out.Printf("  Using GO version %s\n", runtime.Version())
+	out.Printf("  Running %s using %s as a compiler\n", runtime.GOARCH, runtime.Compiler)
+	out.Printf("  Number of CPU: %d\n", runtime.NumCPU())
+	out.Printf("  Number of Goroutines: %d\n", runtime.NumGoroutine())
+
+	// handle program options
+	config.Setup()
+
 	u := uci.NewUciHandler()
 	u.Loop()
 }

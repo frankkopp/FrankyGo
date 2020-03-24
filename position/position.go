@@ -38,7 +38,7 @@ import (
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
-var log = logging.GetLog("position")
+var log = logging.GetLog()
 
 var initialized = false
 

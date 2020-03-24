@@ -59,7 +59,7 @@ import (
 )
 
 var out = message.NewPrinter(language.German)
-var log = logging.GetLog("openingbook")
+var log = logging.GetLog()
 
 // setting to use multiple goroutines or not - useful for debugging
 const parallel = true

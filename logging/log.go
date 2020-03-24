@@ -35,36 +35,67 @@ import (
 	"os"
 
 	"github.com/op/go-logging"
+
+	"github.com/frankkopp/FrankyGo/config"
 )
+
+var (
+	standardLog *logging.Logger
+	standardBackEnd logging.LeveledBackend
+	searchLog *logging.Logger
+	searchBackEnd logging.LeveledBackend
+	uciLog *logging.Logger
+	uciBackEnd logging.LeveledBackend
+)
+
+func init () {
+	config.Setup()
+}
 
 // GetLog returns an instance of a standard Logger preconfigured with a
 // os.Stdout backend and a "normal" logging format (e.g. time - file - level)
-func GetLog (name string) *logging.Logger {
-	l := logging.MustGetLogger(name)
+func GetLog () *logging.Logger {
+	standardLog = logging.MustGetLogger("standard")
 	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
 	var format = logging.MustStringFormatter(
 		`%{time:15:04:05.000} %{shortpkg:-8.8s}:%{shortfile:-14.14s} %{level:-7.7s}:  %{message}`,
-		// :%{shortfunc}
 	)
 	backend1Formatter := logging.NewBackendFormatter(backend1, format)
-	backend1Leveled := logging.AddModuleLevel(backend1Formatter)
-	backend1Leveled.SetLevel(logging.DEBUG, "")
-	l.SetBackend(backend1Leveled)
-	return l
+	standardBackEnd = logging.AddModuleLevel(backend1Formatter)
+	standardBackEnd.SetLevel(logging.Level(config.LogLevel), "")
+	standardLog.SetBackend(standardBackEnd)
+	return standardLog
+}
+
+// GetSearchLog returns an instance of a standard Logger preconfigured with a
+// os.Stdout backend and a "normal" logging format (e.g. time - file - level)
+// for usage in the search itself
+func GetSearchLog () *logging.Logger {
+	searchLog = logging.MustGetLogger("search")
+	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
+	var format = logging.MustStringFormatter(
+		`%{time:15:04:05.000} %{shortpkg:-8.8s}:%{shortfile:-14.14s} %{level:-7.7s}:  %{message}`,
+	)
+	backend1Formatter := logging.NewBackendFormatter(backend1, format)
+	searchBackEnd = logging.AddModuleLevel(backend1Formatter)
+	searchBackEnd.SetLevel(logging.Level(config.LogLevel), "")
+	standardLog.SetBackend(searchBackEnd)
+	return searchLog
 }
 
 // GetUciLog returns an instance of a special Logger preconfigured for
 // logging all UCI protocol communication to os.Stdout or file
 // Format is very simple "time UCI <uci command>"
 func GetUciLog () *logging.Logger {
-	l := logging.MustGetLogger("UCI ")
+	uciLog = logging.MustGetLogger("UCI ")
 	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
 	var format = logging.MustStringFormatter(
 		`%{time:15:04:05.000} UCI %{message}`,
 	)
 	backend1Formatter := logging.NewBackendFormatter(backend1, format)
-	backend1Leveled := logging.AddModuleLevel(backend1Formatter)
-	backend1Leveled.SetLevel(logging.DEBUG, "")
-	l.SetBackend(backend1Leveled)
-	return l
+	uciBackEnd = logging.AddModuleLevel(backend1Formatter)
+	uciBackEnd.SetLevel(logging.DEBUG, "")
+	uciLog.SetBackend(uciBackEnd)
+	return uciLog
 }
+

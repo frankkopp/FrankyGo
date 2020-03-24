@@ -49,7 +49,7 @@ import (
 )
 
 var out = message.NewPrinter(language.German)
-var log = logging.GetLog("tt")
+var log = logging.GetLog()
 
 // TtEntry struct is the data structure for each entry in the transposition
 // table. Each entry has 16-bytes (128-bits)

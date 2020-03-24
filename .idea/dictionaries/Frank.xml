@@ -18,6 +18,7 @@
       <w>kiwipete</w>
       <w>kopp</w>
       <w>kpnbrq</w>
+      <w>loglvl</w>
       <w>movearray</w>
       <w>movegen</w>
       <w>movegens</w>
@@ -35,6 +36,7 @@
       <w>rnbqkbnr</w>
       <w>seldepth</w>
       <w>setoption</w>
+      <w>sloglvl</w>
       <w>startpos</w>
       <w>stockfish</w>
       <w>subcommand</w>

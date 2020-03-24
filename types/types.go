@@ -33,7 +33,7 @@ import (
 	"github.com/frankkopp/FrankyGo/logging"
 )
 
-var log = logging.GetLog("types")
+var log = logging.GetLog()
 
 var initialized = false
 

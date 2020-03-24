@@ -52,7 +52,7 @@ import (
 )
 
 var out = message.NewPrinter(language.German)
-var log = logging.GetLog("ucihandler")
+var log = logging.GetLog()
 var uciLog = logging.GetUciLog()
 
 // UciHandler handles all communication with the chess ui via UCI
@@ -184,6 +184,9 @@ func (u *UciHandler) loop() {
 var regexWhiteSpace = regexp.MustCompile("\\s+")
 
 func (u *UciHandler) handleReceivedCommand(cmd string) bool {
+	if len(cmd) == 0 {
+		return false
+	}
 	log.Debugf("Received command: %s", cmd)
 	uciLog.Infof("<< %s", cmd)
 	// find command and execute by calling command function

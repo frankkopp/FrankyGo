@@ -39,7 +39,7 @@ import (
 )
 
 var out = message.NewPrinter(language.German)
-var log = logging.GetLog("util")
+var log = logging.GetLog()
 
 // Abs - non branching Abs function for determine the absolute value of an int
 func Abs(n int) int {

@@ -1,0 +1,16 @@
+# Config for FrankyGo
+
+title = "FrankyGo Config"
+
+[log]
+LogLvl = "debug"                  # <c=0, e=1, w=2, n=3, i=4, d=5>
+SearchLogLvl = "debug"            # <c=0, e=1, w=2, n=3, i=4, d=5>
+
+[search]
+UseTT = true
+TTSize = 256
+UseBook = true
+
+[eval]
+UsePawnCache = true
+PawnCacheSize = 64
