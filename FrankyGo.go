@@ -70,7 +70,7 @@ func main() {
 	// read config file
 	config.Setup()
 
-	// set log level
+	// set log level from cmd line options overwriting config file or defaults
 	if lvl, found := config.LogLevels[*logLvl]; found {
 		config.LogLevel = lvl
 	}
@@ -78,7 +78,9 @@ func main() {
 		config.SearchLogLevel = lvl
 	}
 
-	// resetting log levels
+	// resetting log levels - must be done as most packages include a logger as a
+	// global var and therefore even before main() is called. These loggers start
+	// with the default log level and must be reset to the actual level required.
 	logging.GetLog()
 	logging.GetSearchLog()
 	logging.GetUciLog()
