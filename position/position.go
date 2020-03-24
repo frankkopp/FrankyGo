@@ -45,7 +45,6 @@ var initialized = false
 // initialize package
 func init() {
 	if !initialized {
-		log.Debug("Initializing position")
 		initZobrist()
 		initialized = true
 	}

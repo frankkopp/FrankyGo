@@ -32,6 +32,8 @@ type searchConfiguration struct {
 	TTSize  int
 }
 
+// set defaults for configurations here in case a configuration
+// is not available from the config file
 func setupSearch() {
 
 }

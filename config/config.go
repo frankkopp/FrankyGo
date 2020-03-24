@@ -27,18 +27,24 @@
 package config
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/BurntSushi/toml"
 )
 
 // globally available config values
 var (
-	// LogLevel defines the general log level set by default or given by the command line arguments
-	LogLevel = 2
+	// ConfigFile hold the path to the used config file
+	ConfigFile = "../config/config.toml"
 
-	// SearchLogLevel defines the search log level set by default or given by the command line arguments
-	SearchLogLevel = 2
+	// LogLevel defines the general log level - can be overwritten by cmd line options or config file
+	LogLevel = 5
+
+	// SearchLogLevel defines the search log level - can be overwritten by cmd line options or config file
+	SearchLogLevel = 5
+
+	// TestLogLevel defines the test log level
+	TestLogLevel = 5
 
 	// Settings is the global configuration read in from file
 	Settings conf
@@ -52,29 +58,23 @@ type conf struct {
 	Eval   evalConfiguration
 }
 
+// Setup reads configuration file and sets settings from this file or defaults
+// to various aspects of the application. E.g. Search config, Eval config, etc.
 func Setup() {
 	if initialized {
 		return
 	}
-
-	// TODO command line options
-	//  config file path
-	//  log levels
-
 	// read configuration file
-	if _, err := toml.DecodeFile("../config/config.toml", &Settings); err != nil {
-		fmt.Println(err)
+	if _, err := toml.DecodeFile(ConfigFile, &Settings); err != nil {
+		log.Fatal(err)
+		return
 	}
-
 	// setup log level - first check cmd line, then config file, finally leave defaults
 	setupLogLvl()
-
 	// setup search config after reading from configuration file if necessary
 	setupSearch()
-
 	// setup eval config after reading from configuration file if necessary
 	setupEval()
-
 	initialized = true
 }
 

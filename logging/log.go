@@ -41,28 +41,28 @@ import (
 
 var (
 	standardLog *logging.Logger
-	standardBackEnd logging.LeveledBackend
-	searchLog *logging.Logger
-	searchBackEnd logging.LeveledBackend
-	uciLog *logging.Logger
-	uciBackEnd logging.LeveledBackend
+	searchLog   *logging.Logger
+	testLog     *logging.Logger
+	uciLog      *logging.Logger
 )
-
-func init () {
-	config.Setup()
-}
 
 // GetLog returns an instance of a standard Logger preconfigured with a
 // os.Stdout backend and a "normal" logging format (e.g. time - file - level)
-func GetLog () *logging.Logger {
-	standardLog = logging.MustGetLogger("standard")
+func GetLog() *logging.Logger {
+	if standardLog == nil {
+		standardLog = logging.MustGetLogger("standard")
+	}
 	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
 	var format = logging.MustStringFormatter(
 		`%{time:15:04:05.000} %{shortpkg:-8.8s}:%{shortfile:-14.14s} %{level:-7.7s}:  %{message}`,
 	)
 	backend1Formatter := logging.NewBackendFormatter(backend1, format)
-	standardBackEnd = logging.AddModuleLevel(backend1Formatter)
-	standardBackEnd.SetLevel(logging.Level(config.LogLevel), "")
+	standardBackEnd := logging.AddModuleLevel(backend1Formatter)
+	level := logging.Level(config.LogLevel)
+	if level == -1 {
+		level = 5
+	}
+	standardBackEnd.SetLevel(level, "")
 	standardLog.SetBackend(standardBackEnd)
 	return standardLog
 }
@@ -70,15 +70,21 @@ func GetLog () *logging.Logger {
 // GetSearchLog returns an instance of a standard Logger preconfigured with a
 // os.Stdout backend and a "normal" logging format (e.g. time - file - level)
 // for usage in the search itself
-func GetSearchLog () *logging.Logger {
-	searchLog = logging.MustGetLogger("search")
+func GetSearchLog() *logging.Logger {
+	if searchLog == nil {
+		searchLog = logging.MustGetLogger("search")
+	}
 	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
 	var format = logging.MustStringFormatter(
 		`%{time:15:04:05.000} %{shortpkg:-8.8s}:%{shortfile:-14.14s} %{level:-7.7s}:  %{message}`,
 	)
 	backend1Formatter := logging.NewBackendFormatter(backend1, format)
-	searchBackEnd = logging.AddModuleLevel(backend1Formatter)
-	searchBackEnd.SetLevel(logging.Level(config.LogLevel), "")
+	searchBackEnd := logging.AddModuleLevel(backend1Formatter)
+	level := logging.Level(config.LogLevel)
+	if level == -1 {
+		level = 5
+	}
+	searchBackEnd.SetLevel(level, "")
 	standardLog.SetBackend(searchBackEnd)
 	return searchLog
 }
@@ -86,16 +92,34 @@ func GetSearchLog () *logging.Logger {
 // GetUciLog returns an instance of a special Logger preconfigured for
 // logging all UCI protocol communication to os.Stdout or file
 // Format is very simple "time UCI <uci command>"
-func GetUciLog () *logging.Logger {
-	uciLog = logging.MustGetLogger("UCI ")
+func GetUciLog() *logging.Logger {
+	if uciLog == nil {
+		uciLog = logging.MustGetLogger("UCI ")
+	}
 	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
 	var format = logging.MustStringFormatter(
 		`%{time:15:04:05.000} UCI %{message}`,
 	)
 	backend1Formatter := logging.NewBackendFormatter(backend1, format)
-	uciBackEnd = logging.AddModuleLevel(backend1Formatter)
+	uciBackEnd := logging.AddModuleLevel(backend1Formatter)
 	uciBackEnd.SetLevel(logging.DEBUG, "")
 	uciLog.SetBackend(uciBackEnd)
 	return uciLog
 }
 
+// GetTestLog returns an instance of a standard Logger preconfigured with a
+// os.Stdout backend and a "normal" logging format (e.g. time - file - level)
+func GetTestLog() *logging.Logger {
+	if testLog == nil {
+		testLog = logging.MustGetLogger("test")
+	}
+	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
+	var format = logging.MustStringFormatter(
+		`%{time:15:04:05.000} %{shortpkg:-8.8s}:%{shortfile:-14.14s} %{level:-7.7s}:  %{message}`,
+	)
+	backend1Formatter := logging.NewBackendFormatter(backend1, format)
+	standardBackEnd := logging.AddModuleLevel(backend1Formatter)
+	standardBackEnd.SetLevel(logging.Level(config.TestLogLevel), "")
+	testLog.SetBackend(standardBackEnd)
+	return testLog
+}

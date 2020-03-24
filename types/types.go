@@ -43,7 +43,6 @@ func init() {
 	if initialized {
 		return
 	}
-	log.Debug("Initializing data types")
 	// bitboards
 	initBb()
 	// pos values

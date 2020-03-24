@@ -27,12 +27,15 @@
 package main
 
 import (
+	"flag"
+	"os"
 	"runtime"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
 	"github.com/frankkopp/FrankyGo/config"
+	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/uci"
 	"github.com/frankkopp/FrankyGo/version"
 )
@@ -40,16 +43,48 @@ import (
 var out = message.NewPrinter(language.German)
 
 func main() {
-	out.Printf("FrankyGo %s\n", version.Version())
-	out.Println("Environment:")
-	out.Printf("  Using GO version %s\n", runtime.Version())
-	out.Printf("  Running %s using %s as a compiler\n", runtime.GOARCH, runtime.Compiler)
-	out.Printf("  Number of CPU: %d\n", runtime.NumCPU())
-	out.Printf("  Number of Goroutines: %d\n", runtime.NumGoroutine())
 
-	// handle program options
+	// get command line args
+	versionInfo := flag.Bool("version", false, "prints version and exits")
+	configFile := flag.String("config", "../config/config.toml", "path to configuration settings file")
+	logLvl := flag.String("loglvl", "", "standard log level\n(critical|error|warning|notice|info|debug)")
+	searchlogLvl := flag.String("searchloglvl", "", "search log level\n(critical|error|warning|notice|info|debug)")
+	flag.Parse()
+
+	// print version info
+	if *versionInfo {
+		out.Printf("FrankyGo %s\n", version.Version())
+		out.Println("Environment:")
+		out.Printf("  Using GO version %s\n", runtime.Version())
+		out.Printf("  Running %s using %s as a compiler\n", runtime.GOARCH, runtime.Compiler)
+		out.Printf("  Number of CPU: %d\n", runtime.NumCPU())
+		out.Printf("  Number of Goroutines: %d\n", runtime.NumGoroutine())
+		cwd, _ := os.Getwd()
+		out.Printf("  Working directory: %s\n", cwd)
+		return
+	}
+
+	// set config file
+	config.ConfigFile = *configFile
+
+	// read config file
 	config.Setup()
 
+	// set log level
+	if lvl, found := config.LogLevels[*logLvl]; found {
+		config.LogLevel = lvl
+	}
+	if lvl, found := config.LogLevels[*searchlogLvl]; found {
+		config.SearchLogLevel = lvl
+	}
+
+	// resetting log levels
+	logging.GetLog()
+	logging.GetSearchLog()
+	logging.GetUciLog()
+
+	// starting the uci handler and waiting for communication with
+	// the UCI user interface
 	u := uci.NewUciHandler()
 	u.Loop()
 }

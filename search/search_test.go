@@ -36,7 +36,7 @@ import (
 	"github.com/frankkopp/FrankyGo/position"
 )
 
-var logTest = logging.GetLog("test")
+var logTest = logging.GetTestLog()
 
 func TestSearch_IsReady(t *testing.T) {
 	search := NewSearch()
