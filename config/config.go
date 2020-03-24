@@ -34,8 +34,8 @@ import (
 
 // globally available config values
 var (
-	// ConfigFile hold the path to the used config file
-	ConfigFile = "../config/config.toml"
+	// ConfFile hold the path to the used config file
+	ConfFile = "../config/config.toml"
 
 	// LogLevel defines the general log level - can be overwritten by cmd line options or config file
 	LogLevel = 5
@@ -65,7 +65,7 @@ func Setup() {
 		return
 	}
 	// read configuration file
-	if _, err := toml.DecodeFile(ConfigFile, &Settings); err != nil {
+	if _, err := toml.DecodeFile(ConfFile, &Settings); err != nil {
 		log.Fatal(err)
 		return
 	}

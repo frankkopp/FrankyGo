@@ -27,16 +27,26 @@
 package search
 
 import (
+	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/frankkopp/FrankyGo/config"
 	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/position"
 )
 
 var logTest = logging.GetTestLog()
+
+// Setup the tests
+func TestMain(m *testing.M) {
+	out.Println("Test Main Setup Tests====================")
+	config.Setup()
+	code := m.Run()
+	os.Exit(code)
+}
 
 func TestSearch_IsReady(t *testing.T) {
 	search := NewSearch()
@@ -61,7 +71,7 @@ func TestSetupTimeControl(t *testing.T) {
 		MoveTime:    0,
 		MovesToGo:   20,
 	}
-	timeLimit := s.setupTimeControl(p,sl)
+	timeLimit := s.setupTimeControl(p, sl)
 	assert.EqualValues(t, 4500, timeLimit.Milliseconds())
 
 	p = position.NewPosition()
@@ -80,7 +90,7 @@ func TestSetupTimeControl(t *testing.T) {
 		MoveTime:    0,
 		MovesToGo:   0,
 	}
-	timeLimit = s.setupTimeControl(p,sl)
+	timeLimit = s.setupTimeControl(p, sl)
 	assert.EqualValues(t, 3150, timeLimit.Milliseconds())
 
 	// game phase 0
@@ -100,7 +110,7 @@ func TestSetupTimeControl(t *testing.T) {
 		MoveTime:    0,
 		MovesToGo:   0,
 	}
-	timeLimit = s.setupTimeControl(p,sl)
+	timeLimit = s.setupTimeControl(p, sl)
 	assert.EqualValues(t, 5400, timeLimit.Milliseconds())
 }
 
@@ -108,8 +118,11 @@ func TestWaitWhileSearching(t *testing.T) {
 	search := NewSearch()
 	p := position.NewPosition()
 	sl := NewSearchLimits()
+	go func() {
+		time.Sleep(3 * time.Second)
+		search.StopSearch()
+	}()
 	start := time.Now()
-	// FIXME: Prototype
 	search.StartSearch(*p, *sl)
 	logTest.Debug("Search started...waiting to finish")
 	search.WaitWhileSearching()
@@ -124,16 +137,15 @@ func TestIsSearching(t *testing.T) {
 	p := position.NewPosition()
 	sl := NewSearchLimits()
 	start := time.Now()
-	// FIXME: Prototype
 	search.StartSearch(*p, *sl)
 	logTest.Debug("Check searching in 1 sec")
 	time.Sleep(time.Second)
 	assert.True(t, search.IsSearching())
 	logTest.Debugf("Is searching = %v", search.IsSearching())
+	search.StopSearch()
 	search.WaitWhileSearching()
 	elapsed := time.Since(start)
 	out.Printf("Time %d ms\n", elapsed.Milliseconds())
 	assert.False(t, search.IsSearching())
 	logTest.Debugf("Is searching = %v", search.IsSearching())
-	assert.GreaterOrEqual(t, elapsed.Milliseconds(), int64(2_000))
 }

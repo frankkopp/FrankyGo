@@ -33,6 +33,7 @@ type logConfiguration struct {
 
 // LogLevels mapping of string representations of log levels to numerical values
 var LogLevels = map[string]int{
+	"off":      -1,
 	"critical": 0,
 	"error":    1,
 	"warning":  2,

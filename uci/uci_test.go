@@ -29,6 +29,7 @@ package uci
 import (
 	"bufio"
 	"bytes"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -36,8 +37,17 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/frankkopp/FrankyGo/config"
 	"github.com/frankkopp/FrankyGo/position"
 )
+
+// Setup the tests
+func TestMain(m *testing.M) {
+	out.Println("Test Main Setup Tests====================")
+	config.Setup()
+	code := m.Run()
+	os.Exit(code)
+}
 
 func TestNewUciHandler(t *testing.T) {
 	u := NewUciHandler()
@@ -274,6 +284,26 @@ func TestFullSearchProcess(t *testing.T) {
 	result = uh.Command("quit")
 }
 
+func TestBookMove(t *testing.T) {
+	uh := NewUciHandler()
+
+	result := uh.Command("uci")
+	assert.Contains(t, result, "id name FrankyGo")
+	assert.Contains(t, result, "uciok")
+
+	result = uh.Command("isready")
+	assert.Contains(t, result, "readyok")
+
+	uh.Command("position startpos moves e2e4 e7e5")
+	assert.EqualValues(t, "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2", uh.myPosition.StringFen())
+
+	result = uh.Command("go wtime 60000 btime 60000")
+	uh.mySearch.WaitWhileSearching()
+	assert.True(t, uh.mySearch.LastSearchResult().BookMove)
+
+	result = uh.Command("quit")
+}
+
 func TestInfiniteFinishedBeforeStop(t *testing.T) {
 	uh := NewUciHandler()
 
@@ -298,4 +328,3 @@ func TestInfiniteFinishedBeforeStop(t *testing.T) {
 
 	result = uh.Command("quit")
 }
-

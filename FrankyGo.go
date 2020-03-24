@@ -65,7 +65,7 @@ func main() {
 	}
 
 	// set config file
-	config.ConfigFile = *configFile
+	config.ConfFile = *configFile
 
 	// read config file
 	config.Setup()
@@ -78,7 +78,7 @@ func main() {
 		config.SearchLogLevel = lvl
 	}
 
-	// resetting log levels - must be done as most packages include a logger as a
+	// resetting log levels - required  as most packages include a logger as a
 	// global var and therefore even before main() is called. These loggers start
 	// with the default log level and must be reset to the actual level required.
 	logging.GetLog()

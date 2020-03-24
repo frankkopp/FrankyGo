@@ -9,13 +9,18 @@ v 0.4 (planned)
 v 0.3 (in progress)
 ================================================================================
 - TODO:
-    - search handling
-    - limits
-    - time control
+    - make book configurable
+    - log files for standard and search log
+    - make log files configurable
+    - add log files to command line options
+    - CleanUp and additional documentation
 
 - DONE:
+    - added configuration via file and command line
+    - search handling
     - starting / stopping
-
+    - time control
+    - limits (except depth limit - needs simple search minimax)
 
 v 0.2 (in progress)
 ================================================================================

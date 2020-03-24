@@ -41,13 +41,14 @@ import (
 type Result struct {
 	BestMove    Move
 	PonderMove  Move
-	searchTime  time.Duration
-	searchDepth int
-	extraDepth  int
+	SearchTime  time.Duration
+	SearchDepth int
+	ExtraDepth  int
+	BookMove    bool
 }
 
 func (searchResult *Result) String() string {
-	return out.Sprintf("best move = %s, ponder move = %s, search time = %d ms, search dept = %d/%d",
-		searchResult.BestMove.StringUci(), searchResult.PonderMove.StringUci(), searchResult.searchTime.Milliseconds(),
-		searchResult.searchDepth, searchResult.extraDepth)
+	return out.Sprintf("best move = %s, ponder move = %s, search time = %d ms, search dept = %d/%d, was book move = %v",
+		searchResult.BestMove.StringUci(), searchResult.PonderMove.StringUci(), searchResult.SearchTime.Milliseconds(),
+		searchResult.SearchDepth, searchResult.ExtraDepth, searchResult.BookMove)
 }

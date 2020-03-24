@@ -29,6 +29,7 @@ package search
 import (
 	"context"
 	"math/rand"
+	"sync"
 	"time"
 
 	"golang.org/x/sync/semaphore"
@@ -51,9 +52,10 @@ var log = logging.GetSearchLog()
 // Search represents the data structure for a chess engine search
 //  Create new instance with NewSearch()
 type Search struct {
-	uciHandlerPtr uciInterface.UciDriver
-	initSemaphore *semaphore.Weighted
-	isRunning     *semaphore.Weighted
+	uciHandlerPtr  uciInterface.UciDriver
+	initSemaphore  *semaphore.Weighted
+	isRunning      *semaphore.Weighted
+	timerWaitGroup sync.WaitGroup
 
 	book *openingbook.Book
 	tt   *transpositiontable.TtTable
@@ -70,8 +72,8 @@ type Search struct {
 	timeLimit       time.Duration
 	extraTime       time.Duration
 	nodesVisited    int64
-	curDepth		int
-	curExtraDepth	int
+	curDepth        int
+	curExtraDepth   int
 }
 
 // //////////////////////////////////////////////////////
@@ -212,9 +214,15 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	}
 
 	// check opening book when we have a time controlled game
-	if s.book != nil && sl.TimeControl {
-		// TODO
-		log.Debug("Opening Book: Would try to use book")
+	bookMove := MoveNone
+	if s.book != nil && sl.TimeControl && len(s.searchLimits.Moves) == 0 {
+		bookEntry, found := s.book.GetEntry(position.ZobristKey())
+		if found && len(bookEntry.Moves) > 0 {
+			// choose move - random for now
+			rand.Seed(int64(time.Now().Nanosecond()))
+			bookMove = Move(bookEntry.Moves[rand.Intn(len(bookEntry.Moves))].Move)
+			log.Debug("Opening Book: Choosing book move: ", bookMove.StringUci())
+		}
 	} else {
 		log.Debug("Opening Book: Not using book")
 	}
@@ -235,7 +243,14 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.initSemaphore.Release(1)
 
 	// Start the actual search with iteration deepening
-	searchResult := s.iterativeDeepening(position)
+	var searchResult *Result
+	if bookMove == MoveNone {
+		// no book move --> do search
+		searchResult = s.iterativeDeepening(position)
+	} else {
+		// create result based on book move
+		searchResult = &Result{BestMove: bookMove, BookMove: true}
+	}
 
 	// If we arrive here and the search is not stopped it means that the search
 	// was finished before it has been stopped by stopSearchFlag or ponderhit,
@@ -244,12 +259,12 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 		log.Debug("Search finished before stopped or ponderhit! Waiting for stop/ponderhit to send result")
 		// relaxed busy wait
 		for !s.stopFlag && (s.searchLimits.Ponder || s.searchLimits.Infinite) {
-			time.Sleep(5*time.Millisecond)
+			time.Sleep(5 * time.Millisecond)
 		}
 	}
 
 	// update search result with search time
-	searchResult.searchTime = time.Since(s.startTime)
+	searchResult.SearchTime = time.Since(s.startTime)
 
 	// send final search info update
 	// TODO
@@ -263,9 +278,10 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.hasResult = true
 
 	// print stats to log
-	log.Info(out.Sprintf("Search finished after %d ms ", searchResult.searchTime.Milliseconds()))
+	log.Info(out.Sprintf("Search finished after %d ms ", searchResult.SearchTime.Milliseconds()))
 	log.Info(out.Sprintf("Search depth was %d(%d) with %d nodes visited. NPS = %d nps",
-		s.curDepth, s.curExtraDepth, s.nodesVisited, (s.nodesVisited*time.Second.Nanoseconds())/searchResult.searchTime.Nanoseconds()))
+		s.curDepth, s.curExtraDepth, s.nodesVisited,
+		(s.nodesVisited*time.Second.Nanoseconds())/(1+searchResult.SearchTime.Nanoseconds())))
 
 	// print result to log
 	log.Infof("Search result: %s", searchResult.String())
@@ -278,9 +294,9 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 
 func (s *Search) iterativeDeepening(p *position.Position) *Result {
 	// FIXME: prototype/DUMMY
-	for !s.stopConditions()  {
+	for !s.stopConditions() {
 		s.nodesVisited++
-		if  s.nodesVisited % 100 == 0 {
+		if s.nodesVisited%100 == 0 {
 			log.Info("Simulating search...")
 		}
 		time.Sleep(5 * time.Millisecond)
@@ -292,9 +308,9 @@ func (s *Search) iterativeDeepening(p *position.Position) *Result {
 	result := &Result{
 		BestMove:    bestMove,
 		PonderMove:  MoveNone,
-		searchTime:  0,
-		searchDepth: 0,
-		extraDepth:  0,
+		SearchTime:  0,
+		SearchDepth: 0,
+		ExtraDepth:  0,
 	}
 	// FIXME: prototype/DUMMY
 	return result
@@ -306,23 +322,31 @@ func (s *Search) iterativeDeepening(p *position.Position) *Result {
 // initialization again
 func (s *Search) initialize() {
 	// init opening book
-	if config.Settings.Search.UseBook && s.book == nil {
-		s.book = openingbook.NewBook()
-		bookPath := "../books/book.txt" // TODO config option
-		err := s.book.Initialize(bookPath, openingbook.Simple, true, false)
-		if err != nil {
-			log.Warningf("Book could not be initialized: %s", bookPath)
-			s.book = nil
+	if config.Settings.Search.UseBook {
+		if s.book == nil {
+			s.book = openingbook.NewBook()
+			bookPath := "../books/book.txt" // TODO config option
+			err := s.book.Initialize(bookPath, openingbook.Simple, true, false)
+			if err != nil {
+				log.Warningf("Book could not be initialized: %s", bookPath)
+				s.book = nil
+			}
 		}
+	} else {
+		log.Info("Opening book is disabled in configuration")
 	}
 
 	// init transposition table
-	if config.Settings.Search.UseTT && s.tt == nil {
-		sizeInMByte := config.Settings.Search.TTSize
-		if sizeInMByte == 0 {
-			sizeInMByte = 64
+	if config.Settings.Search.UseTT {
+		if s.tt == nil {
+			sizeInMByte := config.Settings.Search.TTSize
+			if sizeInMByte == 0 {
+				sizeInMByte = 64
+			}
+			s.tt = transpositiontable.NewTtTable(sizeInMByte)
 		}
-		s.tt = transpositiontable.NewTtTable(sizeInMByte)
+	} else {
+		log.Info("Transposition Table is disabled in configuration")
 	}
 }
 

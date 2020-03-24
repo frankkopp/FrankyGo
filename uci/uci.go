@@ -104,8 +104,8 @@ func (u *UciHandler) Command(cmd string) string {
 	tmp := u.OutIo
 	buffer := new(bytes.Buffer)
 	u.OutIo = bufio.NewWriter(buffer)
-	strings.ToLower(cmd)
 	u.handleReceivedCommand(cmd)
+	_ = u.OutIo.Flush()
 	u.OutIo = tmp
 	return buffer.String()
 }
