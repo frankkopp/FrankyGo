@@ -66,7 +66,7 @@ func Setup() {
 	}
 	// read configuration file
 	if _, err := toml.DecodeFile(ConfFile, &Settings); err != nil {
-		log.Fatal(err)
+		log.Fatal("Could not open/read config file", err)
 		return
 	}
 	// setup log level - first check cmd line, then config file, finally leave defaults

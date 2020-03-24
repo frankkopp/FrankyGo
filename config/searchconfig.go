@@ -32,6 +32,13 @@ type searchConfiguration struct {
 	TTSize  int
 }
 
+// sets defaults which might be overwritten by config file
+func init() {
+	Settings.Search.UseBook = true
+	Settings.Search. UseTT = true
+	Settings.Search.TTSize = 128
+}
+
 // set defaults for configurations here in case a configuration
 // is not available from the config file
 func setupSearch() {

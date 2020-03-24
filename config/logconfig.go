@@ -31,15 +31,10 @@ type logConfiguration struct {
 	SearchLogLvl string
 }
 
-// LogLevels mapping of string representations of log levels to numerical values
-var LogLevels = map[string]int{
-	"off":      -1,
-	"critical": 0,
-	"error":    1,
-	"warning":  2,
-	"notice":   3,
-	"info":     4,
-	"debug":    5,
+// sets defaults which might be overwritten by config file
+func init() {
+	Settings.Log.LogLvl = "debug"
+	Settings.Log.SearchLogLvl = "debug"
 }
 
 // set defaults for configurations here in case a configuration
@@ -53,4 +48,15 @@ func setupLogLvl() {
 	if Settings.Log.SearchLogLvl != "" { // check config file
 		SearchLogLevel = LogLevels[Settings.Log.SearchLogLvl]
 	}
+}
+
+// LogLevels mapping of string representations of log levels to numerical values
+var LogLevels = map[string]int{
+	"off":      -1,
+	"critical": 0,
+	"error":    1,
+	"warning":  2,
+	"notice":   3,
+	"info":     4,
+	"debug":    5,
 }
