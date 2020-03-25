@@ -1,4 +1,6 @@
 /*
+ * FrankyGo - UCI chess engine in GO for learning purposes
+ *
  * MIT License
  *
  * Copyright (c) 2018-2020 Frank Kopp
@@ -38,7 +40,7 @@ import (
 )
 
 func TestPositionCreation(t *testing.T) {
-	Init()
+
 	fen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 	p := NewPositionFen(fen)
 	// fmt.Print(p.String())
@@ -85,7 +87,7 @@ func TestPositionCreation(t *testing.T) {
 }
 
 func TestPositionEquality(t *testing.T) {
-	Init()
+
 
 	// equal
 	p1 := NewPosition()
@@ -97,17 +99,17 @@ func TestPositionEquality(t *testing.T) {
 	assert.NotEqual(t, p1, p3)
 
 	// copy
-	p3 = p2
-	assert.Equal(t, p1, p3)
+	*p3 = *p2
+	assert.Equal(t, *p1, *p3)
 	p3.castlingRights.Remove(CastlingWhiteOO) // change to p3
-	assert.NotEqual(t, p1, p3)
-	assert.Equal(t, p1, p2)                // p2 from which p3 is copied is unchanged
+	assert.NotEqual(t, *p1, *p3)
+	assert.Equal(t, *p1, *p2)                // p2 from which p3 is copied is unchanged
 	p3.castlingRights.Add(CastlingWhiteOO) // undo change
-	assert.Equal(t, p1, p3)
+	assert.Equal(t, *p1, *p3)
 }
 
 func TestPosition_DoUndoMove(t *testing.T) {
-	Init()
+
 	p := NewPosition()
 	startZobrist := p.ZobristKey()
 	p.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
@@ -125,9 +127,9 @@ func TestPosition_DoUndoMove(t *testing.T) {
 }
 
 func TestPosition_DoMoveNormal(t *testing.T) {
-	Init()
+
 	var fen string
-	var position Position
+	var position *Position
 	var move Move
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
@@ -153,9 +155,9 @@ func TestPosition_DoMoveNormal(t *testing.T) {
 }
 
 func TestPosition_DoMoveCastling(t *testing.T) {
-	Init()
+
 	var fen string
-	var position Position
+	var position *Position
 	var move Move
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
@@ -174,9 +176,9 @@ func TestPosition_DoMoveCastling(t *testing.T) {
 }
 
 func TestPosition_DoMoveEnPassant(t *testing.T) {
-	Init()
+
 	var fen string
-	var position Position
+	var position *Position
 	var move Move
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
@@ -188,9 +190,9 @@ func TestPosition_DoMoveEnPassant(t *testing.T) {
 }
 
 func TestPosition_DoMovePromotion(t *testing.T) {
-	Init()
+
 	var fen string
-	var position Position
+	var position *Position
 	var move Move
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
@@ -209,9 +211,9 @@ func TestPosition_DoMovePromotion(t *testing.T) {
 }
 
 func TestPosition_IsAttacked(t *testing.T) {
-	Init()
+
 	var fen string
-	var position Position
+	var position *Position
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3"
 	position = NewPositionFen(fen)
@@ -284,9 +286,9 @@ func TestPosition_IsAttacked(t *testing.T) {
 }
 
 func TestPosition_IsLegalMoves(t *testing.T) {
-	Init()
+
 	var fen string
-	var position Position
+	var position *Position
 
 	// no o-o castling / o-o-o is allowed
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
@@ -303,9 +305,9 @@ func TestPosition_IsLegalMoves(t *testing.T) {
 }
 
 func TestPosition_WasLegalMove(t *testing.T) {
-	Init()
+
 	var fen string
-	var position Position
+	var position *Position
 
 	// no o-o castling
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
@@ -329,7 +331,7 @@ func TestPosition_WasLegalMove(t *testing.T) {
 //noinspection GoUnhandledErrorResult
 func Test_TimingDoUndo(t *testing.T) {
 	out := message.NewPrinter(language.German)
-	Init()
+
 	const rounds = 5
 	const iterations uint64 = 10_000_000
 
@@ -367,14 +369,14 @@ func Test_TimingDoUndo(t *testing.T) {
 // BENCHMARKS
 
 func Benchmark_New(b *testing.B) {
-	Init()
+
 	for i := 0; i < b.N; i++ {
 		NewPositionFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 	}
 }
 
 func Benchmark_DoUndo(b *testing.B) {
-	Init()
+
 	p := NewPosition()
 	for i := 0; i < b.N; i++ {
 		p.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))

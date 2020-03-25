@@ -1,4 +1,6 @@
 /*
+ * FrankyGo - UCI chess engine in GO for learning purposes
+ *
  * MIT License
  *
  * Copyright (c) 2018-2020 Frank Kopp
@@ -37,7 +39,7 @@ import (
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
-var logTest = logging.GetLog("test")
+var logTest = logging.GetLog()
 
 func TestEntrySize(t *testing.T) {
 	e := TtEntry{
@@ -85,7 +87,7 @@ func TestNew(t *testing.T) {
 
 func TestGetAndProbe(t *testing.T) {
 	// setup
-	Init()
+
 	tt := NewTtTable(64)
 	assert.Equal(t, uint64(4_194_304), tt.maxNumberOfEntries)
 	assert.Equal(t, 4_194_304, cap(tt.data))
@@ -167,10 +169,12 @@ func TestAge(t *testing.T) {
 	logTest.Debug("Filling tt")
 	startTime := time.Now()
 	for i, _ := range tt.data {
+		tt.numberOfEntries++
 		tt.data[i].Key = position.Key(i)
 		tt.data[i].Age++
 	}
 	tt.data[0].Age = 0
+	tt.numberOfEntries--
 	elapsed := time.Since(startTime)
 	logTest.Debug(out.Sprintf("TT of %d elements filled in %d ms\n", len(tt.data), elapsed.Milliseconds()))
 	log.Debug(tt.String())
@@ -182,7 +186,7 @@ func TestAge(t *testing.T) {
 	assert.EqualValues(t, 1, tt.GetEntry(position.Key(tt.maxNumberOfEntries-1)).Age)
 
 	logTest.Debug("Aging entries")
-	tt.ageEntries()
+	tt.AgeEntries()
 
 	assert.EqualValues(t, 0, tt.GetEntry(0).Age)
 	assert.EqualValues(t, 2, tt.GetEntry(1).Age)
@@ -192,7 +196,7 @@ func TestAge(t *testing.T) {
 
 func TestPut(t *testing.T) {
 	// setup
-	Init()
+
 	tt := NewTtTable(4)
 	move := CreateMove(SqE2, SqE4, Normal, PtNone)
 
@@ -263,7 +267,7 @@ func TestPut(t *testing.T) {
 
 func TestPerformance(t *testing.T) {
 	// setup
-	Init()
+
 	tt := NewTtTable(1_024)
 
 	move := CreateMove(SqE2, SqE4, Normal, PtNone)
@@ -275,14 +279,14 @@ func TestPerformance(t *testing.T) {
 		out.Printf("Round %d\n", r)
 		key := position.Key(rand.Uint64())
 		depth := int8(rand.Int31n(128))
-		value:= Value(rand.Int31n(int32(ValueMax)))
+		value := Value(rand.Int31n(int32(ValueMax)))
 		valueType := ValueType(rand.Int31n(4))
 		start := time.Now()
 		for i := uint64(0); i < iterations; i++ {
-			tt.Put(key+position.Key(i), move, value, depth, valueType, false, true);
+			tt.Put(key+position.Key(i), move, value, depth, valueType, false, true)
 		}
 		for i := uint64(0); i < iterations; i++ {
-			key := position.Key(key+position.Key(2*i))
+			key := position.Key(key + position.Key(2*i))
 			_ = tt.Probe(key)
 		}
 		elapsed := time.Since(start)

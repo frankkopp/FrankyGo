@@ -1,4 +1,6 @@
 /*
+ * FrankyGo - UCI chess engine in GO for learning purposes
+ *
  * MIT License
  *
  * Copyright (c) 2018-2020 Frank Kopp
@@ -125,14 +127,6 @@ func calcPosValueBlack(sq Square, gamePhase int, posMidTable *[SqLength]Value, p
 func calcPosValueWhite(sq Square, gamePhase int, posMidTable *[SqLength]Value, posEndTable *[SqLength]Value) Value {
 	return (Value(gamePhase)*posMidTable[63-sq] + (Value(GamePhaseMax-gamePhase))*posEndTable[63-sq]) / GamePhaseMax
 }
-
-const (
-	// GamePhaseMax maximum game phase value. Game phase is used to
-	// determine if we are in the beginning or end phase of a chess game
-	// Game phase is calculated be the number of officers on the board
-	// with this maximum
-	GamePhaseMax = 24
-)
 
 var (
 	posMidValue = [PieceLength][SqLength]Value{}

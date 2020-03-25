@@ -1,4 +1,6 @@
 /*
+ * FrankyGo - UCI chess engine in GO for learning purposes
+ *
  * MIT License
  *
  * Copyright (c) 2018-2020 Frank Kopp
@@ -32,8 +34,8 @@ type PieceType int8
 //  test for sliding pt & 0b0100 == 1 (must be < 7)
 //  PtNone   = 0b0000
 //  King     = 0b0001 // non sliding
-//  Pawn     = 0b0010
-//  Knight   = 0b0011
+//  Pawn     = 0b0010 // non sliding
+//  Knight   = 0b0011 // non sliding
 //  Bishop   = 0b0100 // sliding
 //  Rook     = 0b0101 // sliding
 //  Queen    = 0b0110 // sliding

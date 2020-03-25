@@ -1,11 +1,27 @@
 v 0.x (planned)
 ================================================================================
 
-v 0.3 (planned)
+v 0.4 (planned)
 ================================================================================
-- TODO:
+- TODO
     - Implement simple Search
     - Implement simple Evaluator
+    - log files for standard and search log
+
+v 0.3 (done)
+================================================================================
+- DONE:
+    - CleanUp and additional documentation
+    - complete uci options
+    - add log files to command line options
+    - make log files configurable
+    - make book configurable
+    - added uci options
+    - added configuration via file and command line
+    - search handling
+    - starting / stopping
+    - time control
+    - limits (except depth limit - needs simple search minimax)
 
 v 0.2 (done)
 ================================================================================

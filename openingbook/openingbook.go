@@ -1,4 +1,6 @@
 /*
+ * FrankyGo - UCI chess engine in GO for learning purposes
+ *
  * MIT License
  *
  * Copyright (c) 2018-2020 Frank Kopp
@@ -41,6 +43,7 @@ import (
 	"encoding/gob"
 	"errors"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -53,10 +56,11 @@ import (
 	"github.com/frankkopp/FrankyGo/movegen"
 	"github.com/frankkopp/FrankyGo/position"
 	"github.com/frankkopp/FrankyGo/types"
+	"github.com/frankkopp/FrankyGo/util"
 )
 
 var out = message.NewPrinter(language.German)
-var log = logging.GetLog("openingbook")
+var log = logging.GetLog()
 
 // setting to use multiple goroutines or not - useful for debugging
 const parallel = true
@@ -69,6 +73,14 @@ const (
 	Simple BookFormat = iota
 	San    BookFormat = iota
 	Pgn    BookFormat = iota
+)
+
+var (
+	FormatFromString = map[string]BookFormat{
+		"Simple":Simple,
+		"San":San,
+		"Pgn":Pgn,
+	}
 )
 
 // Successor  represents a tuple of a move
@@ -91,10 +103,16 @@ type BookEntry struct {
 
 // Book represents a structure for chess opening books which can
 // be read from different file formats into an internal data structure.
+//  Create new book instance with NewBook()
 type Book struct {
 	bookMap     map[uint64]BookEntry
 	rootEntry   uint64
 	initialized bool
+}
+
+// NewBook create as new opening book instance.
+func NewBook() *Book {
+	return &Book{}
 }
 
 // mutex to support concurrent writing to the book data structure
@@ -104,28 +122,44 @@ var bookLock sync.Mutex
 // A binary cache file will be created in the same folder (postfix .cache) to
 // speedup subsequent loading if the opening book. Initialization only occurs once
 // multiple calls will be ignored. To re-initialize call Reset() first.
-func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool, recreateCache bool) error {
+func (b *Book) Initialize(bookPath string, bookFile string, bookFormat BookFormat, useCache bool, recreateCache bool) error {
 	if b.initialized {
 		return nil
 	}
 
-	log.Info("Initializing Opening Book")
+	// make absolute path
+	if !filepath.IsAbs(bookPath) {
+		wd, _ := os.Getwd()
+		bookPath = wd + "/" + bookPath
+	}
+	bookPath = filepath.Clean(bookPath)
+	bookFilePath := filepath.Clean(bookPath + "/" +bookFile)
 
+	log.Infof("Initializing Opening Book [%s]", bookFilePath)
+	err := b.initialize(bookFilePath, bookFormat, useCache, recreateCache)
+	util.GcWithStats()
+
+	return err
+}
+
+func (b *Book) initialize(bookFilePath string, bookFormat BookFormat, useCache bool, recreateCache bool) error {
 	startTotal := time.Now()
 
 	// check file path
-	if _, err := os.Stat(bookPath); err != nil {
-		log.Errorf("File \"%s\" does not exist\n", bookPath)
+	if _, err := os.Stat(bookFilePath); err != nil {
+		log.Errorf("File \"%s\" does not exist\n", bookFilePath)
 		return err
 	}
+
+	log.Debugf("Memory statistics: %s", util.MemStat())
 
 	// if cache enabled check if we have a cache file and load from cache
 	if useCache && !recreateCache {
 		startReading := time.Now()
-		hasCache, err := b.loadFromCache(bookPath)
+		hasCache, err := b.loadFromCache(bookFilePath)
 		elapsedReading := time.Since(startReading)
 		if err != nil {
-			log.Warningf("Cache could not be loaded. Reading original data from \"%s\"", bookPath)
+			log.Warningf("Cache could not be loaded. Reading original data from \"%s\"", bookFilePath)
 		}
 		if hasCache {
 			log.Infof("Finished reading cache from file in: %d ms\n", elapsedReading.Milliseconds())
@@ -134,22 +168,26 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool,
 		} // else no cache file just load the data from original file
 	}
 
+	log.Debugf("Memory statistics: %s", util.MemStat())
+
 	// read book from file
-	log.Infof("Reading opening book file: %s\n", bookPath)
+	log.Infof("Reading opening book file: %s\n", bookFilePath)
 	startReading := time.Now()
-	lines, err := readFile(bookPath)
+	lines, err := readFile(bookFilePath)
 	if err != nil {
-		log.Errorf("File \"%s\" could not be read: %s\n", bookPath, err)
+		log.Errorf("File \"%s\" could not be read: %s\n", bookFilePath, err)
 		return err
 	}
 	elapsedReading := time.Since(startReading)
 	log.Infof("Finished reading %d lines from file in: %d ms\n", len(*lines), elapsedReading.Milliseconds())
+	log.Debugf("Memory statistics: %s", util.MemStat())
 
 	// add root position
 	startPosition := position.NewPosition()
 	b.bookMap = make(map[uint64]BookEntry)
 	b.rootEntry = uint64(startPosition.ZobristKey())
 	b.bookMap[uint64(startPosition.ZobristKey())] = BookEntry{ZobristKey: uint64(startPosition.ZobristKey()), Counter: 0, Moves: []Successor{}}
+	log.Debugf("Memory statistics: %s", util.MemStat())
 
 	// process lines
 	if parallel {
@@ -165,6 +203,7 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool,
 	}
 	elapsedProcessing := time.Since(startProcessing)
 	log.Infof("Finished processing %d lines in: %d ms\n", len(*lines), elapsedProcessing.Milliseconds())
+	log.Debugf("Memory statistics: %s", util.MemStat())
 
 	// finished
 	elapsedTotal := time.Since(startTotal)
@@ -176,7 +215,7 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool,
 	if useCache {
 		log.Infof("Saving to cache...")
 		startSave := time.Now()
-		cacheFile, nBytes, err := b.saveToCache(bookPath)
+		cacheFile, nBytes, err := b.saveToCache(bookFilePath)
 		if err != nil {
 			log.Errorf("Error while saving to cache: %s\n", err)
 		}
@@ -184,6 +223,7 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool,
 		bytes := out.Sprintf("%d", nBytes/1_024)
 		log.Infof("Saved %s kB to cache %s in %d ms\n", bytes, cacheFile, elapsedSave.Milliseconds())
 	}
+	log.Debugf("Memory statistics: %s", util.MemStat())
 
 	b.initialized = true
 	return nil
@@ -309,7 +349,7 @@ func (b *Book) processSimpleLine(line string) {
 
 	// add all matches to book
 	for _, moveString := range matches {
-		err := b.processSingleMove(moveString, &mg, &pos)
+		err := b.processSingleMove(moveString, mg, pos)
 		// stop processing further matches when we had an error as it
 		// would probably be fruitless as position will be wrong
 		if err != nil {
@@ -488,7 +528,7 @@ func (b *Book) processSanLine(line string) {
 	var mg = movegen.NewMoveGen()
 
 	for _, moveString := range moveStrings {
-		err := b.processSingleMove(moveString, &mg, &pos)
+		err := b.processSingleMove(moveString, mg, pos)
 		// stop processing further matches when we had an error as it
 		// would probably be fruitless as position will be wrong
 		if err != nil {

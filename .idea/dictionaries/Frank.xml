@@ -2,6 +2,12 @@
   <dictionary name="Frank">
     <words>
       <w>abcdefgh</w>
+      <w>bestmove</w>
+      <w>binc</w>
+      <w>bookfile</w>
+      <w>bookpath</w>
+      <w>btime</w>
+      <w>bufio</w>
       <w>castlings</w>
       <w>cmds</w>
       <w>diagstart</w>
@@ -14,10 +20,14 @@
       <w>kiwipete</w>
       <w>kopp</w>
       <w>kpnbrq</w>
+      <w>loglvl</w>
+      <w>logpath</w>
       <w>movearray</w>
       <w>movegen</w>
       <w>movegens</w>
       <w>moveslice</w>
+      <w>movestogo</w>
+      <w>movetime</w>
       <w>noninfringement</w>
       <w>openingbook</w>
       <w>passant</w>
@@ -27,9 +37,15 @@
       <w>pppppppp</w>
       <w>readyok</w>
       <w>rnbqkbnr</w>
+      <w>searchlog</w>
+      <w>searchloglvl</w>
+      <w>seldepth</w>
       <w>setoption</w>
+      <w>sloglvl</w>
       <w>startpos</w>
       <w>stockfish</w>
+      <w>subcommand</w>
+      <w>transpositiontable</w>
       <w>ucihandler</w>
       <w>ucinewgame</w>
       <w>uciok</w>
@@ -38,6 +54,8 @@
       <w>vexact</w>
       <w>vlength</w>
       <w>vnone</w>
+      <w>winc</w>
+      <w>wtime</w>
       <w>zobrist</w>
     </words>
   </dictionary>
