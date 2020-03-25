@@ -33,18 +33,28 @@ import (
 	"github.com/frankkopp/FrankyGo/config"
 )
 
+// init will define all available uci options and store them into the uciOption map
+func init() {
+	uciOptions = map[string]*uciOption{
+		"Clear Hash": {NameID: "Clear Hash", HandlerFunc: clearCache, OptionType: Button},
+		"Use_Hash":   {NameID: "Use_Hash", HandlerFunc: useCache, OptionType: Check, DefaultValue: "true", CurrentValue: strconv.FormatBool(config.Settings.Search.UseTT)},
+		"Hash":       {NameID: "Hash", HandlerFunc: cacheSize, OptionType: Spin, DefaultValue: "64", CurrentValue: string(config.Settings.Search.TTSize), MinValue: "0", MaxValue: "65000"},
+		"Use_Book":   {NameID: "Use_Book", HandlerFunc: useBook, OptionType: Check, DefaultValue: "true", CurrentValue: strconv.FormatBool(config.Settings.Search.UseBook)},
+	}
+}
+
 // GetOptions returns all available uci options a slice of strings
 // to be send to the UCI user interface during the initialization
 // phase of the UCI protocol
 func (o *optionMap) GetOptions() *[]string {
-	var options  []string
+	var options []string
 	for _, opt := range uciOptions {
 		options = append(options, opt.String())
 	}
 	return &options
 }
 
-// String will return a representation of the uci option as required by
+// String for uciOption will return a representation of the uci option as required by
 // the UCI protocol during the initialization phase of the UCI protocol
 func (o *uciOption) String() string {
 	var os strings.Builder
@@ -103,7 +113,7 @@ type optionHandler func(*UciHandler, *uciOption)
 // called when the "setoption" command changes the option.
 type uciOption struct {
 	NameID       string
-	Handler      optionHandler
+	HandlerFunc  optionHandler
 	OptionType   uciOptionType
 	DefaultValue string
 	MinValue     string
@@ -118,17 +128,8 @@ type optionMap map[string]*uciOption
 // uciOptions stores all available uci options
 var uciOptions optionMap
 
-// init will define all available uci options and store them into the uciOption map
-func init() {
-	uciOptions = map[string]*uciOption{
-		"Clear Hash": {NameID: "Clear Hash", Handler: clearCache, OptionType: Button},
-		"Use_Hash":   {NameID: "Use_Hash", Handler: useCache, OptionType: Check, DefaultValue: "true", CurrentValue: strconv.FormatBool(config.Settings.Search.UseTT)},
-		"Hash":   {NameID: "Hash", Handler: cacheSize, OptionType: Spin, DefaultValue: "64", CurrentValue: string(config.Settings.Search.TTSize), MinValue: "0", MaxValue: "65000"},
-	}
-}
-
 // ////////////////////////////////////////////////////////////////
-// Handler for uci options changes
+// HandlerFunc for uci options changes
 // ////////////////////////////////////////////////////////////////
 
 func clearCache(u *UciHandler, o *uciOption) {
@@ -139,11 +140,18 @@ func clearCache(u *UciHandler, o *uciOption) {
 func useCache(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	config.Settings.Search.UseTT = v
-	log.Debug("Set Use Hash to %v", config.Settings.Search.UseTT)
+	log.Debugf("Set Use Hash to %v", config.Settings.Search.UseTT)
 }
 
 func cacheSize(u *UciHandler, o *uciOption) {
-	v,_ := strconv.Atoi(o.CurrentValue)
+	v, _ := strconv.Atoi(o.CurrentValue)
 	config.Settings.Search.TTSize = v
 	u.mySearch.ResizeCache()
 }
+
+func useBook(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	config.Settings.Search.UseBook = v
+	log.Debugf("Set Use Book to %v", config.Settings.Search.UseBook)
+}
+

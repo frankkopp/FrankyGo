@@ -9,13 +9,15 @@ v 0.4 (planned)
 v 0.3 (in progress)
 ================================================================================
 - TODO:
-    - make book configurable
     - log files for standard and search log
-    - make log files configurable
-    - add log files to command line options
     - CleanUp and additional documentation
 
 - DONE:
+    - complete uci options
+    - add log files to command line options
+    - make log files configurable
+    - make book configurable
+    - added uci options
     - added configuration via file and command line
     - search handling
     - starting / stopping

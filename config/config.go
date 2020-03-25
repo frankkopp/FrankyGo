@@ -24,6 +24,9 @@
  * SOFTWARE.
  */
 
+// Package config holds globally available configuration variables
+// which are either set by defaults, read from a config file or set
+// by command line options.
 package config
 
 import (

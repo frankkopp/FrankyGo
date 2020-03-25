@@ -112,10 +112,11 @@ func NewSearch() *Search {
 	return s
 }
 
-// NewGame resets the search to be ready for a different game.
-// Any caches or states will be reset.
+// NewGame stops any running searches and resets the search state
+// to be ready for a different game. Any caches or states will be reset.
 func (s *Search) NewGame() {
-	// TODO: NewGame
+	s.StopSearch()
+	s.tt.Clear()
 }
 
 // StartSearch starts the search with on the given position with
@@ -125,20 +126,19 @@ func (s *Search) NewGame() {
 func (s *Search) StartSearch(p position.Position, sl Limits) {
 	// acquire init phase lock
 	_ = s.initSemaphore.Acquire(context.TODO(), 1)
-	// set searchLimits for instance
-	s.searchLimits = &sl
-	// position for this search
+	// set position and searchLimits for search
 	s.currentPosition = &p
+	s.searchLimits = &sl
 	// run search
 	go s.run(&p, &sl)
 	// wait until search is running and initialization
-	// is done before returning
+	// is done before returning to caller
 	_ = s.initSemaphore.Acquire(context.TODO(), 1)
 }
 
 // StopSearch stops a running search as quickly as possible.
-// The search stops gracefully and a result will be sent to
-// UCI.
+// The search stops gracefully and a result will be sent to UCI.
+// This will wait for the search to be stopped before returning.
 func (s *Search) StopSearch() {
 	s.stopFlag = true
 	s.WaitWhileSearching()
@@ -175,11 +175,9 @@ func (s *Search) GetUciHandlerPtr() uciInterface.UciDriver {
 // IsReady signals the uciHandler that the search is ready.
 // This is part if the UCI protocol to make sure a chess
 // engine is initialized and ready to receive commands.
-// Currently this does nothing apart from immediately send
-// the ok signal to the uciHandler which in turn send "readyok"
-// to the UCI user interface.
-// In the future this might be used to make the UCI user interface
-// wait until the search has finished initializing.
+// When called this will initialize the search which might
+// take a while. When finished this will call the uciHandler
+// set in SetUciHandler to send "readyok" to the UCI user interface.
 func (s *Search) IsReady() {
 	s.initialize()
 	if s.uciHandlerPtr != nil {
@@ -189,7 +187,8 @@ func (s *Search) IsReady() {
 	}
 }
 
-// ClearHash clears the transposition table. Is ignored while searching.
+// ClearHash clears the transposition table.
+// Is ignored with a warning while searching.
 func (s *Search) ClearHash() {
 	if s.IsSearching() {
 		msg := "Can't clear hash while searching."
@@ -201,7 +200,8 @@ func (s *Search) ClearHash() {
 	s.uciHandlerPtr.SendInfoString("Hash cleared")
 }
 
-// ResizeCache resizes and clears the transposition table. Is ignored while searching.
+// ResizeCache resizes and clears the transposition table.
+// Is ignored with a warning while searching.
 func (s *Search) ResizeCache() {
 	if s.IsSearching() {
 		msg := "Can't resize hash while searching."
@@ -250,9 +250,9 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 		s.startTimer()
 	}
 
-	// check opening book when we have a time controlled game
+	// check for opening book move when we have a time controlled game
 	bookMove := MoveNone
-	if s.book != nil && sl.TimeControl && len(s.searchLimits.Moves) == 0 {
+	if s.book != nil && config.Settings.Search.UseBook && sl.TimeControl && len(s.searchLimits.Moves) == 0 {
 		bookEntry, found := s.book.GetEntry(position.ZobristKey())
 		if found && len(bookEntry.Moves) > 0 {
 			// choose move - random for now
@@ -356,7 +356,7 @@ func (s *Search) iterativeDeepening(p *position.Position) *Result {
 // Initialize sets up opening book, transposition table
 // and other potentially time consuming setup tasks
 // This can be called several times without doing
-// initialization again
+// initialization again.
 func (s *Search) initialize() {
 	// init opening book
 	if config.Settings.Search.UseBook {
@@ -393,6 +393,8 @@ func (s *Search) initialize() {
 	}
 }
 
+// stopConditions checks if stopFlag is set or if nodesVisited have
+// reached a potential maximum set in the search limits.
 func (s *Search) stopConditions() bool {
 	if s.stopFlag {
 		return true
@@ -403,6 +405,8 @@ func (s *Search) stopConditions() bool {
 	return s.stopFlag
 }
 
+// setupSearchLimits reports to log.debug on search limits for the search
+// and sets up time control
 func (s *Search) setupSearchLimits(position *position.Position, sl *Limits) {
 	if sl.Infinite {
 		s.log.Debug("Search mode: Infinite")
@@ -440,6 +444,8 @@ func (s *Search) setupSearchLimits(position *position.Position, sl *Limits) {
 	}
 }
 
+// setupTimeControl sets up time control according to the given search limits
+// and returns a limit on the duration for the current search
 func (s *Search) setupTimeControl(p *position.Position, sl *Limits) time.Duration {
 	if sl.MoveTime > 0 { // mode time per move
 		return sl.MoveTime
@@ -473,15 +479,25 @@ func (s *Search) setupTimeControl(p *position.Position, sl *Limits) time.Duratio
 	}
 }
 
+// addExtraTime certain situations might call for a extension or reduction
+// of the given time limit for the search. This function add/subtracts
+// a portion (%) of the current time limit.
+//  Example:
+//  f = 1.0 --> no change in search time
+//  f = 0.9 --> reduction by 10%
+//  f = 1.1 --> extension by 10%
 func (s *Search) addExtraTime(f float64) {
 	if s.searchLimits.TimeControl && s.searchLimits.MoveTime == 0 {
-		duration := time.Duration(int64(f * float64(s.timeLimit.Nanoseconds())))
+		duration := time.Duration(int64((f - 1.0) * float64(s.timeLimit.Nanoseconds())))
 		s.extraTime += duration
 		s.log.Debugf(out.Sprintf("Time added/reduced by %d ms to %d ms",
 			duration.Milliseconds(), (s.timeLimit + s.extraTime).Milliseconds()))
 	}
 }
 
+// startTimer starts a go routine which regularly checks the elapsed time against
+// the time limit and extra time given. If time limit is reached this will set
+// the stopFlag to true and terminate the go routine
 func (s *Search) startTimer() {
 	go func() {
 		s.log.Debugf("Timer started with time limit of %d ms", s.timeLimit.Milliseconds())
@@ -501,6 +517,7 @@ func (s *Search) startTimer() {
 	}()
 }
 
+// sends the search result to the uci handler if a handler is available
 func (s *Search) sendResult(searchResult *Result) {
 	if s.uciHandlerPtr != nil {
 		s.uciHandlerPtr.SendResult(searchResult.BestMove, searchResult.PonderMove)

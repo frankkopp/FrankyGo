@@ -44,7 +44,7 @@ var out = message.NewPrinter(language.German)
 
 func main() {
 
-	// get command line args
+	// command line args
 	versionInfo := flag.Bool("version", false, "prints version and exits")
 	configFile := flag.String("config", "../config/config.toml", "path to configuration settings file")
 	logLvl := flag.String("loglvl", "", "standard log level\n(critical|error|warning|notice|info|debug)")
@@ -62,10 +62,14 @@ func main() {
 	}
 
 	// set config file
+	// this needs to be set before config.Setup() is called. Otherwise the default will be used.
 	config.ConfFile = *configFile
 
 	// read config file
 	config.Setup()
+
+	// After reading the configuration file and the defaults we can now overwrite
+	// settings with command line options.
 
 	// path to logfile
 	if *logPath != "" {

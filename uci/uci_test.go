@@ -296,6 +296,8 @@ func TestFullSearchProcess(t *testing.T) {
 	result = uh.Command("setoption name Hash value 512")
 	assert.Contains(t, result, "Hash resized")
 
+	result = uh.Command("setoption name Use_Book value false")
+
 	uh.Command("position startpos moves e2e4 e7e5")
 	assert.EqualValues(t, "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2", uh.myPosition.StringFen())
 
@@ -303,6 +305,8 @@ func TestFullSearchProcess(t *testing.T) {
 	assert.True(t, uh.mySearch.IsSearching())
 	time.Sleep(2 * time.Second)
 	uh.mySearch.WaitWhileSearching()
+	assert.False(t, uh.mySearch.LastSearchResult().BookMove)
+
 
 	result = uh.Command("quit")
 }
@@ -316,6 +320,8 @@ func TestBookMove(t *testing.T) {
 
 	result = uh.Command("isready")
 	assert.Contains(t, result, "readyok")
+
+	result = uh.Command("setoption name Use_Book value true")
 
 	uh.Command("position startpos moves e2e4 e7e5")
 	assert.EqualValues(t, "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2", uh.myPosition.StringFen())

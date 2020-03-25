@@ -266,7 +266,7 @@ func (u *UciHandler) setOptionCommand(tokens []string) {
 	o, found := uciOptions[name]
 	if found {
 		o.CurrentValue = value
-		o.Handler(u, o)
+		o.HandlerFunc(u, o)
 	} else {
 		msg := out.Sprintf("Command 'setoption': No such option '%s'", name)
 		u.sendInfoString(msg)
@@ -386,7 +386,6 @@ func (u *UciHandler) positionCommand(tokens []string) {
 // be started. Usually this means resetting all search related data e.g.
 // hash tables etc.
 func (u *UciHandler) uciNewGameCommand() {
-	u.mySearch.StopSearch()
 	u.myPosition = position.NewPosition()
 	u.mySearch.NewGame()
 }
