@@ -32,15 +32,19 @@ package uci
 import (
 	"bufio"
 	"bytes"
+	golog "log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	logging2 "github.com/op/go-logging"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
+	"github.com/frankkopp/FrankyGo/config"
 	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/movegen"
 	"github.com/frankkopp/FrankyGo/moveslice"
@@ -53,7 +57,6 @@ import (
 
 var out = message.NewPrinter(language.German)
 var log = logging.GetLog()
-var uciLog = logging.GetUciLog()
 
 // UciHandler handles all communication with the chess ui via UCI
 // and controls options and search.
@@ -65,6 +68,7 @@ type UciHandler struct {
 	mySearch   *search.Search
 	myPosition *position.Position
 	myPerft    *movegen.Perft
+	uciLog     *logging2.Logger
 }
 
 // ///////////////////////////////////////////////////////////
@@ -78,13 +82,15 @@ type UciHandler struct {
 // 		u.InIo = bufio.NewScanner(os.Stdin)
 //		u.OutIo = bufio.NewWriter(os.Stdout)
 func NewUciHandler() *UciHandler {
-	u := &UciHandler{}
-	u.InIo = bufio.NewScanner(os.Stdin)
-	u.OutIo = bufio.NewWriter(os.Stdout)
-	u.mySearch = search.NewSearch()
-	u.myPosition = position.NewPosition()
-	u.myMoveGen = movegen.NewMoveGen()
-	u.myPerft = movegen.NewPerft()
+	u := &UciHandler{
+		InIo:       bufio.NewScanner(os.Stdin),
+		OutIo:      bufio.NewWriter(os.Stdout),
+		myMoveGen:  movegen.NewMoveGen(),
+		mySearch:   search.NewSearch(),
+		myPosition: position.NewPosition(),
+		myPerft:    movegen.NewPerft(),
+		uciLog:     getUciLog(),
+	}
 	var uciDriver uciInterface.UciDriver
 	uciDriver = u
 	u.mySearch.SetUciHandler(uciDriver)
@@ -188,7 +194,7 @@ func (u *UciHandler) handleReceivedCommand(cmd string) bool {
 		return false
 	}
 	log.Debugf("Received command: %s", cmd)
-	uciLog.Infof("<< %s", cmd)
+	u.uciLog.Infof("<< %s", cmd)
 	// find command and execute by calling command function
 	tokens := regexWhiteSpace.Split(cmd, -1)
 	strings.TrimSpace(tokens[0])
@@ -364,7 +370,7 @@ func (u *UciHandler) sendInfoString(s string) {
 }
 
 func (u *UciHandler) send(s string) {
-	uciLog.Infof(">> %s", s)
+	u.uciLog.Infof(">> %s", s)
 	_, _ = u.OutIo.WriteString(s + "\n")
 	_ = u.OutIo.Flush()
 }
@@ -525,4 +531,49 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 		}
 	}
 	return searchLimits, false
+}
+
+// getUciLog returns an instance of a special Logger preconfigured for
+// logging all UCI protocol communication to os.Stdout or file
+// Format is very simple "time UCI <uci command>"
+func getUciLog() *logging2.Logger {
+	// create logger
+	uciLog := logging2.MustGetLogger("UCI ")
+
+	// Stdout backend
+	uciFormat := logging2.MustStringFormatter(`%{time:15:04:05.000} UCI %{message}`)
+	backend1 := logging2.NewLogBackend(os.Stdout, "", golog.Lmsgprefix)
+	backend1Formatter := logging2.NewBackendFormatter(backend1, uciFormat)
+	uciBackEnd1 := logging2.AddModuleLevel(backend1Formatter)
+	uciBackEnd1.SetLevel(logging2.DEBUG, "")
+
+	// File backend
+	programName, _ := os.Executable()
+	exeName := strings.TrimSuffix(filepath.Base(programName), ".exe")
+	var logPath string
+	if filepath.IsAbs(config.Settings.Log.LogPath) {
+		logPath = config.Settings.Log.LogPath
+	} else {
+		logPath =  filepath.Dir(programName) + "/" + config.Settings.Log.LogPath
+	}
+	uciLogFilePath := logPath + "/" + exeName + "_ucilog.log"
+	uciLogFilePath = filepath.Clean(uciLogFilePath)
+
+	// create file backend
+	var err error
+	uciLogFile, err := os.OpenFile(uciLogFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		golog.Println("Logfile could not be created:", err)
+		uciLog.SetBackend(uciBackEnd1)
+	} else {
+		backend2 := logging2.NewLogBackend(uciLogFile, "", golog.Lmsgprefix)
+		backend2Formatter := logging2.NewBackendFormatter(backend2, uciFormat)
+		uciBackEnd2 := logging2.AddModuleLevel(backend2Formatter)
+		uciBackEnd2.SetLevel(logging2.DEBUG, "")
+		//multi := logging2.SetBackend(uciBackEnd1, uciBackEnd2)
+		uciLog.SetBackend(uciBackEnd2)
+		uciLog.Infof("Log %s started at %s:", uciLogFile.Name(), time.Now().String())
+	}
+
+	return uciLog
 }

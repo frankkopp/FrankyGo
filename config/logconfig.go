@@ -29,12 +29,14 @@ package config
 type logConfiguration struct {
 	LogLvl       string
 	SearchLogLvl string
+	LogPath      string
 }
 
 // sets defaults which might be overwritten by config file
 func init() {
 	Settings.Log.LogLvl = "debug"
 	Settings.Log.SearchLogLvl = "debug"
+	Settings.Log.LogPath = "../logs"
 }
 
 // set defaults for configurations here in case a configuration

@@ -27,20 +27,25 @@
 package config
 
 type searchConfiguration struct {
-	UseBook bool
-	UseTT   bool
-	TTSize  int
+	UseBook    bool
+	BookPath   string
+	BookFormat string
+	UseTT      bool
+	TTSize     int
 }
 
 // sets defaults which might be overwritten by config file
 func init() {
 	Settings.Search.UseBook = true
-	Settings.Search. UseTT = true
+	Settings.Search.BookPath = "../books/book.txt"
+	Settings.Search.BookFormat = "Simple"
+	Settings.Search.UseTT = true
 	Settings.Search.TTSize = 128
 }
 
 // set defaults for configurations here in case a configuration
 // is not available from the config file
 func setupSearch() {
+
 
 }

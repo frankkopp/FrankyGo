@@ -28,7 +28,9 @@ package search
 
 import (
 	"context"
+	"log"
 	"math/rand"
+	"os"
 	"sync"
 	"time"
 
@@ -36,8 +38,9 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
+	"github.com/op/go-logging"
+
 	"github.com/frankkopp/FrankyGo/config"
-	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/movegen"
 	"github.com/frankkopp/FrankyGo/openingbook"
 	"github.com/frankkopp/FrankyGo/position"
@@ -47,11 +50,12 @@ import (
 )
 
 var out = message.NewPrinter(language.German)
-var log = logging.GetSearchLog()
 
 // Search represents the data structure for a chess engine search
 //  Create new instance with NewSearch()
 type Search struct {
+	log *logging.Logger
+
 	uciHandlerPtr  uciInterface.UciDriver
 	initSemaphore  *semaphore.Weighted
 	isRunning      *semaphore.Weighted
@@ -84,6 +88,7 @@ type Search struct {
 // uci handler is nil all output will be sent to Stdout
 func NewSearch() *Search {
 	s := &Search{
+		log:              getSearchLog(),
 		uciHandlerPtr:    nil,
 		initSemaphore:    semaphore.NewWeighted(int64(1)),
 		isRunning:        semaphore.NewWeighted(int64(1)),
@@ -177,7 +182,7 @@ func (s *Search) IsReady() {
 	if s.uciHandlerPtr != nil {
 		s.uciHandlerPtr.SendReadyOk()
 	} else {
-		log.Debug("uci >> readyok")
+		s.log.Debug("uci >> readyok")
 	}
 }
 
@@ -192,7 +197,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	// check if there is already a search running
 	// and if not grab the isRunning semaphore
 	if !s.isRunning.TryAcquire(1) {
-		log.Error("Search already running")
+		s.log.Error("Search already running")
 		return
 	}
 	// release the running semaphore after the search has ended
@@ -221,18 +226,18 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 			// choose move - random for now
 			rand.Seed(int64(time.Now().Nanosecond()))
 			bookMove = Move(bookEntry.Moves[rand.Intn(len(bookEntry.Moves))].Move)
-			log.Debug("Opening Book: Choosing book move: ", bookMove.StringUci())
+			s.log.Debug("Opening Book: Choosing book move: ", bookMove.StringUci())
 		}
 	} else {
-		log.Debug("Opening Book: Not using book")
+		s.log.Debug("Opening Book: Not using book")
 	}
 
 	// age TT entries
 	if s.tt != nil {
-		log.Debugf("Transposition Table: Using TT (%s)", s.tt.String())
+		s.log.Debugf("Transposition Table: Using TT (%s)", s.tt.String())
 		s.tt.AgeEntries()
 	} else {
-		log.Debug("Transposition Table: Not using TT")
+		s.log.Debug("Transposition Table: Not using TT")
 	}
 
 	// Initialize ply based data
@@ -256,7 +261,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	// was finished before it has been stopped by stopSearchFlag or ponderhit,
 	// We wait here until search has completed.
 	if !s.stopFlag && (s.searchLimits.Ponder || s.searchLimits.Infinite) {
-		log.Debug("Search finished before stopped or ponderhit! Waiting for stop/ponderhit to send result")
+		s.log.Debug("Search finished before stopped or ponderhit! Waiting for stop/ponderhit to send result")
 		// relaxed busy wait
 		for !s.stopFlag && (s.searchLimits.Ponder || s.searchLimits.Infinite) {
 			time.Sleep(5 * time.Millisecond)
@@ -278,13 +283,13 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.hasResult = true
 
 	// print stats to log
-	log.Info(out.Sprintf("Search finished after %d ms ", searchResult.SearchTime.Milliseconds()))
-	log.Info(out.Sprintf("Search depth was %d(%d) with %d nodes visited. NPS = %d nps",
+	s.log.Info(out.Sprintf("Search finished after %d ms ", searchResult.SearchTime.Milliseconds()))
+	s.log.Info(out.Sprintf("Search depth was %d(%d) with %d nodes visited. NPS = %d nps",
 		s.curDepth, s.curExtraDepth, s.nodesVisited,
 		(s.nodesVisited*time.Second.Nanoseconds())/(1+searchResult.SearchTime.Nanoseconds())))
 
 	// print result to log
-	log.Infof("Search result: %s", searchResult.String())
+	s.log.Infof("Search result: %s", searchResult.String())
 
 	// Clean up
 	// make sure timer stops as this could potentially still be running
@@ -297,7 +302,7 @@ func (s *Search) iterativeDeepening(p *position.Position) *Result {
 	for !s.stopConditions() {
 		s.nodesVisited++
 		if s.nodesVisited%100 == 0 {
-			log.Info("Simulating search...")
+			s.log.Info("Simulating search...")
 		}
 		time.Sleep(5 * time.Millisecond)
 	}
@@ -325,15 +330,20 @@ func (s *Search) initialize() {
 	if config.Settings.Search.UseBook {
 		if s.book == nil {
 			s.book = openingbook.NewBook()
-			bookPath := "../books/book.txt" // TODO config option
-			err := s.book.Initialize(bookPath, openingbook.Simple, true, false)
+			bookPath := config.Settings.Search.BookPath
+			bookFormat, found := openingbook.FormatFromString[config.Settings.Search.BookFormat]
+			if !found {
+				s.log.Warningf("Book format invalid %s", config.Settings.Search.BookFormat)
+				s.book = nil
+			}
+			err := s.book.Initialize(bookPath, bookFormat, true, false)
 			if err != nil {
-				log.Warningf("Book could not be initialized: %s", bookPath)
+				s.log.Warningf("Book could not be initialized: %s (%s)", bookPath, err)
 				s.book = nil
 			}
 		}
 	} else {
-		log.Info("Opening book is disabled in configuration")
+		s.log.Info("Opening book is disabled in configuration")
 	}
 
 	// init transposition table
@@ -346,7 +356,7 @@ func (s *Search) initialize() {
 			s.tt = transpositiontable.NewTtTable(sizeInMByte)
 		}
 	} else {
-		log.Info("Transposition Table is disabled in configuration")
+		s.log.Info("Transposition Table is disabled in configuration")
 	}
 }
 
@@ -362,38 +372,38 @@ func (s *Search) stopConditions() bool {
 
 func (s *Search) setupSearchLimits(position *position.Position, sl *Limits) {
 	if sl.Infinite {
-		log.Debug("Search mode: Infinite")
+		s.log.Debug("Search mode: Infinite")
 	}
 	if sl.Ponder {
-		log.Debug("Search mode: Ponder")
+		s.log.Debug("Search mode: Ponder")
 	}
 	if sl.Mate > 0 {
-		log.Debug("Search mode: Search for mate in %s", sl.Mate)
+		s.log.Debug("Search mode: Search for mate in %s", sl.Mate)
 	}
 	if sl.TimeControl {
 		s.timeLimit = s.setupTimeControl(position, sl)
 		s.extraTime = 0
 		if sl.MoveTime > 0 {
-			log.Debugf("Search mode: Time controlled: Time per move %s ms",
+			s.log.Debugf("Search mode: Time controlled: Time per move %s ms",
 				out.Sprintf("%d", sl.MoveTime.Milliseconds()))
 		} else {
-			log.Debug(out.Sprintf("Search mode: Time controlled: White = %d ms (inc %d ms) Black = %d ms (inc %d ms) Moves to go: %d",
+			s.log.Debug(out.Sprintf("Search mode: Time controlled: White = %d ms (inc %d ms) Black = %d ms (inc %d ms) Moves to go: %d",
 				sl.WhiteTime.Milliseconds(), sl.WhiteInc.Milliseconds(),
 				sl.BlackTime.Milliseconds(), sl.BlackInc.Milliseconds(),
 				sl.MovesToGo))
-			log.Debug(out.Sprintf("Search mode: Time limit     : %d ms", s.timeLimit.Milliseconds()))
+			s.log.Debug(out.Sprintf("Search mode: Time limit     : %d ms", s.timeLimit.Milliseconds()))
 		}
 	} else {
-		log.Debug("Search mode: No time control")
+		s.log.Debug("Search mode: No time control")
 	}
 	if sl.Depth > 0 {
-		log.Debugf("Search mode: Depth limited  : %d", sl.Depth)
+		s.log.Debugf("Search mode: Depth limited  : %d", sl.Depth)
 	}
 	if sl.Nodes > 0 {
-		log.Debugf(out.Sprintf("Search mode: Nodes limited  : %d", sl.Nodes))
+		s.log.Debugf(out.Sprintf("Search mode: Nodes limited  : %d", sl.Nodes))
 	}
 	if sl.Moves.Len() > 0 {
-		log.Debugf(out.Sprintf("Search mode: Moves limited  : %s", sl.Moves.StringUci()))
+		s.log.Debugf(out.Sprintf("Search mode: Moves limited  : %s", sl.Moves.StringUci()))
 	}
 }
 
@@ -434,24 +444,24 @@ func (s *Search) addExtraTime(f float64) {
 	if s.searchLimits.TimeControl && s.searchLimits.MoveTime == 0 {
 		duration := time.Duration(int64(f * float64(s.timeLimit.Nanoseconds())))
 		s.extraTime += duration
-		log.Debugf(out.Sprintf("Time added/reduced by %d ms to %d ms",
+		s.log.Debugf(out.Sprintf("Time added/reduced by %d ms to %d ms",
 			duration.Milliseconds(), (s.timeLimit + s.extraTime).Milliseconds()))
 	}
 }
 
 func (s *Search) startTimer() {
 	go func() {
-		log.Debugf("Timer started with time limit of %d ms", s.timeLimit.Milliseconds())
+		s.log.Debugf("Timer started with time limit of %d ms", s.timeLimit.Milliseconds())
 		// relaxed busy wait
 		// as timeLimit changes due to extra times we can't set a fixed timeout
 		for time.Since(s.startTime) < s.timeLimit+s.extraTime && !s.stopFlag {
 			time.Sleep(5 * time.Millisecond)
 		}
 		if s.stopFlag {
-			log.Debugf("Timer stopped early after wall time: %d ms (time limit %d ms and extra time %d)",
+			s.log.Debugf("Timer stopped early after wall time: %d ms (time limit %d ms and extra time %d)",
 				time.Since(s.startTime).Milliseconds(), s.timeLimit.Milliseconds(), s.extraTime.Milliseconds())
 		} else {
-			log.Debugf("Timer stops search after wall time: %d ms (time limit %d ms and extra time %d)",
+			s.log.Debugf("Timer stops search after wall time: %d ms (time limit %d ms and extra time %d)",
 				time.Since(s.startTime).Milliseconds(), s.timeLimit.Milliseconds(), s.extraTime.Milliseconds())
 			s.stopFlag = true
 		}
@@ -462,6 +472,20 @@ func (s *Search) sendResult(searchResult *Result) {
 	if s.uciHandlerPtr != nil {
 		s.uciHandlerPtr.SendResult(searchResult.BestMove, searchResult.PonderMove)
 	}
+}
+
+// getSearchLog returns an instance of a standard Logger preconfigured with a
+// os.Stdout backend and a "normal" logging format (e.g. time - file - level)
+// for usage in the search itself
+func getSearchLog() *logging.Logger {
+	searchLog := logging.MustGetLogger("search")
+	standardFormat := logging.MustStringFormatter(`%{time:15:04:05.000} %{shortpkg:-8.8s}:%{shortfile:-14.14s} %{level:-7.7s}:  %{message}`)
+	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
+	backend1Formatter := logging.NewBackendFormatter(backend1, standardFormat)
+	searchBackEnd := logging.AddModuleLevel(backend1Formatter)
+	searchBackEnd.SetLevel(logging.Level(config.SearchLogLevel), "")
+	searchLog.SetBackend(searchBackEnd)
+	return searchLog
 }
 
 // //////////////////////////////////////////////////////

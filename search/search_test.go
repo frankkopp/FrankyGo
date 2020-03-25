@@ -31,6 +31,7 @@ import (
 	"testing"
 	"time"
 
+	logging2 "github.com/op/go-logging"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/frankkopp/FrankyGo/config"
@@ -38,12 +39,13 @@ import (
 	"github.com/frankkopp/FrankyGo/position"
 )
 
-var logTest = logging.GetTestLog()
+var logTest *logging2.Logger
 
 // Setup the tests
 func TestMain(m *testing.M) {
-	out.Println("Test Main Setup Tests====================")
+	out.Println("Test Main Setup Tests ====================")
 	config.Setup()
+	logTest = logging.GetTestLog()
 	code := m.Run()
 	os.Exit(code)
 }

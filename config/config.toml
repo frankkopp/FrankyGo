@@ -3,15 +3,18 @@
 title = "FrankyGo Config"
 
 [log]
-LogLvl = "debug"             # off|critical|error|warning|notice|info|debug
-SearchLogLvl = "debug"       # off|critical|error|warning|notice|info|debug
-# TODO ucilogPath
+LogLvl = "debug"                    # off|critical|error|warning|notice|info|debug
+SearchLogLvl = "debug"              # off|critical|error|warning|notice|info|debug
+LogFilePath = "../logs/"            # path to logfiles absolut or relative to .exe
 
 [search]
 UseTT = true
 TTSize = 256
+
 UseBook = true
-# TODO BookPath
+BookPath = "../books/book.txt"      # absolut or relative to .exe
+BookFormat = "Simple"               # Simple | San | Pgn
+#BookPath = "D:/_DEV/go/src/github.com/frankkopp/FrankyGo/books/book.txt"
 
 [eval]
 UsePawnCache = true

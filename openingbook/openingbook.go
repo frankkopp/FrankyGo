@@ -43,6 +43,7 @@ import (
 	"encoding/gob"
 	"errors"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -72,6 +73,14 @@ const (
 	Simple BookFormat = iota
 	San    BookFormat = iota
 	Pgn    BookFormat = iota
+)
+
+var (
+	FormatFromString = map[string]BookFormat{
+		"Simple":Simple,
+		"San":San,
+		"Pgn":Pgn,
+	}
 )
 
 // Successor  represents a tuple of a move
@@ -117,9 +126,19 @@ func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool,
 	if b.initialized {
 		return nil
 	}
-	log.Info("Initializing Opening Book")
+
+	// make absolute path
+	if !filepath.IsAbs(bookPath) {
+		programName, _ := os.Executable()
+		exePath := filepath.Dir(programName)
+		bookPath = exePath + "/" + bookPath
+	}
+	bookPath = filepath.Clean(bookPath)
+
+	log.Infof("Initializing Opening Book [%s]", bookPath)
 	err := b.initialize(bookPath, bookFormat, useCache, recreateCache)
 	util.GcWithStats()
+
 	return err
 }
 

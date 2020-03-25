@@ -49,6 +49,9 @@ func main() {
 	configFile := flag.String("config", "../config/config.toml", "path to configuration settings file")
 	logLvl := flag.String("loglvl", "", "standard log level\n(critical|error|warning|notice|info|debug)")
 	searchlogLvl := flag.String("searchloglvl", "", "search log level\n(critical|error|warning|notice|info|debug)")
+	logPath := flag.String("logpath", "", "path where to write log files to")
+	bookPath := flag.String("book", "", "path to opening book file.\nPlease also provide bookFormat otherwise this will be ignored")
+	bookFormat := flag.String("bookFormat", "", "format of opening book\n(Simple|San|Pgn)")
 	flag.Parse()
 
 	// print version info
@@ -70,6 +73,11 @@ func main() {
 	// read config file
 	config.Setup()
 
+	// path to logfile
+	if *logPath != "" {
+		config.Settings.Log.LogPath = *logPath
+	}
+
 	// set log level from cmd line options overwriting config file or defaults
 	if lvl, found := config.LogLevels[*logLvl]; found {
 		config.LogLevel = lvl
@@ -78,12 +86,17 @@ func main() {
 		config.SearchLogLevel = lvl
 	}
 
-	// resetting log levels - required  as most packages include a logger as a
-	// global var and therefore even before main() is called. These loggers start
-	// with the default log level and must be reset to the actual level required.
+	// set book path if provided as cmd line option
+	if *bookPath != "" && *bookFormat != "" {
+		config.Settings.Search.BookPath = *bookPath
+		config.Settings.Search.BookFormat = *bookFormat
+	}
+
+	// resetting log level auf standard log - required  as most packages include
+	// the standard logger as a global var and therefore even before main() is
+	// called. These loggers start with the default log level and must be reset
+	// to the actual level required.
 	logging.GetLog()
-	logging.GetSearchLog()
-	logging.GetUciLog()
 
 	// starting the uci handler and waiting for communication with
 	// the UCI user interface
