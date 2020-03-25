@@ -203,10 +203,10 @@ func (u *UciHandler) handleReceivedCommand(cmd string) bool {
 		return true
 	case "uci":
 		u.uciCommand()
-	case "isready":
-		u.isReadyCommand()
 	case "setoption":
 		u.setOptionCommand(tokens)
+	case "isready":
+		u.isReadyCommand()
 	case "ucinewgame":
 		u.uciNewGameCommand()
 	case "position":
@@ -231,6 +231,56 @@ func (u *UciHandler) handleReceivedCommand(cmd string) bool {
 	return false
 }
 
+func (u *UciHandler) uciCommand() {
+	u.send("id name FrankyGo " + version.Version())
+	u.send("id author Frank Kopp, Germany")
+	options := uciOptions.GetOptions()
+	for _, o := range *options {
+		u.send(o)
+	}
+	u.send("uciok")
+}
+
+// the set option command reads the option name and the optional value
+// and checks if the uci option exists. If it does its new value will
+// be stored and its handler function will be called
+func (u *UciHandler) setOptionCommand(tokens []string) {
+	name := ""
+	value := ""
+	if len(tokens) > 1 && tokens[1] == "name" {
+		i := 2
+		for i < len(tokens) && tokens[i] != "value" {
+			name += tokens[i] + " "
+			i++
+		}
+		name = strings.TrimSpace(name)
+		if len(tokens) > i && tokens[i] == "value" && len(tokens) > i+1 {
+			value += tokens[i+1]
+		}
+	} else {
+		msg := "Command 'setoption' is malformed"
+		u.sendInfoString(msg)
+		log.Warning(msg)
+		return
+	}
+	o, found := uciOptions[name]
+	if found {
+		o.CurrentValue = value
+		o.Handler(u, o)
+	} else {
+		msg := out.Sprintf("Command 'setoption': No such option '%s'", name)
+		u.sendInfoString(msg)
+		log.Warning(msg)
+		return
+	}
+}
+
+// requests the isready status from the Search which in turn might
+// initialize itself
+func (u *UciHandler) isReadyCommand() {
+	u.mySearch.IsReady()
+}
+
 func (u *UciHandler) ponderHitCommand() {
 	// TODO
 	msg := "Command 'ponderhit' not yet implemented"
@@ -238,11 +288,13 @@ func (u *UciHandler) ponderHitCommand() {
 	log.Warning(msg)
 }
 
+// sends a stop signal to search or perft
 func (u *UciHandler) stopCommand() {
 	u.mySearch.StopSearch()
 	u.myPerft.Stop()
 }
 
+// starts a perft test with the given depth
 func (u *UciHandler) perftCommand(tokens []string) {
 	depth := 4 // default
 	var err error = nil
@@ -264,6 +316,7 @@ func (u *UciHandler) perftCommand(tokens []string) {
 	go u.myPerft.StartPerftMulti(position.StartFen, depth, depth2, true)
 }
 
+// starts a search after reading in the search limits provided
 func (u *UciHandler) goCommand(tokens []string) {
 	searchLimits, err := u.readSearchLimits(tokens)
 	if err {
@@ -273,6 +326,7 @@ func (u *UciHandler) goCommand(tokens []string) {
 	u.mySearch.StartSearch(*u.myPosition, *searchLimits)
 }
 
+// sets the current position as given by the uci command
 func (u *UciHandler) positionCommand(tokens []string) {
 	// build initial position
 	fen := position.StartFen
@@ -328,27 +382,13 @@ func (u *UciHandler) positionCommand(tokens []string) {
 	log.Debugf("New position: %s", u.myPosition.StringFen())
 }
 
+// Signals the search to stop a running search and that a new game should
+// be started. Usually this means resetting all search related data e.g.
+// hash tables etc.
 func (u *UciHandler) uciNewGameCommand() {
 	u.mySearch.StopSearch()
 	u.myPosition = position.NewPosition()
 	u.mySearch.NewGame()
-}
-
-func (u *UciHandler) setOptionCommand(tokens []string) {
-	// TODO
-	msg := "Command 'setoption' not yet implemented"
-	u.sendInfoString(msg)
-	log.Warning(msg)
-}
-
-func (u *UciHandler) isReadyCommand() {
-	u.mySearch.IsReady()
-}
-
-func (u *UciHandler) uciCommand() {
-	u.send("id name FrankyGo " + version.Version())
-	u.send("id author Frank Kopp, Germany")
-	u.send("uciok")
 }
 
 func (u *UciHandler) debugCommand() {
@@ -574,7 +614,7 @@ func getUciLog() *logging2.Logger {
 		backend2Formatter := logging2.NewBackendFormatter(backend2, uciFormat)
 		uciBackEnd2 := logging2.AddModuleLevel(backend2Formatter)
 		uciBackEnd2.SetLevel(logging2.DEBUG, "")
-		//multi := logging2.SetBackend(uciBackEnd1, uciBackEnd2)
+		// multi := logging2.SetBackend(uciBackEnd1, uciBackEnd2)
 		uciLog.SetBackend(uciBackEnd2)
 		uciLog.Infof("Log %s started at %s:", uciLogFile.Name(), time.Now().String())
 	}

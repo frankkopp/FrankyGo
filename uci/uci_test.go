@@ -30,7 +30,6 @@ import (
 	"bufio"
 	"bytes"
 	"os"
-	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -73,6 +72,7 @@ func TestUciCommand(t *testing.T) {
 	uh := NewUciHandler()
 	result := uh.Command("uci")
 	assert.Contains(t, result, "id name FrankyGo")
+	assert.Contains(t, result, "Clear Hash")
 	assert.Contains(t, result, "uciok")
 }
 
@@ -80,6 +80,22 @@ func TestIsreadyCmd(t *testing.T) {
 	uh := NewUciHandler()
 	result := uh.Command("isready")
 	assert.Contains(t, result, "readyok")
+}
+
+func TestClearHash(t *testing.T) {
+	uh := NewUciHandler()
+	result := uh.Command("isready")
+	assert.Contains(t, result, "readyok")
+	result = uh.Command("setoption name Clear Hash")
+	assert.Contains(t, result, "Hash cleared")
+}
+
+func TestResizeHash(t *testing.T) {
+	uh := NewUciHandler()
+	result := uh.Command("isready")
+	assert.Contains(t, result, "readyok")
+	result = uh.Command("setoption name Hash value 512")
+	assert.Contains(t, result, "Hash resized")
 }
 
 func TestPositionCmd(t *testing.T) {
@@ -107,7 +123,6 @@ func TestPositionCmd(t *testing.T) {
 func TestReadSearchLimits(t *testing.T) {
 	var cmd string
 	var tokens []string
-	regexWhiteSpace := regexp.MustCompile("\\s+")
 	uciHandler := NewUciHandler()
 
 	cmd = "go infinite"
@@ -277,6 +292,9 @@ func TestFullSearchProcess(t *testing.T) {
 
 	result = uh.Command("isready")
 	assert.Contains(t, result, "readyok")
+
+	result = uh.Command("setoption name Hash value 512")
+	assert.Contains(t, result, "Hash resized")
 
 	uh.Command("position startpos moves e2e4 e7e5")
 	assert.EqualValues(t, "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2", uh.myPosition.StringFen())

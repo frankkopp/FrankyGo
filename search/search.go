@@ -28,7 +28,7 @@ package search
 
 import (
 	"context"
-	"log"
+	golog "log"
 	"math/rand"
 	"os"
 	"sync"
@@ -41,15 +41,18 @@ import (
 	"github.com/op/go-logging"
 
 	"github.com/frankkopp/FrankyGo/config"
+	myLogging "github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/movegen"
 	"github.com/frankkopp/FrankyGo/openingbook"
 	"github.com/frankkopp/FrankyGo/position"
 	"github.com/frankkopp/FrankyGo/transpositiontable"
 	. "github.com/frankkopp/FrankyGo/types"
 	"github.com/frankkopp/FrankyGo/uciInterface"
+	"github.com/frankkopp/FrankyGo/util"
 )
 
 var out = message.NewPrinter(language.German)
+var log = myLogging.GetLog()
 
 // Search represents the data structure for a chess engine search
 //  Create new instance with NewSearch()
@@ -185,6 +188,35 @@ func (s *Search) IsReady() {
 		s.log.Debug("uci >> readyok")
 	}
 }
+
+// ClearHash clears the transposition table. Is ignored while searching.
+func (s *Search) ClearHash() {
+	if s.IsSearching() {
+		msg := "Can't clear hash while searching."
+		s.uciHandlerPtr.SendInfoString(msg)
+		log.Warning(msg)
+		return
+	}
+	s.tt.Clear()
+	s.uciHandlerPtr.SendInfoString("Hash cleared")
+}
+
+// ResizeCache resizes and clears the transposition table. Is ignored while searching.
+func (s *Search) ResizeCache() {
+	if s.IsSearching() {
+		msg := "Can't resize hash while searching."
+		s.uciHandlerPtr.SendInfoString(msg)
+		log.Warning(msg)
+		return
+	}
+	// just remove the tt pointer and re-initialize
+	s.tt = nil
+	s.initialize()
+	// good point in time to let the garbage collector do its work
+	util.GcWithStats()
+	s.uciHandlerPtr.SendInfoString("Hash resized")
+}
+
 
 // //////////////////////////////////////////////////////
 // // Private
@@ -481,7 +513,7 @@ func (s *Search) sendResult(searchResult *Result) {
 func getSearchLog() *logging.Logger {
 	searchLog := logging.MustGetLogger("search")
 	standardFormat := logging.MustStringFormatter(`%{time:15:04:05.000} %{shortpkg:-8.8s}:%{shortfile:-14.14s} %{level:-7.7s}:  %{message}`)
-	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
+	backend1 := logging.NewLogBackend(os.Stdout, "", golog.Lmsgprefix)
 	backend1Formatter := logging.NewBackendFormatter(backend1, standardFormat)
 	searchBackEnd := logging.AddModuleLevel(backend1Formatter)
 	searchBackEnd.SetLevel(logging.Level(config.SearchLogLevel), "")
@@ -497,3 +529,5 @@ func getSearchLog() *logging.Logger {
 func (s *Search) LastSearchResult() Result {
 	return *s.lastSearchResult
 }
+
+
