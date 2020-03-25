@@ -8,7 +8,7 @@ v 0.4 (planned)
     - Implement simple Evaluator
     - log files for standard and search log
 
-v 0.3 (in progress)
+v 0.3 (done)
 ================================================================================
 - DONE:
     - CleanUp and additional documentation
@@ -23,7 +23,7 @@ v 0.3 (in progress)
     - time control
     - limits (except depth limit - needs simple search minimax)
 
-v 0.2 (in progress)
+v 0.2 (done)
 ================================================================================
 - DONE
     - CleanUp
