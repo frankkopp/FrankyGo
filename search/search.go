@@ -331,12 +331,13 @@ func (s *Search) initialize() {
 		if s.book == nil {
 			s.book = openingbook.NewBook()
 			bookPath := config.Settings.Search.BookPath
+			bookFile := config.Settings.Search.BookFile
 			bookFormat, found := openingbook.FormatFromString[config.Settings.Search.BookFormat]
 			if !found {
 				s.log.Warningf("Book format invalid %s", config.Settings.Search.BookFormat)
 				s.book = nil
 			}
-			err := s.book.Initialize(bookPath, bookFormat, true, false)
+			err := s.book.Initialize(bookPath, bookFile, bookFormat, true, false)
 			if err != nil {
 				s.log.Warningf("Book could not be initialized: %s (%s)", bookPath, err)
 				s.book = nil

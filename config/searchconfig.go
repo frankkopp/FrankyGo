@@ -29,6 +29,7 @@ package config
 type searchConfiguration struct {
 	UseBook    bool
 	BookPath   string
+	BookFile   string
 	BookFormat string
 	UseTT      bool
 	TTSize     int
@@ -37,7 +38,8 @@ type searchConfiguration struct {
 // sets defaults which might be overwritten by config file
 func init() {
 	Settings.Search.UseBook = true
-	Settings.Search.BookPath = "../books/book.txt"
+	Settings.Search.BookPath = "D:/_DEV/go/src/github.com/frankkopp/FrankyGo/books"
+	Settings.Search.BookPath = "book.txt"
 	Settings.Search.BookFormat = "Simple"
 	Settings.Search.UseTT = true
 	Settings.Search.TTSize = 128

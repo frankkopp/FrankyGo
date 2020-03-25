@@ -50,20 +50,14 @@ func main() {
 	logLvl := flag.String("loglvl", "", "standard log level\n(critical|error|warning|notice|info|debug)")
 	searchlogLvl := flag.String("searchloglvl", "", "search log level\n(critical|error|warning|notice|info|debug)")
 	logPath := flag.String("logpath", "", "path where to write log files to")
-	bookPath := flag.String("book", "", "path to opening book file.\nPlease also provide bookFormat otherwise this will be ignored")
+	bookPath := flag.String("bookpath", "", "path to opening book files")
+	bookFile := flag.String("bookfile", "", "opening book file\nprovide path if file is not in same directory as executable\nPlease also provide bookFormat otherwise this will be ignored")
 	bookFormat := flag.String("bookFormat", "", "format of opening book\n(Simple|San|Pgn)")
 	flag.Parse()
 
-	// print version info
+	// print version info and exit
 	if *versionInfo {
-		out.Printf("FrankyGo %s\n", version.Version())
-		out.Println("Environment:")
-		out.Printf("  Using GO version %s\n", runtime.Version())
-		out.Printf("  Running %s using %s as a compiler\n", runtime.GOARCH, runtime.Compiler)
-		out.Printf("  Number of CPU: %d\n", runtime.NumCPU())
-		out.Printf("  Number of Goroutines: %d\n", runtime.NumGoroutine())
-		cwd, _ := os.Getwd()
-		out.Printf("  Working directory: %s\n", cwd)
+		printVersionInfo()
 		return
 	}
 
@@ -87,8 +81,11 @@ func main() {
 	}
 
 	// set book path if provided as cmd line option
-	if *bookPath != "" && *bookFormat != "" {
+	if *bookPath != "" {
 		config.Settings.Search.BookPath = *bookPath
+	}
+	if *bookFile != "" && *bookFormat != "" {
+		config.Settings.Search.BookFile = *bookFile
 		config.Settings.Search.BookFormat = *bookFormat
 	}
 
@@ -102,4 +99,15 @@ func main() {
 	// the UCI user interface
 	u := uci.NewUciHandler()
 	u.Loop()
+}
+
+func printVersionInfo() {
+	out.Printf("FrankyGo %s\n", version.Version())
+	out.Println("Environment:")
+	out.Printf("  Using GO version %s\n", runtime.Version())
+	out.Printf("  Running %s using %s as a compiler\n", runtime.GOARCH, runtime.Compiler)
+	out.Printf("  Number of CPU: %d\n", runtime.NumCPU())
+	out.Printf("  Number of Goroutines: %d\n", runtime.NumGoroutine())
+	cwd, _ := os.Getwd()
+	out.Printf("  Working directory: %s\n", cwd)
 }

@@ -39,7 +39,7 @@ import (
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
-var logTest = logging.GetLog("test")
+var logTest = logging.GetLog()
 
 func TestEntrySize(t *testing.T) {
 	e := TtEntry{

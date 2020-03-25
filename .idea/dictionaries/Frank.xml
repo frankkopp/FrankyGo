@@ -4,6 +4,8 @@
       <w>abcdefgh</w>
       <w>bestmove</w>
       <w>binc</w>
+      <w>bookfile</w>
+      <w>bookpath</w>
       <w>btime</w>
       <w>bufio</w>
       <w>castlings</w>
@@ -19,6 +21,7 @@
       <w>kopp</w>
       <w>kpnbrq</w>
       <w>loglvl</w>
+      <w>logpath</w>
       <w>movearray</w>
       <w>movegen</w>
       <w>movegens</w>

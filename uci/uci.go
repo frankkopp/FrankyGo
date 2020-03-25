@@ -554,14 +554,18 @@ func getUciLog() *logging2.Logger {
 	if filepath.IsAbs(config.Settings.Log.LogPath) {
 		logPath = config.Settings.Log.LogPath
 	} else {
-		logPath =  filepath.Dir(programName) + "/" + config.Settings.Log.LogPath
+		dir, _ := os.Getwd()
+		logPath = dir + "/" + config.Settings.Log.LogPath
 	}
 	uciLogFilePath := logPath + "/" + exeName + "_ucilog.log"
 	uciLogFilePath = filepath.Clean(uciLogFilePath)
+	// out.Printf("Log %s \n", uciLogFilePath)
 
 	// create file backend
 	var err error
 	uciLogFile, err := os.OpenFile(uciLogFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+
+	// we use either Stdout or file - if file is valid we use only file
 	if err != nil {
 		golog.Println("Logfile could not be created:", err)
 		uciLog.SetBackend(uciBackEnd1)

@@ -122,32 +122,32 @@ var bookLock sync.Mutex
 // A binary cache file will be created in the same folder (postfix .cache) to
 // speedup subsequent loading if the opening book. Initialization only occurs once
 // multiple calls will be ignored. To re-initialize call Reset() first.
-func (b *Book) Initialize(bookPath string, bookFormat BookFormat, useCache bool, recreateCache bool) error {
+func (b *Book) Initialize(bookPath string, bookFile string, bookFormat BookFormat, useCache bool, recreateCache bool) error {
 	if b.initialized {
 		return nil
 	}
 
 	// make absolute path
 	if !filepath.IsAbs(bookPath) {
-		programName, _ := os.Executable()
-		exePath := filepath.Dir(programName)
-		bookPath = exePath + "/" + bookPath
+		wd, _ := os.Getwd()
+		bookPath = wd + "/" + bookPath
 	}
 	bookPath = filepath.Clean(bookPath)
+	bookFilePath := filepath.Clean(bookPath + "/" +bookFile)
 
-	log.Infof("Initializing Opening Book [%s]", bookPath)
-	err := b.initialize(bookPath, bookFormat, useCache, recreateCache)
+	log.Infof("Initializing Opening Book [%s]", bookFilePath)
+	err := b.initialize(bookFilePath, bookFormat, useCache, recreateCache)
 	util.GcWithStats()
 
 	return err
 }
 
-func (b *Book) initialize(bookPath string, bookFormat BookFormat, useCache bool, recreateCache bool) error {
+func (b *Book) initialize(bookFilePath string, bookFormat BookFormat, useCache bool, recreateCache bool) error {
 	startTotal := time.Now()
 
 	// check file path
-	if _, err := os.Stat(bookPath); err != nil {
-		log.Errorf("File \"%s\" does not exist\n", bookPath)
+	if _, err := os.Stat(bookFilePath); err != nil {
+		log.Errorf("File \"%s\" does not exist\n", bookFilePath)
 		return err
 	}
 
@@ -156,10 +156,10 @@ func (b *Book) initialize(bookPath string, bookFormat BookFormat, useCache bool,
 	// if cache enabled check if we have a cache file and load from cache
 	if useCache && !recreateCache {
 		startReading := time.Now()
-		hasCache, err := b.loadFromCache(bookPath)
+		hasCache, err := b.loadFromCache(bookFilePath)
 		elapsedReading := time.Since(startReading)
 		if err != nil {
-			log.Warningf("Cache could not be loaded. Reading original data from \"%s\"", bookPath)
+			log.Warningf("Cache could not be loaded. Reading original data from \"%s\"", bookFilePath)
 		}
 		if hasCache {
 			log.Infof("Finished reading cache from file in: %d ms\n", elapsedReading.Milliseconds())
@@ -171,11 +171,11 @@ func (b *Book) initialize(bookPath string, bookFormat BookFormat, useCache bool,
 	log.Debugf("Memory statistics: %s", util.MemStat())
 
 	// read book from file
-	log.Infof("Reading opening book file: %s\n", bookPath)
+	log.Infof("Reading opening book file: %s\n", bookFilePath)
 	startReading := time.Now()
-	lines, err := readFile(bookPath)
+	lines, err := readFile(bookFilePath)
 	if err != nil {
-		log.Errorf("File \"%s\" could not be read: %s\n", bookPath, err)
+		log.Errorf("File \"%s\" could not be read: %s\n", bookFilePath, err)
 		return err
 	}
 	elapsedReading := time.Since(startReading)
@@ -215,7 +215,7 @@ func (b *Book) initialize(bookPath string, bookFormat BookFormat, useCache bool,
 	if useCache {
 		log.Infof("Saving to cache...")
 		startSave := time.Now()
-		cacheFile, nBytes, err := b.saveToCache(bookPath)
+		cacheFile, nBytes, err := b.saveToCache(bookFilePath)
 		if err != nil {
 			log.Errorf("Error while saving to cache: %s\n", err)
 		}

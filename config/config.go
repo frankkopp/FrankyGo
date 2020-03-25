@@ -34,7 +34,7 @@ import (
 
 // globally available config values
 var (
-	// ConfFile hold the path to the used config file
+	// ConfFile hold the path to the used config file (relative to working directory)
 	ConfFile = "../config/config.toml"
 
 	// LogLevel defines the general log level - can be overwritten by cmd line options or config file

@@ -40,7 +40,7 @@ import (
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
-var logTest = logging.GetLog("test")
+var logTest = logging.GetLog()
 
 func TestMovegen_String(t *testing.T) {
 
