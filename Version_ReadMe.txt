@@ -3,16 +3,15 @@ v 0.x (planned)
 
 v 0.4 (planned)
 ================================================================================
+- TODO
     - Implement simple Search
     - Implement simple Evaluator
+    - log files for standard and search log
 
 v 0.3 (in progress)
 ================================================================================
-- TODO:
-    - log files for standard and search log
-    - CleanUp and additional documentation
-
 - DONE:
+    - CleanUp and additional documentation
     - complete uci options
     - add log files to command line options
     - make log files configurable
