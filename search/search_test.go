@@ -1,4 +1,6 @@
 /*
+ * FrankyGo - UCI chess engine in GO for learning purposes
+ *
  * MIT License
  *
  * Copyright (c) 2018-2020 Frank Kopp
@@ -23,3 +25,129 @@
  */
 
 package search
+
+import (
+	"os"
+	"testing"
+	"time"
+
+	logging2 "github.com/op/go-logging"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/frankkopp/FrankyGo/config"
+	"github.com/frankkopp/FrankyGo/logging"
+	"github.com/frankkopp/FrankyGo/position"
+)
+
+var logTest *logging2.Logger
+
+// Setup the tests
+func TestMain(m *testing.M) {
+	out.Println("Test Main Setup Tests ====================")
+	config.Setup()
+	logTest = logging.GetTestLog()
+	code := m.Run()
+	os.Exit(code)
+}
+
+func TestSearch_IsReady(t *testing.T) {
+	search := NewSearch()
+	search.IsReady()
+}
+
+func TestSetupTimeControl(t *testing.T) {
+	s := NewSearch()
+	p := position.NewPosition()
+	sl := &Limits{
+		Infinite:    false,
+		Ponder:      false,
+		Mate:        0,
+		Depth:       0,
+		Nodes:       0,
+		Moves:       nil,
+		TimeControl: true,
+		WhiteTime:   60 * time.Second,
+		BlackTime:   60 * time.Second,
+		WhiteInc:    2 * time.Second,
+		BlackInc:    2 * time.Second,
+		MoveTime:    0,
+		MovesToGo:   20,
+	}
+	timeLimit := s.setupTimeControl(p, sl)
+	assert.EqualValues(t, 4500, timeLimit.Milliseconds())
+
+	p = position.NewPosition()
+	sl = &Limits{
+		Infinite:    false,
+		Ponder:      false,
+		Mate:        0,
+		Depth:       0,
+		Nodes:       0,
+		Moves:       nil,
+		TimeControl: true,
+		WhiteTime:   60 * time.Second,
+		BlackTime:   60 * time.Second,
+		WhiteInc:    2 * time.Second,
+		BlackInc:    2 * time.Second,
+		MoveTime:    0,
+		MovesToGo:   0,
+	}
+	timeLimit = s.setupTimeControl(p, sl)
+	assert.EqualValues(t, 3150, timeLimit.Milliseconds())
+
+	// game phase 0
+	p = position.NewPositionFen("8/2P1P1P1/3PkP2/8/4K3/8/8/8 w - - 0 1")
+	sl = &Limits{
+		Infinite:    false,
+		Ponder:      false,
+		Mate:        0,
+		Depth:       0,
+		Nodes:       0,
+		Moves:       nil,
+		TimeControl: true,
+		WhiteTime:   60 * time.Second,
+		BlackTime:   60 * time.Second,
+		WhiteInc:    0 * time.Second,
+		BlackInc:    0 * time.Second,
+		MoveTime:    0,
+		MovesToGo:   0,
+	}
+	timeLimit = s.setupTimeControl(p, sl)
+	assert.EqualValues(t, 5400, timeLimit.Milliseconds())
+}
+
+func TestWaitWhileSearching(t *testing.T) {
+	search := NewSearch()
+	p := position.NewPosition()
+	sl := NewSearchLimits()
+	go func() {
+		time.Sleep(3 * time.Second)
+		search.StopSearch()
+	}()
+	start := time.Now()
+	search.StartSearch(*p, *sl)
+	logTest.Debug("Search started...waiting to finish")
+	search.WaitWhileSearching()
+	logTest.Debug("Search finished")
+	elapsed := time.Since(start)
+	out.Printf("Time %d ms\n", elapsed.Milliseconds())
+	assert.GreaterOrEqual(t, elapsed.Milliseconds(), int64(2_000))
+}
+
+func TestIsSearching(t *testing.T) {
+	search := NewSearch()
+	p := position.NewPosition()
+	sl := NewSearchLimits()
+	start := time.Now()
+	search.StartSearch(*p, *sl)
+	logTest.Debug("Check searching in 1 sec")
+	time.Sleep(time.Second)
+	assert.True(t, search.IsSearching())
+	logTest.Debugf("Is searching = %v", search.IsSearching())
+	search.StopSearch()
+	search.WaitWhileSearching()
+	elapsed := time.Since(start)
+	out.Printf("Time %d ms\n", elapsed.Milliseconds())
+	assert.False(t, search.IsSearching())
+	logTest.Debugf("Is searching = %v", search.IsSearching())
+}

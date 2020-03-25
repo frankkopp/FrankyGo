@@ -1,4 +1,6 @@
 /*
+ * FrankyGo - UCI chess engine in GO for learning purposes
+ *
  * MIT License
  *
  * Copyright (c) 2018-2020 Frank Kopp
@@ -33,36 +35,42 @@ import (
 	"os"
 
 	"github.com/op/go-logging"
+
+	"github.com/frankkopp/FrankyGo/config"
 )
+
+var (
+	standardLog *logging.Logger
+	testLog     *logging.Logger
+
+	standardFormat = logging.MustStringFormatter(`%{time:15:04:05.000} %{shortpkg:-8.8s}:%{shortfile:-14.14s} %{level:-7.7s}:  %{message}`)
+)
+
+func init() {
+	// global loggers
+	standardLog = logging.MustGetLogger("standard")
+}
 
 // GetLog returns an instance of a standard Logger preconfigured with a
 // os.Stdout backend and a "normal" logging format (e.g. time - file - level)
-func GetLog (name string) *logging.Logger {
-	l := logging.MustGetLogger(name)
+func GetLog() *logging.Logger {
 	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
-	var format = logging.MustStringFormatter(
-		`%{time:15:04:05.000} %{shortpkg:-8s}:%{shortfile:-14s} %{level:.7s}:  %{message}`,
-		// :%{shortfunc}
-	)
-	backend1Formatter := logging.NewBackendFormatter(backend1, format)
-	backend1Leveled := logging.AddModuleLevel(backend1Formatter)
-	backend1Leveled.SetLevel(logging.DEBUG, "")
-	l.SetBackend(backend1Leveled)
-	return l
+	backend1Formatter := logging.NewBackendFormatter(backend1, standardFormat)
+	standardBackEnd := logging.AddModuleLevel(backend1Formatter)
+	level := logging.Level(config.LogLevel)
+	standardBackEnd.SetLevel(level, "")
+	standardLog.SetBackend(standardBackEnd)
+	return standardLog
 }
 
-// GetUciLog returns an instance of a special Logger preconfigured for
-// logging all UCI protocol communication to os.Stdout or file
-// Format is very simple "time UCI <uci command>"
-func GetUciLog () *logging.Logger {
-	l := logging.MustGetLogger("UCI ")
+// GetTestLog returns an instance of a standard Logger preconfigured with a
+// os.Stdout backend and a "normal" logging format (e.g. time - file - level)
+func GetTestLog() *logging.Logger {
+	testLog = logging.MustGetLogger("test")
 	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
-	var format = logging.MustStringFormatter(
-		`%{time:15:04:05.000} UCI %{message}`,
-	)
-	backend1Formatter := logging.NewBackendFormatter(backend1, format)
-	backend1Leveled := logging.AddModuleLevel(backend1Formatter)
-	backend1Leveled.SetLevel(logging.DEBUG, "")
-	l.SetBackend(backend1Leveled)
-	return l
+	backend1Formatter := logging.NewBackendFormatter(backend1, standardFormat)
+	standardBackEnd := logging.AddModuleLevel(backend1Formatter)
+	standardBackEnd.SetLevel(logging.Level(config.TestLogLevel), "")
+	testLog.SetBackend(standardBackEnd)
+	return testLog
 }

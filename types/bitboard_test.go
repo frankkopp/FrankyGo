@@ -1,14 +1,16 @@
 /*
+ * FrankyGo - UCI chess engine in GO for learning purposes
+ *
  * MIT License
  *
  * Copyright (c) 2018-2020 Frank Kopp
  *
- * Permission is hereby granted, free of charge, To any person obtaining a copy
- * of this software and associated documentation files (the "Software"), To deal
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
- * To use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and To permit persons To whom the Software is
- * furnished To do so, subject To the following conditions:
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
@@ -35,7 +37,7 @@ import (
 const verbose bool = true
 
 func TestBitboardType(t *testing.T) {
-	Init()
+
 	tests := []struct {
 		value    Bitboard
 		expected int
@@ -57,7 +59,7 @@ func TestBitboardType(t *testing.T) {
 }
 
 func TestBitboardStr(t *testing.T) {
-	Init()
+
 	tests := []struct {
 		value    Bitboard
 		expected string
@@ -81,7 +83,7 @@ func TestBitboardStr(t *testing.T) {
 }
 
 func TestBitboardPutRemove(t *testing.T) {
-	Init()
+
 	tests := []struct {
 		value    Bitboard
 		expected string
@@ -107,7 +109,7 @@ func TestBitboardPutRemove(t *testing.T) {
 }
 
 func TestBitboardStrBoard(t *testing.T) {
-	Init()
+
 	if verbose {
 		fmt.Println(BbZero.StringBoard())
 		fmt.Println(BbOne.StringBoard())
@@ -116,7 +118,7 @@ func TestBitboardStrBoard(t *testing.T) {
 }
 
 func TestBitboardStrGrp(t *testing.T) {
-	Init()
+
 	if verbose {
 		fmt.Println(BbZero.StringGrouped())
 		fmt.Println(BbOne.StringGrouped())
@@ -128,7 +130,7 @@ func TestBitboardStrGrp(t *testing.T) {
 }
 
 func TestBitboardDiagUp(t *testing.T) {
-	Init()
+
 	if verbose {
 		fmt.Println(DiagUpA1.StringBoard())
 		fmt.Println(DiagUpB1.StringBoard())
@@ -160,7 +162,7 @@ func TestBitboardDiagUp(t *testing.T) {
 }
 
 func TestBitboardDiagDown(t *testing.T) {
-	Init()
+
 	if verbose {
 		fmt.Println(DiagDownH1.StringBoard())
 		fmt.Println(DiagDownH2.StringBoard())
@@ -193,7 +195,7 @@ func TestBitboardDiagDown(t *testing.T) {
 }
 
 func TestBitboardLsbMsb(t *testing.T) {
-	Init()
+
 
 	tests := []struct {
 		bitboard Bitboard
@@ -225,7 +227,7 @@ func TestBitboardLsbMsb(t *testing.T) {
 }
 
 func TestBitboardPopLsb(t *testing.T) {
-	Init()
+
 
 	tests := []struct {
 		bbIn   Bitboard
@@ -267,7 +269,7 @@ func TestBitboardPopLsb(t *testing.T) {
 }
 
 func TestBitboardShift(t *testing.T) {
-	Init()
+
 
 	tests := []struct {
 		preShift  Bitboard
@@ -362,7 +364,7 @@ func TestBitboardShift(t *testing.T) {
 }
 
 func TestBitboardInit(t *testing.T) {
-	Init()
+
 
 	// Square bitboards
 	assert.Equal(t, SqA1.bitboard().String(), "0000000000000000000000000000000000000000000000000000000000000001")
@@ -394,7 +396,7 @@ func TestBitboardInit(t *testing.T) {
 }
 
 func TestBitboardFileDistance(t *testing.T) {
-	Init()
+
 
 	tests := []struct {
 		f1   File
@@ -421,7 +423,7 @@ func TestBitboardFileDistance(t *testing.T) {
 }
 
 func TestBitboardSquareDistance(t *testing.T) {
-	Init()
+
 
 	tests := []struct {
 		s1   Square
@@ -449,7 +451,7 @@ func TestBitboardSquareDistance(t *testing.T) {
 }
 
 func TestBitboardRotateBb(t *testing.T) {
-	Init()
+
 
 	bitboard := FileA_Bb | Rank8_Bb | DiagDownH1
 
@@ -493,7 +495,7 @@ func TestBitboardRotateBb(t *testing.T) {
 }
 
 func TestBitboardRotateSq(t *testing.T) {
-	Init()
+
 
 	tests := []struct {
 		rotation string
@@ -543,7 +545,7 @@ func TestBitboardRotateSq(t *testing.T) {
 var result Bitboard
 
 func BenchmarkSqBbBitshift(b *testing.B) {
-	Init()
+
 	var bb Bitboard
 	for i := 0; i < b.N; i++ {
 		for square := SqA1; square < SqNone; square++ {
@@ -554,7 +556,7 @@ func BenchmarkSqBbBitshift(b *testing.B) {
 }
 
 func BenchmarkSqBbArrayCache(b *testing.B) {
-	Init()
+
 	var bb Bitboard
 	for i := 0; i < b.N; i++ {
 		for square := SqA1; square < SqNone; square++ {
@@ -565,7 +567,7 @@ func BenchmarkSqBbArrayCache(b *testing.B) {
 }
 
 func Test_GetMovesOnRank(t *testing.T) {
-	Init()
+
 	tests := []struct {
 		name    string
 		square  Square
@@ -588,7 +590,7 @@ func Test_GetMovesOnRank(t *testing.T) {
 }
 
 func TestGetMovesOnFile(t *testing.T) {
-	Init()
+
 	tests := []struct {
 		name    string
 		square  Square
@@ -610,7 +612,7 @@ func TestGetMovesOnFile(t *testing.T) {
 }
 
 func TestGetMovesDiagUp(t *testing.T) {
-	Init()
+
 	tests := []struct {
 		name    string
 		square  Square
@@ -632,7 +634,7 @@ func TestGetMovesDiagUp(t *testing.T) {
 }
 
 func TestGetMovesDiagDown(t *testing.T) {
-	Init()
+
 	tests := []struct {
 		name    string
 		square  Square
@@ -654,7 +656,7 @@ func TestGetMovesDiagDown(t *testing.T) {
 }
 
 func Test_pseudoAttacksPreCompute(t *testing.T) {
-	Init()
+
 	tests := []struct {
 		name  string
 		piece PieceType
@@ -677,7 +679,7 @@ func Test_pseudoAttacksPreCompute(t *testing.T) {
 }
 
 func Test_pawnAttacksPreCompute(t *testing.T) {
-	Init()
+
 	tests := []struct {
 		name  string
 		color Color
@@ -700,7 +702,7 @@ func Test_pawnAttacksPreCompute(t *testing.T) {
 }
 
 func TestSquare_VariousMasks(t *testing.T) {
-	Init()
+
 	tests := []struct {
 		name string
 		sq   Square
@@ -735,7 +737,7 @@ func TestSquare_VariousMasks(t *testing.T) {
 }
 
 func TestSquare_Ray(t *testing.T) {
-	Init()
+
 	type args struct {
 		o Orientation
 	}
@@ -761,7 +763,7 @@ func TestSquare_Ray(t *testing.T) {
 }
 
 func TestSquare_Intermediate(t *testing.T) {
-	Init()
+
 	type args struct {
 		sqTo Square
 	}
@@ -786,7 +788,7 @@ func TestSquare_Intermediate(t *testing.T) {
 }
 
 func TestSquare_CenterDistance(t *testing.T) {
-	Init()
+
 	tests := []struct {
 		name string
 		sq   Square
@@ -808,7 +810,7 @@ func TestSquare_CenterDistance(t *testing.T) {
 }
 
 func Test_rankBbPreCompute(t *testing.T) {
-	Init()
+
 	assert.Equal(t, Rank1_Bb, rankBb[Rank1])
 	assert.Equal(t, Rank2_Bb, rankBb[Rank2])
 	assert.Equal(t, Rank7_Bb, rankBb[Rank7])

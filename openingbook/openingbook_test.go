@@ -1,4 +1,6 @@
 /*
+ * FrankyGo - UCI chess engine in GO for learning purposes
+ *
  * MIT License
  *
  * Copyright (c) 2018-2020 Frank Kopp
@@ -25,32 +27,44 @@
 package openingbook
 
 import (
+	"os"
 	"testing"
 
+	logging2 "github.com/op/go-logging"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/frankkopp/FrankyGo/config"
 	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
+	"github.com/frankkopp/FrankyGo/util"
 )
 
-var logTest = logging.GetLog("test")
+var logTest *logging2.Logger
+
+// Setup the tests
+func TestMain(m *testing.M) {
+	out.Println("Test Main Setup Tests ====================")
+	config.Setup()
+	logTest = logging.GetTestLog()
+	code := m.Run()
+	os.Exit(code)
+}
 
 func Test_readingFile(t *testing.T) {
-	lines, err := readFile("../books/superbook.pgn")
+	lines, err := readFile(config.Settings.Search.BookPath+"/superbook.pgn")
 	assert.NoError(t, err, "Reading file threw error: %s", err)
 	assert.Equal(t, 2_620_133, len(*lines))
 }
 
 func Test_readingNonExistingFile(t *testing.T) {
-	_, err := readFile("../books/abc.txt")
+	_, err := readFile(config.Settings.Search.BookPath+"/abc.txt")
 	assert.Error(t, err, "Reading file should throw error: %s", err)
 }
 
 func Test_processingEmpty(t *testing.T) {
-	Init()
-	var book Book
-	err := book.Initialize("../books/empty.txt", Simple, false, false)
+	book := NewBook()
+	err := book.Initialize(config.Settings.Search.BookPath+"/empty.txt", "", Simple, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	assert.Equal(t, 1, book.NumberOfEntries())
 
@@ -65,9 +79,9 @@ func Test_processingEmpty(t *testing.T) {
 }
 
 func Test_processingSimpleSmall(t *testing.T) {
-	Init()
-	var book Book
-	err := book.Initialize("../books/book_smalltest.txt", Simple, false, false)
+
+	book := NewBook()
+	err := book.Initialize(config.Settings.Search.BookPath+"/book_smalltest.txt", "", Simple, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	assert.Equal(t, 11_196, book.NumberOfEntries())
 
@@ -93,9 +107,9 @@ func Test_processingSimpleSmall(t *testing.T) {
 }
 
 func Test_processingSimple(t *testing.T) {
-	Init()
-	var book Book
-	err := book.Initialize("../books/book.txt", Simple, false, false)
+
+	book := NewBook()
+	err := book.Initialize(config.Settings.Search.BookPath+"/book.txt", "", Simple, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	assert.Equal(t, 273_578, book.NumberOfEntries())
 
@@ -125,9 +139,9 @@ func Test_processingSimple(t *testing.T) {
 
 func Test_processingSANSmall(t *testing.T) {
 	logTest.Info("Starting SAN small test")
-	Init()
-	var book Book
-	err := book.Initialize("../books/book_graham.txt", San, false, false)
+
+	book := NewBook()
+	err := book.Initialize(config.Settings.Search.BookPath+"/book_graham.txt", "", San, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	assert.Equal(t, 1_256, book.NumberOfEntries())
 
@@ -157,9 +171,9 @@ func Test_processingSANSmall(t *testing.T) {
 
 func Test_processingPGNSmall(t *testing.T) {
 	logTest.Info("Starting PGN small test")
-	Init()
-	var book Book
-	err := book.Initialize("../books/pgn_test.pgn", Pgn, false, false)
+
+	book := NewBook()
+	err := book.Initialize(config.Settings.Search.BookPath+"/pgn_test.pgn", "", Pgn, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	assert.Equal(t, 1_428, book.NumberOfEntries())
 
@@ -189,9 +203,12 @@ func Test_processingPGNSmall(t *testing.T) {
 
 func Test_processingPGNLarge(t *testing.T) {
 	logTest.Info("Starting PGN large test")
-	Init()
-	var book Book
-	err := book.Initialize("../books/superbook.pgn", Pgn, false, false)
+
+	book := NewBook()
+	log.Debugf("Memory statistics: %s", util.MemStat())
+	err := book.Initialize(config.Settings.Search.BookPath+"/superbook.pgn", "", Pgn, false, false)
+	util.GcWithStats()
+
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	assert.Equal(t, 4_821_316, book.NumberOfEntries())
 
@@ -221,9 +238,9 @@ func Test_processingPGNLarge(t *testing.T) {
 
 func Test_processingPGNCacheSmall(t *testing.T) {
 	logTest.Info("Starting PGN cache test")
-	Init()
-	var book Book
-	err := book.Initialize("../books/pgn_test.pgn", Pgn, true, true)
+
+	book := NewBook()
+	err := book.Initialize(config.Settings.Search.BookPath+"/pgn_test.pgn", "", Pgn, true, true)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	numberOfEntries := book.NumberOfEntries()
 	assert.Equal(t, 1_428, numberOfEntries)
@@ -231,7 +248,7 @@ func Test_processingPGNCacheSmall(t *testing.T) {
 	book.Reset()
 	assert.Equal(t, 0, book.NumberOfEntries())
 
-	err = book.Initialize("../books/pgn_test.pgn", Pgn, true, false)
+	err = book.Initialize(config.Settings.Search.BookPath+"/pgn_test.pgn", "", Pgn, true, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	assert.Equal(t, numberOfEntries, book.NumberOfEntries())
 
@@ -261,14 +278,14 @@ func Test_processingPGNCacheSmall(t *testing.T) {
 
 func Test_processingPGNCacheLarge(t *testing.T) {
 	logTest.Info("Starting PGN large cache test")
-	Init()
-	var book Book
-	err := book.Initialize("../books/superbook.pgn", Pgn, true, true)
+
+	book := NewBook()
+	err := book.Initialize(config.Settings.Search.BookPath+"/superbook.pgn", "", Pgn, true, true)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 
 	book.Reset()
 
-	err = book.Initialize("../books/superbook.pgn", Pgn, true, false)
+	err = book.Initialize(config.Settings.Search.BookPath+"/superbook.pgn", "", Pgn, true, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 
 	// get root entry

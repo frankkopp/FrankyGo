@@ -1,4 +1,6 @@
 /*
+ * FrankyGo - UCI chess engine in GO for learning purposes
+ *
  * MIT License
  *
  * Copyright (c) 2018-2020 Frank Kopp
@@ -43,10 +45,11 @@ import (
 	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
+	"github.com/frankkopp/FrankyGo/util"
 )
 
 var out = message.NewPrinter(language.German)
-var log = logging.GetLog("tt")
+var log = logging.GetLog()
 
 // TtEntry struct is the data structure for each entry in the transposition
 // table. Each entry has 16-bytes (128-bits)
@@ -79,6 +82,7 @@ type TtTable struct {
 	Stats              TtStats
 }
 
+// TtStats holds statistical data on tt usage
 type TtStats struct {
 	numberOfPuts       uint64
 	numberOfCollisions uint64
@@ -91,8 +95,9 @@ type TtStats struct {
 
 // NewTtTable creates a new TtTable with the given number of bytes
 // as a maximum of memory usage. Actual size will be determined
-// by the number of elements which need to be a power of 2 for
-// efficient hashing/addressing via bit masks
+// by the number of elements fitting into this size which need
+// to be a power of 2 for efficient hashing/addressing via bit
+// masks
 func NewTtTable(sizeInMByte int) *TtTable {
 	tt := TtTable{
 		data:               nil,
@@ -134,6 +139,7 @@ func (tt *TtTable) Resize(sizeInMByte int) {
 
 	log.Info(out.Sprintf("TT Size %d MByte, Capacity %d entries (size=%dByte) (Requested were %d MBytes)",
 		tt.sizeInByte/MB, tt.maxNumberOfEntries, unsafe.Sizeof(TtEntry{}), sizeInMByte))
+	log.Debug(util.MemStat())
 }
 
 // GetEntry returns a pointer to the corresponding tt entry.
@@ -170,6 +176,7 @@ func (tt *TtTable) Put(key position.Key, move Move, value Value, depth int8, val
 	if tt.maxNumberOfEntries == 0 {
 		return
 	}
+
 	tt.Stats.numberOfPuts++
 	// read the entries for this hash
 	entryDataPtr := tt.GetEntry(key)
@@ -272,31 +279,33 @@ func (tt *TtTable) hash(key position.Key) uint64 {
 	return uint64(key) & tt.hashKeyMask
 }
 
-// Ages each entry in the tt
-// Creates a number of go routines with each a certain slice of data
-// to process
-func (tt *TtTable) ageEntries() {
-	numberOfGoroutines := uint64(32) // arbitrary - uses up to 32 threads
+// AgeEntries ages each entry in the tt
+// Creates a number of go routines with processes each
+// a certain slice of data to process
+func (tt *TtTable) AgeEntries() {
 	startTime := time.Now()
-	var wg sync.WaitGroup
-	wg.Add(int(numberOfGoroutines))
-	slice := tt.maxNumberOfEntries / numberOfGoroutines
-	for i := uint64(0); i < numberOfGoroutines; i++ {
-		go func(i uint64) {
-			defer wg.Done()
-			start := i * slice
-			end := start + slice
-			if i == numberOfGoroutines-1 {
-				end = tt.maxNumberOfEntries
-			}
-			for n := start; n < end; n++ {
-				if tt.data[n].Key != 0 {
-					tt.data[n].Age++
+	if tt.numberOfEntries > 0 {
+		numberOfGoroutines := uint64(32) // arbitrary - uses up to 32 threads
+		var wg sync.WaitGroup
+		wg.Add(int(numberOfGoroutines))
+		slice := tt.maxNumberOfEntries / numberOfGoroutines
+		for i := uint64(0); i < numberOfGoroutines; i++ {
+			go func(i uint64) {
+				defer wg.Done()
+				start := i * slice
+				end := start + slice
+				if i == numberOfGoroutines-1 {
+					end = tt.maxNumberOfEntries
 				}
-			}
-		}(i)
+				for n := start; n < end; n++ {
+					if tt.data[n].Key != 0 {
+						tt.data[n].Age++
+					}
+				}
+			}(i)
+		}
+		wg.Wait()
 	}
-	wg.Wait()
 	elapsed := time.Since(startTime)
-	log.Debug(out.Sprintf("Aged %d entries in %d ms\n", len(tt.data), elapsed.Milliseconds()))
+	log.Debug(out.Sprintf("Aged %d entries of %d in %d ms\n", tt.numberOfEntries, len(tt.data), elapsed.Milliseconds()))
 }

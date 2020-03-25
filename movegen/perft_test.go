@@ -1,4 +1,6 @@
 /*
+ * FrankyGo - UCI chess engine in GO for learning purposes
+ *
  * MIT License
  *
  * Copyright (c) 2018-2020 Frank Kopp
@@ -30,7 +32,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/frankkopp/FrankyGo/position"
-	. "github.com/frankkopp/FrankyGo/types"
 )
 
 // ///////////////////////////////////////////////////////////////
@@ -39,7 +40,7 @@ import (
 
 //noinspection GoImportUsedAsName
 func Test_StandardPerft(t *testing.T) {
-	Init()
+
 	maxDepth := 6
 	var perft Perft
 	assert := assert.New(t)
@@ -71,7 +72,7 @@ func Test_StandardPerft(t *testing.T) {
 
 //noinspection GoImportUsedAsName
 func Test_StandardPerftOd(t *testing.T) {
-	Init()
+
 	maxDepth := 6
 	var perft Perft
 	assert := assert.New(t)
@@ -103,7 +104,7 @@ func Test_StandardPerftOd(t *testing.T) {
 
 //noinspection GoImportUsedAsName
 func Test_KiwipetePerft(t *testing.T) {
-	Init()
+
 	maxDepth := 5
 	var perft Perft
 	assert := assert.New(t)
@@ -133,7 +134,7 @@ func Test_KiwipetePerft(t *testing.T) {
 
 //noinspection GoImportUsedAsName
 func Test_MirrorPerft(t *testing.T) {
-	Init()
+
 	maxDepth := 5
 	var perft Perft
 	assert := assert.New(t)
@@ -178,7 +179,7 @@ func Test_MirrorPerft(t *testing.T) {
 
 //noinspection GoImportUsedAsName
 func Test_Pos5Perft(t *testing.T) {
-	Init()
+
 	maxDepth := 5
 	var perft Perft
 	assert := assert.New(t)

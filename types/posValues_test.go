@@ -1,4 +1,6 @@
 /*
+ * FrankyGo - UCI chess engine in GO for learning purposes
+ *
  * MIT License
  *
  * Copyright (c) 2018-2020 Frank Kopp
@@ -31,7 +33,6 @@ import (
 )
 
 func Test(t *testing.T) {
-	Init()
 	assert.Equal(t, Value(-30), PosMidValue(WhitePawn, SqE2))
 	assert.Equal(t, Value(10), PosEndValue(WhitePawn, SqE2))
 	assert.Equal(t, Value(-30), PosValue(WhitePawn, SqE2, 24))
