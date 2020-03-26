@@ -53,9 +53,9 @@ const (
 //  movegen.NewMoveGen()
 // Creating this directly will not work.
 type Movegen struct {
-	pseudoLegalMoves   moveslice.MoveSlice
-	legalMoves         moveslice.MoveSlice
-	onDemandMoves      moveslice.MoveSlice
+	pseudoLegalMoves   *moveslice.MoveSlice
+	legalMoves         *moveslice.MoveSlice
+	onDemandMoves      *moveslice.MoveSlice
 	killerMoves        [2]Move
 	currentIteratorKey position.Key
 	takeIndex          int
@@ -102,23 +102,23 @@ func NewMoveGen() *Movegen {
 func (mg *Movegen) GeneratePseudoLegalMoves(position *position.Position, mode GenMode) *moveslice.MoveSlice {
 	mg.pseudoLegalMoves.Clear()
 	if mode&GenCap != 0 {
-		mg.generatePawnMoves(position, GenCap, &mg.pseudoLegalMoves)
-		mg.generateCastling(position, GenCap, &mg.pseudoLegalMoves)
-		mg.generateKingMoves(position, GenCap, &mg.pseudoLegalMoves)
-		mg.generateMoves(position, GenCap, &mg.pseudoLegalMoves)
+		mg.generatePawnMoves(position, GenCap, mg.pseudoLegalMoves)
+		mg.generateCastling(position, GenCap, mg.pseudoLegalMoves)
+		mg.generateKingMoves(position, GenCap, mg.pseudoLegalMoves)
+		mg.generateMoves(position, GenCap, mg.pseudoLegalMoves)
 	}
 	if mode&GenNonCap != 0 {
-		mg.generatePawnMoves(position, GenNonCap, &mg.pseudoLegalMoves)
-		mg.generateCastling(position, GenNonCap, &mg.pseudoLegalMoves)
-		mg.generateKingMoves(position, GenNonCap, &mg.pseudoLegalMoves)
-		mg.generateMoves(position, GenNonCap, &mg.pseudoLegalMoves)
+		mg.generatePawnMoves(position, GenNonCap, mg.pseudoLegalMoves)
+		mg.generateCastling(position, GenNonCap, mg.pseudoLegalMoves)
+		mg.generateKingMoves(position, GenNonCap, mg.pseudoLegalMoves)
+		mg.generateMoves(position, GenNonCap, mg.pseudoLegalMoves)
 	}
 	mg.pseudoLegalMoves.Sort()
 	// remove internal sort value
 	mg.pseudoLegalMoves.ForEach(func(i int) {
 		mg.pseudoLegalMoves.Set(i, mg.pseudoLegalMoves.At(i).MoveOf())
 	})
-	return &mg.pseudoLegalMoves
+	return mg.pseudoLegalMoves
 }
 
 // GenerateLegalMoves generates legal moves for the next player.
@@ -128,10 +128,10 @@ func (mg *Movegen) GeneratePseudoLegalMoves(position *position.Position, mode Ge
 func (mg *Movegen) GenerateLegalMoves(position *position.Position, mode GenMode) *moveslice.MoveSlice {
 	mg.legalMoves.Clear()
 	mg.GeneratePseudoLegalMoves(position, mode)
-	mg.pseudoLegalMoves.FilterCopy(&mg.legalMoves, func(i int) bool {
+	mg.pseudoLegalMoves.FilterCopy(mg.legalMoves, func(i int) bool {
 		return position.IsLegalMove(mg.pseudoLegalMoves.At(i))
 	})
-	return &mg.legalMoves
+	return mg.legalMoves
 }
 
 // GetNextMove returns the next move for the given position. Usually this would be used in a loop
@@ -170,7 +170,7 @@ func (mg *Movegen) GetNextMove(position *position.Position, mode GenMode) Move {
 	// If the list is currently empty and we have not generated all moves yet
 	// generate the next batch until we have new moves or there are no more
 	// moves to generate
-	if len(mg.onDemandMoves) == 0 {
+	if mg.onDemandMoves.Len() == 0 {
 		mg.fillOnDemandMoveList(position, mode)
 	}
 
@@ -180,14 +180,14 @@ func (mg *Movegen) GetNextMove(position *position.Position, mode GenMode) Move {
 	// and return MOVE_NONE
 	// If we have pushed a pvMove into the list we will need to
 	// skip this pvMove for each subsequent phases.
-	if len(mg.onDemandMoves) != 0 {
+	if mg.onDemandMoves.Len() != 0 {
 
 		// Handle PvMove
 		// if we pushed a pv move and the list is not empty we
 		// check if the pv is the next move in list and skip it.
 		if mg.currentODStage != od1 &&
 			mg.pvMovePushed &&
-			mg.onDemandMoves[mg.takeIndex].MoveOf() == mg.pvMove.MoveOf() {
+			(*mg.onDemandMoves)[mg.takeIndex].MoveOf() == mg.pvMove.MoveOf() {
 
 			// skip pv move
 			mg.takeIndex++
@@ -197,7 +197,7 @@ func (mg *Movegen) GetNextMove(position *position.Position, mode GenMode) Move {
 			mg.pvMovePushed = false
 
 			// PV move last in move list
-			if mg.takeIndex >= len(mg.onDemandMoves) {
+			if mg.takeIndex >= mg.onDemandMoves.Len() {
 				// The pv move was the last move in this iterations list.
 				// We will try to generate more moves. If no more moves
 				// can be generated we will return MOVE_NONE.
@@ -206,21 +206,21 @@ func (mg *Movegen) GetNextMove(position *position.Position, mode GenMode) Move {
 				mg.onDemandMoves.Clear()
 				mg.fillOnDemandMoveList(position, mode)
 				// no more moves - return MOVE_NONE
-				if len(mg.onDemandMoves) == 0 {
+				if mg.onDemandMoves.Len() == 0 {
 					return MoveNone
 				}
 			}
 		}
 		if assert.DEBUG {
-			assert.Assert(len(mg.onDemandMoves) != 0, "OnDemandList should not be empty here")
+			assert.Assert(mg.onDemandMoves.Len() != 0, "OnDemandList should not be empty here")
 		}
 
 		// we have at least one move in the list and
 		// it is not the pvMove. Increase the takeIndex
 		// and return the move
-		move := mg.onDemandMoves[mg.takeIndex].MoveOf()
+		move := (*mg.onDemandMoves)[mg.takeIndex].MoveOf()
 		mg.takeIndex++
-		if mg.takeIndex >= len(mg.onDemandMoves) {
+		if mg.takeIndex >= mg.onDemandMoves.Len() {
 			mg.takeIndex = 0
 			mg.onDemandMoves.Clear()
 		}
@@ -407,7 +407,7 @@ func (mg *Movegen) GetMoveFromUci(posPtr *position.Position, uciMove string) Mov
 
 	// check against all legal moves on position
 	mg.GenerateLegalMoves(posPtr, GenAll)
-	for _, m := range mg.legalMoves {
+	for _, m := range *mg.legalMoves {
 		if m.StringUci() == movePart+promotionPart {
 			// move found
 			return m
@@ -450,7 +450,7 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 
 	// check against all legal moves on position
 	mg.GenerateLegalMoves(posPtr, GenAll)
-	for _, genMove := range mg.legalMoves {
+	for _, genMove := range *mg.legalMoves {
 
 		// castling moves
 		if genMove.MoveType() == Castling {
@@ -605,7 +605,7 @@ const (
 // This calls the actual generation of moves in phases. The phases match roughly
 // the order of most promising moves first.
 func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode) {
-	for len(mg.onDemandMoves) == 0 && mg.currentODStage < odEnd {
+	for mg.onDemandMoves.Len() == 0 && mg.currentODStage < odEnd {
 		switch mg.currentODStage {
 		case odNew:
 			mg.currentODStage = odPv
@@ -642,13 +642,13 @@ func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode) {
 				mg.currentODStage = od4
 			}
 		case od1: // capture
-			mg.generatePawnMoves(p, GenCap, &mg.onDemandMoves)
+			mg.generatePawnMoves(p, GenCap, mg.onDemandMoves)
 			mg.currentODStage = od2
 		case od2:
-			mg.generateMoves(p, GenCap, &mg.onDemandMoves)
+			mg.generateMoves(p, GenCap, mg.onDemandMoves)
 			mg.currentODStage = od3
 		case od3:
-			mg.generateKingMoves(p, GenCap, &mg.onDemandMoves)
+			mg.generateKingMoves(p, GenCap, mg.onDemandMoves)
 			mg.currentODStage = od4
 		case od4:
 			if mode&GenNonCap != 0 {
@@ -657,26 +657,26 @@ func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode) {
 				mg.currentODStage = odEnd
 			}
 		case od5: // non capture
-			mg.generatePawnMoves(p, GenNonCap, &mg.onDemandMoves)
-			mg.pushKiller(&mg.onDemandMoves)
+			mg.generatePawnMoves(p, GenNonCap, mg.onDemandMoves)
+			mg.pushKiller(mg.onDemandMoves)
 			mg.currentODStage = od6
 		case od6:
-			mg.generateCastling(p, GenNonCap, &mg.onDemandMoves)
-			mg.pushKiller(&mg.onDemandMoves)
+			mg.generateCastling(p, GenNonCap, mg.onDemandMoves)
+			mg.pushKiller(mg.onDemandMoves)
 			mg.currentODStage = od7
 		case od7:
-			mg.generateMoves(p, GenNonCap, &mg.onDemandMoves)
-			mg.pushKiller(&mg.onDemandMoves)
+			mg.generateMoves(p, GenNonCap, mg.onDemandMoves)
+			mg.pushKiller(mg.onDemandMoves)
 			mg.currentODStage = od8
 		case od8:
-			mg.generateKingMoves(p, GenNonCap, &mg.onDemandMoves)
-			mg.pushKiller(&mg.onDemandMoves)
+			mg.generateKingMoves(p, GenNonCap, mg.onDemandMoves)
+			mg.pushKiller(mg.onDemandMoves)
 			mg.currentODStage = odEnd
 		case odEnd:
 			break
 		}
 		// sort the list according to sort values encoded in the move
-		if len(mg.onDemandMoves) > 0 {
+		if mg.onDemandMoves.Len() > 0 {
 			mg.onDemandMoves.Sort()
 		}
 	} // while onDemandMoves.empty()

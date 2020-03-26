@@ -26,6 +26,10 @@
 
 package types
 
+import (
+	"strconv"
+)
+
 // Value represents the positional value of a chess position
 type Value int16
 
@@ -45,5 +49,10 @@ const (
 // IsValid checks if value is within valid range (between Min and Max)
 func (v Value) IsValid() bool {
 	return v >= ValueMin && v <= ValueMax
+}
+
+func (v *Value) String() string {
+	// TODO min/max  mate in etc.
+	return strconv.Itoa(int(*v))
 }
 

@@ -42,8 +42,9 @@ type MoveSlice []Move
 // NewMoveSlice creates a new move slice with the given capacity
 // and 0 elements.
 // Is identical to MoveSlice(make([]Move, 0, cap))
-func NewMoveSlice(cap int) MoveSlice {
-	return make([]Move, 0, cap)
+func NewMoveSlice(cap int) *MoveSlice {
+	moves := make([]Move, 0, cap)
+	return (*MoveSlice)(&moves)
 }
 
 // Len returns the number of moves currently stored in the slice.

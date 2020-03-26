@@ -4,9 +4,12 @@ v 0.x (planned)
 v 0.4 (in progress)
 ================================================================================
 - TODO
-    - Implement simple Search
+    - Complete simple search
     - Implement simple Evaluator
     - log files for standard and search log
+
+- DONE
+    - Implement simple Search
 
 v 0.3 (done)
 ================================================================================

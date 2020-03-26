@@ -44,7 +44,7 @@ type Limits struct {
 
 	// extra limits
 	Depth int
-	Nodes int64
+	Nodes uint64
 	Moves moveslice.MoveSlice
 
 	//  time control
