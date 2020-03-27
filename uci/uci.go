@@ -32,6 +32,7 @@ package uci
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	golog "log"
 	"os"
 	"path/filepath"
@@ -128,8 +129,14 @@ func (u *UciHandler) SendInfoString(info string) {
 
 // SendIterationEndInfo sends information about the last search depth iteration to the UCI ui
 func (u *UciHandler) SendIterationEndInfo(depth int, seldepth int, value Value, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice) {
-	// TODO
-	panic("implement me")
+	u.send(fmt.Sprintf("info depth %d seldepth %d multipv 1 score %s nodes %d nps %d time %d pv %s",
+		depth, seldepth, value.String(), nodes, nps, time.Milliseconds(), pv.StringUci()))
+}
+
+// SendSearchUpdate sends a periodically update about search stats to the UCI ui
+func (u *UciHandler) SendSearchUpdate(depth int, seldepth int, nodes uint64, nps uint64, time time.Duration, hashfull int) {
+	u.send(fmt.Sprintf("info depth %d seldepth %d nodes %d nps %d time %d hashfull %d",
+		depth, seldepth, nodes, nps, time.Milliseconds(), hashfull))
 }
 
 // SendAspirationResearchInfo sends information about Aspiration researches to the UCI ui
@@ -140,20 +147,12 @@ func (u *UciHandler) SendAspirationResearchInfo(depth int, seldepth int, value V
 
 // SendCurrentRootMove sends the currently searched root move to the UCI ui
 func (u *UciHandler) SendCurrentRootMove(currMove Move, moveNumber int) {
-	// TODO
-	panic("implement me")
-}
-
-// SendSearchUpdate sends a periodically update about search stats to the UCI ui
-func (u *UciHandler) SendSearchUpdate(depth int, seldepth int, nodes uint64, nps uint64, time time.Duration, hashfull int) {
-	// TODO
-	panic("implement me")
+	u.send(fmt.Sprintf("info currmove %s currmovenumber %d", currMove.StringUci(), moveNumber))
 }
 
 // SendCurrentLine sends a periodically update about the currently searched variation ti the UCI ui
 func (u *UciHandler) SendCurrentLine(moveList moveslice.MoveSlice) {
-	// TODO
-	panic("implement me")
+	u.send(fmt.Sprintf("info currline %s", moveList.StringUci()))
 }
 
 // SendResult send the search result to the UCI ui after the search has ended are has been stopped
@@ -162,7 +161,7 @@ func (u *UciHandler) SendResult(bestMove Move, ponderMove Move) {
 	resultStr.WriteString("bestmove ")
 	resultStr.WriteString(bestMove.StringUci())
 	if ponderMove != MoveNone {
-		resultStr.WriteString(" ")
+		resultStr.WriteString(" ponder ")
 		resultStr.WriteString(ponderMove.StringUci())
 	}
 	u.send(resultStr.String())
@@ -449,13 +448,14 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 			i++
 		case "nodes":
 			i++
-			searchLimits.Nodes, err = strconv.ParseInt(tokens[i], 10, 64)
+			parseInt, err := strconv.ParseInt(tokens[i], 10, 64)
 			if err != nil {
 				msg := out.Sprintf("UCI command go malformed. Nodes value not an number: %s", tokens[i])
 				u.sendInfoString(msg)
 				log.Warning(msg)
 				return nil, true
 			}
+			searchLimits.Nodes = uint64(parseInt)
 			i++
 		case "mate":
 			i++

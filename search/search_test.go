@@ -181,9 +181,9 @@ func TestSearchDev(t *testing.T) {
 	search := NewSearch()
 	p := position.NewPosition()
 	sl := NewSearchLimits()
-	sl.Depth = 10
-	// sl.MoveTime = 15 * time.Second
-	// sl.TimeControl = true
+	sl.TimeControl = true
+	sl.MoveTime = 15 * time.Second
+	// sl.Depth = 4
 	search.StartSearch(*p, *sl)
 	search.WaitWhileSearching()
 }

@@ -28,9 +28,7 @@ package search
 
 import (
 	"context"
-	golog "log"
 	"math/rand"
-	"os"
 	"time"
 
 	"golang.org/x/sync/semaphore"
@@ -52,7 +50,6 @@ import (
 )
 
 var out = message.NewPrinter(language.German)
-var log = myLogging.GetLog()
 
 // Search represents the data structure for a chess engine search
 //  Create new instance with NewSearch()
@@ -93,7 +90,7 @@ type Search struct {
 // uci handler is nil all output will be sent to Stdout
 func NewSearch() *Search {
 	s := &Search{
-		log:               getSearchLog(),
+		log:               myLogging.GetLog(),
 		uciHandlerPtr:     nil,
 		initSemaphore:     semaphore.NewWeighted(int64(1)),
 		isRunning:         semaphore.NewWeighted(int64(1)),
@@ -139,6 +136,7 @@ func (s *Search) StartSearch(p position.Position, sl Limits) {
 	// wait until search is running and initialization
 	// is done before returning to caller
 	_ = s.initSemaphore.Acquire(context.TODO(), 1)
+	s.initSemaphore.Release(1)
 }
 
 // StopSearch stops a running search as quickly as possible.
@@ -198,7 +196,7 @@ func (s *Search) ClearHash() {
 	if s.IsSearching() {
 		msg := "Can't clear hash while searching."
 		s.uciHandlerPtr.SendInfoString(msg)
-		log.Warning(msg)
+		s.log.Warning(msg)
 		return
 	}
 	s.tt.Clear()
@@ -211,7 +209,7 @@ func (s *Search) ResizeCache() {
 	if s.IsSearching() {
 		msg := "Can't resize hash while searching."
 		s.uciHandlerPtr.SendInfoString(msg)
-		log.Warning(msg)
+		s.log.Warning(msg)
 		return
 	}
 	// just remove the tt pointer and re-initialize
@@ -245,8 +243,14 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.startTime = time.Now()
 
 	// init new search run
-	s.initialize()
+	s.stopFlag = false
 	s.hasResult = false
+	s.timeLimit = 0
+	s.extraTime = 0
+	s.nodesVisited = 0
+	s.statistics = Statistics{}
+	s.lastUciUpdateTime = s.startTime
+	s.initialize()
 
 	// setup and report search limits
 	s.setupSearchLimits(position, sl)
@@ -327,7 +331,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.log.Info(out.Sprintf("Search finished after %d ms ", searchResult.SearchTime.Milliseconds()))
 	s.log.Info(out.Sprintf("Search depth was %d(%d) with %d nodes visited. NPS = %d nps",
 		s.statistics.CurrentSearchDepth, s.statistics.CurrentExtraSearchDepth, s.nodesVisited,
-		(s.nodesVisited*uint64(time.Second.Nanoseconds())) / uint64(searchResult.SearchTime.Nanoseconds() + 1)))
+		(s.nodesVisited*uint64(time.Second.Nanoseconds()))/uint64(searchResult.SearchTime.Nanoseconds()+1)))
 
 	// print result to log
 	s.log.Infof("Search result: %s", searchResult.String())
@@ -360,7 +364,7 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 	if s.checkDrawRepAnd50(position, 2) {
 		msg := "Search called on DRAW by Repetition or 50-moves-rule"
 		s.sendInfoStringToUci(msg)
-		log.Warning(msg)
+		s.log.Warning(msg)
 		result = &Result{BestValue: ValueDraw}
 		return result
 	}
@@ -373,12 +377,12 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 		if position.HasCheck() {
 			msg := "Search called on a mate position"
 			s.sendInfoStringToUci(msg)
-			log.Warning(msg)
+			s.log.Warning(msg)
 			result = &Result{BestValue: -ValueCheckMate}
 		} else {
 			msg := "Search called on a stalemate position"
 			s.sendInfoStringToUci(msg)
-			log.Warning(msg)
+			s.log.Warning(msg)
 			result = &Result{BestValue: ValueDraw}
 		}
 		return result
@@ -418,7 +422,7 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 		// sort root moves based on value for the next iteration
 		if !s.stopConditions() {
 			s.rootMoves.Sort()
-			s.statistics.CurrentBestRootMove =  s.pv[0].At(0)
+			s.statistics.CurrentBestRootMove = s.pv[0].At(0)
 			s.statistics.CurrentBestRootMoveValue = s.pv[0].At(0).ValueOf()
 		}
 
@@ -650,16 +654,18 @@ func (s *Search) sendSearchUpdateToUci() {
 				s.statistics.CurrentSearchDepth,
 				s.statistics.CurrentExtraSearchDepth,
 				s.nodesVisited,
-				(s.nodesVisited*uint64(time.Second.Nanoseconds()))/uint64(time.Since(s.startTime).Nanoseconds()+1),
+				s.getNps(),
 				time.Since(s.startTime),
 				s.tt.Hashfull())
+			s.uciHandlerPtr.SendCurrentRootMove(s.statistics.CurrentRootMove, s.statistics.CurrentRootMoveIndex)
+			s.uciHandlerPtr.SendCurrentLine(s.statistics.CurrentVariation)
 		} else {
-			slog.Infof(out.Sprintf("depth %d seldepth %d value %s nodes %d nps %d time %d hashful %d",
+			s.log.Infof(out.Sprintf("depth %d seldepth %d value %s nodes %d nps %d time %d hashful %d",
 				s.statistics.CurrentSearchDepth,
 				s.statistics.CurrentExtraSearchDepth,
 				s.statistics.CurrentBestRootMoveValue.String(),
 				s.nodesVisited,
-				(s.nodesVisited*uint64(time.Second.Nanoseconds()))/uint64(time.Since(s.startTime).Nanoseconds()+1),
+				s.getNps(),
 				time.Since(s.startTime).Milliseconds(),
 				s.tt.Hashfull()))
 		}
@@ -674,33 +680,29 @@ func (s *Search) sendIterationEndInfoToUci() {
 			s.statistics.CurrentExtraSearchDepth,
 			s.statistics.CurrentBestRootMoveValue,
 			s.nodesVisited,
-			(s.nodesVisited * uint64(time.Second.Nanoseconds())) / uint64(time.Since(s.startTime).Nanoseconds()+1),
+			s.getNps(),
 			time.Since(s.startTime),
 			*s.pv[0])
 	} else {
-		slog.Infof(out.Sprintf("depth %d seldepth %d value %s nodes %d nps %d time %d pv %s",
+		s.log.Infof(out.Sprintf("depth %d seldepth %d value %s nodes %d nps %d time %d pv %s",
 			s.statistics.CurrentSearchDepth,
 			s.statistics.CurrentExtraSearchDepth,
 			s.statistics.CurrentBestRootMoveValue.String(),
 			s.nodesVisited,
-			(s.nodesVisited * uint64(time.Second.Nanoseconds())) / uint64(time.Since(s.startTime).Nanoseconds()+1),
+			s.getNps(),
 			time.Since(s.startTime).Milliseconds(),
 			s.pv[0].StringUci()))
 	}
 }
 
-// getSearchLog returns an instance of a standard Logger preconfigured with a
-// os.Stdout backend and a "normal" logging format (e.g. time - file - level)
-// for usage in the search itself
-func getSearchLog() *logging.Logger {
-	searchLog := logging.MustGetLogger("search")
-	standardFormat := logging.MustStringFormatter(`%{time:15:04:05.000} %{shortpkg:-8.8s}:%{shortfile:-14.14s} %{level:-7.7s}:  %{message}`)
-	backend1 := logging.NewLogBackend(os.Stdout, "", golog.Lmsgprefix)
-	backend1Formatter := logging.NewBackendFormatter(backend1, standardFormat)
-	searchBackEnd := logging.AddModuleLevel(backend1Formatter)
-	searchBackEnd.SetLevel(logging.Level(config.SearchLogLevel), "")
-	searchLog.SetBackend(searchBackEnd)
-	return searchLog
+func (s *Search) getNps() uint64 {
+	elapsed := uint64(time.Since(s.startTime).Nanoseconds() + 100)
+	nodes := s.nodesVisited * uint64(time.Second.Nanoseconds())
+	nps := nodes / elapsed
+	if nps > 15_000_000 {
+		nps = 0
+	}
+	return nps
 }
 
 // //////////////////////////////////////////////////////

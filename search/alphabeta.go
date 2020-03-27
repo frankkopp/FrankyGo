@@ -27,6 +27,15 @@
 package search
 
 import (
+	golog "log"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/op/go-logging"
+
+	"github.com/frankkopp/FrankyGo/config"
 	"github.com/frankkopp/FrankyGo/movegen"
 	"github.com/frankkopp/FrankyGo/moveslice"
 	"github.com/frankkopp/FrankyGo/position"
@@ -34,7 +43,8 @@ import (
 )
 
 var trace = false
-var slog = getSearchLog()
+
+var slog = getSearchTraceLog()
 
 func (s *Search) rootSearch(position *position.Position, depth int, alpha Value, beta Value) {
 	if trace {
@@ -108,7 +118,7 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 func (s *Search) search(position *position.Position, depth int, ply int, alpha Value, beta Value) Value {
 	if trace {
 		slog.Debugf("%0*s Ply %2.d Depth %2.d start:  %s", ply, "", ply, depth, s.statistics.CurrentVariation.StringUci())
-		defer slog.Debugf("%0*s Ply %2.d Depth %2.d end:  %s",ply, "", ply, depth, s.statistics.CurrentVariation.StringUci())
+		defer slog.Debugf("%0*s Ply %2.d Depth %2.d end  :  %s",ply, "", ply, depth, s.statistics.CurrentVariation.StringUci())
 	}
 
 	// Check if search should be stopped
@@ -240,4 +250,51 @@ func savePV(move Move, src *moveslice.MoveSlice, dest *moveslice.MoveSlice) {
 	dest.Clear()
 	dest.PushBack(move)
 	*dest = append(*dest, *src...)
+}
+
+// getSearchTraceLog returns an instance of a standard Logger preconfigured with a
+// os.Stdout backend and a "normal" logging format (e.g. time - file - level)
+// for usage in the search itself
+func getSearchTraceLog() *logging.Logger {
+	searchLog := logging.MustGetLogger("search")
+
+	searchLogFormat := logging.MustStringFormatter(`%{time:15:04:05.000} %{level:-7.7s}:  %{message}`)
+
+	backend1 := logging.NewLogBackend(os.Stdout, "", golog.Lmsgprefix)
+	backend1Formatter := logging.NewBackendFormatter(backend1, searchLogFormat)
+	searchBackEnd := logging.AddModuleLevel(backend1Formatter)
+	searchBackEnd.SetLevel(logging.Level(config.SearchLogLevel), "")
+
+	// File backend
+	programName, _ := os.Executable()
+	exeName := strings.TrimSuffix(filepath.Base(programName), ".exe")
+	var logPath string
+	if filepath.IsAbs(config.Settings.Log.LogPath) {
+		logPath = config.Settings.Log.LogPath
+	} else {
+		dir, _ := os.Getwd()
+		logPath = dir + "/" + config.Settings.Log.LogPath
+	}
+	searchLogFilePath := logPath + "/" + exeName + "_searchlog.log"
+	searchLogFilePath = filepath.Clean(searchLogFilePath)
+
+	// create file backend
+	var err error
+	searchLogFile, err := os.OpenFile(searchLogFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	// buf := bufio.NewWriter(searchLogFile)
+
+	// we use either Stdout or file - if file is valid we use only file
+	if err != nil {
+		golog.Println("Logfile could not be created:", err)
+		searchLog.SetBackend(searchBackEnd)
+	} else {
+		backend2 := logging.NewLogBackend(searchLogFile, "", golog.Lmsgprefix)
+		backend2Formatter := logging.NewBackendFormatter(backend2, searchLogFormat)
+		searchBackEnd2 := logging.AddModuleLevel(backend2Formatter)
+		searchBackEnd2.SetLevel(logging.DEBUG, "")
+		// multi := logging2.SetBackend(uciBackEnd1, searchBackEnd2)
+		searchLog.SetBackend(searchBackEnd2)
+		searchLog.Infof("Log %s started at %s:", searchLogFile.Name(), time.Now().String())
+	}
+	return searchLog
 }

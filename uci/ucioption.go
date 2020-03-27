@@ -37,9 +37,10 @@ import (
 func init() {
 	uciOptions = map[string]*uciOption{
 		"Clear Hash": {NameID: "Clear Hash", HandlerFunc: clearCache, OptionType: Button},
-		"Use_Hash":   {NameID: "Use_Hash", HandlerFunc: useCache, OptionType: Check, DefaultValue: "true", CurrentValue: strconv.FormatBool(config.Settings.Search.UseTT)},
-		"Hash":       {NameID: "Hash", HandlerFunc: cacheSize, OptionType: Spin, DefaultValue: "64", CurrentValue: string(config.Settings.Search.TTSize), MinValue: "0", MaxValue: "65000"},
-		"Use_Book":   {NameID: "Use_Book", HandlerFunc: useBook, OptionType: Check, DefaultValue: "true", CurrentValue: strconv.FormatBool(config.Settings.Search.UseBook)},
+		"Use_Hash":   {NameID: "Use_Hash", HandlerFunc: useCache, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseTT), CurrentValue: strconv.FormatBool(config.Settings.Search.UseTT)},
+		"Hash":       {NameID: "Hash", HandlerFunc: cacheSize, OptionType: Spin, DefaultValue: string(config.Settings.Search.TTSize), CurrentValue: string(config.Settings.Search.TTSize), MinValue: "0", MaxValue: "65000"},
+		"Use_Book":   {NameID: "Use_Book", HandlerFunc: useBook, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseBook), CurrentValue: strconv.FormatBool(config.Settings.Search.UseBook)},
+		"Ponder":     {NameID: "Ponder", HandlerFunc: usePonder, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UsePonder), CurrentValue: strconv.FormatBool(config.Settings.Search.UsePonder)},
 	}
 }
 
@@ -155,3 +156,8 @@ func useBook(u *UciHandler, o *uciOption) {
 	log.Debugf("Set Use Book to %v", config.Settings.Search.UseBook)
 }
 
+func usePonder(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	config.Settings.Search.UsePonder = v
+	log.Debugf("Set Use Ponder to %v", config.Settings.Search.UsePonder)
+}
