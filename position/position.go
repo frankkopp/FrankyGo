@@ -447,6 +447,52 @@ func (p *Position) IsCapturingMove(move Move) bool {
 	return p.occupiedBb[p.nextPlayer.Flip()].Has(move.To()) || move.MoveType() == EnPassant
 }
 
+// CheckRepetitions
+// Repetition of a position:.
+// To detect a 3-fold repetition the given position must occur at least 2
+// times before:<br/> <code>position.checkRepetitions(2)</code> checks for 3
+// fold-repetition <p> 3-fold repetition: This most commonly occurs when
+// neither side is able to avoid repeating moves without incurring a
+// disadvantage. The three occurrences of the position need not occur on
+// consecutive moves for a claim to be valid. FIDE rules make no mention of
+// perpetual check; this is merely a specific type of draw by threefold
+// repetition.
+//
+// Return true if this position has been played reps times before
+func (p *Position) CheckRepetitions(reps int) bool {
+	/*
+	   [0]     3185849660387886977 << 1st
+	   [1]     447745478729458041
+	   [2]     3230145143131659788
+	   [3]     491763876012767476
+	   [4]     3185849660387886977 << 2nd
+	   [5]     447745478729458041
+	   [6]     3230145143131659788
+	   [7]     491763876012767476  <<< history
+	   [8]     3185849660387886977 <<< 3rd REPETITION from current zobrist
+	*/
+	counter      := 0
+	i            := p.historyCounter - 2
+	lastHalfMove := p.halfMoveClock
+	for i >= 0 {
+		// every time the half move clock gets reset (non reversible position) there
+		// can't be any more repetition of positions before this position
+		if p.history[i].halfMoveClock >= lastHalfMove {
+			break
+		} else {
+			lastHalfMove = p.history[i].halfMoveClock
+		}
+		if p.zobristKey == p.history[i].zobristKey {
+			counter++
+		}
+		if counter >= reps {
+			return true
+		}
+		i -= 2
+	}
+	return false
+}
+
 // String returns a string representing the board instance. This
 // includes the fen, a board matrix, game phase, material and pos values.
 func (p *Position) String() string {
@@ -949,4 +995,13 @@ func (p *Position) CastlingRights() CastlingRights {
 // KingSquare returns the current square of the king of color c
 func (p *Position) KingSquare(c Color) Square {
 	return p.kingSquare[c]
+}
+
+// HalfMoveClock returns the positions half move clock
+func (p *Position) HalfMoveClock() int {
+	return p.halfMoveClock
+}
+
+func (p *Position) Material(c Color) Value {
+	return p.material[c]
 }

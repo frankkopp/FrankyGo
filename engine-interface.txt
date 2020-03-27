@@ -146,7 +146,7 @@ These are all the command the engine gets from the interface.
 		the GUI can be interpreted as a recommendation about which move to ponder. However, if the
 		engine decides to ponder on a different move, it should not display any mainlines as they are
 		likely to be misinterpreted by the GUI because the GUI expects the engine to ponder
-	   on the suggested move.
+	    on the suggested move.
 	* wtime <x>
 		white has x msec left on the clock
 	* btime <x>

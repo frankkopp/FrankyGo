@@ -28,10 +28,7 @@ package search
 
 import (
 	"context"
-	golog "log"
 	"math/rand"
-	"os"
-	"sync"
 	"time"
 
 	"golang.org/x/sync/semaphore"
@@ -43,6 +40,7 @@ import (
 	"github.com/frankkopp/FrankyGo/config"
 	myLogging "github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/movegen"
+	"github.com/frankkopp/FrankyGo/moveslice"
 	"github.com/frankkopp/FrankyGo/openingbook"
 	"github.com/frankkopp/FrankyGo/position"
 	"github.com/frankkopp/FrankyGo/transpositiontable"
@@ -52,17 +50,15 @@ import (
 )
 
 var out = message.NewPrinter(language.German)
-var log = myLogging.GetLog()
 
 // Search represents the data structure for a chess engine search
 //  Create new instance with NewSearch()
 type Search struct {
 	log *logging.Logger
 
-	uciHandlerPtr  uciInterface.UciDriver
-	initSemaphore  *semaphore.Weighted
-	isRunning      *semaphore.Weighted
-	timerWaitGroup sync.WaitGroup
+	uciHandlerPtr uciInterface.UciDriver
+	initSemaphore *semaphore.Weighted
+	isRunning     *semaphore.Weighted
 
 	book *openingbook.Book
 	tt   *transpositiontable.TtTable
@@ -70,17 +66,20 @@ type Search struct {
 	// previous search
 	lastSearchResult *Result
 
-	// current search
-	stopFlag        bool
-	startTime       time.Time
-	hasResult       bool
-	currentPosition *position.Position
-	searchLimits    *Limits
-	timeLimit       time.Duration
-	extraTime       time.Duration
-	nodesVisited    int64
-	curDepth        int
-	curExtraDepth   int
+	// current search state
+	stopFlag          bool
+	startTime         time.Time
+	hasResult         bool
+	currentPosition   *position.Position
+	searchLimits      *Limits
+	timeLimit         time.Duration
+	extraTime         time.Duration
+	nodesVisited      uint64
+	mg                []*movegen.Movegen
+	pv                []*moveslice.MoveSlice
+	rootMoves         *moveslice.MoveSlice
+	statistics        Statistics
+	lastUciUpdateTime time.Time
 }
 
 // //////////////////////////////////////////////////////
@@ -91,23 +90,26 @@ type Search struct {
 // uci handler is nil all output will be sent to Stdout
 func NewSearch() *Search {
 	s := &Search{
-		log:              getSearchLog(),
-		uciHandlerPtr:    nil,
-		initSemaphore:    semaphore.NewWeighted(int64(1)),
-		isRunning:        semaphore.NewWeighted(int64(1)),
-		book:             nil,
-		tt:               nil,
-		lastSearchResult: nil,
-		stopFlag:         false,
-		startTime:        time.Time{},
-		hasResult:        false,
-		currentPosition:  nil,
-		searchLimits:     nil,
-		timeLimit:        0,
-		extraTime:        0,
-		nodesVisited:     0,
-		curDepth:         0,
-		curExtraDepth:    0,
+		log:               myLogging.GetLog(),
+		uciHandlerPtr:     nil,
+		initSemaphore:     semaphore.NewWeighted(int64(1)),
+		isRunning:         semaphore.NewWeighted(int64(1)),
+		book:              nil,
+		tt:                nil,
+		lastSearchResult:  nil,
+		stopFlag:          false,
+		startTime:         time.Time{},
+		hasResult:         false,
+		currentPosition:   nil,
+		searchLimits:      nil,
+		timeLimit:         0,
+		extraTime:         0,
+		nodesVisited:      0,
+		mg:                nil,
+		pv:                nil,
+		rootMoves:         nil,
+		statistics:        Statistics{},
+		lastUciUpdateTime: time.Time{},
 	}
 	return s
 }
@@ -126,7 +128,7 @@ func (s *Search) NewGame() {
 func (s *Search) StartSearch(p position.Position, sl Limits) {
 	// acquire init phase lock
 	_ = s.initSemaphore.Acquire(context.TODO(), 1)
-	// set position and searchLimits for search
+	// set position and searchLimits into the current search state
 	s.currentPosition = &p
 	s.searchLimits = &sl
 	// run search
@@ -134,6 +136,7 @@ func (s *Search) StartSearch(p position.Position, sl Limits) {
 	// wait until search is running and initialization
 	// is done before returning to caller
 	_ = s.initSemaphore.Acquire(context.TODO(), 1)
+	s.initSemaphore.Release(1)
 }
 
 // StopSearch stops a running search as quickly as possible.
@@ -142,6 +145,20 @@ func (s *Search) StartSearch(p position.Position, sl Limits) {
 func (s *Search) StopSearch() {
 	s.stopFlag = true
 	s.WaitWhileSearching()
+}
+
+// PonderHit is called by the UCI user interface when the engine has
+// been instructed to ponder before. The engine usually is in search
+// mode without time control when this is sent. This command will
+// then activate time control without interrupting the running search.
+// If no search is running this has no effect.
+func (s *Search) PonderHit() {
+	if s.IsSearching() && s.searchLimits.Ponder {
+		s.log.Debug("Ponderhit during search - activating time control")
+		s.startTimer()
+		return
+	}
+	s.log.Warning("Ponderhit received while not pondering")
 }
 
 // IsSearching checks if search is running
@@ -193,7 +210,7 @@ func (s *Search) ClearHash() {
 	if s.IsSearching() {
 		msg := "Can't clear hash while searching."
 		s.uciHandlerPtr.SendInfoString(msg)
-		log.Warning(msg)
+		s.log.Warning(msg)
 		return
 	}
 	s.tt.Clear()
@@ -206,7 +223,7 @@ func (s *Search) ResizeCache() {
 	if s.IsSearching() {
 		msg := "Can't resize hash while searching."
 		s.uciHandlerPtr.SendInfoString(msg)
-		log.Warning(msg)
+		s.log.Warning(msg)
 		return
 	}
 	// just remove the tt pointer and re-initialize
@@ -240,12 +257,18 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.startTime = time.Now()
 
 	// init new search run
-	s.initialize()
+	s.stopFlag = false
 	s.hasResult = false
+	s.timeLimit = 0
+	s.extraTime = 0
+	s.nodesVisited = 0
+	s.statistics = Statistics{}
+	s.lastUciUpdateTime = s.startTime
+	s.initialize()
 
 	// setup and report search limits
 	s.setupSearchLimits(position, sl)
-	if s.searchLimits.TimeControl {
+	if s.searchLimits.TimeControl && !s.searchLimits.Ponder {
 		s.startTimer()
 	}
 
@@ -272,7 +295,12 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	}
 
 	// Initialize ply based data
-	// TODO
+	s.mg = make([]*movegen.Movegen, 0, MaxDepth)
+	s.pv = make([]*moveslice.MoveSlice, 0, MaxDepth)
+	for i := 0; i < MaxDepth; i++ {
+		s.mg = append(s.mg, movegen.NewMoveGen())
+		s.pv = append(s.pv, moveslice.NewMoveSlice(MaxDepth))
+	}
 
 	// release the init phase lock to signal the calling go routine
 	// waiting in StartSearch() to return
@@ -316,8 +344,8 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	// print stats to log
 	s.log.Info(out.Sprintf("Search finished after %d ms ", searchResult.SearchTime.Milliseconds()))
 	s.log.Info(out.Sprintf("Search depth was %d(%d) with %d nodes visited. NPS = %d nps",
-		s.curDepth, s.curExtraDepth, s.nodesVisited,
-		(s.nodesVisited*time.Second.Nanoseconds())/(1+searchResult.SearchTime.Nanoseconds())))
+		s.statistics.CurrentSearchDepth, s.statistics.CurrentExtraSearchDepth, s.nodesVisited,
+		(s.nodesVisited*uint64(time.Second.Nanoseconds()))/uint64(searchResult.SearchTime.Nanoseconds()+1)))
 
 	// print result to log
 	s.log.Infof("Search result: %s", searchResult.String())
@@ -328,27 +356,123 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.stopFlag = true
 }
 
-func (s *Search) iterativeDeepening(p *position.Position) *Result {
-	// FIXME: prototype/DUMMY
-	for !s.stopConditions() {
-		s.nodesVisited++
-		if s.nodesVisited%100 == 0 {
-			s.log.Info("Simulating search...")
+// Iterative Deepening:
+// It works as follows: the program starts with a one ply search,
+// then increments the search depth and does another search. This
+// process is repeated until the time allocated for the search is
+// exhausted. In case of an unfinished search, the program always
+// has the option to fall back to the move selected in the last
+// iteration of the search. Yet if we make sure that this move is
+// searched first in the next iteration, then overwriting the new
+// move with the old one becomes unnecessary. This way, also the
+// results from the partial search can be accepted
+//  TODO though in case of a severe drop of the score it is wise
+//  to allocate some more time, as the first alternative is often
+//  a bad capture, delaying the loss instead of preventing it
+func (s *Search) iterativeDeepening(position *position.Position) *Result {
+
+	// prepare search result
+	var result *Result
+
+	// check repetition and 50 moves
+	if s.checkDrawRepAnd50(position, 2) {
+		msg := "Search called on DRAW by Repetition or 50-moves-rule"
+		s.sendInfoStringToUci(msg)
+		s.log.Warning(msg)
+		result = &Result{BestValue: ValueDraw}
+		return result
+	}
+
+	// generate all legal root moves
+	s.rootMoves = s.mg[0].GenerateLegalMoves(position, movegen.GenAll)
+
+	// check if there are legal moves - if not it's mate or stalemate
+	if s.rootMoves.Len() == 0 {
+		if position.HasCheck() {
+			msg := "Search called on a mate position"
+			s.sendInfoStringToUci(msg)
+			s.log.Warning(msg)
+			result = &Result{BestValue: -ValueCheckMate}
+		} else {
+			msg := "Search called on a stalemate position"
+			s.sendInfoStringToUci(msg)
+			s.log.Warning(msg)
+			result = &Result{BestValue: ValueDraw}
 		}
-		time.Sleep(5 * time.Millisecond)
+		return result
 	}
-	mg := movegen.NewMoveGen()
-	moves := mg.GenerateLegalMoves(p, movegen.GenAll)
-	rand.Seed(int64(time.Now().Nanosecond()))
-	bestMove := moves.At(rand.Intn(moves.Len()))
-	result := &Result{
-		BestMove:    bestMove,
-		PonderMove:  MoveNone,
+
+	// add some extra time for the move after the last book move
+	// TODO
+
+	// prepare max depth from search limits
+	maxDepth := MaxDepth
+	if s.searchLimits.Depth > 0 {
+		maxDepth = s.searchLimits.Depth
+	}
+
+	// In preparation for aspiration window search - not needed yet
+	// max window search
+	alpha := ValueMin
+	beta := ValueMax
+
+	// ###########################################
+	// ### BEGIN Iterative Deepening
+	for iterationDepth := 0; iterationDepth < maxDepth; {
+		iterationDepth++
+
+		// update search counter
+		s.nodesVisited++
+
+		s.statistics.CurrentIterationDepth = iterationDepth
+		s.statistics.CurrentSearchDepth = s.statistics.CurrentIterationDepth
+		if s.statistics.CurrentExtraSearchDepth < s.statistics.CurrentIterationDepth {
+			s.statistics.CurrentExtraSearchDepth = s.statistics.CurrentIterationDepth
+		}
+
+		// call alpha beta root
+		s.rootSearch(position, iterationDepth, alpha, beta)
+
+		// sort root moves based on value for the next iteration
+		if !s.stopConditions() {
+			s.rootMoves.Sort()
+			s.statistics.CurrentBestRootMove = s.pv[0].At(0)
+			s.statistics.CurrentBestRootMoveValue = s.pv[0].At(0).ValueOf()
+		}
+
+		// update UCI GUI
+		s.sendIterationEndInfoToUci()
+
+		// check if we need to stop
+		// doing this here ensures that we at least do the 1st level search
+		if s.stopConditions() {
+			break
+		}
+
+	}
+
+	// ### END OF Iterative Deepening
+	// ###########################################
+
+	// update searchResult here
+	// best move is pv[0][0] - we need to make sure this array entry exists at this time
+	// best value is pv[0][0].valueOf
+	result = &Result{
+		BestMove:    s.pv[0].At(0),
+		BestValue:   s.pv[0].At(0).ValueOf(),
+		PonderMove:  0,
 		SearchTime:  0,
-		SearchDepth: 0,
-		ExtraDepth:  0,
+		SearchDepth: s.statistics.CurrentIterationDepth,
+		ExtraDepth:  s.statistics.CurrentExtraSearchDepth,
+		BookMove:    false,
 	}
-	// FIXME: prototype/DUMMY
+
+	if s.pv[0].Len() > 1 {
+		result.PonderMove = s.pv[0].At(1)
+	} else {
+		// TODO try to get ponder move from TT
+	}
+
 	return result
 }
 
@@ -429,6 +553,9 @@ func (s *Search) setupSearchLimits(position *position.Position, sl *Limits) {
 				sl.MovesToGo))
 			s.log.Debug(out.Sprintf("Search mode: Time limit     : %d ms", s.timeLimit.Milliseconds()))
 		}
+		if sl.Ponder {
+			s.log.Debug("Search mode: Ponder - time control postponed until ponderhit received")
+		}
 	} else {
 		s.log.Debug("Search mode: No time control")
 	}
@@ -499,21 +626,31 @@ func (s *Search) addExtraTime(f float64) {
 // the stopFlag to true and terminate the go routine
 func (s *Search) startTimer() {
 	go func() {
+		timerStart := time.Now()
 		s.log.Debugf("Timer started with time limit of %d ms", s.timeLimit.Milliseconds())
+
 		// relaxed busy wait
 		// as timeLimit changes due to extra times we can't set a fixed timeout
-		for time.Since(s.startTime) < s.timeLimit+s.extraTime && !s.stopFlag {
+		for time.Since(timerStart) < s.timeLimit+s.extraTime && !s.stopFlag {
 			time.Sleep(5 * time.Millisecond)
 		}
 		if s.stopFlag {
 			s.log.Debugf("Timer stopped early after wall time: %d ms (time limit %d ms and extra time %d)",
-				time.Since(s.startTime).Milliseconds(), s.timeLimit.Milliseconds(), s.extraTime.Milliseconds())
+				time.Since(timerStart).Milliseconds(), s.timeLimit.Milliseconds(), s.extraTime.Milliseconds())
 		} else {
 			s.log.Debugf("Timer stops search after wall time: %d ms (time limit %d ms and extra time %d)",
-				time.Since(s.startTime).Milliseconds(), s.timeLimit.Milliseconds(), s.extraTime.Milliseconds())
+				time.Since(timerStart).Milliseconds(), s.timeLimit.Milliseconds(), s.extraTime.Milliseconds())
 			s.stopFlag = true
 		}
 	}()
+}
+
+// checks repetitions and 50-moves rule
+func (s *Search) checkDrawRepAnd50(p *position.Position, i int) bool {
+	if p.CheckRepetitions(i) || p.HalfMoveClock() >= 100 {
+		return true
+	}
+	return false
 }
 
 // sends the search result to the uci handler if a handler is available
@@ -523,18 +660,72 @@ func (s *Search) sendResult(searchResult *Result) {
 	}
 }
 
-// getSearchLog returns an instance of a standard Logger preconfigured with a
-// os.Stdout backend and a "normal" logging format (e.g. time - file - level)
-// for usage in the search itself
-func getSearchLog() *logging.Logger {
-	searchLog := logging.MustGetLogger("search")
-	standardFormat := logging.MustStringFormatter(`%{time:15:04:05.000} %{shortpkg:-8.8s}:%{shortfile:-14.14s} %{level:-7.7s}:  %{message}`)
-	backend1 := logging.NewLogBackend(os.Stdout, "", golog.Lmsgprefix)
-	backend1Formatter := logging.NewBackendFormatter(backend1, standardFormat)
-	searchBackEnd := logging.AddModuleLevel(backend1Formatter)
-	searchBackEnd.SetLevel(logging.Level(config.SearchLogLevel), "")
-	searchLog.SetBackend(searchBackEnd)
-	return searchLog
+// sends an info string to the uci handler if a handler is available
+func (s *Search) sendInfoStringToUci(msg string) {
+	if s.uciHandlerPtr != nil {
+		s.uciHandlerPtr.SendInfoString(msg)
+	}
+}
+
+// send UCI information about search - could be called each 500ms or so
+func (s *Search) sendSearchUpdateToUci() {
+	// also do a regular search update here
+	if time.Since(s.lastUciUpdateTime) > time.Second {
+		s.lastUciUpdateTime = time.Now()
+		if s.uciHandlerPtr != nil {
+			s.uciHandlerPtr.SendSearchUpdate(
+				s.statistics.CurrentSearchDepth,
+				s.statistics.CurrentExtraSearchDepth,
+				s.nodesVisited,
+				s.getNps(),
+				time.Since(s.startTime),
+				s.tt.Hashfull())
+			s.uciHandlerPtr.SendCurrentRootMove(s.statistics.CurrentRootMove, s.statistics.CurrentRootMoveIndex)
+			s.uciHandlerPtr.SendCurrentLine(s.statistics.CurrentVariation)
+		} else {
+			s.log.Infof(out.Sprintf("depth %d seldepth %d value %s nodes %d nps %d time %d hashful %d",
+				s.statistics.CurrentSearchDepth,
+				s.statistics.CurrentExtraSearchDepth,
+				s.statistics.CurrentBestRootMoveValue.String(),
+				s.nodesVisited,
+				s.getNps(),
+				time.Since(s.startTime).Milliseconds(),
+				s.tt.Hashfull()))
+		}
+	}
+}
+
+// send UCI information after each depth iteration
+func (s *Search) sendIterationEndInfoToUci() {
+	if s.uciHandlerPtr != nil {
+		s.uciHandlerPtr.SendIterationEndInfo(
+			s.statistics.CurrentSearchDepth,
+			s.statistics.CurrentExtraSearchDepth,
+			s.statistics.CurrentBestRootMoveValue,
+			s.nodesVisited,
+			s.getNps(),
+			time.Since(s.startTime),
+			*s.pv[0])
+	} else {
+		s.log.Infof(out.Sprintf("depth %d seldepth %d value %s nodes %d nps %d time %d pv %s",
+			s.statistics.CurrentSearchDepth,
+			s.statistics.CurrentExtraSearchDepth,
+			s.statistics.CurrentBestRootMoveValue.String(),
+			s.nodesVisited,
+			s.getNps(),
+			time.Since(s.startTime).Milliseconds(),
+			s.pv[0].StringUci()))
+	}
+}
+
+func (s *Search) getNps() uint64 {
+	elapsed := uint64(time.Since(s.startTime).Nanoseconds() + 100)
+	nodes := s.nodesVisited * uint64(time.Second.Nanoseconds())
+	nps := nodes / elapsed
+	if nps > 15_000_000 {
+		nps = 0
+	}
+	return nps
 }
 
 // //////////////////////////////////////////////////////
@@ -545,5 +736,3 @@ func getSearchLog() *logging.Logger {
 func (s *Search) LastSearchResult() Result {
 	return *s.lastSearchResult
 }
-
-

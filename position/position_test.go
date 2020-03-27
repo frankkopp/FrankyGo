@@ -391,3 +391,31 @@ func Benchmark_DoUndo(b *testing.B) {
 		p.UndoMove()
 	}
 }
+
+func TestPosition_CheckRepetitions(t *testing.T) {
+	// test 1
+	position := NewPosition()
+	position.DoMove(CreateMove(SqE2, SqE4, Normal,  PtNone ))
+	position.DoMove(CreateMove(SqE7, SqE5, Normal, PtNone))
+	// takes 3 loops to get to repetition
+	for i := 0; i <= 2; i++ {
+		position.DoMove(CreateMove(SqG1, SqF3, Normal, PtNone))
+		position.DoMove(CreateMove(SqB8, SqC6, Normal, PtNone))
+		position.DoMove(CreateMove(SqF3, SqG1, Normal, PtNone))
+		position.DoMove(CreateMove(SqC6, SqB8, Normal, PtNone))
+	}
+	assert.True(t, position.CheckRepetitions(2))
+
+	// test 2
+	position = NewPositionFen("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -")
+	position.DoMove(CreateMove(SqE7, SqE3, Normal,  PtNone ))
+	position.DoMove(CreateMove(SqG1, SqG2, Normal, PtNone))
+	// takes 3 loops to get to repetition
+	for i := 0; i <= 2; i++ {
+		position.DoMove(CreateMove(SqE3, SqE2, Normal, PtNone))
+		position.DoMove(CreateMove(SqG2, SqG1, Normal, PtNone))
+		position.DoMove(CreateMove(SqE2, SqE3, Normal, PtNone))
+		position.DoMove(CreateMove(SqG1, SqG2, Normal, PtNone))
+	}
+	assert.True(t, position.CheckRepetitions(2))
+}

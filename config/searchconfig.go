@@ -33,6 +33,7 @@ type searchConfiguration struct {
 	BookFormat string
 	UseTT      bool
 	TTSize     int
+	UsePonder  bool
 }
 
 // sets defaults which might be overwritten by config file
@@ -43,6 +44,7 @@ func init() {
 	Settings.Search.BookFormat = "Simple"
 	Settings.Search.UseTT = true
 	Settings.Search.TTSize = 128
+	Settings.Search.UsePonder = true
 }
 
 // set defaults for configurations here in case a configuration
