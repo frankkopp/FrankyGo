@@ -51,10 +51,10 @@ var (
 
 func TestNew(t *testing.T) {
 	ma := NewMoveSlice(MaxMoves)
-	log.Printf("Len=%d", len(ma))
-	log.Printf("Cap=%d", cap(ma))
-	assert.Equal(t, 0, len(ma))
-	assert.Equal(t, MaxMoves, cap(ma))
+	log.Printf("Len=%d", len(*ma))
+	log.Printf("Cap=%d", cap(*ma))
+	assert.Equal(t, 0, len(*ma))
+	assert.Equal(t, MaxMoves, cap(*ma))
 
 }
 
@@ -66,22 +66,22 @@ func TestMoveArray_PushBack(t *testing.T) {
 	ma.PushBack(d8d5)
 	ma.PushBack(b1c3)
 
-	log.Printf("Len=%d", len(ma))
-	log.Printf("Cap=%d", cap(ma))
-	assert.Equal(t, 5, len(ma))
-	assert.Equal(t, MaxMoves, cap(ma))
+	log.Printf("Len=%d", len(*ma))
+	log.Printf("Cap=%d", cap(*ma))
+	assert.Equal(t, 5, len(*ma))
+	assert.Equal(t, MaxMoves, cap(*ma))
 
-	for i, v := range ma {
+	for i, v := range *ma {
 		fmt.Println(i, v)
 	}
 
 	for i := 0; i < 1_000_000; i++ {
 		ma.PushBack(e2e4)
 	}
-	log.Printf("Len=%d", len(ma))
-	log.Printf("Cap=%d", cap(ma))
-	assert.Equal(t, 1_000_005, len(ma))
-	assert.Equal(t, 1_163_264, cap(ma))
+	log.Printf("Len=%d", len(*ma))
+	log.Printf("Cap=%d", cap(*ma))
+	assert.Equal(t, 1_000_005, len(*ma))
+	assert.Equal(t, 1_163_264, cap(*ma))
 }
 
 func TestMoveArray_PopBack(t *testing.T) {
@@ -94,18 +94,18 @@ func TestMoveArray_PopBack(t *testing.T) {
 	ma.PushBack(d8d5)
 	ma.PushBack(b1c3)
 
-	log.Printf("Len=%d", len(ma))
-	log.Printf("Cap=%d", cap(ma))
-	assert.Equal(t, 5, len(ma))
-	assert.Equal(t, MaxMoves, cap(ma))
+	log.Printf("Len=%d", len(*ma))
+	log.Printf("Cap=%d", cap(*ma))
+	assert.Equal(t, 5, len(*ma))
+	assert.Equal(t, MaxMoves, cap(*ma))
 
 	m1 := ma.PopBack()
 	assert.Equal(t, b1c3, m1)
 	m2 := ma.PopBack()
 	assert.Equal(t, d8d5, m2)
-	assert.Equal(t, 3, len(ma))
+	assert.Equal(t, 3, len(*ma))
 
-	for i, v := range ma {
+	for i, v := range *ma {
 		fmt.Println(i, v)
 	}
 }
@@ -119,12 +119,12 @@ func TestMoveArray_PushFront(t *testing.T) {
 	ma.PushFront(d8d5)
 	ma.PushFront(b1c3)
 
-	log.Printf("Len=%d", len(ma))
-	log.Printf("Cap=%d", cap(ma))
-	assert.Equal(t, 5, len(ma))
-	assert.Equal(t, MaxMoves, cap(ma))
+	log.Printf("Len=%d", len(*ma))
+	log.Printf("Cap=%d", cap(*ma))
+	assert.Equal(t, 5, len(*ma))
+	assert.Equal(t, MaxMoves, cap(*ma))
 
-	for i, v := range ma {
+	for i, v := range *ma {
 		fmt.Println(i, v)
 	}
 }
@@ -137,18 +137,18 @@ func TestMoveArray_PopFront(t *testing.T) {
 	ma.PushFront(e4d5)
 	ma.PushFront(d8d5)
 	ma.PushFront(b1c3)
-	log.Printf("Len=%d", len(ma))
-	log.Printf("Cap=%d", cap(ma))
-	assert.Equal(t, 5, len(ma))
-	assert.Equal(t, MaxMoves, cap(ma))
+	log.Printf("Len=%d", len(*ma))
+	log.Printf("Cap=%d", cap(*ma))
+	assert.Equal(t, 5, len(*ma))
+	assert.Equal(t, MaxMoves, cap(*ma))
 
 	m1 := ma.PopFront()
 	assert.Equal(t, b1c3, m1)
 	m2 := ma.PopFront()
 	assert.Equal(t, d8d5, m2)
-	assert.Equal(t, 3, len(ma))
+	assert.Equal(t, 3, len(*ma))
 
-	for i, v := range ma {
+	for i, v := range *ma {
 		fmt.Println(i, v)
 	}
 }
@@ -160,13 +160,13 @@ func TestMoveArray_Clear(t *testing.T) {
 	ma.PushBack(e4d5)
 	ma.PushBack(d8d5)
 	ma.PushBack(b1c3)
-	log.Printf("Len=%d", len(ma))
-	log.Printf("Cap=%d", cap(ma))
-	assert.Equal(t, 5, len(ma))
-	assert.Equal(t, MaxMoves, cap(ma))
+	log.Printf("Len=%d", len(*ma))
+	log.Printf("Cap=%d", cap(*ma))
+	assert.Equal(t, 5, len(*ma))
+	assert.Equal(t, MaxMoves, cap(*ma))
 	ma.Clear()
-	assert.Equal(t, 0, len(ma))
-	assert.Equal(t, MaxMoves, cap(ma))
+	assert.Equal(t, 0, len(*ma))
+	assert.Equal(t, MaxMoves, cap(*ma))
 }
 
 func TestMoveArray_Access(t *testing.T) {
@@ -176,15 +176,15 @@ func TestMoveArray_Access(t *testing.T) {
 	ma.PushBack(e4d5)
 	ma.PushBack(d8d5)
 	ma.PushBack(b1c3)
-	log.Printf("Len=%d", len(ma))
-	log.Printf("Cap=%d", cap(ma))
-	assert.Equal(t, 5, len(ma))
-	assert.Equal(t, MaxMoves, cap(ma))
+	log.Printf("Len=%d", len(*ma))
+	log.Printf("Cap=%d", cap(*ma))
+	assert.Equal(t, 5, len(*ma))
+	assert.Equal(t, MaxMoves, cap(*ma))
 
 	assert.Equal(t, e2e4, ma.Front())
 	assert.Equal(t, ma.At(0), ma.Front())
 	assert.Equal(t, b1c3, ma.Back())
-	assert.Equal(t, ma.At(len(ma)-1), ma.Back())
+	assert.Equal(t, ma.At(len(*ma)-1), ma.Back())
 	ma.Set(0, b1c3)
 	assert.Equal(t, b1c3, ma.Front())
 	assert.Equal(t, ma.At(0), ma.Front())
@@ -197,10 +197,10 @@ func TestMoveArray_String(t *testing.T) {
 	ma.PushBack(e4d5)
 	ma.PushBack(d8d5)
 	ma.PushBack(b1c3)
-	log.Printf("Len=%d", len(ma))
-	log.Printf("Cap=%d", cap(ma))
-	assert.Equal(t, 5, len(ma))
-	assert.Equal(t, MaxMoves, cap(ma))
+	log.Printf("Len=%d", len(*ma))
+	log.Printf("Cap=%d", cap(*ma))
+	assert.Equal(t, 5, len(*ma))
+	assert.Equal(t, MaxMoves, cap(*ma))
 	log.Printf("String() = %s", ma.String())
 	log.Printf("StringUci() = %s", ma.StringUci())
 	assert.Equal(t, "e2e4 d7d5 e4d5 d8d5 b1c3", ma.StringUci())
@@ -213,20 +213,20 @@ func TestMoveArray_Sort(t *testing.T) {
 	ma.PushBack(e4d5)
 	ma.PushBack(d8d5)
 	ma.PushBack(b1c3)
-	log.Printf("Len=%d", len(ma))
-	log.Printf("Cap=%d", cap(ma))
-	assert.Equal(t, 5, len(ma))
-	assert.Equal(t, MaxMoves, cap(ma))
+	log.Printf("Len=%d", len(*ma))
+	log.Printf("Cap=%d", cap(*ma))
+	assert.Equal(t, 5, len(*ma))
+	assert.Equal(t, MaxMoves, cap(*ma))
 	log.Printf("String() = %s", ma.String())
 	log.Printf("StringUci() = %s", ma.StringUci())
-	for i, v := range ma {
+	for i, v := range *ma {
 		fmt.Println(i, v)
 	}
 	fmt.Println("Sorted:")
 	ma.Sort()
 	log.Printf("String() = %s", ma.String())
 	log.Printf("StringUci() = %s", ma.StringUci())
-	for i, v := range ma {
+	for i, v := range *ma {
 		fmt.Println(i, v)
 	}
 }
@@ -250,10 +250,10 @@ func TestMoveArray_SortRandom(t *testing.T) {
 	out.Printf("%d ns\n", elapsed.Nanoseconds())
 
 	// check
-	tmp := ma[0]
+	tmp := ma.At(0)
 	for i := 0; i < items; i++ {
-		assert.True(t, tmp >= ma[i])
-		tmp = ma[i]
+		assert.True(t, tmp >= ma.At(i))
+		tmp = ma.At(i)
 	}
 
 }
@@ -267,16 +267,16 @@ func TestMoveArray_Filter(t *testing.T) {
 	ma.PushBack(d8d5)
 	ma.PushBack(b1c3)
 
-	assert.Equal(t, 5, len(ma))
-	assert.Equal(t, MaxMoves, cap(ma))
+	assert.Equal(t, 5, len(*ma))
+	assert.Equal(t, MaxMoves, cap(*ma))
 	assert.Equal(t, "e2e4 d7d5 e4d5 d8d5 b1c3", ma.StringUci())
 
 	ma.Filter(func(i int) bool {
 		return ma.At(i) != e4d5
 	})
 
-	assert.Equal(t, 4, len(ma))
-	assert.Equal(t, MaxMoves, cap(ma))
+	assert.Equal(t, 4, len(*ma))
+	assert.Equal(t, MaxMoves, cap(*ma))
 	assert.Equal(t, "e2e4 d7d5 d8d5 b1c3", ma.StringUci())
 }
 
@@ -288,21 +288,21 @@ func TestMoveArray_FilterCopy(t *testing.T) {
 	ma.PushBack(d8d5)
 	ma.PushBack(b1c3)
 
-	assert.Equal(t, 5, len(ma))
-	assert.Equal(t, MaxMoves, cap(ma))
+	assert.Equal(t, 5, len(*ma))
+	assert.Equal(t, MaxMoves, cap(*ma))
 	assert.Equal(t, "e2e4 d7d5 e4d5 d8d5 b1c3", ma.StringUci())
 
-	ma2 := NewMoveSlice(cap(ma))
-	ma.FilterCopy(&ma2, func(i int) bool {
+	ma2 := NewMoveSlice(cap(*ma))
+	ma.FilterCopy(ma2, func(i int) bool {
 		return ma.At(i) != e4d5
 	})
 
-	assert.Equal(t, 5, len(ma))
-	assert.Equal(t, MaxMoves, cap(ma))
+	assert.Equal(t, 5, len(*ma))
+	assert.Equal(t, MaxMoves, cap(*ma))
 	assert.Equal(t, "e2e4 d7d5 e4d5 d8d5 b1c3", ma.StringUci())
 
-	assert.Equal(t, 4, len(ma2))
-	assert.Equal(t, MaxMoves, cap(ma2))
+	assert.Equal(t, 4, len(*ma2))
+	assert.Equal(t, MaxMoves, cap(*ma2))
 	assert.Equal(t, "e2e4 d7d5 d8d5 b1c3", ma2.StringUci())
 }
 

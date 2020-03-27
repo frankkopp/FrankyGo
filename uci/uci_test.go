@@ -301,12 +301,11 @@ func TestFullSearchProcess(t *testing.T) {
 	uh.Command("position startpos moves e2e4 e7e5")
 	assert.EqualValues(t, "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2", uh.myPosition.StringFen())
 
-	result = uh.Command("go wtime 60000 btime 60000 winc 2000 binc 2000 depth 6 nodes 10000 movestogo 20 moves d2d4 g1f3")
+	result = uh.Command("go moveTime 20000")
 	assert.True(t, uh.mySearch.IsSearching())
 	time.Sleep(2 * time.Second)
 	uh.mySearch.WaitWhileSearching()
 	assert.False(t, uh.mySearch.LastSearchResult().BookMove)
-
 
 	result = uh.Command("quit")
 }
@@ -356,4 +355,27 @@ func TestInfiniteFinishedBeforeStop(t *testing.T) {
 	assert.False(t, uh.mySearch.IsSearching())
 
 	result = uh.Command("quit")
+}
+
+func TestDebug(t *testing.T) {
+	uh := NewUciHandler()
+	var result string
+
+	result = uh.Command("uci")
+	result = uh.Command("isready")
+	result = uh.Command("setoption name Hash value 512")
+	result = uh.Command("setoption name Use_Book value false")
+	result = uh.Command("position startpos moves e2e4")
+	result = uh.Command("go depth 6")
+	assert.True(t, uh.mySearch.IsSearching())
+	uh.mySearch.WaitWhileSearching()
+	time.Sleep(2 * time.Second)
+	uh.Command("position startpos moves e2e4 b8c6 g1f3")
+	result = uh.Command("go depth 6")
+	time.Sleep(2 * time.Second)
+	uh.mySearch.WaitWhileSearching()
+	assert.False(t, uh.mySearch.LastSearchResult().BookMove)
+	result = uh.Command("quit")
+
+	_ = result
 }

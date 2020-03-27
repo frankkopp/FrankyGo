@@ -26,13 +26,25 @@
 
 package search
 
+import (
+	"github.com/frankkopp/FrankyGo/moveslice"
+	. "github.com/frankkopp/FrankyGo/types"
+)
+
 // //////////////////////////////////////////////////////
 // Statistics
 // //////////////////////////////////////////////////////
 
 // Statistics extra data and stats not essential for a functioning search
 type Statistics struct {
-
+	CurrentIterationDepth    int
+	CurrentSearchDepth       int
+	CurrentExtraSearchDepth  int
+	CurrentVariation         moveslice.MoveSlice
+	CurrentRootMoveIndex     int
+	CurrentRootMove          Move
+	CurrentBestRootMove      Move
+	CurrentBestRootMoveValue Value
 }
 
 // // counter for cut off to measure quality of move ordering

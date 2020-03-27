@@ -1,12 +1,21 @@
 v 0.x (planned)
 ================================================================================
 
-v 0.4 (planned)
+v 0.5 (planned)
 ================================================================================
 - TODO
-    - Implement simple Search
-    - Implement simple Evaluator
+    - Evaluation (simple)
+    - Quiescence search
+
+v 0.4 (done)
+================================================================================
+- DONE
+    - Pondering
+    - Testing for correct play with Arena against Stockfish
     - log files for standard and search log
+    - Implement simple Evaluator
+    - Complete simple search
+    - Implement simple Search
 
 v 0.3 (done)
 ================================================================================

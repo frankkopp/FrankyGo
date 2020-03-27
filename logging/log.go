@@ -33,6 +33,8 @@ package logging
 import (
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/op/go-logging"
 
@@ -54,12 +56,44 @@ func init() {
 // GetLog returns an instance of a standard Logger preconfigured with a
 // os.Stdout backend and a "normal" logging format (e.g. time - file - level)
 func GetLog() *logging.Logger {
+	// Stdout backend
 	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
 	backend1Formatter := logging.NewBackendFormatter(backend1, standardFormat)
 	standardBackEnd := logging.AddModuleLevel(backend1Formatter)
 	level := logging.Level(config.LogLevel)
 	standardBackEnd.SetLevel(level, "")
-	standardLog.SetBackend(standardBackEnd)
+
+	// File backend
+	programName, _ := os.Executable()
+	exeName := strings.TrimSuffix(filepath.Base(programName), ".exe")
+	var logPath string
+	if filepath.IsAbs(config.Settings.Log.LogPath) {
+		logPath = config.Settings.Log.LogPath
+	} else {
+		dir, _ := os.Getwd()
+		logPath = dir + "/" + config.Settings.Log.LogPath
+	}
+	logFilePath := logPath + "/" + exeName + "_log.log"
+	logFilePath = filepath.Clean(logFilePath)
+
+	// create file backend
+	var err error
+	searchLogFile, err := os.OpenFile(logFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	// buf := bufio.NewWriter(searchLogFile)
+
+	// we use both  - Stdout or file
+	if err != nil {
+		log.Println("Logfile could not be created:", err)
+		standardLog.SetBackend(standardBackEnd)
+	} else {
+		backend2 := logging.NewLogBackend(searchLogFile, "", log.Lmsgprefix)
+		backend2Formatter := logging.NewBackendFormatter(backend2, standardFormat)
+		searchBackEnd2 := logging.AddModuleLevel(backend2Formatter)
+		searchBackEnd2.SetLevel(logging.DEBUG, "")
+		multi := logging.SetBackend(standardBackEnd, searchBackEnd2)
+		standardLog.SetBackend(multi)
+	}
+
 	return standardLog
 }
 

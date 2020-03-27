@@ -37,6 +37,7 @@ import (
 	"github.com/frankkopp/FrankyGo/config"
 	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/position"
+	. "github.com/frankkopp/FrankyGo/types"
 )
 
 var logTest *logging2.Logger
@@ -120,6 +121,7 @@ func TestWaitWhileSearching(t *testing.T) {
 	search := NewSearch()
 	p := position.NewPosition()
 	sl := NewSearchLimits()
+	sl.Infinite = true
 	go func() {
 		time.Sleep(3 * time.Second)
 		search.StopSearch()
@@ -150,4 +152,47 @@ func TestIsSearching(t *testing.T) {
 	out.Printf("Time %d ms\n", elapsed.Milliseconds())
 	assert.False(t, search.IsSearching())
 	logTest.Debugf("Is searching = %v", search.IsSearching())
+}
+
+func TestMatePosition(t *testing.T) {
+	search := NewSearch()
+	p := position.NewPositionFen("8/8/8/8/8/5K2/8/R4k2 b - -")
+	sl := NewSearchLimits()
+	search.StartSearch(*p, *sl)
+	search.WaitWhileSearching()
+	result := search.LastSearchResult()
+	logTest.Debug(result.String())
+	assert.EqualValues(t, -ValueCheckMate, result.BestValue)
+}
+
+func TestStaleMatePosition(t *testing.T) {
+	search := NewSearch()
+	p := position.NewPositionFen("6R1/8/8/8/8/5K2/R7/7k b - -")
+	sl := NewSearchLimits()
+	search.StartSearch(*p, *sl)
+	search.WaitWhileSearching()
+	result := search.LastSearchResult()
+	logTest.Debug(result.String())
+	assert.EqualValues(t, ValueDraw, result.BestValue)
+}
+
+func TestSearchDev(t *testing.T) {
+	config.Settings.Search.UseBook = false
+	search := NewSearch()
+	p := position.NewPosition()
+	sl := NewSearchLimits()
+	sl.TimeControl = true
+	sl.MoveTime = 15 * time.Second
+	// sl.Depth = 4
+	search.StartSearch(*p, *sl)
+	search.WaitWhileSearching()
+}
+
+func Test(t *testing.T) {
+	for j := 0; j < 100; j++ {
+		for i := 0; i < 20; i++ {
+			out.Print("abcdefg ", i, " ")
+		}
+		out.Println()
+	}
 }
