@@ -56,6 +56,7 @@ func init() {
 // GetLog returns an instance of a standard Logger preconfigured with a
 // os.Stdout backend and a "normal" logging format (e.g. time - file - level)
 func GetLog() *logging.Logger {
+	// Stdout backend
 	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
 	backend1Formatter := logging.NewBackendFormatter(backend1, standardFormat)
 	standardBackEnd := logging.AddModuleLevel(backend1Formatter)
@@ -80,7 +81,7 @@ func GetLog() *logging.Logger {
 	searchLogFile, err := os.OpenFile(logFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	// buf := bufio.NewWriter(searchLogFile)
 
-	// we use either Stdout or file - if file is valid we use only file
+	// we use both  - Stdout or file
 	if err != nil {
 		log.Println("Logfile could not be created:", err)
 		standardLog.SetBackend(standardBackEnd)

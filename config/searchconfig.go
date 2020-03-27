@@ -44,7 +44,7 @@ func init() {
 	Settings.Search.BookFormat = "Simple"
 	Settings.Search.UseTT = true
 	Settings.Search.TTSize = 128
-	Settings.Search.UsePonder = false
+	Settings.Search.UsePonder = true
 }
 
 // set defaults for configurations here in case a configuration

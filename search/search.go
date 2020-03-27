@@ -66,7 +66,7 @@ type Search struct {
 	// previous search
 	lastSearchResult *Result
 
-	// current search
+	// current search state
 	stopFlag          bool
 	startTime         time.Time
 	hasResult         bool
@@ -128,7 +128,7 @@ func (s *Search) NewGame() {
 func (s *Search) StartSearch(p position.Position, sl Limits) {
 	// acquire init phase lock
 	_ = s.initSemaphore.Acquire(context.TODO(), 1)
-	// set position and searchLimits for search
+	// set position and searchLimits into the current search state
 	s.currentPosition = &p
 	s.searchLimits = &sl
 	// run search
@@ -145,6 +145,20 @@ func (s *Search) StartSearch(p position.Position, sl Limits) {
 func (s *Search) StopSearch() {
 	s.stopFlag = true
 	s.WaitWhileSearching()
+}
+
+// PonderHit is called by the UCI user interface when the engine has
+// been instructed to ponder before. The engine usually is in search
+// mode without time control when this is sent. This command will
+// then activate time control without interrupting the running search.
+// If no search is running this has no effect.
+func (s *Search) PonderHit() {
+	if s.IsSearching() && s.searchLimits.Ponder {
+		s.log.Debug("Ponderhit during search - activating time control")
+		s.startTimer()
+		return
+	}
+	s.log.Warning("Ponderhit received while not pondering")
 }
 
 // IsSearching checks if search is running
@@ -254,7 +268,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 
 	// setup and report search limits
 	s.setupSearchLimits(position, sl)
-	if s.searchLimits.TimeControl {
+	if s.searchLimits.TimeControl && !s.searchLimits.Ponder {
 		s.startTimer()
 	}
 
@@ -404,7 +418,7 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 
 	// ###########################################
 	// ### BEGIN Iterative Deepening
-	for iterationDepth := 0; iterationDepth < maxDepth && !s.stopConditions(); {
+	for iterationDepth := 0; iterationDepth < maxDepth; {
 		iterationDepth++
 
 		// update search counter
@@ -429,13 +443,19 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 		// update UCI GUI
 		s.sendIterationEndInfoToUci()
 
+		// check if we need to stop
+		// doing this here ensures that we at least do the 1st level search
+		if s.stopConditions() {
+			break
+		}
+
 	}
 
 	// ### END OF Iterative Deepening
 	// ###########################################
 
 	// update searchResult here
-	// best move is pv[0][0]
+	// best move is pv[0][0] - we need to make sure this array entry exists at this time
 	// best value is pv[0][0].valueOf
 	result = &Result{
 		BestMove:    s.pv[0].At(0),
@@ -533,6 +553,9 @@ func (s *Search) setupSearchLimits(position *position.Position, sl *Limits) {
 				sl.MovesToGo))
 			s.log.Debug(out.Sprintf("Search mode: Time limit     : %d ms", s.timeLimit.Milliseconds()))
 		}
+		if sl.Ponder {
+			s.log.Debug("Search mode: Ponder - time control postponed until ponderhit received")
+		}
 	} else {
 		s.log.Debug("Search mode: No time control")
 	}
@@ -603,20 +626,20 @@ func (s *Search) addExtraTime(f float64) {
 // the stopFlag to true and terminate the go routine
 func (s *Search) startTimer() {
 	go func() {
+		timerStart := time.Now()
 		s.log.Debugf("Timer started with time limit of %d ms", s.timeLimit.Milliseconds())
 
 		// relaxed busy wait
 		// as timeLimit changes due to extra times we can't set a fixed timeout
-		for time.Since(s.startTime) < s.timeLimit+s.extraTime && !s.stopFlag {
-
+		for time.Since(timerStart) < s.timeLimit+s.extraTime && !s.stopFlag {
 			time.Sleep(5 * time.Millisecond)
 		}
 		if s.stopFlag {
 			s.log.Debugf("Timer stopped early after wall time: %d ms (time limit %d ms and extra time %d)",
-				time.Since(s.startTime).Milliseconds(), s.timeLimit.Milliseconds(), s.extraTime.Milliseconds())
+				time.Since(timerStart).Milliseconds(), s.timeLimit.Milliseconds(), s.extraTime.Milliseconds())
 		} else {
 			s.log.Debugf("Timer stops search after wall time: %d ms (time limit %d ms and extra time %d)",
-				time.Since(s.startTime).Milliseconds(), s.timeLimit.Milliseconds(), s.extraTime.Milliseconds())
+				time.Since(timerStart).Milliseconds(), s.timeLimit.Milliseconds(), s.extraTime.Milliseconds())
 			s.stopFlag = true
 		}
 	}()

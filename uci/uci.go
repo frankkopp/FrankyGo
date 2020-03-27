@@ -124,12 +124,12 @@ func (u *UciHandler) SendReadyOk() {
 
 // SendInfoString send a arbitrary string to the UCI user interface
 func (u *UciHandler) SendInfoString(info string) {
-	u.sendInfoString(info)
+	u.send(out.Sprintf("info string %s", info))
 }
 
 // SendIterationEndInfo sends information about the last search depth iteration to the UCI ui
 func (u *UciHandler) SendIterationEndInfo(depth int, seldepth int, value Value, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice) {
-	u.send(fmt.Sprintf("info depth %d seldepth %d multipv 1 score %s nodes %d nps %d time %d pv %s",
+	u.send(fmt.Sprintf("info depth %d seldepth %d multipv 1 score cp %s nodes %d nps %d time %d pv %s",
 		depth, seldepth, value.String(), nodes, nps, time.Milliseconds(), pv.StringUci()))
 }
 
@@ -230,6 +230,8 @@ func (u *UciHandler) handleReceivedCommand(cmd string) bool {
 	return false
 }
 
+// command handler when the "uci" cmd has been received.
+// Responds with "id" and "options"
 func (u *UciHandler) uciCommand() {
 	u.send("id name FrankyGo " + version.Version())
 	u.send("id author Frank Kopp, Germany")
@@ -258,7 +260,7 @@ func (u *UciHandler) setOptionCommand(tokens []string) {
 		}
 	} else {
 		msg := "Command 'setoption' is malformed"
-		u.sendInfoString(msg)
+		u.SendInfoString(msg)
 		log.Warning(msg)
 		return
 	}
@@ -268,7 +270,7 @@ func (u *UciHandler) setOptionCommand(tokens []string) {
 		o.HandlerFunc(u, o)
 	} else {
 		msg := out.Sprintf("Command 'setoption': No such option '%s'", name)
-		u.sendInfoString(msg)
+		u.SendInfoString(msg)
 		log.Warning(msg)
 		return
 	}
@@ -280,11 +282,10 @@ func (u *UciHandler) isReadyCommand() {
 	u.mySearch.IsReady()
 }
 
+// ponderhit signals that the move which was suggested as ponder move
+// has been made by the opponent.
 func (u *UciHandler) ponderHitCommand() {
-	// TODO
-	msg := "Command 'ponderhit' not yet implemented"
-	u.sendInfoString(msg)
-	log.Warning(msg)
+	u.mySearch.PonderHit()
 }
 
 // sends a stop signal to search or perft
@@ -349,7 +350,7 @@ func (u *UciHandler) positionCommand(tokens []string) {
 		fallthrough
 	default:
 		msg := out.Sprintf("Command 'position' malformed. %s", tokens)
-		u.sendInfoString(msg)
+		u.SendInfoString(msg)
 		log.Warning(msg)
 		return
 	}
@@ -365,7 +366,7 @@ func (u *UciHandler) positionCommand(tokens []string) {
 					u.myPosition.DoMove(move)
 				} else {
 					msg := out.Sprintf("Command 'position' malformed. Invalid move '%s' (%s)", move.String(), tokens)
-					u.sendInfoString(msg)
+					u.SendInfoString(msg)
 					log.Warning(msg)
 					return
 				}
@@ -373,7 +374,7 @@ func (u *UciHandler) positionCommand(tokens []string) {
 			}
 		} else {
 			msg := out.Sprintf("Command 'position' malformed moves. %s", tokens)
-			u.sendInfoString(msg)
+			u.SendInfoString(msg)
 			log.Warning(msg)
 			return
 		}
@@ -389,28 +390,18 @@ func (u *UciHandler) uciNewGameCommand() {
 	u.mySearch.NewGame()
 }
 
+// will not be implemented
 func (u *UciHandler) debugCommand() {
 	msg := "Command 'debug' not implemented"
-	u.sendInfoString(msg)
+	u.SendInfoString(msg)
 	log.Warning(msg)
 }
 
+// will not be implemented
 func (u *UciHandler) registerCommand() {
 	msg := "Command 'register' not implemented"
-	u.sendInfoString(msg)
+	u.SendInfoString(msg)
 	log.Warning(msg)
-}
-
-func (u *UciHandler) sendInfoString(s string) {
-	u.send(out.Sprintf("info string %s", s))
-	_, _ = u.OutIo.WriteString(s + "\n")
-	_ = u.OutIo.Flush()
-}
-
-func (u *UciHandler) send(s string) {
-	u.uciLog.Infof(">> %s", s)
-	_, _ = u.OutIo.WriteString(s + "\n")
-	_ = u.OutIo.Flush()
 }
 
 func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
@@ -441,7 +432,7 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 			searchLimits.Depth, err = strconv.Atoi(tokens[i])
 			if err != nil {
 				msg := out.Sprintf("UCI command go malformed. Depth value not an number: %s", tokens[i])
-				u.sendInfoString(msg)
+				u.SendInfoString(msg)
 				log.Warning(msg)
 				return nil, true
 			}
@@ -451,7 +442,7 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 			parseInt, err := strconv.ParseInt(tokens[i], 10, 64)
 			if err != nil {
 				msg := out.Sprintf("UCI command go malformed. Nodes value not an number: %s", tokens[i])
-				u.sendInfoString(msg)
+				u.SendInfoString(msg)
 				log.Warning(msg)
 				return nil, true
 			}
@@ -462,7 +453,7 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 			searchLimits.Mate, err = strconv.Atoi(tokens[i])
 			if err != nil {
 				msg := out.Sprintf("UCI command go malformed. Mate value not an number: %s", tokens[i])
-				u.sendInfoString(msg)
+				u.SendInfoString(msg)
 				log.Warning(msg)
 				return nil, true
 			}
@@ -472,7 +463,7 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 			parseInt, err := strconv.ParseInt(tokens[i], 10, 64)
 			if err != nil {
 				msg := out.Sprintf("UCI command go malformed. MoveTime value not an number: %s", tokens[i])
-				u.sendInfoString(msg)
+				u.SendInfoString(msg)
 				log.Warning(msg)
 				return nil, true
 			}
@@ -484,7 +475,7 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 			parseInt, err := strconv.ParseInt(tokens[i], 10, 64)
 			if err != nil {
 				msg := out.Sprintf("UCI command go malformed. WhiteTime value not an number: %s", tokens[i])
-				u.sendInfoString(msg)
+				u.SendInfoString(msg)
 				log.Warning(msg)
 				return nil, true
 			}
@@ -496,7 +487,7 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 			parseInt, err := strconv.ParseInt(tokens[i], 10, 64)
 			if err != nil {
 				msg := out.Sprintf("UCI command go malformed. Black value not an number: %s", tokens[i])
-				u.sendInfoString(msg)
+				u.SendInfoString(msg)
 				log.Warning(msg)
 				return nil, true
 			}
@@ -508,7 +499,7 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 			parseInt, err := strconv.ParseInt(tokens[i], 10, 64)
 			if err != nil {
 				msg := out.Sprintf("UCI command go malformed. WhiteInc value not an number: %s", tokens[i])
-				u.sendInfoString(msg)
+				u.SendInfoString(msg)
 				log.Warning(msg)
 				return nil, true
 			}
@@ -519,7 +510,7 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 			parseInt, err := strconv.ParseInt(tokens[i], 10, 64)
 			if err != nil {
 				msg := out.Sprintf("UCI command go malformed. BlackInc value not an number: %s", tokens[i])
-				u.sendInfoString(msg)
+				u.SendInfoString(msg)
 				log.Warning(msg)
 				return nil, true
 			}
@@ -530,14 +521,14 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 			searchLimits.MovesToGo, err = strconv.Atoi(tokens[i])
 			if err != nil {
 				msg := out.Sprintf("UCI command go malformed. Movestogo value not an number: %s", tokens[i])
-				u.sendInfoString(msg)
+				u.SendInfoString(msg)
 				log.Warning(msg)
 				return nil, true
 			}
 			i++
 		default:
 			msg := out.Sprintf("UCI command go malformed. Invalid subcommand: %s", tokens[i])
-			u.sendInfoString(msg)
+			u.SendInfoString(msg)
 			log.Warning(msg)
 			return nil, true
 		}
@@ -551,7 +542,7 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 		searchLimits.TimeControl) {
 
 		msg := out.Sprintf("UCI command go malformed. No effective limits set %s", tokens)
-		u.sendInfoString(msg)
+		u.SendInfoString(msg)
 		log.Warning(msg)
 		return nil, true
 	}
@@ -559,12 +550,12 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 	if searchLimits.TimeControl && searchLimits.MoveTime == 0 {
 		if u.myPosition.NextPlayer() == White && searchLimits.WhiteTime == 0 {
 			msg := out.Sprintf("UCI command go invalid. White to move but time for white is zero! %s", tokens)
-			u.sendInfoString(msg)
+			u.SendInfoString(msg)
 			log.Warning(msg)
 			return nil, true
 		} else if u.myPosition.NextPlayer() == Black && searchLimits.BlackTime == 0 {
 			msg := out.Sprintf("UCI command go invalid. Black to move but time for white is zero! %s", tokens)
-			u.sendInfoString(msg)
+			u.SendInfoString(msg)
 			log.Warning(msg)
 			return nil, true
 		}
@@ -619,4 +610,11 @@ func getUciLog() *logging2.Logger {
 	}
 
 	return uciLog
+}
+
+// sends any string to the UCI user interface
+func (u *UciHandler) send(s string) {
+	u.uciLog.Infof(">> %s", s)
+	_, _ = u.OutIo.WriteString(s + "\n")
+	_ = u.OutIo.Flush()
 }
