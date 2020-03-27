@@ -7,7 +7,7 @@ v 0.5 (planned)
     - Evaluation (simple)
     - Quiescence search
 
-v 0.4 (in progress)
+v 0.4 (done)
 ================================================================================
 - DONE
     - Pondering

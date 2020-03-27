@@ -34,7 +34,7 @@ import (
 const (
 	Major  = 0
 	Minor  = 4
-	Status = "dev"
+	Status = "rc"
 	Date   = "25.03.2020"
 )
 
