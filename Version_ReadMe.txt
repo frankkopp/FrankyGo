@@ -4,13 +4,13 @@ v 0.x (planned)
 v 0.5 (planned)
 ================================================================================
 - TODO
-    - Pondering
     - Evaluation (simple)
     - Quiescence search
 
 v 0.4 (in progress)
 ================================================================================
 - DONE
+    - Pondering
     - Testing for correct play with Arena against Stockfish
     - log files for standard and search log
     - Implement simple Evaluator
