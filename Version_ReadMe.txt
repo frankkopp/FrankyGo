@@ -12,10 +12,11 @@ v 0.6 (planned)
 v 0.5 (in progress)
 ================================================================================
 - TODO
-    - Quiescence search
+    - Testing
     - Known Issues:
 
 -DONE
+    - Quiescence search
     - Score as string()
     - Evaluation (simple)
 

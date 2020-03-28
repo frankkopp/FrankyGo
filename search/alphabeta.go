@@ -238,7 +238,6 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 
 func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta Value) Value {
 
-	// TODO limit quiescence depth
 	if !config.Settings.Search.UseQuiescence {
 		return s.evaluate(position)
 	}
@@ -255,7 +254,6 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 	s.pv[ply].Clear()
 	hasCheck := position.HasCheck()
 
-	// TODO
 	if !hasCheck {
 		// get an evaluation for the position
 		staticEval := s.evaluate(position)
@@ -307,8 +305,10 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 		s.statistics.CurrentVariation.PushBack(move)
 		s.sendSearchUpdateToUci()
 
-		// check repetition and 50 moves
-		if s.checkDrawRepAnd50(position, 2) {
+		// check repetition and 50 moves when in check
+		// otherwise only capturing moves are generated
+		// which break repetition and 50-moves rule anyway
+		if hasCheck && s.checkDrawRepAnd50(position, 2) {
 			value = ValueDraw
 		} else {
 			value = -s.qsearch(position, ply+1, -beta, -alpha)

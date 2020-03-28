@@ -493,6 +493,51 @@ func (p *Position) CheckRepetitions(reps int) bool {
 	return false
 }
 
+// HasInsufficientMaterial returns true if no side has enough material to
+// force a mate (does not exclude combination where a helpmate would be
+// possible, e.g. the opponent needs to support a mate by mistake)
+func (p *Position) HasInsufficientMaterial() bool {
+
+	// we use material value as minor pieces knights and bishops
+	// have different values and it is assumed that this is faster
+	// then a pop count on a bitboard - not empirically tested
+
+	// no material
+	// both sides have a bare king
+	if p.material[White] + p.material[Black] == 0 {
+		return true
+	}
+
+	// no more pawns
+	if p.piecesBb[White][Pawn].PopCount() == 0 && p.piecesBb[Black][Pawn].PopCount() == 0 {
+		// one side has a king and a minor piece against a bare king
+		// both sides have a king and a minor piece each
+		if p.materialNonPawn[White] < 400 && p.materialNonPawn[Black] < 400 {
+			return true
+		}
+		// the weaker side has a minor piece against two knights
+		if (p.materialNonPawn[White] == 2 * Knight.ValueOf() && p.materialNonPawn[Black] <= Bishop.ValueOf()) ||
+			(p.materialNonPawn[Black] == 2 * Knight.ValueOf() && p.materialNonPawn[White] <= Bishop.ValueOf()) {
+			return true
+		}
+		// two bishops draw against a bishop
+		if (p.materialNonPawn[White] == 2 * Bishop.ValueOf() && p.materialNonPawn[Black] == Bishop.ValueOf()) ||
+			(p.materialNonPawn[Black] == 2 * Bishop.ValueOf() && p.materialNonPawn[White] == Bishop.ValueOf()) {
+			return true
+		}
+		// one side has two bishops a mate can be forced
+		if p.materialNonPawn[White] == 2 * Bishop.ValueOf()  || p.materialNonPawn[Black] == 2 * Bishop.ValueOf() {
+			return false
+		}
+		// two minor pieces against one draw, except when the stronger side has a bishop pair
+		if (p.materialNonPawn[White] < 2*Bishop.ValueOf() && p.materialNonPawn[Black] <= Bishop.ValueOf()) ||
+			(p.materialNonPawn[White] <= Bishop.ValueOf() && p.materialNonPawn[Black] < 2*Bishop.ValueOf()) {
+			return true
+		}
+	}
+	return false
+}
+
 // String returns a string representing the board instance. This
 // includes the fen, a board matrix, game phase, material and pos values.
 func (p *Position) String() string {
@@ -1027,3 +1072,4 @@ func (p *Position) LastCapturedPiece() Piece {
 	}
 	return p.history[p.historyCounter-1].capturedPiece
 }
+

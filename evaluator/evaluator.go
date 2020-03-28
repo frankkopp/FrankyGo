@@ -58,7 +58,11 @@ func NewEvaluator() *Evaluator {
 // using various evaluation heuristics like material,
 // positional values, pawn structure, etc.
 func (e *Evaluator) Evaluate(position *position.Position) Value {
-	var value Value = 0
+
+	// if not enough material on the board to achieve a mate it is a draw
+	if position.HasInsufficientMaterial() {
+		return ValueDraw
+	}
 
 	gamePhaseFactor := float64(position.GamePhase() / GamePhaseMax)
 
@@ -69,7 +73,7 @@ func (e *Evaluator) Evaluate(position *position.Position) Value {
 	// have a dedicated configurable weight to adjust and test
 
 	// Material
-	value += e.material(position, gamePhaseFactor)
+	value := e.material(position, gamePhaseFactor)
 
 	// Positional values
 	value += e.positional(position, gamePhaseFactor)
@@ -78,6 +82,15 @@ func (e *Evaluator) Evaluate(position *position.Position) Value {
 	if position.NextPlayer() == Black {
 		value *= -1
 	}
+
+	// evaluate pawns
+	// TODO
+
+	// evaluate pieces
+	// TODO
+
+	// evaluate king
+	// TODO
 
 	// TEMPO Bonus for the side to move (helps with evaluation alternation -
 	// less difference between side which makes aspiration search faster

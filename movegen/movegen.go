@@ -97,8 +97,7 @@ func NewMoveGen() *Movegen {
 
 // GeneratePseudoLegalMoves generates pseudo moves for the next player. Does not check if
 // king is left in check or if it passes an attacked square when castling or has been in check
-// before castling. Disregards PV moves and Killer moves. They need to be handled after
-// the returned MoveList. Or just use the OnDemand Generator.
+// before castling.
 func (mg *Movegen) GeneratePseudoLegalMoves(position *position.Position, mode GenMode) *moveslice.MoveSlice {
 	mg.pseudoLegalMoves.Clear()
 	if mode&GenCap != 0 {
@@ -113,6 +112,18 @@ func (mg *Movegen) GeneratePseudoLegalMoves(position *position.Position, mode Ge
 		mg.generateKingMoves(position, GenNonCap, mg.pseudoLegalMoves)
 		mg.generateMoves(position, GenNonCap, mg.pseudoLegalMoves)
 	}
+	// PV and Killer handling
+	mg.pseudoLegalMoves.ForEach(func(i int) {
+		at := mg.pseudoLegalMoves.At(i)
+		switch {
+		case at.MoveOf() == mg.pvMove:
+			mg.pseudoLegalMoves.Set(i, at.SetValue(ValueMax))
+		case at.MoveOf() == mg.killerMoves[0]:
+			mg.pseudoLegalMoves.Set(i, at.SetValue(-4000))
+		case at.MoveOf() == mg.killerMoves[1]:
+			mg.pseudoLegalMoves.Set(i, at.SetValue(-4001))
+		}
+	})
 	mg.pseudoLegalMoves.Sort()
 	// remove internal sort value
 	mg.pseudoLegalMoves.ForEach(func(i int) {
@@ -123,8 +134,7 @@ func (mg *Movegen) GeneratePseudoLegalMoves(position *position.Position, mode Ge
 
 // GenerateLegalMoves generates legal moves for the next player.
 // Uses GeneratePseudoLegalMoves and filters out illegal moves.
-// Disregards PV moves and Killer moves. They need to be handled
-// after the returned MoveList. Or just use the OnDemand Generator.
+//
 func (mg *Movegen) GenerateLegalMoves(position *position.Position, mode GenMode) *moveslice.MoveSlice {
 	mg.legalMoves.Clear()
 	mg.GeneratePseudoLegalMoves(position, mode)

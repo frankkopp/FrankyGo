@@ -88,7 +88,6 @@ func TestPositionCreation(t *testing.T) {
 
 func TestPositionEquality(t *testing.T) {
 
-
 	// equal
 	p1 := NewPosition()
 	p2 := NewPositionFen(StartFen)
@@ -103,7 +102,7 @@ func TestPositionEquality(t *testing.T) {
 	assert.Equal(t, *p1, *p3)
 	p3.castlingRights.Remove(CastlingWhiteOO) // change to p3
 	assert.NotEqual(t, *p1, *p3)
-	assert.Equal(t, *p1, *p2)                // p2 from which p3 is copied is unchanged
+	assert.Equal(t, *p1, *p2)              // p2 from which p3 is copied is unchanged
 	p3.castlingRights.Add(CastlingWhiteOO) // undo change
 	assert.Equal(t, *p1, *p3)
 }
@@ -361,41 +360,14 @@ func Test_TimingDoUndo(t *testing.T) {
 		elapsed := time.Since(start)
 		out.Printf("DoMove/UndoMove took %d ns for %d iterations with 5 do/undo pairs\n", elapsed.Nanoseconds(), iterations)
 		out.Printf("DoMove/UndoMove took %d ns per do/undo pair\n", elapsed.Nanoseconds()/int64(iterations*5))
-		out.Printf("Positions per sec %d pps\n",int64(iterations*5*1e9)/elapsed.Nanoseconds())
-	}
-}
-
-// ///////////////////////////////////
-// BENCHMARKS
-
-func Benchmark_New(b *testing.B) {
-
-	for i := 0; i < b.N; i++ {
-		NewPositionFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-	}
-}
-
-func Benchmark_DoUndo(b *testing.B) {
-
-	p := NewPosition()
-	for i := 0; i < b.N; i++ {
-		p.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
-		p.DoMove(CreateMove(SqD7, SqD5, Normal, PtNone))
-		p.DoMove(CreateMove(SqE4, SqD5, Normal, PtNone))
-		p.DoMove(CreateMove(SqD8, SqD5, Normal, PtNone))
-		p.DoMove(CreateMove(SqB1, SqC3, Normal, PtNone))
-		p.UndoMove()
-		p.UndoMove()
-		p.UndoMove()
-		p.UndoMove()
-		p.UndoMove()
+		out.Printf("Positions per sec %d pps\n", int64(iterations*5*1e9)/elapsed.Nanoseconds())
 	}
 }
 
 func TestPosition_CheckRepetitions(t *testing.T) {
 	// test 1
 	position := NewPosition()
-	position.DoMove(CreateMove(SqE2, SqE4, Normal,  PtNone ))
+	position.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
 	position.DoMove(CreateMove(SqE7, SqE5, Normal, PtNone))
 	// takes 3 loops to get to repetition
 	for i := 0; i <= 2; i++ {
@@ -408,7 +380,7 @@ func TestPosition_CheckRepetitions(t *testing.T) {
 
 	// test 2
 	position = NewPositionFen("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -")
-	position.DoMove(CreateMove(SqE7, SqE3, Normal,  PtNone ))
+	position.DoMove(CreateMove(SqE7, SqE3, Normal, PtNone))
 	position.DoMove(CreateMove(SqG1, SqG2, Normal, PtNone))
 	// takes 3 loops to get to repetition
 	for i := 0; i <= 2; i++ {
@@ -418,4 +390,100 @@ func TestPosition_CheckRepetitions(t *testing.T) {
 		position.DoMove(CreateMove(SqG1, SqG2, Normal, PtNone))
 	}
 	assert.True(t, position.CheckRepetitions(2))
+}
+
+func TestPosition_CheckInsufficientMaterial(t *testing.T) {
+	// 	both sides have a bare king
+	position := NewPositionFen("8/3k4/8/8/8/8/4K3/8 w - -")
+	assert.True(t, position.HasInsufficientMaterial())
+
+	// 	one side has a king and a minor piece against a bare king
+	// 	both sides have a king and a minor piece each
+	position = NewPositionFen("8/3k4/8/8/8/2B5/4K3/8 w - -")
+	assert.True(t, position.HasInsufficientMaterial())
+	position = NewPositionFen("8/8/4K3/8/8/2b5/4k3/8 b - -")
+	assert.True(t, position.HasInsufficientMaterial())
+
+	// 	both sides have a king and a bishop, the bishops being the same color
+	position = NewPositionFen("8/8/3BK3/8/8/2b5/4k3/8 b - -")
+	assert.True(t, position.HasInsufficientMaterial())
+	position = NewPositionFen("8/8/2B1K3/8/8/8/2b1k3/8 b - -")
+	assert.True(t, position.HasInsufficientMaterial())
+	position = NewPositionFen("8/8/4K3/2B5/8/8/2b1k3/8 b - -")
+	assert.True(t, position.HasInsufficientMaterial())
+
+	// one side has two bishops a mate can be forced
+	position = NewPositionFen("8/8/2B1K3/2B5/8/8/2n1k3/8 b - -")
+	assert.False(t, position.HasInsufficientMaterial())
+
+	// 	two knights against the bare king
+	position = NewPositionFen("8/8/2NNK3/8/8/8/4k3/8 w - -")
+	assert.True(t, position.HasInsufficientMaterial())
+	position = NewPositionFen("8/8/2nnk3/8/8/8/4K3/8 w - -")
+	assert.True(t, position.HasInsufficientMaterial())
+
+	// 	the weaker side has a minor piece against two knights
+	position = NewPositionFen("8/8/2n1kn2/8/8/8/4K3/4B3 w - -")
+	assert.True(t, position.HasInsufficientMaterial())
+
+	// 	two bishops draw against a bishop
+	position = NewPositionFen("8/8/3bk1b1/8/8/8/4K3/4B3 w - -")
+	assert.True(t, position.HasInsufficientMaterial())
+
+	// 	two minor pieces against one draw, except when the stronger side has a bishop pair
+	position = NewPositionFen("8/8/3bk1b1/8/8/8/4K3/4N3 w - -")
+	assert.False(t, position.HasInsufficientMaterial())
+	position = NewPositionFen("8/8/3bk1n1/8/8/8/4K3/4N3 w - -")
+	assert.True(t, position.HasInsufficientMaterial())
+
+}
+
+var res bool
+
+func Test_TimingMatvsPop(t *testing.T) {
+	out := message.NewPrinter(language.German)
+
+	const rounds = 5
+	const iterations uint64 = 1_000_000_000
+
+	p := NewPositionFen("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -")
+
+	for r := 1; r <= rounds; r++ {
+		out.Printf("Round %d\n", r)
+		start := time.Now()
+		for i := uint64(0); i < iterations; i++ {
+			test := (p.materialNonPawn[White] < 2*Bishop.ValueOf() && p.materialNonPawn[Black] <= Bishop.ValueOf()) ||
+				(p.materialNonPawn[White] <= Bishop.ValueOf() && p.materialNonPawn[Black] < 2*Bishop.ValueOf())
+			res = test
+		}
+		elapsed := time.Since(start)
+		out.Printf("Test took %d ns for %d iterations\n", elapsed.Nanoseconds(), iterations)
+		out.Printf("Test took %d ns per test\n", elapsed.Nanoseconds()/int64(iterations))
+		out.Printf("Test per sec %d tps\n", iterations*1e9/uint64(elapsed.Nanoseconds()))
+	}
+}
+
+func Test_TimingMatvsPop2(t *testing.T) {
+	out := message.NewPrinter(language.German)
+
+	const rounds = 5
+	const iterations uint64 = 1_000_000_000
+
+	p := NewPositionFen("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -")
+
+	for r := 1; r <= rounds; r++ {
+		out.Printf("Round %d\n", r)
+		start := time.Now()
+		for i := uint64(0); i < iterations; i++ {
+			test := (p.piecesBb[White][Bishop].PopCount()+p.piecesBb[White][Knight].PopCount() == 2 &&
+				p.piecesBb[Black][Bishop].PopCount()+p.piecesBb[Black][Knight].PopCount() == 1) ||
+				(p.piecesBb[Black][Bishop].PopCount()+p.piecesBb[Black][Knight].PopCount() == 2 &&
+					p.piecesBb[White][Bishop].PopCount()+p.piecesBb[White][Knight].PopCount() == 1)
+			res = test
+		}
+		elapsed := time.Since(start)
+		out.Printf("Test took %d ns for %d iterations\n", elapsed.Nanoseconds(), iterations)
+		out.Printf("Test took %d ns per test\n", elapsed.Nanoseconds()/int64(iterations))
+		out.Printf("Test per sec %d tps\n", (iterations*1e9)/uint64(elapsed.Nanoseconds()))
+	}
 }
