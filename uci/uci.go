@@ -129,7 +129,7 @@ func (u *UciHandler) SendInfoString(info string) {
 
 // SendIterationEndInfo sends information about the last search depth iteration to the UCI ui
 func (u *UciHandler) SendIterationEndInfo(depth int, seldepth int, value Value, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice) {
-	u.send(fmt.Sprintf("info depth %d seldepth %d multipv 1 score cp %s nodes %d nps %d time %d pv %s",
+	u.send(fmt.Sprintf("info depth %d seldepth %d multipv 1 score %s nodes %d nps %d time %d pv %s",
 		depth, seldepth, value.String(), nodes, nps, time.Milliseconds(), pv.StringUci()))
 }
 

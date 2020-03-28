@@ -1005,3 +1005,11 @@ func (p *Position) HalfMoveClock() int {
 func (p *Position) Material(c Color) Value {
 	return p.material[c]
 }
+
+func (p *Position) PsqMidValue(c Color) Value {
+	return p.psqMidValue[c]
+}
+
+func (p *Position) PsqEndValue(c Color) Value {
+	return p.psqEndValue[c]
+}

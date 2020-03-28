@@ -49,8 +49,8 @@ type Result struct {
 }
 
 func (searchResult *Result) String() string {
-	return out.Sprintf("best move = %s, best value = %s, ponder move = %s, search time = %d ms, search dept = %d/%d, was book move = %v",
-		searchResult.BestMove.StringUci(), (&searchResult.BestValue).String(), searchResult.PonderMove.StringUci(), searchResult.SearchTime.Milliseconds(),
+	return out.Sprintf("bestmove = %s, value = %s (%d), ponder = %s, search time = %d ms, search dept = %d/%d, was book move = %v",
+		searchResult.BestMove.StringUci(), searchResult.BestValue.String(), searchResult.BestValue , searchResult.PonderMove.StringUci(), searchResult.SearchTime.Milliseconds(),
 		searchResult.SearchDepth, searchResult.ExtraDepth, searchResult.BookMove)
 }
 

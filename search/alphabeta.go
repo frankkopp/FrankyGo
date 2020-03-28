@@ -221,7 +221,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	// only quite moves
 	if movesSearched == 0 && !s.stopConditions() {
 		if position.HasCheck() {
-			bestNodeValue = -ValueCheckMate
+			bestNodeValue = -ValueCheckMate + Value(ply)
 		} else {
 			bestNodeValue = ValueDraw
 		}
@@ -240,8 +240,7 @@ func (s *Search) qsearch(position *position.Position, depth int, ply int, alpha 
 }
 
 func (s *Search) evaluate(position *position.Position) Value {
-	// TODO
-	return position.Material(position.NextPlayer()) - position.Material(position.NextPlayer().Flip())
+	return s.eval.Evaluate(position)
 }
 
 // savePV adds the given move as first move to a cleared dest and the appends

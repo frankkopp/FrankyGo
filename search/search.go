@@ -38,6 +38,7 @@ import (
 	"github.com/op/go-logging"
 
 	"github.com/frankkopp/FrankyGo/config"
+	"github.com/frankkopp/FrankyGo/evaluator"
 	myLogging "github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/movegen"
 	"github.com/frankkopp/FrankyGo/moveslice"
@@ -62,6 +63,7 @@ type Search struct {
 
 	book *openingbook.Book
 	tt   *transpositiontable.TtTable
+	eval *evaluator.Evaluator
 
 	// previous search
 	lastSearchResult *Result
@@ -96,6 +98,7 @@ func NewSearch() *Search {
 		isRunning:         semaphore.NewWeighted(int64(1)),
 		book:              nil,
 		tt:                nil,
+		eval:              evaluator.NewEvaluator(),
 		lastSearchResult:  nil,
 		stopFlag:          false,
 		startTime:         time.Time{},
@@ -330,9 +333,6 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	// update search result with search time
 	searchResult.SearchTime = time.Since(s.startTime)
 
-	// send final search info update
-	// TODO
-
 	// At the end of a search we send the result in any case even if
 	// searched has been stopped. Best move is the best move so far.
 	s.sendResult(searchResult)
@@ -345,7 +345,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.log.Info(out.Sprintf("Search finished after %d ms ", searchResult.SearchTime.Milliseconds()))
 	s.log.Info(out.Sprintf("Search depth was %d(%d) with %d nodes visited. NPS = %d nps",
 		s.statistics.CurrentSearchDepth, s.statistics.CurrentExtraSearchDepth, s.nodesVisited,
-		(s.nodesVisited*uint64(time.Second.Nanoseconds()))/uint64(searchResult.SearchTime.Nanoseconds()+1)))
+		util.Nps(s.nodesVisited, searchResult.SearchTime)))
 
 	// print result to log
 	s.log.Infof("Search result: %s", searchResult.String())
@@ -438,17 +438,13 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 			s.rootMoves.Sort()
 			s.statistics.CurrentBestRootMove = s.pv[0].At(0)
 			s.statistics.CurrentBestRootMoveValue = s.pv[0].At(0).ValueOf()
-		}
-
-		// update UCI GUI
-		s.sendIterationEndInfoToUci()
-
-		// check if we need to stop
-		// doing this here ensures that we at least do the 1st level search
-		if s.stopConditions() {
+			// update UCI GUI
+			s.sendIterationEndInfoToUci()
+		} else {
+			// check if we need to stop
+			// doing this here ensures that we at least do the 1st level search
 			break
 		}
-
 	}
 
 	// ### END OF Iterative Deepening
@@ -719,10 +715,9 @@ func (s *Search) sendIterationEndInfoToUci() {
 }
 
 func (s *Search) getNps() uint64 {
-	elapsed := uint64(time.Since(s.startTime).Nanoseconds() + 100)
-	nodes := s.nodesVisited * uint64(time.Second.Nanoseconds())
-	nps := nodes / elapsed
-	if nps > 15_000_000 {
+	elapsed := time.Since(s.startTime) + 100
+	nps := util.Nps(s.nodesVisited, elapsed)
+	if nps > 15_000_000 { // sanity value for very short times
 		nps = 0
 	}
 	return nps

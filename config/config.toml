@@ -23,3 +23,5 @@ Ponder = true
 [eval]
 UsePawnCache = true
 PawnCacheSize = 64
+# Evaluation values
+Tempo = 30
