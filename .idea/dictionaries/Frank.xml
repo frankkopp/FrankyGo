@@ -15,6 +15,7 @@
       <w>dsfile</w>
       <w>enpassant</w>
       <w>fenb</w>
+      <w>frankkopp</w>
       <w>hashful</w>
       <w>hashfull</w>
       <w>isready</w>
@@ -44,6 +45,7 @@
       <w>seldepth</w>
       <w>setoption</w>
       <w>sloglvl</w>
+      <w>standpat</w>
       <w>startpos</w>
       <w>stockfish</w>
       <w>subcommand</w>

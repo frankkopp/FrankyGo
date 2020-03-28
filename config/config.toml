@@ -20,6 +20,8 @@ TTSize = 256
 
 Ponder = true
 
+UseQuiescence = true
+
 [eval]
 UsePawnCache = true
 PawnCacheSize = 64

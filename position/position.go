@@ -1013,3 +1013,17 @@ func (p *Position) PsqMidValue(c Color) Value {
 func (p *Position) PsqEndValue(c Color) Value {
 	return p.psqEndValue[c]
 }
+
+func (p *Position) LastMove() Move {
+	if p.historyCounter <= 0 {
+		return MoveNone
+	}
+	return p.history[p.historyCounter-1].move
+}
+
+func (p *Position) LastCapturedPiece() Piece {
+	if p.historyCounter <= 0 {
+		return PieceNone
+	}
+	return p.history[p.historyCounter-1].capturedPiece
+}

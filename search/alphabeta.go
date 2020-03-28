@@ -118,7 +118,7 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 func (s *Search) search(position *position.Position, depth int, ply int, alpha Value, beta Value) Value {
 	if trace {
 		slog.Debugf("%0*s Ply %2.d Depth %2.d start:  %s", ply, "", ply, depth, s.statistics.CurrentVariation.StringUci())
-		defer slog.Debugf("%0*s Ply %2.d Depth %2.d end  :  %s",ply, "", ply, depth, s.statistics.CurrentVariation.StringUci())
+		defer slog.Debugf("%0*s Ply %2.d Depth %2.d end  :  %s", ply, "", ply, depth, s.statistics.CurrentVariation.StringUci())
 	}
 
 	// Check if search should be stopped
@@ -128,7 +128,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 
 	// Leaf node when depth == 0 or max ply has been reached
 	if depth == 0 || ply >= MaxDepth {
-		return s.qsearch(position, depth, ply, alpha, beta)
+		return s.qsearch(position, ply, alpha, beta)
 	}
 
 	// prepare node search
@@ -146,6 +146,8 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	// MOVE LOOP
 	for move := myMg.GetNextMove(position, movegen.GenAll); move != MoveNone; move = myMg.GetNextMove(position, movegen.GenAll) {
 
+		// ///////////////////////////////////////////////////////
+		// DO MOVE
 		position.DoMove(move)
 
 		// check if legal move or skip (root moves are always legal)
@@ -164,12 +166,13 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			value = ValueDraw
 		} else {
 			value = -s.search(position, depth-1, ply+1, -beta, -alpha)
-			// iterationDepth, PLY_ROOT, alpha, beta, Do_Null_Move, nodeType
 		}
 
 		movesSearched++
 		s.statistics.CurrentVariation.PopBack()
 		position.UndoMove()
+		// UNDO MOVE
+		// ///////////////////////////////////////////////////////
 
 		// check if we should stop the search
 		if s.stopConditions() {
@@ -217,8 +220,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	// ///////////////////////////////////////////////////////
 
 	// if we did not have at least one legal move
-	// then we might have a mate or in quiescence
-	// only quite moves
+	// then we might have a mate or stalemate
 	if movesSearched == 0 && !s.stopConditions() {
 		if position.HasCheck() {
 			bestNodeValue = -ValueCheckMate + Value(ply)
@@ -234,13 +236,151 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	return bestNodeValue
 }
 
-func (s *Search) qsearch(position *position.Position, depth int, ply int, alpha Value, beta Value) Value {
+func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta Value) Value {
+
+	// TODO limit quiescence depth
+	if !config.Settings.Search.UseQuiescence {
+		return s.evaluate(position)
+	}
+
+	if s.statistics.CurrentExtraSearchDepth < ply {
+		s.statistics.CurrentExtraSearchDepth = ply
+	}
+
+	// prepare node search
+	bestNodeValue := ValueNA
+	bestNodeMove := MoveNone // used to store in the TT
+	myMg := s.mg[ply]
+	myMg.ResetOnDemand()
+	s.pv[ply].Clear()
+	hasCheck := position.HasCheck()
+
 	// TODO
-	return s.evaluate(position)
+	if !hasCheck {
+		// get an evaluation for the position
+		staticEval := s.evaluate(position)
+		// Standpat Cut
+		if staticEval >= beta {
+			return staticEval
+		}
+		if staticEval > alpha {
+			alpha = staticEval
+		}
+		bestNodeValue = staticEval
+	}
+
+	// prepare move loop
+	var value Value
+	movesSearched := 0
+
+	// if in check we search all moves
+	// this is in fact a search extension for checks
+	var mode movegen.GenMode
+	if hasCheck {
+		mode = movegen.GenAll
+	} else {
+		mode = movegen.GenCap
+	}
+
+	// ///////////////////////////////////////////////////////
+	// MOVE LOOP
+	for move := myMg.GetNextMove(position, mode); move != MoveNone; move = myMg.GetNextMove(position, mode) {
+
+		// reduce number of moves searched in quiescence
+		// by looking at good captures only
+		if !hasCheck && !s.goodCapture(position, move) {
+			continue
+		}
+
+		// ///////////////////////////////////////////////////////
+		// DO MOVE
+		position.DoMove(move)
+
+		// check if legal move or skip (root moves are always legal)
+		if !position.WasLegalMove() {
+			position.UndoMove()
+			continue
+		}
+
+		// we only count legal moves
+		s.nodesVisited++
+		s.statistics.CurrentVariation.PushBack(move)
+		s.sendSearchUpdateToUci()
+
+		// check repetition and 50 moves
+		if s.checkDrawRepAnd50(position, 2) {
+			value = ValueDraw
+		} else {
+			value = -s.qsearch(position, ply+1, -beta, -alpha)
+		}
+
+		movesSearched++
+		s.statistics.CurrentVariation.PopBack()
+		position.UndoMove()
+		// UNDO MOVE
+		// ///////////////////////////////////////////////////////
+
+		// check if we should stop the search
+		if s.stopConditions() {
+			return ValueNA
+		}
+
+		// see search for documentation
+		if value > bestNodeValue {
+			bestNodeValue = value
+			bestNodeMove = move
+			if value > alpha {
+				savePV(move, s.pv[ply+1], s.pv[ply])
+				if value >= beta {
+					break
+				}
+				alpha = value
+			}
+		}
+	}
+	// MOVE LOOP
+	// ///////////////////////////////////////////////////////
+
+	// if we did not have at least one legal move
+	// then we might have a mate or in quiescence
+	// only quite moves
+	if movesSearched == 0 && !s.stopConditions() {
+		// if we have a mate we had a check before and therefore
+		// generated all move. We can be sure this is a mate.
+		if position.HasCheck() {
+			bestNodeValue = -ValueCheckMate + Value(ply)
+		}
+		// if we do not have mate we had no check and
+		// therefore might have quiet moves which we
+		// did not generate.
+		// We return the standpat value in this case
+		// with bestNodeValue which we have set to the
+		// static eval earlier
+	}
+
+	// TODO TT store
+	_ = bestNodeMove
+
+	return bestNodeValue
 }
 
 func (s *Search) evaluate(position *position.Position) Value {
 	return s.eval.Evaluate(position)
+}
+
+func (s *Search) goodCapture(p *position.Position, move Move) bool {
+	// Lower value piece captures higher value piece
+	// With a margin to also look at Bishop x Knight
+	return p.GetPiece(move.From()).ValueOf() + 50 < p.GetPiece(move.To()).ValueOf() ||
+	// all recaptures should be looked at
+	(p.LastMove() != MoveNone && p.LastMove().To() == move.To() && p.LastCapturedPiece() != PieceNone) ||
+	// undefended pieces captures are good
+	// If the defender is "behind" the attacker this will not be recognized
+	// here This is not too bad as it only adds a move to qsearch which we
+	// could otherwise ignore
+	!p.IsAttacked(move.To(), p.NextPlayer().Flip())
+	// Check SEE score of higher value pieces to low value pieces
+	// || (SearchConfig::USE_QS_SEE && (Attacks::see(position, move) > 0));
 }
 
 // savePV adds the given move as first move to a cleared dest and the appends

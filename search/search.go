@@ -731,3 +731,4 @@ func (s *Search) getNps() uint64 {
 func (s *Search) LastSearchResult() Result {
 	return *s.lastSearchResult
 }
+
