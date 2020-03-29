@@ -165,6 +165,8 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				ttValue := valueFromTT(ttEntry.Move.ValueOf(), ply)
 				cut := false
 				switch {
+				case !ttValue.IsValid():
+					cut = false
 				case ttEntry.Type == EXACT:
 					cut = true
 				case ttEntry.Type == ALPHA && ttValue <= alpha:
@@ -271,6 +273,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				// earlier in another node of the ply.
 				if value >= beta {
 					s.statistics.BetaCuts++
+					ttType = BETA
 					break
 				}
 				// We found a move between alpha and beta which means we
@@ -279,6 +282,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				// We raise alpha so the successive searches in this ply
 				// need to find even better moves or dismiss the moves.
 				alpha = value
+				ttType = EXACT
 			}
 		}
 	}
@@ -288,10 +292,12 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	// if we did not have at least one legal move
 	// then we might have a mate or stalemate
 	if movesSearched == 0 && !s.stopConditions() {
-		if position.HasCheck() {
+		if position.HasCheck() { // mate
 			bestNodeValue = -ValueCheckMate + Value(ply)
-		} else {
+			ttType = EXACT
+		} else { // stalemate
 			bestNodeValue = ValueDraw
+			ttType = EXACT
 		}
 	}
 

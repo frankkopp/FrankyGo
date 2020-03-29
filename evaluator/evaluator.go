@@ -86,6 +86,9 @@ func (e *Evaluator) Evaluate(position *position.Position) Value {
 	// evaluate pawns
 	// TODO
 
+	// development of pieces when game face <20-22
+	// TODO
+
 	// evaluate pieces
 	// TODO
 

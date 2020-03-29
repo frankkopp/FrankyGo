@@ -5,9 +5,9 @@ v 0.6 (planned)
 ================================================================================
 - TODO
     - TestSuite Tests
-    - Use TT
     - Better Evaluation
     - Pawn Structure Cache
+    - Use TT (qsearch)
 
 v 0.5 (in progress)
 ================================================================================
@@ -16,6 +16,7 @@ v 0.5 (in progress)
     - Known Issues:
 
 -DONE
+    - Use TT
     - SearchTreeSize
     - Quiescence search
     - Score as string()

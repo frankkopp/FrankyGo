@@ -121,7 +121,9 @@ func NewSearch() *Search {
 // to be ready for a different game. Any caches or states will be reset.
 func (s *Search) NewGame() {
 	s.StopSearch()
-	s.tt.Clear()
+	if s.tt != nil {
+		s.tt.Clear()
+	}
 }
 
 // StartSearch starts the search with on the given position with
@@ -236,7 +238,9 @@ func (s *Search) ResizeCache() {
 	s.initialize()
 	// good point in time to let the garbage collector do its work
 	util.GcWithStats()
-	s.uciHandlerPtr.SendInfoString("Hash resized")
+	if s.tt != nil {
+		s.uciHandlerPtr.SendInfoString(out.Sprintf("Hash resized: %s", s.tt.String()))
+	}
 }
 
 // //////////////////////////////////////////////////////
@@ -749,4 +753,3 @@ func (s *Search) NodesVisited() uint64 {
 func (s *Search) Statistics() *Statistics {
 	return &s.statistics
 }
-
