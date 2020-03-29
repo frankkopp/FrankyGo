@@ -167,7 +167,7 @@ func (tt *TtTable) Probe(key position.Key) *TtEntry {
 }
 
 // Put an TtEntry into the tt. Encodes value into the move.
-func (tt *TtTable) Put(key position.Key, move Move, value Value, depth int8, valueType ValueType, mateThreat bool, forced bool) {
+func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, valueType ValueType, mateThreat bool, forced bool) {
 	if assert.DEBUG {
 		assert.Assert(depth >= 0, "TT:put Depth must be > 0")
 	}

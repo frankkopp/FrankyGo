@@ -46,7 +46,15 @@ type Statistics struct {
 	CurrentBestRootMove      Move
 	CurrentBestRootMoveValue Value
 
-	BetaCuts uint64
+	BetaCuts   uint64
+	TTHit      uint64
+	TTMiss     uint64
+	TTMoveUsed uint64
+	NoTTMove   uint64
+}
+
+func (s *Statistics) String() string {
+	return out.Sprintf("%+v", *s)
 }
 
 // // counter for cut off to measure quality of move ordering

@@ -48,5 +48,5 @@ func TestMain(m *testing.M) {
 }
 
 func TestSearchTreeSize(t *testing.T) {
-	sizeTest(0, time.Duration(2 * time.Second), 0, 999)
+	SizeTest(6, 0*time.Second, 0, 5)
 }

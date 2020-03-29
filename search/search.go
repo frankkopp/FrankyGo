@@ -212,13 +212,13 @@ func (s *Search) IsReady() {
 func (s *Search) ClearHash() {
 	if s.IsSearching() {
 		msg := "Can't clear hash while searching."
-		s.uciHandlerPtr.SendInfoString(msg)
+		s.sendInfoStringToUci(msg)
 		s.log.Warning(msg)
 		return
 	}
 	if s.tt != nil {
 		s.tt.Clear()
-		s.uciHandlerPtr.SendInfoString("Hash cleared")
+		s.sendInfoStringToUci("Hash cleared")
 	}
 }
 
@@ -349,6 +349,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.log.Info(out.Sprintf("Search depth was %d(%d) with %d nodes visited. NPS = %d nps",
 		s.statistics.CurrentSearchDepth, s.statistics.CurrentExtraSearchDepth, s.nodesVisited,
 		util.Nps(s.nodesVisited, searchResult.SearchTime)))
+	s.log.Infof("Search stats: %s", s.statistics.String())
 
 	// print result to log
 	s.log.Infof("Search result: %s", searchResult.String())

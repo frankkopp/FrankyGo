@@ -201,7 +201,7 @@ func TestPut(t *testing.T) {
 	move := CreateMove(SqE2, SqE4, Normal, PtNone)
 
 	// test of put and probe
-	tt.Put(111, move, Value(111), 4, Valpha, false, false)
+	tt.Put(111, move, 4, Value(111), Valpha, false, false)
 	assert.EqualValues(t, 1, tt.Len())
 	assert.EqualValues(t, 1, tt.Stats.numberOfPuts)
 	e := tt.Probe(111)
@@ -214,7 +214,7 @@ func TestPut(t *testing.T) {
 	assert.EqualValues(t, false, e.MateThreat)
 
 	// test of put update and probe
-	tt.Put(111, move, Value(112), 5, Vbeta, true, false)
+	tt.Put(111, move, 5, Value(112), Vbeta, true, false)
 	assert.EqualValues(t, 1, tt.Len())
 	assert.EqualValues(t, 2, tt.Stats.numberOfPuts)
 	assert.EqualValues(t, 1, tt.Stats.numberOfUpdates)
@@ -230,7 +230,7 @@ func TestPut(t *testing.T) {
 
 	// test of collision
 	collisionKey := position.Key(111 + tt.maxNumberOfEntries)
-	tt.Put(collisionKey, move, Value(113), 6, Vexact, false, false)
+	tt.Put(collisionKey, move, 6, Value(113), Vexact, false, false)
 	assert.EqualValues(t, 1, tt.Len())
 	assert.EqualValues(t, 3, tt.Stats.numberOfPuts)
 	assert.EqualValues(t, 1, tt.Stats.numberOfUpdates)
@@ -247,7 +247,7 @@ func TestPut(t *testing.T) {
 
 	// test of collision lower depth
 	collisionKey2 := position.Key(111 + (tt.maxNumberOfEntries << 1))
-	tt.Put(collisionKey2, move, Value(114), 4, Vbeta, true, false)
+	tt.Put(collisionKey2, move, 4, Value(114), Vbeta, true, false)
 	assert.EqualValues(t, 1, tt.Len())
 	assert.EqualValues(t, 4, tt.Stats.numberOfPuts)
 	assert.EqualValues(t, 1, tt.Stats.numberOfUpdates)
@@ -283,7 +283,7 @@ func TestPerformance(t *testing.T) {
 		valueType := ValueType(rand.Int31n(4))
 		start := time.Now()
 		for i := uint64(0); i < iterations; i++ {
-			tt.Put(key+position.Key(i), move, value, depth, valueType, false, true)
+			tt.Put(key+position.Key(i), move, depth, value, valueType, false, true)
 		}
 		for i := uint64(0); i < iterations; i++ {
 			key := position.Key(key + position.Key(2*i))

@@ -45,7 +45,10 @@ import (
 
 var out = message.NewPrinter(language.German)
 
-type SingleTest struct {
+// singleTest holds the result data for a single test
+// A single test is one fen with one set of feature executing
+// one search according to the settings (depth odr time)
+type singleTest struct {
 	Name    string
 	Nodes   uint64
 	Nps     uint64
@@ -58,12 +61,15 @@ type SingleTest struct {
 	Pv      moveslice.MoveSlice
 }
 
-type Result struct {
+// result is representing a series of single tests for a single position (FEN)
+type result struct {
 	Fen   string
-	Tests []SingleTest
+	Tests []singleTest
 }
 
-type TestSums struct {
+// testSums is a helper data structure to sum up all results from a list of
+// single tests for a set of features to create a total reports at the end
+type testSums struct {
 	SumCounter uint64
 	SumNodes   uint64
 	SumNps     uint64
@@ -75,7 +81,11 @@ type TestSums struct {
 
 var ptrToSpecial *uint64
 
-func featureTest(depth int, movetime time.Duration, fen *string) Result {
+// featureTest is called for each set of features for all configured test positions (fens).
+// a feature test creates a result instance and stores all single tests into it.
+// It sets up the search for the tests and configures the various features for each test.
+// Define feature tests in this function.
+func featureTest(depth int, movetime time.Duration, fen string) result {
 	s := search.NewSearch()
 	sl := search.NewSearchLimits()
 	sl.Depth = depth
@@ -83,8 +93,8 @@ func featureTest(depth int, movetime time.Duration, fen *string) Result {
 	if movetime > 0 {
 		sl.TimeControl = true
 	}
-	result := Result{Fen: *fen}
-	p := position.NewPositionFen(*fen)
+	r := result{Fen: fen}
+	p := position.NewPositionFen(fen)
 	// turn off all options to turn them on later for each test
 	turnOffFeatures()
 
@@ -92,22 +102,33 @@ func featureTest(depth int, movetime time.Duration, fen *string) Result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().BetaCuts
+	ptrToSpecial = &s.Statistics().TTHit
 
 	// Base
-	result.Tests = append(result.Tests, measure(s, sl, p, "00 Base"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "00 Base"))
 
 	// + Quiescence
 	config.Settings.Search.UseQuiescence = true
-	result.Tests = append(result.Tests, measure(s, sl, p, "10 QS"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "10 QS"))
+
+	// + TT
+	config.Settings.Search.UseTT = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "20 TT"))
+
+	// + TTMove
+	config.Settings.Search.UseTTMove = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "25 TTMove"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
 
-	return result
+	return r
 }
 
-func sizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
+// SizeTest is the main function to call for testing a series of positions
+// defined in fens.go with certain search limits (depth or time).
+// Results are printed directly to Stdout.
+func SizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 
 	out.Printf("Start Search Tree Size Test for depth %d\n", depth)
 
@@ -121,27 +142,28 @@ func sizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 	testFens := Fens[startFen:endFen]
 
 	// prepare slice of results to store them for the report
-	results := make([]Result, 0, len(Fens))
+	results := make([]result, 0, len(Fens))
 
 	// execute tests and store results
 	for _, fen := range testFens {
-		results = append(results, featureTest(depth, movetime, &fen))
+		results = append(results, featureTest(depth, movetime, fen))
 	}
 
 	// Print result
-	out.Printf("################## Results for depth %d ##########################\n\n", depth)
+	out.Printf("\n################## Results for depth %d ##########################\n\n", depth)
+
 	out.Printf("%-15s | %-6s | %-8s | %-15s | %-12s | %-10s | %-7s | %-12s | %s | %s\n",
 		"Test Name", "Move", "Value", "Nodes", "Nps", "Time", "Depth", "Special", "PV", "Fen")
 	out.Println("----------------------------------------------------------------------------------------------------------------------------------------------")
 
-	sums := make(map[string]TestSums, len(results))
+	sums := make(map[string]testSums, len(results))
 
-	// loop through all results and each test within
+	// loop through all results and each test within.
 	// sum up results to later print a summary
-	for _, result := range results {
-		for _, test := range result.Tests {
+	for _, r := range results {
+		for _, test := range r.Tests {
 			// sum up result for total report
-			sums[test.Name] = TestSums{
+			sums[test.Name] = testSums{
 				SumCounter: sums[test.Name].SumCounter + 1,
 				SumNodes:   sums[test.Name].SumNodes + test.Nodes,
 				SumNps:     sums[test.Name].SumNps + test.Nps,
@@ -153,13 +175,20 @@ func sizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 			// print single test result
 			out.Printf("%-15s | %-6s | %-8s | %-15d | %-12d | %-10d | %3d/%-3d | %-12d | %s | %s\n",
 				test.Name, test.Move.StringUci(), test.Value.String(), test.Nodes, test.Nps,
-				test.Time.Milliseconds(), test.Depth, test.Extra, test.Special, test.Pv.StringUci(), result.Fen)
+				test.Time.Milliseconds(), test.Depth, test.Extra, test.Special, test.Pv.StringUci(), r.Fen)
 		}
+		out.Println()
 	}
 	out.Println("----------------------------------------------------------------------------------------------------------------------------------------------")
-	out.Println()
+	out.Print("\n################## Totals/Avg results for each feature test ##################\n\n")
+
+	out.Printf("Number of feature tests: %d\n", len(results[0].Tests))
+	out.Printf("Number of fens         : %d\n", len(testFens))
+	out.Printf("Total tests            : %d\n\n", len(results[0].Tests) * len(testFens))
 
 	// print Totals
+	// obs: GO does not order map entries. To get an order when iterating one must iterate over a
+	// parallel data structure (e.g. array of map keys) which can be sorted.
 	for _, test := range results[0].Tests {
 		sum := sums[test.Name]
 		out.Printf("Test: %-12s  Nodes: %-14d  Nps: %-14d  Time: %-10d Depth: %3d/%-3d Special: %-16d\n",
@@ -174,14 +203,17 @@ func sizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 	out.Println()
 }
 
-func measure(s *search.Search, sl *search.Limits, p *position.Position, name string) SingleTest {
+// measure starts a single search for a feature set on one position and returns one
+// singleTest instance as a result
+func measure(s *search.Search, sl *search.Limits, p *position.Position, name string) singleTest {
 	out.Printf("\nTesting  %s ###############################\n", name)
 	out.Printf("Position %s \n", p.StringFen())
+
 	s.ClearHash()
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
 
-	test := SingleTest{
+	test := singleTest{
 		Name:    name,
 		Nodes:   s.NodesVisited(),
 		Nps:     util.Nps(s.NodesVisited(), s.LastSearchResult().SearchTime),
@@ -204,6 +236,7 @@ func measure(s *search.Search, sl *search.Limits, p *position.Position, name str
 func turnOffFeatures() {
 	config.Settings.Search.UseBook = false
 	config.Settings.Search.UsePonder = false
-	config.Settings.Search.UseTT = false
 	config.Settings.Search.UseQuiescence = false
+	config.Settings.Search.UseTT = false
+	config.Settings.Search.UseTTMove = false
 }

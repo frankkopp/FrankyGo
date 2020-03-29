@@ -4,7 +4,6 @@ v 0.x (planned)
 v 0.6 (planned)
 ================================================================================
 - TODO
-    - SearchTreeSize
     - TestSuite Tests
     - Use TT
     - Better Evaluation
@@ -17,6 +16,7 @@ v 0.5 (in progress)
     - Known Issues:
 
 -DONE
+    - SearchTreeSize
     - Quiescence search
     - Score as string()
     - Evaluation (simple)

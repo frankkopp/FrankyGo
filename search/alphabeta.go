@@ -39,6 +39,7 @@ import (
 	"github.com/frankkopp/FrankyGo/movegen"
 	"github.com/frankkopp/FrankyGo/moveslice"
 	"github.com/frankkopp/FrankyGo/position"
+	"github.com/frankkopp/FrankyGo/transpositiontable"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
@@ -134,9 +135,42 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	// prepare node search
 	bestNodeValue := ValueNA
 	bestNodeMove := MoveNone // used to store in the TT
+	ttMove := MoveNone
+	ttType := Valpha
 	myMg := s.mg[ply]
 	myMg.ResetOnDemand()
 	s.pv[ply].Clear()
+
+	// ///////////////////////////////////////////////////////
+	// TT Lookup
+	var ttEntry *transpositiontable.TtEntry
+	if config.Settings.Search.UseTT {
+		ttEntry = s.tt.Probe(position.ZobristKey())
+		if ttEntry != nil { // tt hit
+			s.statistics.TTHit++
+			ttMove = ttEntry.Move
+		} else {
+			s.statistics.TTMiss++
+		}
+	}
+	// TT Lookup
+	// ///////////////////////////////////////////////////////
+
+	// ///////////////////////////////////////////////////////
+	// PV Move Sort
+	// When we received a best move for the position from the
+	// TT we set it as PV move in the movegen so it will be
+	// searched first.
+	if config.Settings.Search.UseTTMove {
+		if ttMove != MoveNone {
+			s.statistics.TTMoveUsed++
+			myMg.SetPvMove(ttMove)
+		} else {
+			s.statistics.NoTTMove++
+		}
+	}
+	// PV Move Sort
+	// ///////////////////////////////////////////////////////
 
 	// prepare move loop
 	var value Value
@@ -231,8 +265,9 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	}
 
 	// store TT
-	// TODO
-	_ = bestNodeMove
+	if config.Settings.Search.UseTT {
+		s.storeTT(position, depth, ply, bestNodeMove, bestNodeValue, ttType)
+	}
 
 	return bestNodeValue
 }
@@ -372,14 +407,14 @@ func (s *Search) evaluate(position *position.Position) Value {
 func (s *Search) goodCapture(p *position.Position, move Move) bool {
 	// Lower value piece captures higher value piece
 	// With a margin to also look at Bishop x Knight
-	return p.GetPiece(move.From()).ValueOf() + 50 < p.GetPiece(move.To()).ValueOf() ||
-	// all recaptures should be looked at
-	(p.LastMove() != MoveNone && p.LastMove().To() == move.To() && p.LastCapturedPiece() != PieceNone) ||
-	// undefended pieces captures are good
-	// If the defender is "behind" the attacker this will not be recognized
-	// here This is not too bad as it only adds a move to qsearch which we
-	// could otherwise ignore
-	!p.IsAttacked(move.To(), p.NextPlayer().Flip())
+	return p.GetPiece(move.From()).ValueOf()+50 < p.GetPiece(move.To()).ValueOf() ||
+		// all recaptures should be looked at
+		(p.LastMove() != MoveNone && p.LastMove().To() == move.To() && p.LastCapturedPiece() != PieceNone) ||
+		// undefended pieces captures are good
+		// If the defender is "behind" the attacker this will not be recognized
+		// here This is not too bad as it only adds a move to qsearch which we
+		// could otherwise ignore
+		!p.IsAttacked(move.To(), p.NextPlayer().Flip())
 	// Check SEE score of higher value pieces to low value pieces
 	// || (SearchConfig::USE_QS_SEE && (Attacks::see(position, move) > 0));
 }
@@ -390,6 +425,35 @@ func savePV(move Move, src *moveslice.MoveSlice, dest *moveslice.MoveSlice) {
 	dest.Clear()
 	dest.PushBack(move)
 	*dest = append(*dest, *src...)
+}
+
+// storeTT stores a position into the TT
+func (s *Search) storeTT(p *position.Position, depth int, ply int, move Move, value Value, valueType ValueType) {
+	s.tt.Put(p.ZobristKey(), move, int8(depth), valueToTT(value, ply), valueType, false, false)
+}
+
+// correct the value for mate distance when storing to TT
+func valueToTT(value Value, ply int) Value {
+	if value.IsCheckMateValue() {
+		if value > 0 {
+			value = value + Value(ply)
+		} else {
+			value = value - Value(ply)
+		}
+	}
+	return value
+}
+
+// correct the value for mate distance when reading from TT
+func valueFromTT(value Value, ply int) Value {
+	if value.IsCheckMateValue() {
+		if value > 0 {
+			value = value - Value(ply)
+		} else {
+			value = value + Value(ply)
+		}
+	}
+	return value
 }
 
 // getSearchTraceLog returns an instance of a standard Logger preconfigured with a
