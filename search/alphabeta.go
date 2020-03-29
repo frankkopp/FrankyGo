@@ -205,6 +205,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				// We will safe the move as a killer to be able to search it
 				// earlier in another node of the ply.
 				if value >= beta {
+					s.statistics.BetaCuts++
 					break
 				}
 				// We found a move between alpha and beta which means we

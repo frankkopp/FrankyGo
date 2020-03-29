@@ -4,10 +4,11 @@ v 0.x (planned)
 v 0.6 (planned)
 ================================================================================
 - TODO
+    - SearchTreeSize
+    - TestSuite Tests
     - Use TT
     - Better Evaluation
     - Pawn Structure Cache
-
 
 v 0.5 (in progress)
 ================================================================================

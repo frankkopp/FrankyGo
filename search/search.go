@@ -80,8 +80,8 @@ type Search struct {
 	mg                []*movegen.Movegen
 	pv                []*moveslice.MoveSlice
 	rootMoves         *moveslice.MoveSlice
-	statistics        Statistics
 	lastUciUpdateTime time.Time
+	statistics        Statistics
 }
 
 // //////////////////////////////////////////////////////
@@ -216,8 +216,10 @@ func (s *Search) ClearHash() {
 		s.log.Warning(msg)
 		return
 	}
-	s.tt.Clear()
-	s.uciHandlerPtr.SendInfoString("Hash cleared")
+	if s.tt != nil {
+		s.tt.Clear()
+		s.uciHandlerPtr.SendInfoString("Hash cleared")
+	}
 }
 
 // ResizeCache resizes and clears the transposition table.
@@ -330,8 +332,9 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 		}
 	}
 
-	// update search result with search time
+	// update search result with search time and pv
 	searchResult.SearchTime = time.Since(s.startTime)
+	searchResult.Pv = *s.pv[0]
 
 	// At the end of a search we send the result in any case even if
 	// searched has been stopped. Best move is the best move so far.
@@ -668,6 +671,10 @@ func (s *Search) sendSearchUpdateToUci() {
 	// also do a regular search update here
 	if time.Since(s.lastUciUpdateTime) > time.Second {
 		s.lastUciUpdateTime = time.Now()
+		hashfull := 0
+		if s.tt != nil {
+			hashfull = s.tt.Hashfull()
+		}
 		if s.uciHandlerPtr != nil {
 			s.uciHandlerPtr.SendSearchUpdate(
 				s.statistics.CurrentSearchDepth,
@@ -675,7 +682,7 @@ func (s *Search) sendSearchUpdateToUci() {
 				s.nodesVisited,
 				s.getNps(),
 				time.Since(s.startTime),
-				s.tt.Hashfull())
+				hashfull)
 			s.uciHandlerPtr.SendCurrentRootMove(s.statistics.CurrentRootMove, s.statistics.CurrentRootMoveIndex)
 			s.uciHandlerPtr.SendCurrentLine(s.statistics.CurrentVariation)
 		} else {
@@ -686,7 +693,7 @@ func (s *Search) sendSearchUpdateToUci() {
 				s.nodesVisited,
 				s.getNps(),
 				time.Since(s.startTime).Milliseconds(),
-				s.tt.Hashfull()))
+				hashfull))
 		}
 	}
 }
@@ -730,5 +737,15 @@ func (s *Search) getNps() uint64 {
 // LastSearchResult returns a copy of the last search result
 func (s *Search) LastSearchResult() Result {
 	return *s.lastSearchResult
+}
+
+// NodesVisited returns the number of visited nodes in the last search
+func (s *Search) NodesVisited() uint64 {
+	return s.nodesVisited
+}
+
+// Statistics returns a pointer to the search statistics of the last search
+func (s *Search) Statistics() *Statistics {
+	return &s.statistics
 }
 

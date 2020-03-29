@@ -45,6 +45,8 @@ type Statistics struct {
 	CurrentRootMove          Move
 	CurrentBestRootMove      Move
 	CurrentBestRootMoveValue Value
+
+	BetaCuts uint64
 }
 
 // // counter for cut off to measure quality of move ordering
