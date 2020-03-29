@@ -102,7 +102,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().TTHit
+	ptrToSpecial = &s.Statistics().TTCuts
 
 	// Base
 	r.Tests = append(r.Tests, measure(s, sl, p, "00 Base"))
@@ -118,6 +118,10 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// + TTMove
 	config.Settings.Search.UseTTMove = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "25 TTMove"))
+
+	// + TTValue
+	config.Settings.Search.UseTTValue = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "26 TTValue"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -239,4 +243,5 @@ func turnOffFeatures() {
 	config.Settings.Search.UseQuiescence = false
 	config.Settings.Search.UseTT = false
 	config.Settings.Search.UseTTMove = false
+	config.Settings.Search.UseTTValue = false
 }

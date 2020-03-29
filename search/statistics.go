@@ -51,6 +51,8 @@ type Statistics struct {
 	TTMiss     uint64
 	TTMoveUsed uint64
 	NoTTMove   uint64
+	TTCuts     uint64
+	TTNoCuts   uint64
 }
 
 func (s *Statistics) String() string {

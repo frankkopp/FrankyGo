@@ -18,6 +18,7 @@ BookFormat = "Simple"               # Simple | San | Pgn
 UseTT = true
 TTSize = 256
 UseTTMove = true
+UseTTValue = true
 
 Ponder = true
 

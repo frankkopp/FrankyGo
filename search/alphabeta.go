@@ -136,19 +136,50 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	bestNodeValue := ValueNA
 	bestNodeMove := MoveNone // used to store in the TT
 	ttMove := MoveNone
-	ttType := Valpha
+	ttType := ALPHA
 	myMg := s.mg[ply]
 	myMg.ResetOnDemand()
 	s.pv[ply].Clear()
 
 	// ///////////////////////////////////////////////////////
 	// TT Lookup
+	// Results of searches are stored in the TT to be used to
+	// avoid searching positions several times. If hte position
+	// is stored in the TT we retrieve a pointer to the entry.
+	// We use the stored move as a best move from previous searches
+	// and search it first (through setting PV move in move gen)
+	// If we have a value from a deeper search we check if the
+	// value is usable. Exact values mean that the previously
+	// stored result already has a precise result and we do not
+	// need to search the position again. We can stop this
+	// searching this branch and return the value.
+	// Alpha or Beta entries will only be used if the improve
+	// the current values.
 	var ttEntry *transpositiontable.TtEntry
 	if config.Settings.Search.UseTT {
 		ttEntry = s.tt.Probe(position.ZobristKey())
 		if ttEntry != nil { // tt hit
 			s.statistics.TTHit++
-			ttMove = ttEntry.Move
+			ttMove = ttEntry.Move.MoveOf()
+			if int(ttEntry.Depth) >= depth {
+				ttValue := valueFromTT(ttEntry.Move.ValueOf(), ply)
+				cut := false
+				switch {
+				case ttEntry.Type == EXACT:
+					cut = true
+				case ttEntry.Type == ALPHA && ttValue <= alpha:
+					cut = true
+				case ttEntry.Type == BETA && ttValue >= beta:
+					cut = true
+				}
+				if cut && config.Settings.Search.UseTTValue {
+					s.getPVLine(position, s.pv[ply], depth)
+					s.statistics.TTCuts++
+					return ttValue
+				} else {
+					s.statistics.TTNoCuts++
+				}
+			}
 		} else {
 			s.statistics.TTMiss++
 		}
@@ -430,6 +461,24 @@ func savePV(move Move, src *moveslice.MoveSlice, dest *moveslice.MoveSlice) {
 // storeTT stores a position into the TT
 func (s *Search) storeTT(p *position.Position, depth int, ply int, move Move, value Value, valueType ValueType) {
 	s.tt.Put(p.ZobristKey(), move, int8(depth), valueToTT(value, ply), valueType, false, false)
+}
+
+// getPVLine fills the given pv move list with the pv move starting from the given
+// depth as long as these position are in the TT
+func (s * Search) getPVLine(p *position.Position, pv *moveslice.MoveSlice, depth int) {
+	// Recursion-less reading of the chain of pv moves
+	pv.Clear()
+	counter := 0
+	ttMatch := s.tt.GetEntry(p.ZobristKey())
+	for ttMatch != nil && ttMatch.Move != MoveNone && counter < depth {
+		pv.PushBack(ttMatch.Move)
+		p.DoMove(ttMatch.Move)
+		counter++
+		ttMatch = s.tt.GetEntry(p.ZobristKey())
+	}
+	for i := 0; i < counter; i++ {
+		p.UndoMove()
+	}
 }
 
 // correct the value for mate distance when storing to TT

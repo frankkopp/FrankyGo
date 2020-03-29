@@ -165,7 +165,7 @@ func (p *Position) DoMove(m Move) {
 	fromSq := m.From()
 	fromPc := p.board[fromSq]
 	if assert.DEBUG {
-		assert.Assert(fromPc != PieceNone, "Position DoMove: No piece on %s", fromPc.String())
+		assert.Assert(fromPc != PieceNone, "Position DoMove: No piece on %s for move %s", fromPc.String(), m.StringUci())
 	}
 	myColor := fromPc.ColorOf()
 	if assert.DEBUG {
@@ -174,7 +174,10 @@ func (p *Position) DoMove(m Move) {
 	}
 	toSq := m.To()
 	targetPc := p.board[toSq]
-
+	if assert.DEBUG {
+		assert.Assert(targetPc.TypeOf() != King,
+			"Position DoMove: King cannot be captured yet target piece is %s", targetPc.String())
+	}
 	// Save state of board for undo
 	p.history[p.historyCounter] = historyState{
 		p.zobristKey,

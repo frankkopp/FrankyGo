@@ -587,6 +587,20 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 	return MoveNone
 }
 
+// ValidateMove validates if a move is a valid move on the given position
+func (mg *Movegen) ValidateMove(p *position.Position, move Move) bool {
+	if move == MoveNone {
+		return false
+	}
+	ml := mg.GenerateLegalMoves(p, GenAll)
+	for _, m := range *ml {
+		if move.MoveOf() == m {
+			return true
+		}
+	}
+	return false
+}
+
 // String returns a string representation of a MoveGen instance
 func (mg *Movegen) String() string {
 	return fmt.Sprintf("MoveGen: { OnDemand Stage: { %d }, PV Move: %s Killer Move 1: %s Killer Move 2: %s }",

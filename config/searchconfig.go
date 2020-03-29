@@ -36,6 +36,7 @@ type searchConfiguration struct {
 	UseTT         bool
 	TTSize        int
 	UseTTMove     bool
+	UseTTValue    bool
 }
 
 // sets defaults which might be overwritten by config file
@@ -49,6 +50,7 @@ func init() {
 	Settings.Search.UseTT = true
 	Settings.Search.TTSize = 128
 	Settings.Search.UseTTMove = true
+	Settings.Search.UseTTValue = true
 
 }
 
