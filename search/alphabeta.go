@@ -330,11 +330,20 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 	if !hasCheck {
 		// get an evaluation for the position
 		staticEval := s.evaluate(position)
-		// Standpat Cut
-		if staticEval >= beta {
-			return staticEval
-		}
-		if staticEval > alpha {
+		// Quiescence StandPat
+		// Use evaluation as a standing pat (lower bound)
+		// https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
+		// Assumption is that there is at least on move which would improve the
+		// current position. So if we are already >beta we don't need to look at it.
+		if config.Settings.Search.UseQSStandpat && staticEval > alpha {
+			if staticEval >= beta {
+				// store TT
+				if config.Settings.Search.UseTT {
+					s.storeTT(position, 0, ply, bestNodeMove, bestNodeValue, EXACT)
+				}
+				s.statistics.StandpatCuts++
+				return staticEval
+			}
 			alpha = staticEval
 		}
 		bestNodeValue = staticEval
@@ -398,7 +407,7 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 			return ValueNA
 		}
 
-		// see search for documentation
+		// see search function above for documentation
 		if value > bestNodeValue {
 			bestNodeValue = value
 			bestNodeMove = move
@@ -422,17 +431,18 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 		// generated all move. We can be sure this is a mate.
 		if position.HasCheck() {
 			bestNodeValue = -ValueCheckMate + Value(ply)
+			// store TT
+			if config.Settings.Search.UseTT {
+				s.storeTT(position, 0, ply, bestNodeMove, bestNodeValue, EXACT)
+			}
 		}
 		// if we do not have mate we had no check and
-		// therefore might have quiet moves which we
-		// did not generate.
+		// therefore might have only quiet moves which
+		// we did not generate.
 		// We return the standpat value in this case
-		// with bestNodeValue which we have set to the
+		// which we have set to bestNodeValue in the
 		// static eval earlier
 	}
-
-	// TODO TT store
-	_ = bestNodeMove
 
 	return bestNodeValue
 }
@@ -471,7 +481,7 @@ func (s *Search) storeTT(p *position.Position, depth int, ply int, move Move, va
 
 // getPVLine fills the given pv move list with the pv move starting from the given
 // depth as long as these position are in the TT
-func (s * Search) getPVLine(p *position.Position, pv *moveslice.MoveSlice, depth int) {
+func (s *Search) getPVLine(p *position.Position, pv *moveslice.MoveSlice, depth int) {
 	// Recursion-less reading of the chain of pv moves
 	pv.Clear()
 	counter := 0

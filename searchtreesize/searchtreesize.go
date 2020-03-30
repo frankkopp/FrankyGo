@@ -102,26 +102,31 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().TTCuts
+	ptrToSpecial = &s.Statistics().StandpatCuts
 
 	// Base
-	r.Tests = append(r.Tests, measure(s, sl, p, "00 Base"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
 
 	// + Quiescence
 	config.Settings.Search.UseQuiescence = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "10 QS"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "QS"))
+
+	// + QS Standpat
+	config.Settings.Search.UseQSStandpat = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "Standpat"))
 
 	// + TT
 	config.Settings.Search.UseTT = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "20 TT"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
 
 	// + TTMove
 	config.Settings.Search.UseTTMove = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "25 TTMove"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "TTMove"))
 
 	// + TTValue
 	config.Settings.Search.UseTTValue = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "26 TTValue"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
+
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -244,4 +249,5 @@ func turnOffFeatures() {
 	config.Settings.Search.UseTT = false
 	config.Settings.Search.UseTTMove = false
 	config.Settings.Search.UseTTValue = false
+	config.Settings.Search.UseQSStandpat = false
 }

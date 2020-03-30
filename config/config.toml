@@ -23,6 +23,7 @@ UseTTValue = true
 Ponder = true
 
 UseQuiescence = true
+UseQSStandpat = true
 
 [eval]
 UsePawnCache = true
