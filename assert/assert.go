@@ -52,6 +52,6 @@ const DEBUG = false
 func Assert(test bool, msg string, a ...interface{}) {
 	//noinspection GoBoolExpressions
 	if DEBUG && !test {
-		panic(fmt.Sprint(msg, a))
+		panic(fmt.Sprintf(msg, a))
 	}
 }

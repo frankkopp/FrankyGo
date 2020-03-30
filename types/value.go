@@ -28,6 +28,9 @@ package types
 
 import (
 	"strconv"
+	"strings"
+
+	"github.com/frankkopp/FrankyGo/util"
 )
 
 // Value represents the positional value of a chess position
@@ -51,8 +54,29 @@ func (v Value) IsValid() bool {
 	return v >= ValueMin && v <= ValueMax
 }
 
-func (v *Value) String() string {
-	// TODO min/max  mate in etc.
-	return strconv.Itoa(int(*v))
+// IsCheckMateValue returns true if value is above the check mate threshold
+// which typically is set to check mate value minus the maximum search depth
+func (v Value) IsCheckMateValue() bool {
+	return util.Abs(int(v)) > int(ValueCheckMateThreshold) && util.Abs(int(v)) <= int(ValueCheckMate)
 }
+
+func (v Value) String() string {
+	var os strings.Builder
+	if  v.IsCheckMateValue() {
+		os.WriteString("mate ")
+		if v < ValueZero {
+			os.WriteString("-")
+		}
+		i := int(ValueCheckMate) - util.Abs(int(v))
+		i2 := (i + 1) / 2
+		os.WriteString(strconv.Itoa(i2))
+	} else if v == ValueNA {
+		os.WriteString("N/A")
+	} else {
+		os.WriteString("cp ")
+		os.WriteString(strconv.Itoa(int(v)))
+	}
+	return os.String()
+}
+
 

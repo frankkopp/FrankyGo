@@ -26,14 +26,20 @@
 
 package config
 
+// searchConfiguration is a data structure to hold the configuration of an
+// instance of a search.
 type searchConfiguration struct {
-	UseBook    bool
-	BookPath   string
-	BookFile   string
-	BookFormat string
-	UseTT      bool
-	TTSize     int
-	UsePonder  bool
+	UseBook       bool
+	BookPath      string
+	BookFile      string
+	BookFormat    string
+	UsePonder     bool
+	UseQuiescence bool
+	UseQSStandpat bool
+	UseTT         bool
+	TTSize        int
+	UseTTMove     bool
+	UseTTValue    bool
 }
 
 // sets defaults which might be overwritten by config file
@@ -42,9 +48,14 @@ func init() {
 	Settings.Search.BookPath = "D:/_DEV/go/src/github.com/frankkopp/FrankyGo/books"
 	Settings.Search.BookPath = "book.txt"
 	Settings.Search.BookFormat = "Simple"
+	Settings.Search.UsePonder = true
+	Settings.Search.UseQuiescence = true
+	Settings.Search.UseQSStandpat = true
 	Settings.Search.UseTT = true
 	Settings.Search.TTSize = 128
-	Settings.Search.UsePonder = true
+	Settings.Search.UseTTMove = true
+	Settings.Search.UseTTValue = true
+
 }
 
 // set defaults for configurations here in case a configuration

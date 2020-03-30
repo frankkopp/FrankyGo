@@ -39,6 +39,7 @@ import (
 	"github.com/frankkopp/FrankyGo/movegen"
 	"github.com/frankkopp/FrankyGo/moveslice"
 	"github.com/frankkopp/FrankyGo/position"
+	"github.com/frankkopp/FrankyGo/transpositiontable"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
@@ -46,6 +47,13 @@ var trace = false
 
 var slog = getSearchTraceLog()
 
+// rootSearch starts the actual recursive alpha beta search with the root moves for the first ply.
+// As root moves are treated a little different this separate function supports readability
+// as mixing it with the normal search would require quite some "if ply==0" statements.
+// Currently we do not do beta cuts in root - not sure if this makes since later when
+// aspiration search is implemented. As root has no sibling nodes alpha beta probably makes
+// not much sense. Also TT would not help much here - search ply 1 and hitting TT is effective
+// enough
 func (s *Search) rootSearch(position *position.Position, depth int, alpha Value, beta Value) {
 	if trace {
 		slog.Debugf("Ply %2.d Depth %2.d start: %s", 0, depth, s.statistics.CurrentVariation.StringUci())
@@ -118,7 +126,7 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 func (s *Search) search(position *position.Position, depth int, ply int, alpha Value, beta Value) Value {
 	if trace {
 		slog.Debugf("%0*s Ply %2.d Depth %2.d start:  %s", ply, "", ply, depth, s.statistics.CurrentVariation.StringUci())
-		defer slog.Debugf("%0*s Ply %2.d Depth %2.d end  :  %s",ply, "", ply, depth, s.statistics.CurrentVariation.StringUci())
+		defer slog.Debugf("%0*s Ply %2.d Depth %2.d end  :  %s", ply, "", ply, depth, s.statistics.CurrentVariation.StringUci())
 	}
 
 	// Check if search should be stopped
@@ -128,15 +136,81 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 
 	// Leaf node when depth == 0 or max ply has been reached
 	if depth == 0 || ply >= MaxDepth {
-		return s.qsearch(position, depth, ply, alpha, beta)
+		return s.qsearch(position, ply, alpha, beta)
 	}
 
 	// prepare node search
 	bestNodeValue := ValueNA
 	bestNodeMove := MoveNone // used to store in the TT
+	ttMove := MoveNone
+	ttType := ALPHA
 	myMg := s.mg[ply]
 	myMg.ResetOnDemand()
 	s.pv[ply].Clear()
+
+	// ///////////////////////////////////////////////////////
+	// TT Lookup
+	// Results of searches are stored in the TT to be used to
+	// avoid searching positions several times. If a position
+	// is stored in the TT we retrieve a pointer to the entry.
+	// We use the stored move as a best move from previous searches
+	// and search it first (through setting PV move in move gen).
+	// If we have a value from a similar or deeper search we check
+	// if the value is usable. Exact values mean that the previously
+	// stored result already was a precise result and we do not
+	// need to search the position again. We can stop  searching
+	// this branch and return the value.
+	// Alpha or Beta entries will only be used if they improve
+	// the current values.
+	var ttEntry *transpositiontable.TtEntry
+	if config.Settings.Search.UseTT {
+		ttEntry = s.tt.Probe(position.ZobristKey())
+		if ttEntry != nil { // tt hit
+			s.statistics.TTHit++
+			ttMove = ttEntry.Move.MoveOf()
+			if int(ttEntry.Depth) >= depth {
+				ttValue := valueFromTT(ttEntry.Move.ValueOf(), ply)
+				cut := false
+				switch {
+				case !ttValue.IsValid():
+					cut = false
+				case ttEntry.Type == EXACT:
+					cut = true
+				case ttEntry.Type == ALPHA && ttValue <= alpha:
+					cut = true
+				case ttEntry.Type == BETA && ttValue >= beta:
+					cut = true
+				}
+				if cut && config.Settings.Search.UseTTValue {
+					s.getPVLine(position, s.pv[ply], depth)
+					s.statistics.TTCuts++
+					return ttValue
+				} else {
+					s.statistics.TTNoCuts++
+				}
+			}
+		} else {
+			s.statistics.TTMiss++
+		}
+	}
+	// TT Lookup
+	// ///////////////////////////////////////////////////////
+
+	// ///////////////////////////////////////////////////////
+	// PV Move Sort
+	// When we received a best move for the position from the
+	// TT we set it as PV move in the movegen so it will be
+	// searched first.
+	if config.Settings.Search.UseTTMove {
+		if ttMove != MoveNone {
+			s.statistics.TTMoveUsed++
+			myMg.SetPvMove(ttMove)
+		} else {
+			s.statistics.NoTTMove++
+		}
+	}
+	// PV Move Sort
+	// ///////////////////////////////////////////////////////
 
 	// prepare move loop
 	var value Value
@@ -146,6 +220,8 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	// MOVE LOOP
 	for move := myMg.GetNextMove(position, movegen.GenAll); move != MoveNone; move = myMg.GetNextMove(position, movegen.GenAll) {
 
+		// ///////////////////////////////////////////////////////
+		// DO MOVE
 		position.DoMove(move)
 
 		// check if legal move or skip (root moves are always legal)
@@ -164,12 +240,13 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			value = ValueDraw
 		} else {
 			value = -s.search(position, depth-1, ply+1, -beta, -alpha)
-			// iterationDepth, PLY_ROOT, alpha, beta, Do_Null_Move, nodeType
 		}
 
 		movesSearched++
 		s.statistics.CurrentVariation.PopBack()
 		position.UndoMove()
+		// UNDO MOVE
+		// ///////////////////////////////////////////////////////
 
 		// check if we should stop the search
 		if s.stopConditions() {
@@ -202,6 +279,8 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				// We will safe the move as a killer to be able to search it
 				// earlier in another node of the ply.
 				if value >= beta {
+					s.statistics.BetaCuts++
+					ttType = BETA
 					break
 				}
 				// We found a move between alpha and beta which means we
@@ -209,6 +288,142 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				// can be forced (opponent can't avoid it).
 				// We raise alpha so the successive searches in this ply
 				// need to find even better moves or dismiss the moves.
+				alpha = value
+				ttType = EXACT
+			}
+		}
+	}
+	// MOVE LOOP
+	// ///////////////////////////////////////////////////////
+
+	// if we did not have at least one legal move
+	// then we might have a mate or stalemate
+	if movesSearched == 0 && !s.stopConditions() {
+		if position.HasCheck() { // mate
+			bestNodeValue = -ValueCheckMate + Value(ply)
+			ttType = EXACT
+		} else { // stalemate
+			bestNodeValue = ValueDraw
+			ttType = EXACT
+		}
+	}
+
+	// store TT
+	if config.Settings.Search.UseTT {
+		s.storeTT(position, depth, ply, bestNodeMove, bestNodeValue, ttType)
+	}
+
+	return bestNodeValue
+}
+
+func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta Value) Value {
+
+	if !config.Settings.Search.UseQuiescence {
+		return s.evaluate(position)
+	}
+
+	if s.statistics.CurrentExtraSearchDepth < ply {
+		s.statistics.CurrentExtraSearchDepth = ply
+	}
+
+	// prepare node search
+	bestNodeValue := ValueNA
+	bestNodeMove := MoveNone // used to store in the TT
+	myMg := s.mg[ply]
+	myMg.ResetOnDemand()
+	s.pv[ply].Clear()
+	hasCheck := position.HasCheck()
+
+	// if in check we simply do a normal search (all moves) in qsearch
+	if !hasCheck {
+		// get an evaluation for the position
+		staticEval := s.evaluate(position)
+		// Quiescence StandPat
+		// Use evaluation as a standing pat (lower bound)
+		// https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
+		// Assumption is that there is at least on move which would improve the
+		// current position. So if we are already >beta we don't need to look at it.
+		if config.Settings.Search.UseQSStandpat && staticEval > alpha {
+			if staticEval >= beta {
+				// store TT
+				if config.Settings.Search.UseTT {
+					s.storeTT(position, 0, ply, bestNodeMove, bestNodeValue, EXACT)
+				}
+				s.statistics.StandpatCuts++
+				return staticEval
+			}
+			alpha = staticEval
+		}
+		bestNodeValue = staticEval
+	}
+
+	// prepare move loop
+	var value Value
+	movesSearched := 0
+
+	// if in check we search all moves
+	// this is in fact a search extension for checks
+	var mode movegen.GenMode
+	if hasCheck {
+		mode = movegen.GenAll
+	} else {
+		mode = movegen.GenCap
+	}
+
+	// ///////////////////////////////////////////////////////
+	// MOVE LOOP
+	for move := myMg.GetNextMove(position, mode); move != MoveNone; move = myMg.GetNextMove(position, mode) {
+
+		// reduce number of moves searched in quiescence
+		// by looking at good captures only
+		if !hasCheck && !s.goodCapture(position, move) {
+			continue
+		}
+
+		// ///////////////////////////////////////////////////////
+		// DO MOVE
+		position.DoMove(move)
+
+		// check if legal move or skip (root moves are always legal)
+		if !position.WasLegalMove() {
+			position.UndoMove()
+			continue
+		}
+
+		// we only count legal moves
+		s.nodesVisited++
+		s.statistics.CurrentVariation.PushBack(move)
+		s.sendSearchUpdateToUci()
+
+		// check repetition and 50 moves when in check
+		// otherwise only capturing moves are generated
+		// which break repetition and 50-moves rule anyway
+		if hasCheck && s.checkDrawRepAnd50(position, 2) {
+			value = ValueDraw
+		} else {
+			value = -s.qsearch(position, ply+1, -beta, -alpha)
+		}
+
+		movesSearched++
+		s.statistics.CurrentVariation.PopBack()
+		position.UndoMove()
+		// UNDO MOVE
+		// ///////////////////////////////////////////////////////
+
+		// check if we should stop the search
+		if s.stopConditions() {
+			return ValueNA
+		}
+
+		// see search function above for documentation
+		if value > bestNodeValue {
+			bestNodeValue = value
+			bestNodeMove = move
+			if value > alpha {
+				savePV(move, s.pv[ply+1], s.pv[ply])
+				if value >= beta {
+					break
+				}
 				alpha = value
 			}
 		}
@@ -220,28 +435,43 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	// then we might have a mate or in quiescence
 	// only quite moves
 	if movesSearched == 0 && !s.stopConditions() {
+		// if we have a mate we had a check before and therefore
+		// generated all move. We can be sure this is a mate.
 		if position.HasCheck() {
-			bestNodeValue = -ValueCheckMate
-		} else {
-			bestNodeValue = ValueDraw
+			bestNodeValue = -ValueCheckMate + Value(ply)
+			// store TT
+			if config.Settings.Search.UseTT {
+				s.storeTT(position, 0, ply, bestNodeMove, bestNodeValue, EXACT)
+			}
 		}
+		// if we do not have mate we had no check and
+		// therefore might have only quiet moves which
+		// we did not generate.
+		// We return the standpat value in this case
+		// which we have set to bestNodeValue in the
+		// static eval earlier
 	}
-
-	// store TT
-	// TODO
-	_ = bestNodeMove
 
 	return bestNodeValue
 }
 
-func (s *Search) qsearch(position *position.Position, depth int, ply int, alpha Value, beta Value) Value {
-	// TODO
-	return s.evaluate(position)
+func (s *Search) evaluate(position *position.Position) Value {
+	return s.eval.Evaluate(position)
 }
 
-func (s *Search) evaluate(position *position.Position) Value {
-	// TODO
-	return position.Material(position.NextPlayer()) - position.Material(position.NextPlayer().Flip())
+func (s *Search) goodCapture(p *position.Position, move Move) bool {
+	// Lower value piece captures higher value piece
+	// With a margin to also look at Bishop x Knight
+	return p.GetPiece(move.From()).ValueOf()+50 < p.GetPiece(move.To()).ValueOf() ||
+		// all recaptures should be looked at
+		(p.LastMove() != MoveNone && p.LastMove().To() == move.To() && p.LastCapturedPiece() != PieceNone) ||
+		// undefended pieces captures are good
+		// If the defender is "behind" the attacker this will not be recognized
+		// here This is not too bad as it only adds a move to qsearch which we
+		// could otherwise ignore
+		!p.IsAttacked(move.To(), p.NextPlayer().Flip())
+	// Check SEE score of higher value pieces to low value pieces
+	// || (SearchConfig::USE_QS_SEE && (Attacks::see(position, move) > 0));
 }
 
 // savePV adds the given move as first move to a cleared dest and the appends
@@ -250,6 +480,53 @@ func savePV(move Move, src *moveslice.MoveSlice, dest *moveslice.MoveSlice) {
 	dest.Clear()
 	dest.PushBack(move)
 	*dest = append(*dest, *src...)
+}
+
+// storeTT stores a position into the TT
+func (s *Search) storeTT(p *position.Position, depth int, ply int, move Move, value Value, valueType ValueType) {
+	s.tt.Put(p.ZobristKey(), move, int8(depth), valueToTT(value, ply), valueType, false, false)
+}
+
+// getPVLine fills the given pv move list with the pv move starting from the given
+// depth as long as these position are in the TT
+func (s *Search) getPVLine(p *position.Position, pv *moveslice.MoveSlice, depth int) {
+	// Recursion-less reading of the chain of pv moves
+	pv.Clear()
+	counter := 0
+	ttMatch := s.tt.GetEntry(p.ZobristKey())
+	for ttMatch != nil && ttMatch.Move != MoveNone && counter < depth {
+		pv.PushBack(ttMatch.Move)
+		p.DoMove(ttMatch.Move)
+		counter++
+		ttMatch = s.tt.GetEntry(p.ZobristKey())
+	}
+	for i := 0; i < counter; i++ {
+		p.UndoMove()
+	}
+}
+
+// correct the value for mate distance when storing to TT
+func valueToTT(value Value, ply int) Value {
+	if value.IsCheckMateValue() {
+		if value > 0 {
+			value = value + Value(ply)
+		} else {
+			value = value - Value(ply)
+		}
+	}
+	return value
+}
+
+// correct the value for mate distance when reading from TT
+func valueFromTT(value Value, ply int) Value {
+	if value.IsCheckMateValue() {
+		if value > 0 {
+			value = value - Value(ply)
+		} else {
+			value = value + Value(ply)
+		}
+	}
+	return value
 }
 
 // getSearchTraceLog returns an instance of a standard Logger preconfigured with a

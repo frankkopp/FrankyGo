@@ -33,9 +33,9 @@ type ValueType int8
 //noinspection GoVarAndConstTypeMayBeOmitted
 const (
 	Vnone   ValueType = 0
-	Vexact  ValueType = 1
-	Valpha  ValueType = 2 // upper bound
-	Vbeta   ValueType = 3 // lower bound
+	EXACT   ValueType = 1
+	ALPHA   ValueType = 2 // upper bound
+	BETA    ValueType = 3 // lower bound
 	Vlength int       = 4
 )
 

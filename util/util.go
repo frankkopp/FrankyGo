@@ -92,6 +92,12 @@ func TimeTrack(start time.Time, name string) {
 	_, _ = out.Printf("%s took %d ns\n", name, elapsed.Nanoseconds())
 }
 
+// Nps calculates nodes per second from an uint64 and a duration
+// allows zero duration by adding one nanosecond
+func Nps(nodes uint64, duration time.Duration) uint64 {
+	return uint64(int64(nodes) * time.Second.Nanoseconds() / (duration.Nanoseconds() + 1))
+}
+
 // MemStat returns a string with information about the applications memory usage and GC activity
 func MemStat() string {
 	var mem runtime.MemStats

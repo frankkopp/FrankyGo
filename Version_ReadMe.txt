@@ -1,11 +1,22 @@
 v 0.x (planned)
 ================================================================================
 
-v 0.5 (in progress)
+v 0.6 (planned)
 ================================================================================
 - TODO
-    - Evaluation (simple)
+    - TestSuite Tests
+    - Better Evaluation
+    - Pawn Structure Cache
+    - IID
+
+v 0.5 (in progress)
+================================================================================
+-DONE
+    - Use TT
+    - SearchTreeSize
     - Quiescence search
+    - Score as string()
+    - Evaluation (simple)
 
 v 0.4 (done)
 ================================================================================
