@@ -9,7 +9,7 @@ v 0.6 (planned)
     - Pawn Structure Cache
     - IID
 
-v 0.5 (in progress)
+v 0.5 (done)
 ================================================================================
 -DONE
     - Use TT
