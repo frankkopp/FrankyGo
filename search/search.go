@@ -649,7 +649,8 @@ func (s *Search) startTimer() {
 	}()
 }
 
-// checks repetitions and 50-moves rule
+// checks repetitions and 50-moves rule. Returns true if the position
+// has repeated itself at least the given number of times
 func (s *Search) checkDrawRepAnd50(p *position.Position, i int) bool {
 	if p.CheckRepetitions(i) || p.HalfMoveClock() >= 100 {
 		return true
@@ -726,6 +727,9 @@ func (s *Search) sendIterationEndInfoToUci() {
 	}
 }
 
+// helper to calculate current nps relative to s.startTime.
+// limits the value to 15M to avoid very small times
+// returning unrealistic values.
 func (s *Search) getNps() uint64 {
 	elapsed := time.Since(s.startTime) + 100
 	nps := util.Nps(s.nodesVisited, elapsed)

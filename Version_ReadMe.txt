@@ -7,14 +7,10 @@ v 0.6 (planned)
     - TestSuite Tests
     - Better Evaluation
     - Pawn Structure Cache
-    - Use TT (qsearch)
+    - IID
 
 v 0.5 (in progress)
 ================================================================================
-- TODO
-    - Testing
-    - Known Issues:
-
 -DONE
     - Use TT
     - SearchTreeSize

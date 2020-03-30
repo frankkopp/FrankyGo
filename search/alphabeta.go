@@ -47,6 +47,13 @@ var trace = false
 
 var slog = getSearchTraceLog()
 
+// rootSearch starts the actual recursive alpha beta search with the root moves for the first ply.
+// As root moves are treated a little different this separate function supports readability
+// as mixing it with the normal search would require quite some "if ply==0" statements.
+// Currently we do not do beta cuts in root - not sure if this makes since later when
+// aspiration search is implemented. As root has no sibling nodes alpha beta probably makes
+// not much sense. Also TT would not help much here - search ply 1 and hitting TT is effective
+// enough
 func (s *Search) rootSearch(position *position.Position, depth int, alpha Value, beta Value) {
 	if trace {
 		slog.Debugf("Ply %2.d Depth %2.d start: %s", 0, depth, s.statistics.CurrentVariation.StringUci())
@@ -144,16 +151,16 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	// ///////////////////////////////////////////////////////
 	// TT Lookup
 	// Results of searches are stored in the TT to be used to
-	// avoid searching positions several times. If hte position
+	// avoid searching positions several times. If a position
 	// is stored in the TT we retrieve a pointer to the entry.
 	// We use the stored move as a best move from previous searches
-	// and search it first (through setting PV move in move gen)
-	// If we have a value from a deeper search we check if the
-	// value is usable. Exact values mean that the previously
-	// stored result already has a precise result and we do not
-	// need to search the position again. We can stop this
-	// searching this branch and return the value.
-	// Alpha or Beta entries will only be used if the improve
+	// and search it first (through setting PV move in move gen).
+	// If we have a value from a similar or deeper search we check
+	// if the value is usable. Exact values mean that the previously
+	// stored result already was a precise result and we do not
+	// need to search the position again. We can stop  searching
+	// this branch and return the value.
+	// Alpha or Beta entries will only be used if they improve
 	// the current values.
 	var ttEntry *transpositiontable.TtEntry
 	if config.Settings.Search.UseTT {
@@ -327,6 +334,7 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 	s.pv[ply].Clear()
 	hasCheck := position.HasCheck()
 
+	// if in check we simply do a normal search (all moves) in qsearch
 	if !hasCheck {
 		// get an evaluation for the position
 		staticEval := s.evaluate(position)
