@@ -19,6 +19,7 @@ UseTT = true
 TTSize = 256
 UseTTMove = true
 UseTTValue = true
+UseQSTT = true
 
 Ponder = true
 

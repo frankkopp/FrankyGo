@@ -7,7 +7,12 @@ v 0.7 (planned)
 v 0.6 (in progress)
 ================================================================================
 - TODO
-    - IID
+    - Performance/Profiling
+    - TT in QS??
+    - MDP / MPP
+    - IID??
+    - PVS
+    - Aspiration
     - TestSuite Tests
     - Better Evaluation
     - Pawn Structure Cache

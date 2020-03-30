@@ -327,12 +327,42 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 		s.statistics.CurrentExtraSearchDepth = ply
 	}
 
+	// ///////////////////////////////////////////////////////
+	// TT Lookup
+	ttMove := MoveNone
+	var ttEntry *transpositiontable.TtEntry
+	if config.Settings.Search.UseQSTT {
+		ttEntry = s.tt.Probe(position.ZobristKey())
+		if ttEntry != nil { // tt hit
+			s.statistics.TTHit++
+			ttMove = ttEntry.Move.MoveOf()
+			ttValue := valueFromTT(ttEntry.Move.ValueOf(), ply)
+			cut := false
+			switch {
+			case !ttValue.IsValid():
+				cut = false
+			case ttEntry.Type == EXACT:
+				cut = true
+			case ttEntry.Type == ALPHA && ttValue <= alpha:
+				cut = true
+			case ttEntry.Type == BETA && ttValue >= beta:
+				cut = true
+			}
+			if cut && config.Settings.Search.UseTTValue {
+				s.statistics.TTCuts++
+				return ttValue
+			} else {
+				s.statistics.TTNoCuts++
+			}
+		} else {
+			s.statistics.TTMiss++
+		}
+	}
+	// TT Lookup
+	// ///////////////////////////////////////////////////////
+
 	// prepare node search
 	bestNodeValue := ValueNA
-	bestNodeMove := MoveNone // used to store in the TT
-	myMg := s.mg[ply]
-	myMg.ResetOnDemand()
-	s.pv[ply].Clear()
 	hasCheck := position.HasCheck()
 
 	// if in check we simply do a normal search (all moves) in qsearch
@@ -346,10 +376,6 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 		// current position. So if we are already >beta we don't need to look at it.
 		if config.Settings.Search.UseQSStandpat && staticEval > alpha {
 			if staticEval >= beta {
-				// store TT
-				if config.Settings.Search.UseTT {
-					s.storeTT(position, 0, ply, bestNodeMove, bestNodeValue, EXACT)
-				}
 				s.statistics.StandpatCuts++
 				return staticEval
 			}
@@ -357,6 +383,28 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 		}
 		bestNodeValue = staticEval
 	}
+
+	// prepare node search
+	bestNodeMove := MoveNone // used to store in the TT
+	myMg := s.mg[ply]
+	myMg.ResetOnDemand()
+	s.pv[ply].Clear()
+
+	// ///////////////////////////////////////////////////////
+	// PV Move Sort
+	// When we received a best move for the position from the
+	// TT we set it as PV move in the movegen so it will be
+	// searched first.
+	if config.Settings.Search.UseQSTT {
+		if ttMove != MoveNone {
+			s.statistics.TTMoveUsed++
+			myMg.SetPvMove(ttMove)
+		} else {
+			s.statistics.NoTTMove++
+		}
+	}
+	// PV Move Sort
+	// ///////////////////////////////////////////////////////
 
 	// prepare move loop
 	var value Value
@@ -485,7 +533,7 @@ func savePV(move Move, src *moveslice.MoveSlice, dest *moveslice.MoveSlice) {
 
 // storeTT stores a position into the TT
 func (s *Search) storeTT(p *position.Position, depth int, ply int, move Move, value Value, valueType ValueType) {
-	s.tt.Put(p.ZobristKey(), move, int8(depth), valueToTT(value, ply), valueType, false, false)
+	s.tt.Put(p.ZobristKey(), move, int8(depth), valueToTT(value, ply), valueType, false)
 }
 
 // getPVLine fills the given pv move list with the pv move starting from the given

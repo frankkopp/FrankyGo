@@ -42,6 +42,7 @@ func init() {
 		"Use_Book":   {NameID: "Use_Book", HandlerFunc: useBook, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseBook), CurrentValue: strconv.FormatBool(config.Settings.Search.UseBook)},
 		"Ponder":     {NameID: "Ponder", HandlerFunc: usePonder, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UsePonder), CurrentValue: strconv.FormatBool(config.Settings.Search.UsePonder)},
 		"Quiescence": {NameID: "Quiescence", HandlerFunc: useQuiescence, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseQuiescence), CurrentValue: strconv.FormatBool(config.Settings.Search.UseQuiescence)},
+		"Use_QHash":  {NameID: "Use_QHash", HandlerFunc: useQSHash, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseQSTT), CurrentValue: strconv.FormatBool(config.Settings.Search.UseQSTT)},
 	}
 }
 
@@ -167,4 +168,10 @@ func useQuiescence(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	config.Settings.Search.UseQuiescence = v
 	log.Debugf("Set Use Quiescence to %v", config.Settings.Search.UseQuiescence)
+}
+
+func useQSHash(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	config.Settings.Search.UseQSTT = v
+	log.Debugf("Set Use Hash in Quiescence to %v", config.Settings.Search.UseQSTT)
 }

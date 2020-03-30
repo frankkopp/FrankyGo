@@ -28,7 +28,6 @@ package search
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -72,10 +71,12 @@ func TestTiming(t *testing.T) {
 	s:= NewSearch()
 	p := position.NewPosition()
 	sl:=NewSearchLimits()
-	sl.TimeControl = true
-	sl.MoveTime = 30 * time.Second
+	sl.Depth = 10
+	// sl.TimeControl = true
+	// sl.MoveTime = 60 * time.Second
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
+	out.Println("TT : ", s.tt.String())
 	out.Println("NPS: ", util.Nps(s.nodesVisited, s.lastSearchResult.SearchTime))
 }
 
