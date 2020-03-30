@@ -1050,18 +1050,28 @@ func (p *Position) HalfMoveClock() int {
 	return p.halfMoveClock
 }
 
+// Material returns the material value for the given color
+// on this position
 func (p *Position) Material(c Color) Value {
 	return p.material[c]
 }
 
+// PsqMidValue returns the positional value for the given color
+// for early game phases. Best used together with a game phase
+// factor
 func (p *Position) PsqMidValue(c Color) Value {
 	return p.psqMidValue[c]
 }
 
+// PsqEndValue returns the positional value for the given color
+// for later game phases. Best used together with a game phase
+// factor
 func (p *Position) PsqEndValue(c Color) Value {
 	return p.psqEndValue[c]
 }
 
+// LastMove returns the last move made on the position or
+// MoveNone if the position has no history of earlier moves.
 func (p *Position) LastMove() Move {
 	if p.historyCounter <= 0 {
 		return MoveNone
@@ -1069,6 +1079,9 @@ func (p *Position) LastMove() Move {
 	return p.history[p.historyCounter-1].move
 }
 
+// LastCapturedPiece returns the captured piece of the the last
+// move made on the position or MoveNone if the move was
+// non-capturing or the position has no history of earlier moves.
 func (p *Position) LastCapturedPiece() Piece {
 	if p.historyCounter <= 0 {
 		return PieceNone

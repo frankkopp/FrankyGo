@@ -26,9 +26,6 @@
 
 package config
 
-import (
-)
-
 type evalConfiguration struct {
 	UsePawnCache  bool
 	PawnCacheSize int

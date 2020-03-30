@@ -35,7 +35,7 @@ import (
 // Statistics
 // //////////////////////////////////////////////////////
 
-// Statistics extra data and stats not essential for a functioning search
+// Statistics are extra data and stats not essential for a functioning search
 type Statistics struct {
 	CurrentIterationDepth    int
 	CurrentSearchDepth       int

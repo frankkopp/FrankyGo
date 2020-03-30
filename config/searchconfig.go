@@ -26,6 +26,8 @@
 
 package config
 
+// searchConfiguration is a data structure to hold the configuration of an
+// instance of a search.
 type searchConfiguration struct {
 	UseBook       bool
 	BookPath      string
