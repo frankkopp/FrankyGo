@@ -1030,6 +1030,12 @@ func (p *Position) GamePhase() int {
 	return p.gamePhase
 }
 
+// GamePhaseFactor returns a factor between 0 and 1 which reflects
+// the ratio between the actual game phase and the max game phase
+func (p *Position) GamePhaseFactor() float64 {
+	return float64(p.gamePhase) / GamePhaseMax
+}
+
 // GetEnPassantSquare returns the en passant square or SqNone if not set
 func (p *Position) GetEnPassantSquare() Square {
 	return p.enPassantSquare

@@ -29,7 +29,11 @@
 package evaluator
 
 import (
+	"strings"
+
 	"github.com/op/go-logging"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 
 	"github.com/frankkopp/FrankyGo/config"
 	myLogging "github.com/frankkopp/FrankyGo/logging"
@@ -38,6 +42,8 @@ import (
 )
 
 const trace = true
+
+var out = message.NewPrinter(language.German)
 
 // Evaluator  represents a data structure and functionality fo
 // evaluating chess positions by using various evaluation
@@ -64,7 +70,7 @@ func (e *Evaluator) Evaluate(position *position.Position) Value {
 		return ValueDraw
 	}
 
-	gamePhaseFactor := float64(position.GamePhase() / GamePhaseMax)
+	gamePhaseFactor := position.GamePhaseFactor()
 
 	// Each position is evaluated from the view of the white
 	// player. Before returning the value this will be adjusted
@@ -98,10 +104,11 @@ func (e *Evaluator) Evaluate(position *position.Position) Value {
 	// TEMPO Bonus for the side to move (helps with evaluation alternation -
 	// less difference between side which makes aspiration search faster
 	// (not empirically tested)
-	value += Value(float64(config.Settings.Eval.Tempo) * gamePhaseFactor)
+	value += e.tempo(gamePhaseFactor)
 
 	return value
 }
+
 
 func (e *Evaluator) material(position *position.Position, gamePhaseFactor float64) Value {
 	return position.Material(White) - position.Material(Black)
@@ -110,4 +117,26 @@ func (e *Evaluator) material(position *position.Position, gamePhaseFactor float6
 func (e *Evaluator) positional(position *position.Position, gamePhaseFactor float64) Value {
 	return Value(float64(position.PsqMidValue(White)-position.PsqMidValue(Black))*gamePhaseFactor +
 		float64(position.PsqEndValue(White)-position.PsqEndValue(Black))*(1-gamePhaseFactor))
+}
+
+func (e *Evaluator) tempo(gamePhaseFactor float64) Value {
+	return Value(float64(config.Settings.Eval.Tempo) * gamePhaseFactor)
+}
+
+func (e *Evaluator) Report(position *position.Position) string {
+	var report strings.Builder
+
+	report.WriteString("Evaluation Report\n")
+	report.WriteString("=============================================\n")
+	report.WriteString(out.Sprintf("Position: %s\n", position.StringFen()))
+	report.WriteString(out.Sprintf("%s\n", position.StringBoard()))
+	report.WriteString(out.Sprintf("GamePhase Factor: %f\n", position.GamePhaseFactor()))
+	report.WriteString(out.Sprintf("(evals from the view of white player)\n", e.Evaluate(position)))
+	report.WriteString(out.Sprintf("Material    : %d\n", e.material(position, position.GamePhaseFactor())))
+	report.WriteString(out.Sprintf("Positional  : %d\n", e.positional(position, position.GamePhaseFactor())))
+	report.WriteString(out.Sprintf("Tempo       : %d\n", e.tempo(position.GamePhaseFactor())))
+	report.WriteString(out.Sprintf("-------------------------\n", e.Evaluate(position)))
+	report.WriteString(out.Sprintf("Eval Value  : %d \n(from the view of next player = %s)\n", e.Evaluate(position), position.NextPlayer().String()))
+
+	return report.String()
 }

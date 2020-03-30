@@ -280,6 +280,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				// earlier in another node of the ply.
 				if value >= beta {
 					s.statistics.BetaCuts++
+					// TODO KILLER
 					ttType = BETA
 					break
 				}

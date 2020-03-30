@@ -39,6 +39,7 @@ import (
 	"github.com/frankkopp/FrankyGo/moveslice"
 	"github.com/frankkopp/FrankyGo/position"
 	"github.com/frankkopp/FrankyGo/search"
+	"github.com/frankkopp/FrankyGo/testutil"
 	"github.com/frankkopp/FrankyGo/types"
 	"github.com/frankkopp/FrankyGo/util"
 )
@@ -142,16 +143,16 @@ func SizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 	out.Printf("Start Search Tree Size Test for depth %d\n", depth)
 
 	// prepare the slice for the tests
-	if endFen > len(Fens) {
-		endFen = len(Fens)
+	if endFen > len(testutil.Fens) {
+		endFen = len(testutil.Fens)
 	}
 	if startFen > endFen {
 		startFen = endFen
 	}
-	testFens := Fens[startFen:endFen]
+	testFens := testutil.Fens[startFen:endFen]
 
 	// prepare slice of results to store them for the report
-	results := make([]result, 0, len(Fens))
+	results := make([]result, 0, len(testutil.Fens))
 
 	// execute tests and store results
 	for _, fen := range testFens {
