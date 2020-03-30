@@ -119,7 +119,7 @@ func (m Move) ValueOf() Value {
 // SetValue encodes the given value into the high 16-bit of the move
 func (m *Move) SetValue(v Value) Move {
 	if assert.DEBUG {
-		assert.Assert(v == ValueNA || v.IsValid(), "Invalid Value value.")
+		assert.Assert(v == ValueNA || v.IsValid(), "Invalid Value value: %d", v)
 	}
 	// can't store a value on MoveNone
 	if *m == MoveNone {

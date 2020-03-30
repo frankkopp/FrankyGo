@@ -374,7 +374,6 @@ func TestDebug(t *testing.T) {
 	result = uh.Command("go depth 6")
 	time.Sleep(2 * time.Second)
 	uh.mySearch.WaitWhileSearching()
-	assert.False(t, uh.mySearch.LastSearchResult().BookMove)
 	result = uh.Command("quit")
 
 	_ = result

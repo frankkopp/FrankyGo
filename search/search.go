@@ -38,6 +38,7 @@ import (
 	"github.com/op/go-logging"
 
 	"github.com/frankkopp/FrankyGo/config"
+	"github.com/frankkopp/FrankyGo/evaluator"
 	myLogging "github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/movegen"
 	"github.com/frankkopp/FrankyGo/moveslice"
@@ -62,6 +63,7 @@ type Search struct {
 
 	book *openingbook.Book
 	tt   *transpositiontable.TtTable
+	eval *evaluator.Evaluator
 
 	// previous search
 	lastSearchResult *Result
@@ -78,8 +80,8 @@ type Search struct {
 	mg                []*movegen.Movegen
 	pv                []*moveslice.MoveSlice
 	rootMoves         *moveslice.MoveSlice
-	statistics        Statistics
 	lastUciUpdateTime time.Time
+	statistics        Statistics
 }
 
 // //////////////////////////////////////////////////////
@@ -96,6 +98,7 @@ func NewSearch() *Search {
 		isRunning:         semaphore.NewWeighted(int64(1)),
 		book:              nil,
 		tt:                nil,
+		eval:              evaluator.NewEvaluator(),
 		lastSearchResult:  nil,
 		stopFlag:          false,
 		startTime:         time.Time{},
@@ -118,7 +121,9 @@ func NewSearch() *Search {
 // to be ready for a different game. Any caches or states will be reset.
 func (s *Search) NewGame() {
 	s.StopSearch()
-	s.tt.Clear()
+	if s.tt != nil {
+		s.tt.Clear()
+	}
 }
 
 // StartSearch starts the search with on the given position with
@@ -209,12 +214,14 @@ func (s *Search) IsReady() {
 func (s *Search) ClearHash() {
 	if s.IsSearching() {
 		msg := "Can't clear hash while searching."
-		s.uciHandlerPtr.SendInfoString(msg)
+		s.sendInfoStringToUci(msg)
 		s.log.Warning(msg)
 		return
 	}
-	s.tt.Clear()
-	s.uciHandlerPtr.SendInfoString("Hash cleared")
+	if s.tt != nil {
+		s.tt.Clear()
+		s.sendInfoStringToUci("Hash cleared")
+	}
 }
 
 // ResizeCache resizes and clears the transposition table.
@@ -231,7 +238,9 @@ func (s *Search) ResizeCache() {
 	s.initialize()
 	// good point in time to let the garbage collector do its work
 	util.GcWithStats()
-	s.uciHandlerPtr.SendInfoString("Hash resized")
+	if s.tt != nil {
+		s.uciHandlerPtr.SendInfoString(out.Sprintf("Hash resized: %s", s.tt.String()))
+	}
 }
 
 // //////////////////////////////////////////////////////
@@ -327,11 +336,9 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 		}
 	}
 
-	// update search result with search time
+	// update search result with search time and pv
 	searchResult.SearchTime = time.Since(s.startTime)
-
-	// send final search info update
-	// TODO
+	searchResult.Pv = *s.pv[0]
 
 	// At the end of a search we send the result in any case even if
 	// searched has been stopped. Best move is the best move so far.
@@ -345,7 +352,8 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.log.Info(out.Sprintf("Search finished after %d ms ", searchResult.SearchTime.Milliseconds()))
 	s.log.Info(out.Sprintf("Search depth was %d(%d) with %d nodes visited. NPS = %d nps",
 		s.statistics.CurrentSearchDepth, s.statistics.CurrentExtraSearchDepth, s.nodesVisited,
-		(s.nodesVisited*uint64(time.Second.Nanoseconds()))/uint64(searchResult.SearchTime.Nanoseconds()+1)))
+		util.Nps(s.nodesVisited, searchResult.SearchTime)))
+	s.log.Infof("Search stats: %s", s.statistics.String())
 
 	// print result to log
 	s.log.Infof("Search result: %s", searchResult.String())
@@ -438,17 +446,13 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 			s.rootMoves.Sort()
 			s.statistics.CurrentBestRootMove = s.pv[0].At(0)
 			s.statistics.CurrentBestRootMoveValue = s.pv[0].At(0).ValueOf()
-		}
-
-		// update UCI GUI
-		s.sendIterationEndInfoToUci()
-
-		// check if we need to stop
-		// doing this here ensures that we at least do the 1st level search
-		if s.stopConditions() {
+			// update UCI GUI
+			s.sendIterationEndInfoToUci()
+		} else {
+			// check if we need to stop
+			// doing this here ensures that we at least do the 1st level search
 			break
 		}
-
 	}
 
 	// ### END OF Iterative Deepening
@@ -645,7 +649,8 @@ func (s *Search) startTimer() {
 	}()
 }
 
-// checks repetitions and 50-moves rule
+// checks repetitions and 50-moves rule. Returns true if the position
+// has repeated itself at least the given number of times
 func (s *Search) checkDrawRepAnd50(p *position.Position, i int) bool {
 	if p.CheckRepetitions(i) || p.HalfMoveClock() >= 100 {
 		return true
@@ -672,6 +677,10 @@ func (s *Search) sendSearchUpdateToUci() {
 	// also do a regular search update here
 	if time.Since(s.lastUciUpdateTime) > time.Second {
 		s.lastUciUpdateTime = time.Now()
+		hashfull := 0
+		if s.tt != nil {
+			hashfull = s.tt.Hashfull()
+		}
 		if s.uciHandlerPtr != nil {
 			s.uciHandlerPtr.SendSearchUpdate(
 				s.statistics.CurrentSearchDepth,
@@ -679,7 +688,7 @@ func (s *Search) sendSearchUpdateToUci() {
 				s.nodesVisited,
 				s.getNps(),
 				time.Since(s.startTime),
-				s.tt.Hashfull())
+				hashfull)
 			s.uciHandlerPtr.SendCurrentRootMove(s.statistics.CurrentRootMove, s.statistics.CurrentRootMoveIndex)
 			s.uciHandlerPtr.SendCurrentLine(s.statistics.CurrentVariation)
 		} else {
@@ -690,7 +699,7 @@ func (s *Search) sendSearchUpdateToUci() {
 				s.nodesVisited,
 				s.getNps(),
 				time.Since(s.startTime).Milliseconds(),
-				s.tt.Hashfull()))
+				hashfull))
 		}
 	}
 }
@@ -718,11 +727,13 @@ func (s *Search) sendIterationEndInfoToUci() {
 	}
 }
 
+// helper to calculate current nps relative to s.startTime.
+// limits the value to 15M to avoid very small times
+// returning unrealistic values.
 func (s *Search) getNps() uint64 {
-	elapsed := uint64(time.Since(s.startTime).Nanoseconds() + 100)
-	nodes := s.nodesVisited * uint64(time.Second.Nanoseconds())
-	nps := nodes / elapsed
-	if nps > 15_000_000 {
+	elapsed := time.Since(s.startTime) + 100
+	nps := util.Nps(s.nodesVisited, elapsed)
+	if nps > 15_000_000 { // sanity value for very short times
 		nps = 0
 	}
 	return nps
@@ -735,4 +746,14 @@ func (s *Search) getNps() uint64 {
 // LastSearchResult returns a copy of the last search result
 func (s *Search) LastSearchResult() Result {
 	return *s.lastSearchResult
+}
+
+// NodesVisited returns the number of visited nodes in the last search
+func (s *Search) NodesVisited() uint64 {
+	return s.nodesVisited
+}
+
+// Statistics returns a pointer to the search statistics of the last search
+func (s *Search) Statistics() *Statistics {
+	return &s.statistics
 }

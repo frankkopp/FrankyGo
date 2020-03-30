@@ -28,11 +28,15 @@ package search
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/frankkopp/FrankyGo/config"
 	"github.com/frankkopp/FrankyGo/moveslice"
+	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
+	"github.com/frankkopp/FrankyGo/util"
 )
 
 func Test_savePV(t *testing.T) {
@@ -51,3 +55,28 @@ func Test_savePV(t *testing.T) {
 	assert.EqualValues(t, 9999, dest.At(0))
 	assert.EqualValues(t, 4567, dest.At(4))
 }
+
+func TestMate(t *testing.T) {
+	config.Settings.Search.UseBook = false
+	s:= NewSearch()
+	p := position.NewPositionFen("8/8/8/8/8/3K4/R7/5k2 w - -")
+	sl:=NewSearchLimits()
+	sl.Depth = 8
+	s.StartSearch(*p, *sl)
+	s.WaitWhileSearching()
+	assert.EqualValues(t, 9993, s.lastSearchResult.BestValue)
+}
+
+func TestTiming(t *testing.T) {
+	config.Settings.Search.UseBook = false
+	s:= NewSearch()
+	p := position.NewPosition()
+	sl:=NewSearchLimits()
+	sl.TimeControl = true
+	sl.MoveTime = 30 * time.Second
+	s.StartSearch(*p, *sl)
+	s.WaitWhileSearching()
+	out.Println("NPS: ", util.Nps(s.nodesVisited, s.lastSearchResult.SearchTime))
+}
+
+

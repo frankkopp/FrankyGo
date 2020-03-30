@@ -25,3 +25,16 @@
  */
 
 package types
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestString(t *testing.T) {
+	s := ValueCheckMate - 3
+	fmt.Println(s.String())
+	assert.EqualValues(t, "mate 2", s.String())
+}

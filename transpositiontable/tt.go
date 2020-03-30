@@ -143,10 +143,16 @@ func (tt *TtTable) Resize(sizeInMByte int) {
 }
 
 // GetEntry returns a pointer to the corresponding tt entry.
-// The entry could be an empty entry with Key==0.
+// Given key is checked against the entry's key. When
+// equal pointer to entry will be returned. Otherwise
+// nil will be returned.
 // Does not change statistics.
 func (tt *TtTable) GetEntry(key position.Key) *TtEntry {
-	return &tt.data[tt.hash(key)]
+	e := &tt.data[tt.hash(key)]
+	if e.Key == key {
+		return e
+	}
+	return nil
 }
 
 // Probe returns a pointer to the corresponding tt entry
@@ -167,7 +173,7 @@ func (tt *TtTable) Probe(key position.Key) *TtEntry {
 }
 
 // Put an TtEntry into the tt. Encodes value into the move.
-func (tt *TtTable) Put(key position.Key, move Move, value Value, depth int8, valueType ValueType, mateThreat bool, forced bool) {
+func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, valueType ValueType, mateThreat bool, forced bool) {
 	if assert.DEBUG {
 		assert.Assert(depth >= 0, "TT:put Depth must be > 0")
 	}
@@ -179,15 +185,16 @@ func (tt *TtTable) Put(key position.Key, move Move, value Value, depth int8, val
 
 	tt.Stats.numberOfPuts++
 	// read the entries for this hash
-	entryDataPtr := tt.GetEntry(key)
-	// encode value into the move
-	valueMove := move.SetValue(value)
-
+	entryDataPtr := &tt.data[tt.hash(key)]
+	// encode value into the move if it is a valid value (min < v < max)
+	if value.IsValid() {
+		move = move.SetValue(value)
+	}
 	// NewTtTable entry
 	if entryDataPtr.Key == 0 {
 		tt.numberOfEntries++
 		entryDataPtr.Key = key
-		entryDataPtr.Move = valueMove
+		entryDataPtr.Move = move
 		entryDataPtr.Depth = depth
 		entryDataPtr.Age = 1
 		entryDataPtr.Type = valueType
@@ -205,7 +212,7 @@ func (tt *TtTable) Put(key position.Key, move Move, value Value, depth int8, val
 			(depth == entryDataPtr.Depth && (forced || entryDataPtr.Age > 1)) {
 			tt.Stats.numberOfOverwrites++
 			entryDataPtr.Key = key
-			entryDataPtr.Move = valueMove
+			entryDataPtr.Move = move
 			entryDataPtr.Depth = depth
 			entryDataPtr.Age = 1
 			entryDataPtr.Type = valueType
@@ -221,7 +228,7 @@ func (tt *TtTable) Put(key position.Key, move Move, value Value, depth int8, val
 		// we would have found this during the search in a previous probe
 		// and we would not have come to store it again
 		entryDataPtr.Key = key
-		entryDataPtr.Move = valueMove
+		entryDataPtr.Move = move
 		entryDataPtr.Depth = depth
 		entryDataPtr.Age = 1
 		entryDataPtr.Type = valueType

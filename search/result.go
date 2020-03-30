@@ -29,6 +29,7 @@ package search
 import (
 	"time"
 
+	"github.com/frankkopp/FrankyGo/moveslice"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
@@ -40,18 +41,17 @@ import (
 // it can be assumed that all values are valid.
 type Result struct {
 	BestMove    Move
-	BestValue	Value
+	BestValue   Value
 	PonderMove  Move
 	SearchTime  time.Duration
 	SearchDepth int
 	ExtraDepth  int
 	BookMove    bool
+	Pv          moveslice.MoveSlice
 }
 
 func (searchResult *Result) String() string {
-	return out.Sprintf("best move = %s, best value = %s, ponder move = %s, search time = %d ms, search dept = %d/%d, was book move = %v",
-		searchResult.BestMove.StringUci(), (&searchResult.BestValue).String(), searchResult.PonderMove.StringUci(), searchResult.SearchTime.Milliseconds(),
-		searchResult.SearchDepth, searchResult.ExtraDepth, searchResult.BookMove)
+	return out.Sprintf("bestmove = %s, value = %s (%d), ponder = %s, search time = %d ms, search dept = %d/%d, was book move = %v, pv = %s",
+		searchResult.BestMove.StringUci(), searchResult.BestValue.String(), searchResult.BestValue, searchResult.PonderMove.StringUci(), searchResult.SearchTime.Milliseconds(),
+		searchResult.SearchDepth, searchResult.ExtraDepth, searchResult.BookMove, searchResult.Pv.StringUci())
 }
-
-

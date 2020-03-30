@@ -17,9 +17,16 @@ BookFormat = "Simple"               # Simple | San | Pgn
 
 UseTT = true
 TTSize = 256
+UseTTMove = true
+UseTTValue = true
 
 Ponder = true
+
+UseQuiescence = true
+UseQSStandpat = true
 
 [eval]
 UsePawnCache = true
 PawnCacheSize = 64
+# Evaluation values
+Tempo = 30

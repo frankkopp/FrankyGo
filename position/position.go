@@ -165,7 +165,7 @@ func (p *Position) DoMove(m Move) {
 	fromSq := m.From()
 	fromPc := p.board[fromSq]
 	if assert.DEBUG {
-		assert.Assert(fromPc != PieceNone, "Position DoMove: No piece on %s", fromPc.String())
+		assert.Assert(fromPc != PieceNone, "Position DoMove: No piece on %s for move %s", fromPc.String(), m.StringUci())
 	}
 	myColor := fromPc.ColorOf()
 	if assert.DEBUG {
@@ -174,7 +174,10 @@ func (p *Position) DoMove(m Move) {
 	}
 	toSq := m.To()
 	targetPc := p.board[toSq]
-
+	if assert.DEBUG {
+		assert.Assert(targetPc.TypeOf() != King,
+			"Position DoMove: King cannot be captured yet target piece is %s", targetPc.String())
+	}
 	// Save state of board for undo
 	p.history[p.historyCounter] = historyState{
 		p.zobristKey,
@@ -489,6 +492,51 @@ func (p *Position) CheckRepetitions(reps int) bool {
 			return true
 		}
 		i -= 2
+	}
+	return false
+}
+
+// HasInsufficientMaterial returns true if no side has enough material to
+// force a mate (does not exclude combination where a helpmate would be
+// possible, e.g. the opponent needs to support a mate by mistake)
+func (p *Position) HasInsufficientMaterial() bool {
+
+	// we use material value as minor pieces knights and bishops
+	// have different values and it is assumed that this is faster
+	// then a pop count on a bitboard - not empirically tested
+
+	// no material
+	// both sides have a bare king
+	if p.material[White] + p.material[Black] == 0 {
+		return true
+	}
+
+	// no more pawns
+	if p.piecesBb[White][Pawn].PopCount() == 0 && p.piecesBb[Black][Pawn].PopCount() == 0 {
+		// one side has a king and a minor piece against a bare king
+		// both sides have a king and a minor piece each
+		if p.materialNonPawn[White] < 400 && p.materialNonPawn[Black] < 400 {
+			return true
+		}
+		// the weaker side has a minor piece against two knights
+		if (p.materialNonPawn[White] == 2 * Knight.ValueOf() && p.materialNonPawn[Black] <= Bishop.ValueOf()) ||
+			(p.materialNonPawn[Black] == 2 * Knight.ValueOf() && p.materialNonPawn[White] <= Bishop.ValueOf()) {
+			return true
+		}
+		// two bishops draw against a bishop
+		if (p.materialNonPawn[White] == 2 * Bishop.ValueOf() && p.materialNonPawn[Black] == Bishop.ValueOf()) ||
+			(p.materialNonPawn[Black] == 2 * Bishop.ValueOf() && p.materialNonPawn[White] == Bishop.ValueOf()) {
+			return true
+		}
+		// one side has two bishops a mate can be forced
+		if p.materialNonPawn[White] == 2 * Bishop.ValueOf()  || p.materialNonPawn[Black] == 2 * Bishop.ValueOf() {
+			return false
+		}
+		// two minor pieces against one draw, except when the stronger side has a bishop pair
+		if (p.materialNonPawn[White] < 2*Bishop.ValueOf() && p.materialNonPawn[Black] <= Bishop.ValueOf()) ||
+			(p.materialNonPawn[White] <= Bishop.ValueOf() && p.materialNonPawn[Black] < 2*Bishop.ValueOf()) {
+			return true
+		}
 	}
 	return false
 }
@@ -1002,6 +1050,42 @@ func (p *Position) HalfMoveClock() int {
 	return p.halfMoveClock
 }
 
+// Material returns the material value for the given color
+// on this position
 func (p *Position) Material(c Color) Value {
 	return p.material[c]
 }
+
+// PsqMidValue returns the positional value for the given color
+// for early game phases. Best used together with a game phase
+// factor
+func (p *Position) PsqMidValue(c Color) Value {
+	return p.psqMidValue[c]
+}
+
+// PsqEndValue returns the positional value for the given color
+// for later game phases. Best used together with a game phase
+// factor
+func (p *Position) PsqEndValue(c Color) Value {
+	return p.psqEndValue[c]
+}
+
+// LastMove returns the last move made on the position or
+// MoveNone if the position has no history of earlier moves.
+func (p *Position) LastMove() Move {
+	if p.historyCounter <= 0 {
+		return MoveNone
+	}
+	return p.history[p.historyCounter-1].move
+}
+
+// LastCapturedPiece returns the captured piece of the the last
+// move made on the position or MoveNone if the move was
+// non-capturing or the position has no history of earlier moves.
+func (p *Position) LastCapturedPiece() Piece {
+	if p.historyCounter <= 0 {
+		return PieceNone
+	}
+	return p.history[p.historyCounter-1].capturedPiece
+}
+

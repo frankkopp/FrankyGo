@@ -35,7 +35,7 @@ import (
 // Statistics
 // //////////////////////////////////////////////////////
 
-// Statistics extra data and stats not essential for a functioning search
+// Statistics are extra data and stats not essential for a functioning search
 type Statistics struct {
 	CurrentIterationDepth    int
 	CurrentSearchDepth       int
@@ -45,6 +45,19 @@ type Statistics struct {
 	CurrentRootMove          Move
 	CurrentBestRootMove      Move
 	CurrentBestRootMoveValue Value
+
+	BetaCuts     uint64
+	TTHit        uint64
+	TTMiss       uint64
+	TTMoveUsed   uint64
+	NoTTMove     uint64
+	TTCuts       uint64
+	TTNoCuts     uint64
+	StandpatCuts uint64
+}
+
+func (s *Statistics) String() string {
+	return out.Sprintf("%+v", *s)
 }
 
 // // counter for cut off to measure quality of move ordering
