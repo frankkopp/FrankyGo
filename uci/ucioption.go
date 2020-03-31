@@ -43,6 +43,7 @@ func init() {
 		"Ponder":     {NameID: "Ponder", HandlerFunc: usePonder, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UsePonder), CurrentValue: strconv.FormatBool(config.Settings.Search.UsePonder)},
 		"Quiescence": {NameID: "Quiescence", HandlerFunc: useQuiescence, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseQuiescence), CurrentValue: strconv.FormatBool(config.Settings.Search.UseQuiescence)},
 		"Use_QHash":  {NameID: "Use_QHash", HandlerFunc: useQSHash, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseQSTT), CurrentValue: strconv.FormatBool(config.Settings.Search.UseQSTT)},
+		"Use_PVS":    {NameID: "Use_PVS", HandlerFunc: usePvs, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UsePVS), CurrentValue: strconv.FormatBool(config.Settings.Search.UsePVS)},
 		"Use_Mdp":    {NameID: "Use_Mdp", HandlerFunc: useMdp, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseMDP), CurrentValue: strconv.FormatBool(config.Settings.Search.UseMDP)},
 		"Use_Mpp":    {NameID: "Use_Mpp", HandlerFunc: useMpp, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseMPP), CurrentValue: strconv.FormatBool(config.Settings.Search.UseMPP)},
 	}
@@ -54,6 +55,7 @@ func init() {
 		"Ponder",
 		"Quiescence",
 		"Use_QHash",
+		"Use_PVS",
 		"Use_Mdp",
 		"Use_Mpp",
 	}
@@ -191,6 +193,12 @@ func useQSHash(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	config.Settings.Search.UseQSTT = v
 	log.Debugf("Set Use Hash in Quiescence to %v", config.Settings.Search.UseQSTT)
+}
+
+func usePvs(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	config.Settings.Search.UsePVS = v
+	log.Debugf("Set Use PVS to %v", config.Settings.Search.UsePVS)
 }
 
 func useMdp(u *UciHandler, o *uciOption) {

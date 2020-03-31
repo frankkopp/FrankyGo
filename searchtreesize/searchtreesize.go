@@ -103,7 +103,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().Mpp
+	ptrToSpecial = &s.Statistics().PvsResearches
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
@@ -136,6 +136,10 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	config.Settings.Search.UseMDP = true
 	config.Settings.Search.UseMPP = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "MDP/MPP"))
+
+	// PVS
+	config.Settings.Search.UsePVS = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "PVS"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -262,4 +266,5 @@ func turnOffFeatures() {
 	config.Settings.Search.UseQSTT = false
 	config.Settings.Search.UseMDP = false
 	config.Settings.Search.UseMPP = false
+	config.Settings.Search.UsePVS = false
 }

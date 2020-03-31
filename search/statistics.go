@@ -46,16 +46,18 @@ type Statistics struct {
 	CurrentBestRootMove      Move
 	CurrentBestRootMoveValue Value
 
-	BetaCuts     uint64
-	TTHit        uint64
-	TTMiss       uint64
-	TTMoveUsed   uint64
-	NoTTMove     uint64
-	TTCuts       uint64
-	TTNoCuts     uint64
-	StandpatCuts uint64
-	Mdp          uint64
-	Mpp          uint64
+	BetaCuts          uint64
+	TTHit             uint64
+	TTMiss            uint64
+	TTMoveUsed        uint64
+	NoTTMove          uint64
+	TTCuts            uint64
+	TTNoCuts          uint64
+	StandpatCuts      uint64
+	Mdp               uint64
+	Mpp               uint64
+	RootPvsResearches uint64
+	PvsResearches     uint64
 }
 
 func (s *Statistics) String() string {

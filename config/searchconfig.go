@@ -36,6 +36,7 @@ type searchConfiguration struct {
 	UsePonder     bool
 	UseQuiescence bool
 	UseQSStandpat bool
+	UsePVS        bool
 	UseTT         bool
 	TTSize        int
 	UseTTMove     bool
@@ -54,6 +55,7 @@ func init() {
 	Settings.Search.UsePonder = true
 	Settings.Search.UseQuiescence = true
 	Settings.Search.UseQSStandpat = true
+	Settings.Search.UsePVS = true
 	Settings.Search.UseTT = true
 	Settings.Search.TTSize = 128
 	Settings.Search.UseTTMove = true

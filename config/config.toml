@@ -27,6 +27,7 @@ UseQSTT = true
 Ponder = true
 UseQuiescence = true
 UseQSStandpat = true
+UsePVS = true
 
 # prunings
 UseMDP = true

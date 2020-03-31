@@ -91,7 +91,22 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 		if s.checkDrawRepAnd50(position, 2) {
 			value = ValueDraw
 		} else {
-			value = -s.search(position, depth-1, 1, -beta, -alpha)
+			// ///////////////////////////////////////////////////////////////////
+			// PVS
+			// Initial PVS move are search without PVS uses full search window.
+			if !config.Settings.Search.UsePVS || i == 0 {
+				value = -s.search(position, depth-1, 1, -beta, -alpha, true)
+			} else {
+				// Null window search after the initial PV search.
+				value = -s.search(position, depth-1, 1, -alpha - 1, -alpha, false)
+				// If this move improved alpha without exceeding beta we do a proper full window
+				// search to get an accurate score.
+				if value > alpha && value < beta && !s.stopConditions() {
+					s.statistics.RootPvsResearches++
+					value = -s.search(position, depth-1, 1, -beta, -alpha, true)
+				}
+			}
+			// ///////////////////////////////////////////////////////////////////
 		}
 
 		s.statistics.CurrentVariation.PopBack()
@@ -122,7 +137,7 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 
 }
 
-func (s *Search) search(position *position.Position, depth int, ply int, alpha Value, beta Value) Value {
+func (s *Search) search(position *position.Position, depth int, ply int, alpha Value, beta Value, isPV bool) Value {
 	if trace {
 		slog.Debugf("%0*s Ply %2.d Depth %2.d start:  %s", ply, "", ply, depth, s.statistics.CurrentVariation.StringUci())
 		defer slog.Debugf("%0*s Ply %2.d Depth %2.d end  :  %s", ply, "", ply, depth, s.statistics.CurrentVariation.StringUci())
@@ -135,7 +150,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 
 	// Leaf node when depth == 0 or max ply has been reached
 	if depth == 0 || ply >= MaxDepth {
-		return s.qsearch(position, ply, alpha, beta)
+		return s.qsearch(position, ply, alpha, beta, isPV)
 	}
 
 	// Mate Distance Pruning
@@ -182,6 +197,9 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 		if ttEntry != nil { // tt hit
 			s.statistics.TTHit++
 			ttMove = ttEntry.Move.MoveOf()
+
+			// TODO : is it relevant if this is a PV node?? Other engines do think so
+
 			if int(ttEntry.Depth) >= depth {
 				ttValue := valueFromTT(ttEntry.Move.ValueOf(), ply)
 				cut := false
@@ -259,7 +277,23 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 		if s.checkDrawRepAnd50(position, 2) {
 			value = ValueDraw
 		} else {
-			value = -s.search(position, depth-1, ply+1, -beta, -alpha)
+			// ///////////////////////////////////////////////////////////////////
+			// PVS
+			// Initial PVS move are search without PVS uses full search window.
+			// https://www.chessprogramming.org/Principal_Variation_Search
+			if !config.Settings.Search.UsePVS || movesSearched == 0 {
+				value = -s.search(position, depth-1, ply+1, -beta, -alpha, true)
+			} else {
+				// Null window search after the initial PV search.
+				value = -s.search(position, depth-1, ply+1, -alpha - 1, -alpha, false)
+				// If this move improved alpha without exceeding beta we do a proper full window
+				// search to get an accurate score.
+				if value > alpha && value < beta && !s.stopConditions() {
+					s.statistics.PvsResearches++
+					value = -s.search(position, depth-1, ply+1, -beta, -alpha, true)
+				}
+			}
+			// ///////////////////////////////////////////////////////////////////
 		}
 
 		movesSearched++
@@ -339,7 +373,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	return bestNodeValue
 }
 
-func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta Value) Value {
+func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta Value, isPV bool) Value {
 
 	if !config.Settings.Search.UseQuiescence {
 		return s.evaluate(position)
@@ -494,7 +528,7 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 		if hasCheck && s.checkDrawRepAnd50(position, 2) {
 			value = ValueDraw
 		} else {
-			value = -s.qsearch(position, ply+1, -beta, -alpha)
+			value = -s.qsearch(position, ply+1, -beta, -alpha, isPV)
 		}
 
 		movesSearched++
@@ -547,7 +581,6 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 
 	// Store TT
 	if config.Settings.Search.UseQSTT {
-		// TODO needs testing if this is beneficial
 		s.storeTT(position, 1, ply, bestNodeMove, bestNodeValue, ttType)
 	}
 

@@ -3,13 +3,15 @@ v 0.x (planned)
 
 v 0.7 (planned)
 ================================================================================
+- TODO
+    - IID??
 
 v 0.6 (in progress)
 ================================================================================
 - TODO
     - Performance/Profiling/Testing
-    - IID??
     - PVS
+    - Killer
     - Aspiration
     - TestSuite Tests
     - Better Evaluation
