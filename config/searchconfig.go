@@ -41,6 +41,8 @@ type searchConfiguration struct {
 	UseTTMove     bool
 	UseTTValue    bool
 	UseQSTT       bool
+	UseMDP        bool
+	UseMPP        bool
 }
 
 // sets defaults which might be overwritten by config file
@@ -57,6 +59,8 @@ func init() {
 	Settings.Search.UseTTMove = true
 	Settings.Search.UseTTValue = true
 	Settings.Search.UseQSTT = true
+	Settings.Search.UseMDP = true
+	Settings.Search.UseMPP = true
 
 }
 

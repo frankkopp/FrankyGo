@@ -103,14 +103,14 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().NoTTMove
+	ptrToSpecial = &s.Statistics().Mpp
 
 	// Base
-	r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
 
 	// + Quiescence
 	config.Settings.Search.UseQuiescence = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "QS"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "Base+QS"))
 
 	// + QS Standpat
 	config.Settings.Search.UseQSStandpat = true
@@ -132,6 +132,10 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	config.Settings.Search.UseQSTT = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "QSTT"))
 
+	// + MDP/MPP
+	config.Settings.Search.UseMDP = true
+	config.Settings.Search.UseMPP = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "MDP/MPP"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -256,4 +260,6 @@ func turnOffFeatures() {
 	config.Settings.Search.UseTTMove = false
 	config.Settings.Search.UseTTValue = false
 	config.Settings.Search.UseQSTT = false
+	config.Settings.Search.UseMDP = false
+	config.Settings.Search.UseMPP = false
 }

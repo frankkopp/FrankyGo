@@ -80,6 +80,7 @@ type Search struct {
 	mg                []*movegen.Movegen
 	pv                []*moveslice.MoveSlice
 	rootMoves         *moveslice.MoveSlice
+	hadBookMove       bool
 	lastUciUpdateTime time.Time
 	statistics        Statistics
 }
@@ -111,8 +112,9 @@ func NewSearch() *Search {
 		mg:                nil,
 		pv:                nil,
 		rootMoves:         nil,
-		statistics:        Statistics{},
+		hadBookMove:       false,
 		lastUciUpdateTime: time.Time{},
+		statistics:        Statistics{},
 	}
 	return s
 }
@@ -323,6 +325,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	} else {
 		// create result based on book move
 		searchResult = &Result{BestMove: bookMove, BookMove: true}
+		s.hadBookMove = true
 	}
 
 	// If we arrive here and the search is not stopped it means that the search
@@ -411,7 +414,13 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 	}
 
 	// add some extra time for the move after the last book move
-	// TODO
+	// hasBook move will be true after the last book move found and arriving at this point.
+	if s.hadBookMove && s.searchLimits.TimeControl && s.searchLimits.MoveTime == 0 {
+		s.log.Debugf(out.Sprintf("First non-book move to search. Adding extra time: Before: %d ms After: %s ms",
+			s.timeLimit.Milliseconds(), 2 * s.timeLimit.Milliseconds()))
+		s.addExtraTime(2.0)
+		s.hadBookMove = false
+	}
 
 	// prepare max depth from search limits
 	maxDepth := MaxDepth
@@ -583,9 +592,9 @@ func (s *Search) setupTimeControl(p *position.Position, sl *Limits) time.Duratio
 		// moves left
 		movesLeft := int64(sl.MovesToGo)
 		if movesLeft == 0 { // default
-			// we estimate minimum 10 more moves in final game phases
+			// we estimate minimum 15 more moves in final game phases
 			// in early game phases this grows up to 40
-			movesLeft = int64(10 + (30 * (p.GamePhase() / GamePhaseMax)))
+			movesLeft = int64(15 + (25 * p.GamePhaseFactor()))
 		}
 		// time left for current player
 		var timeLeft time.Duration

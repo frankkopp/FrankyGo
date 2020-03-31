@@ -139,6 +139,22 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 		return s.qsearch(position, ply, alpha, beta)
 	}
 
+	// Mate Distance Pruning
+	// Did we already find a shorter mate then ignore
+	// this one.
+	if config.Settings.Search.UseMDP {
+		if alpha < -ValueCheckMate + Value(ply) {
+			alpha = -ValueCheckMate + Value(ply)
+		}
+		if beta > ValueCheckMate - Value(ply) {
+			beta = ValueCheckMate - Value(ply)
+		}
+		if alpha >= beta {
+			s.statistics.Mdp++
+			return alpha
+		}
+	}
+
 	// prepare node search
 	bestNodeValue := ValueNA
 	bestNodeMove := MoveNone // used to store in the TT
@@ -148,7 +164,6 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	myMg.ResetOnDemand()
 	s.pv[ply].Clear()
 
-	// ///////////////////////////////////////////////////////
 	// TT Lookup
 	// Results of searches are stored in the TT to be used to
 	// avoid searching positions several times. If a position
@@ -193,10 +208,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			s.statistics.TTMiss++
 		}
 	}
-	// TT Lookup
-	// ///////////////////////////////////////////////////////
 
-	// ///////////////////////////////////////////////////////
 	// PV Move Sort
 	// When we received a best move for the position from the
 	// TT we set it as PV move in the movegen so it will be
@@ -209,8 +221,6 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			s.statistics.NoTTMove++
 		}
 	}
-	// PV Move Sort
-	// ///////////////////////////////////////////////////////
 
 	// prepare move loop
 	var value Value
@@ -219,6 +229,17 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	// ///////////////////////////////////////////////////////
 	// MOVE LOOP
 	for move := myMg.GetNextMove(position, movegen.GenAll); move != MoveNone; move = myMg.GetNextMove(position, movegen.GenAll) {
+
+		// Minor Promotion Pruning
+		// Skip non queen or knight promotion as they are
+		// redundant. Exception would be stale mate situations
+		// which we ignore.
+		if config.Settings.Search.UseMPP {
+			if move.MoveType() == Promotion && move.PromotionType() != Queen && move.PromotionType() != Knight {
+				s.statistics.Mpp++
+				continue
+			}
+		}
 
 		// ///////////////////////////////////////////////////////
 		// DO MOVE
@@ -256,7 +277,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 		// Did we find a better move for this node (not ply)?
 		// For the first move this is always the case.
 		if value > bestNodeValue {
-			// these are only valid for this node
+			// These "best" values are only valid for this node
 			// not for all of the ply (not yet clear if >alpha)
 			bestNodeValue = value
 			bestNodeMove = move
@@ -281,6 +302,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				if value >= beta {
 					s.statistics.BetaCuts++
 					// TODO KILLER
+					// TODO Beta Move Nr stat
 					ttType = BETA
 					break
 				}
@@ -297,7 +319,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	// MOVE LOOP
 	// ///////////////////////////////////////////////////////
 
-	// if we did not have at least one legal move
+	// If we did not have at least one legal move
 	// then we might have a mate or stalemate
 	if movesSearched == 0 && !s.stopConditions() {
 		if position.HasCheck() { // mate
@@ -309,7 +331,8 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 		}
 	}
 
-	// store TT
+	// Store TT
+	// Store search result for this node into the transposition table
 	if config.Settings.Search.UseTT {
 		s.storeTT(position, depth, ply, bestNodeMove, bestNodeValue, ttType)
 	}
@@ -327,9 +350,48 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 		s.statistics.CurrentExtraSearchDepth = ply
 	}
 
-	// ///////////////////////////////////////////////////////
-	// TT Lookup
+	// Mate Distance Pruning
+	// Did we already find a shorter mate then ignore
+	// this one.
+	if config.Settings.Search.UseMDP {
+		if alpha < -ValueCheckMate + Value(ply) {
+			alpha = -ValueCheckMate + Value(ply)
+		}
+		if beta > ValueCheckMate - Value(ply) {
+			beta = ValueCheckMate - Value(ply)
+		}
+		if alpha >= beta {
+			s.statistics.Mdp++
+			return alpha
+		}
+	}
+
+	// prepare node search
+	bestNodeValue := ValueNA
+	ttType := ALPHA
 	ttMove := MoveNone
+	hasCheck := position.HasCheck()
+
+	// if in check we simply do a normal search (all moves) in qsearch
+	if !hasCheck {
+		// get an evaluation for the position
+		staticEval := s.evaluate(position)
+		// Quiescence StandPat
+		// Use evaluation as a standing pat (lower bound)
+		// https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
+		// Assumption is that there is at least on move which would improve the
+		// current position. So if we are already >beta we don't need to look at it.
+		if config.Settings.Search.UseQSStandpat && staticEval > alpha {
+			if staticEval >= beta {
+				s.statistics.StandpatCuts++
+				return staticEval
+			}
+			alpha = staticEval
+		}
+		bestNodeValue = staticEval
+	}
+
+	// TT Lookup
 	var ttEntry *transpositiontable.TtEntry
 	if config.Settings.Search.UseQSTT {
 		ttEntry = s.tt.Probe(position.ZobristKey())
@@ -358,31 +420,6 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 			s.statistics.TTMiss++
 		}
 	}
-	// TT Lookup
-	// ///////////////////////////////////////////////////////
-
-	// prepare node search
-	bestNodeValue := ValueNA
-	hasCheck := position.HasCheck()
-
-	// if in check we simply do a normal search (all moves) in qsearch
-	if !hasCheck {
-		// get an evaluation for the position
-		staticEval := s.evaluate(position)
-		// Quiescence StandPat
-		// Use evaluation as a standing pat (lower bound)
-		// https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
-		// Assumption is that there is at least on move which would improve the
-		// current position. So if we are already >beta we don't need to look at it.
-		if config.Settings.Search.UseQSStandpat && staticEval > alpha {
-			if staticEval >= beta {
-				s.statistics.StandpatCuts++
-				return staticEval
-			}
-			alpha = staticEval
-		}
-		bestNodeValue = staticEval
-	}
 
 	// prepare node search
 	bestNodeMove := MoveNone // used to store in the TT
@@ -390,7 +427,6 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 	myMg.ResetOnDemand()
 	s.pv[ply].Clear()
 
-	// ///////////////////////////////////////////////////////
 	// PV Move Sort
 	// When we received a best move for the position from the
 	// TT we set it as PV move in the movegen so it will be
@@ -403,8 +439,6 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 			s.statistics.NoTTMove++
 		}
 	}
-	// PV Move Sort
-	// ///////////////////////////////////////////////////////
 
 	// prepare move loop
 	var value Value
@@ -422,6 +456,17 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 	// ///////////////////////////////////////////////////////
 	// MOVE LOOP
 	for move := myMg.GetNextMove(position, mode); move != MoveNone; move = myMg.GetNextMove(position, mode) {
+
+		// Minor Promotion Pruning
+		// Skip non queen or knight promotion as they are
+		// redundant. Exception would be stale mate situations
+		// which we ignore.
+		if config.Settings.Search.UseMPP {
+			if move.MoveType() == Promotion && move.PromotionType() != Queen && move.PromotionType() != Knight {
+				s.statistics.Mpp++
+				continue
+			}
+		}
 
 		// reduce number of moves searched in quiescence
 		// by looking at good captures only
@@ -471,9 +516,12 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 			if value > alpha {
 				savePV(move, s.pv[ply+1], s.pv[ply])
 				if value >= beta {
+					ttType = BETA
 					break
 				}
 				alpha = value
+				// TODO when implementing PVS check this
+				ttType = EXACT
 			}
 		}
 	}
@@ -488,10 +536,7 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 		// generated all move. We can be sure this is a mate.
 		if position.HasCheck() {
 			bestNodeValue = -ValueCheckMate + Value(ply)
-			// store TT
-			if config.Settings.Search.UseTT {
-				s.storeTT(position, 0, ply, bestNodeMove, bestNodeValue, EXACT)
-			}
+			ttType = EXACT
 		}
 		// if we do not have mate we had no check and
 		// therefore might have only quiet moves which
@@ -499,6 +544,12 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 		// We return the standpat value in this case
 		// which we have set to bestNodeValue in the
 		// static eval earlier
+	}
+
+	// Store TT
+	if config.Settings.Search.UseQSTT {
+		// TODO needs testing if this is beneficial
+		s.storeTT(position, 1, ply, bestNodeMove, bestNodeValue, ttType)
 	}
 
 	return bestNodeValue

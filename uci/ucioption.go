@@ -38,12 +38,26 @@ func init() {
 	uciOptions = map[string]*uciOption{
 		"Clear Hash": {NameID: "Clear Hash", HandlerFunc: clearCache, OptionType: Button},
 		"Use_Hash":   {NameID: "Use_Hash", HandlerFunc: useCache, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseTT), CurrentValue: strconv.FormatBool(config.Settings.Search.UseTT)},
-		"Hash":       {NameID: "Hash", HandlerFunc: cacheSize, OptionType: Spin, DefaultValue: string(config.Settings.Search.TTSize), CurrentValue: string(config.Settings.Search.TTSize), MinValue: "0", MaxValue: "65000"},
+		"Hash":       {NameID: "Hash", HandlerFunc: cacheSize, OptionType: Spin, DefaultValue: strconv.Itoa(config.Settings.Search.TTSize), CurrentValue: strconv.Itoa(config.Settings.Search.TTSize), MinValue: "0", MaxValue: "65000"},
 		"Use_Book":   {NameID: "Use_Book", HandlerFunc: useBook, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseBook), CurrentValue: strconv.FormatBool(config.Settings.Search.UseBook)},
 		"Ponder":     {NameID: "Ponder", HandlerFunc: usePonder, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UsePonder), CurrentValue: strconv.FormatBool(config.Settings.Search.UsePonder)},
 		"Quiescence": {NameID: "Quiescence", HandlerFunc: useQuiescence, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseQuiescence), CurrentValue: strconv.FormatBool(config.Settings.Search.UseQuiescence)},
 		"Use_QHash":  {NameID: "Use_QHash", HandlerFunc: useQSHash, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseQSTT), CurrentValue: strconv.FormatBool(config.Settings.Search.UseQSTT)},
+		"Use_Mdp":    {NameID: "Use_Mdp", HandlerFunc: useMdp, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseMDP), CurrentValue: strconv.FormatBool(config.Settings.Search.UseMDP)},
+		"Use_Mpp":    {NameID: "Use_Mpp", HandlerFunc: useMpp, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseMPP), CurrentValue: strconv.FormatBool(config.Settings.Search.UseMPP)},
 	}
+	sortOrderUciOptions = []string{
+		"Clear Hash",
+		"Use_Hash",
+		"Hash",
+		"Use_Book",
+		"Ponder",
+		"Quiescence",
+		"Use_QHash",
+		"Use_Mdp",
+		"Use_Mpp",
+	}
+
 }
 
 // GetOptions returns all available uci options a slice of strings
@@ -51,8 +65,8 @@ func init() {
 // phase of the UCI protocol
 func (o *optionMap) GetOptions() *[]string {
 	var options []string
-	for _, opt := range uciOptions {
-		options = append(options, opt.String())
+	for _, opt := range sortOrderUciOptions {
+		options = append(options, uciOptions[opt].String())
 	}
 	return &options
 }
@@ -131,6 +145,9 @@ type optionMap map[string]*uciOption
 // uciOptions stores all available uci options
 var uciOptions optionMap
 
+// to control the sort order of all options
+var sortOrderUciOptions []string
+
 // ////////////////////////////////////////////////////////////////
 // HandlerFunc for uci options changes
 // ////////////////////////////////////////////////////////////////
@@ -174,4 +191,16 @@ func useQSHash(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	config.Settings.Search.UseQSTT = v
 	log.Debugf("Set Use Hash in Quiescence to %v", config.Settings.Search.UseQSTT)
+}
+
+func useMdp(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	config.Settings.Search.UseMDP = v
+	log.Debugf("Set Use MDP to %v", config.Settings.Search.UseMDP)
+}
+
+func useMpp(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	config.Settings.Search.UseMPP = v
+	log.Debugf("Set Use MPP to %v", config.Settings.Search.UseMPP)
 }

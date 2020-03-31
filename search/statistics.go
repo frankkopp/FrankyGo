@@ -54,6 +54,8 @@ type Statistics struct {
 	TTCuts       uint64
 	TTNoCuts     uint64
 	StandpatCuts uint64
+	Mdp          uint64
+	Mpp          uint64
 }
 
 func (s *Statistics) String() string {
