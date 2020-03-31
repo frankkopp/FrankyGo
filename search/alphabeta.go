@@ -50,7 +50,7 @@ var slog = getSearchTraceLog()
 // rootSearch starts the actual recursive alpha beta search with the root moves for the first ply.
 // As root moves are treated a little different this separate function supports readability
 // as mixing it with the normal search would require quite some "if ply==0" statements.
-// Currently we do not do beta cuts in root - not sure if this makes since later when
+// Currently we do not do beta cuts in root - not sure if this makes sense later when
 // aspiration search is implemented. As root has no sibling nodes alpha beta probably makes
 // not much sense. Also TT would not help much here - search ply 1 and hitting TT is effective
 // enough
@@ -92,7 +92,6 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 			value = ValueDraw
 		} else {
 			value = -s.search(position, depth-1, 1, -beta, -alpha)
-			// iterationDepth, PLY_ROOT, alpha, beta, Do_Null_Move, nodeType
 		}
 
 		s.statistics.CurrentVariation.PopBack()
