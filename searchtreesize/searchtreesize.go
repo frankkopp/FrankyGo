@@ -110,7 +110,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// + Quiescence
 	config.Settings.Search.UseQuiescence = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "Base+QS"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "Base+QS"))
 
 	// + QS Standpat
 	config.Settings.Search.UseQSStandpat = true
@@ -140,6 +140,10 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// PVS
 	config.Settings.Search.UsePVS = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "PVS"))
+
+	// PVS
+	config.Settings.Search.UseKiller = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "Killer"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -267,4 +271,6 @@ func turnOffFeatures() {
 	config.Settings.Search.UseMDP = false
 	config.Settings.Search.UseMPP = false
 	config.Settings.Search.UsePVS = false
+	config.Settings.Search.UseKiller = false
+
 }

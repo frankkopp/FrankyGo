@@ -28,6 +28,7 @@ Ponder = true
 UseQuiescence = true
 UseQSStandpat = true
 UsePVS = true
+UseKiller = true
 
 # prunings
 UseMDP = true

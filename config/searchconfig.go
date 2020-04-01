@@ -44,6 +44,7 @@ type searchConfiguration struct {
 	UseQSTT       bool
 	UseMDP        bool
 	UseMPP        bool
+	UseKiller     bool
 }
 
 // sets defaults which might be overwritten by config file
@@ -56,6 +57,7 @@ func init() {
 	Settings.Search.UseQuiescence = true
 	Settings.Search.UseQSStandpat = true
 	Settings.Search.UsePVS = true
+	Settings.Search.UseKiller = true
 	Settings.Search.UseTT = true
 	Settings.Search.TTSize = 128
 	Settings.Search.UseTTMove = true

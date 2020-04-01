@@ -182,16 +182,8 @@ func TestSearchDev(t *testing.T) {
 	p := position.NewPositionFen("8/1P6/6k1/8/8/8/p1K5/8 w - -")
 	sl := NewSearchLimits()
 	sl.TimeControl = true
-	sl.MoveTime = 60 * time.Second
+	sl.MoveTime = 15 * time.Second
 	search.StartSearch(*p, *sl)
 	search.WaitWhileSearching()
 }
 
-func Test(t *testing.T) {
-	for j := 0; j < 100; j++ {
-		for i := 0; i < 20; i++ {
-			out.Print("abcdefg ", i, " ")
-		}
-		out.Println()
-	}
-}

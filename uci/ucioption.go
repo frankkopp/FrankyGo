@@ -46,6 +46,7 @@ func init() {
 		"Use_PVS":    {NameID: "Use_PVS", HandlerFunc: usePvs, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UsePVS), CurrentValue: strconv.FormatBool(config.Settings.Search.UsePVS)},
 		"Use_Mdp":    {NameID: "Use_Mdp", HandlerFunc: useMdp, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseMDP), CurrentValue: strconv.FormatBool(config.Settings.Search.UseMDP)},
 		"Use_Mpp":    {NameID: "Use_Mpp", HandlerFunc: useMpp, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseMPP), CurrentValue: strconv.FormatBool(config.Settings.Search.UseMPP)},
+		"Use_Killer": {NameID: "Use_Killer", HandlerFunc: useKiller, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseKiller), CurrentValue: strconv.FormatBool(config.Settings.Search.UseKiller)},
 	}
 	sortOrderUciOptions = []string{
 		"Clear Hash",
@@ -211,4 +212,10 @@ func useMpp(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	config.Settings.Search.UseMPP = v
 	log.Debugf("Set Use MPP to %v", config.Settings.Search.UseMPP)
+}
+
+func useKiller(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	config.Settings.Search.UseKiller = v
+	log.Debugf("Set Use Killer Moves to %v", config.Settings.Search.UseKiller)
 }
