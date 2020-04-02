@@ -178,9 +178,9 @@ func (ts *TestSuite) RunTests() {
 	// test instance
 	for _, t := range ts.Tests {
 		out.Printf("Test %s -- Target Result %s\n", t.line, t.targetMoves.StringUci())
-		startTime := time.Now()
+		startTime2 := time.Now()
 		runSingleTest(s, sl, t)
-		elapsedTime := time.Since(startTime)
+		elapsedTime := time.Since(startTime2)
 		out.Printf("Test finished in %d ms with result %s (%s)\n\n",
 			elapsedTime.Milliseconds(), t.rType.String(), t.actual.StringUci())
 	}
@@ -345,14 +345,14 @@ func getTest(line string) *Test {
 	fen := parts[1]
 
 	// part 2 opcode
-	var testType testType
+	var ttype testType
 	switch parts[2] {
 	case "dm":
-		testType = DM
+		ttype = DM
 	case "bm":
-		testType = BM
+		ttype = BM
 	case "am":
-		testType = AM
+		ttype = AM
 	default:
 		log.Warningf("Opcode from EPD is invalid or not implemented %s", parts[2])
 		return nil
@@ -361,7 +361,7 @@ func getTest(line string) *Test {
 	// part 3 target result
 	resultMoves := moveslice.NewMoveSlice(4)
 	dmDepth := 0
-	if testType == BM || testType == AM {
+	if ttype == BM || ttype == AM {
 		result := parts[3]
 		strings.ReplaceAll(result, "!", "")
 		strings.ReplaceAll(result, "?", "")
@@ -381,7 +381,7 @@ func getTest(line string) *Test {
 			log.Warningf("Result moves from EPD is/are invalid on this position %s", parts[3])
 			return nil
 		}
-	} else if testType == DM {
+	} else if ttype == DM {
 		dmDepth, err = strconv.Atoi(parts[3])
 		if err != nil {
 			log.Warningf("Direct mate depth from EPD is invalid %s", parts[3])
@@ -393,7 +393,7 @@ func getTest(line string) *Test {
 	test := &Test{
 		id:          parts[5],
 		fen:         fen,
-		tType:       testType,
+		tType:       ttype,
 		targetMoves: *resultMoves,
 		mateDepth:   dmDepth,
 		target:      0,

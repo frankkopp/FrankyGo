@@ -15,6 +15,7 @@ v 0.7 (planned)
 v 0.6 (in progress)
 ================================================================================
 - TODO
+    - Enhance TestSuite / run from command line options
     - Better Evaluation
     - Pawn Structure Cache
     - Performance/Profiling/Testing
