@@ -119,7 +119,7 @@ func (m Move) ValueOf() Value {
 // SetValue encodes the given value into the high 16-bit of the move
 func (m *Move) SetValue(v Value) Move {
 	if assert.DEBUG {
-		assert.Assert(v == ValueNA || v.IsValid(), "Invalid Value value: %d", v)
+		assert.Assert(v == ValueNA || v.IsValid(), "Invalid value value: %d", v)
 	}
 	// can't store a value on MoveNone
 	if *m == MoveNone {
@@ -167,10 +167,10 @@ func (m Move) StringUci() string {
 }
 
 // StringBits returns a string with details of a Move
-// E.g. Move { From[001100](e2) To[011100](e4) Prom[11](N) Type[00](n) Value[0000000000000000](0) (796)}
+// E.g. Move { From[001100](e2) To[011100](e4) Prom[11](N) tType[00](n) value[0000000000000000](0) (796)}
 func (m Move) StringBits() string {
 	return fmt.Sprintf(
-		"Move { From[%-0.6b](%s) To[%-0.6b](%s) Prom[%-0.2b](%s) Type[%-0.2b](%s) Value[%-0.16b](%d) (%d)}",
+		"Move { From[%-0.6b](%s) To[%-0.6b](%s) Prom[%-0.2b](%s) tType[%-0.2b](%s) value[%-0.16b](%d) (%d)}",
 		m.From(), m.From().String(),
 		m.To(), m.To().String(),
 		m.PromotionType(), (m.PromotionType()).Char(),
@@ -181,7 +181,7 @@ func (m Move) StringBits() string {
 
 /* @formatter:off
    BITMAP 32-bit
-   |-Value ------------------------|-Move -------------------------|
+   |-value ------------------------|-Move -------------------------|
    3	3	2	2	2	2	2	2	2	2	2	2	1	1	1	1 | 1	1	1	1	1	1	0	0	0	0	0	0	0	0	0	0
    1	0	9	8	7	6	5	4	3	2	1	0	9	8	7	6	| 5	4	3	2	1	0	9	8	7	6	5	4	3	2	1	0
    --------------------------------|--------------------------------

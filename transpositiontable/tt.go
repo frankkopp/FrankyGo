@@ -55,7 +55,7 @@ var log = logging.GetLog()
 // table. Each entry has 16-bytes (128-bits)
 type TtEntry struct {
 	Key        position.Key // 64-bit Zobrist Key
-	Move       Move         // 32-bit Move and Value
+	Move       Move         // 32-bit Move and value
 	Depth      int8         // 7-bit 0-127 0b01111111
 	Age        int8         // 3-bit 0-7   0b00000111 0=used 1=generated, not used, >1 older generation
 	Type       ValueType    // 2-bit None, Exact, Alpha (upper), Beta (lower)
@@ -94,7 +94,7 @@ type TtStats struct {
 }
 
 // NewTtTable creates a new TtTable with the given number of bytes
-// as a maximum of memory usage. Actual size will be determined
+// as a maximum of memory usage. actual size will be determined
 // by the number of elements fitting into this size which need
 // to be a power of 2 for efficient hashing/addressing via bit
 // masks
@@ -187,7 +187,7 @@ func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, val
 	if value.IsValid() {
 		move = move.SetValue(value)
 	} else {
-		log.Warningf("TT Put: Tried to store an invalid Value into the TT %s", value.String())
+		log.Warningf("TT Put: Tried to store an invalid value into the TT %s", value.String())
 	}
 
 	tt.Stats.numberOfPuts++

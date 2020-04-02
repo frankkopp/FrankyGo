@@ -70,7 +70,7 @@ func TestTestFensCheck(t *testing.T) {
 	e := NewEvaluator()
 	var p *position.Position
 	for i, fen := range testutil.Fens {
-		p = position.NewPositionFen(fen)
+		p, _ = position.NewPositionFen(fen)
 		out.Printf("%d: %s\n", i+1, e.Report(p))
 	}
 }
@@ -81,11 +81,11 @@ func TestManualFenCheck(t *testing.T) {
 	var p *position.Position
 
 	fen = "r2qk2r/pppn1ppp/3bpn2/1P1p3b/8/4PN1P/PBPPBPP1/RN1QK2R w KQkq - 1 8 "
-	p = position.NewPositionFen(fen)
+	p, _ = position.NewPositionFen(fen)
 	out.Printf("%s\n", e.Report(p))
 
 	fen = "r2q1rk1/pppn1ppp/3bpn2/1P1p3b/8/2N1PN1P/PBPPBPP1/R2Q1RK1 b - - 4 9 "
-	p = position.NewPositionFen(fen)
+	p, _ = position.NewPositionFen(fen)
 	out.Printf("%s\n", e.Report(p))
 
 }

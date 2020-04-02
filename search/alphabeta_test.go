@@ -58,7 +58,7 @@ func Test_savePV(t *testing.T) {
 func TestMate(t *testing.T) {
 	config.Settings.Search.UseBook = false
 	s:= NewSearch()
-	p := position.NewPositionFen("8/8/8/8/8/3K4/R7/5k2 w - -")
+	p, _ := position.NewPositionFen("8/8/8/8/8/3K4/R7/5k2 w - -")
 	sl:=NewSearchLimits()
 	sl.Depth = 8
 	s.StartSearch(*p, *sl)

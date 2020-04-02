@@ -15,12 +15,12 @@ v 0.7 (planned)
 v 0.6 (in progress)
 ================================================================================
 - TODO
-    - TestSuite Tests
     - Better Evaluation
     - Pawn Structure Cache
     - Performance/Profiling/Testing
 
 - DONE
+    - TestSuite Tests
     - PVS
     - Killer
     - TT in QS

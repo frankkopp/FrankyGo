@@ -97,7 +97,7 @@ func TestSetupTimeControl(t *testing.T) {
 	assert.EqualValues(t, 3150, timeLimit.Milliseconds())
 
 	// game phase 0
-	p = position.NewPositionFen("8/2P1P1P1/3PkP2/8/4K3/8/8/8 w - - 0 1")
+	p, _ = position.NewPositionFen("8/2P1P1P1/3PkP2/8/4K3/8/8/8 w - - 0 1")
 	sl = &Limits{
 		Infinite:    false,
 		Ponder:      false,
@@ -156,7 +156,7 @@ func TestIsSearching(t *testing.T) {
 
 func TestMatePosition(t *testing.T) {
 	search := NewSearch()
-	p := position.NewPositionFen("8/8/8/8/8/5K2/8/R4k2 b - -")
+	p, _ := position.NewPositionFen("8/8/8/8/8/5K2/8/R4k2 b - -")
 	sl := NewSearchLimits()
 	search.StartSearch(*p, *sl)
 	search.WaitWhileSearching()
@@ -167,7 +167,7 @@ func TestMatePosition(t *testing.T) {
 
 func TestStaleMatePosition(t *testing.T) {
 	search := NewSearch()
-	p := position.NewPositionFen("6R1/8/8/8/8/5K2/R7/7k b - -")
+	p, _ := position.NewPositionFen("6R1/8/8/8/8/5K2/R7/7k b - -")
 	sl := NewSearchLimits()
 	search.StartSearch(*p, *sl)
 	search.WaitWhileSearching()
@@ -179,7 +179,7 @@ func TestStaleMatePosition(t *testing.T) {
 func TestSearchDev(t *testing.T) {
 	config.Settings.Search.UseBook = false
 	search := NewSearch()
-	p := position.NewPositionFen("8/1P6/6k1/8/8/8/p1K5/8 w - -")
+	p, _ := position.NewPositionFen("8/1P6/6k1/8/8/8/p1K5/8 w - -")
 	sl := NewSearchLimits()
 	sl.TimeControl = true
 	sl.MoveTime = 15 * time.Second

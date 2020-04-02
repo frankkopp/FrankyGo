@@ -473,7 +473,7 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 	// best move is pv[0][0] - we need to make sure this array entry exists at this time
 	// best value is pv[0][0].valueOf
 	result = &Result{
-		BestMove:    s.pv[0].At(0),
+		BestMove:    s.pv[0].At(0).MoveOf(),
 		BestValue:   s.pv[0].At(0).ValueOf(),
 		PonderMove:  MoveNone,
 		SearchTime:  0,
@@ -484,7 +484,7 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 
 	// see if we have a move we could ponder on
 	if s.pv[0].Len() > 1 {
-		result.PonderMove = s.pv[0].At(1)
+		result.PonderMove = s.pv[0].At(1).MoveOf()
 	} else {
 		if config.Settings.Search.UseTT {
 			position.DoMove(result.BestMove)
@@ -562,7 +562,7 @@ func (s *Search) setupSearchLimits(position *position.Position, sl *Limits) {
 		s.log.Debug("Search mode: Ponder")
 	}
 	if sl.Mate > 0 {
-		s.log.Debug("Search mode: Search for mate in %s", sl.Mate)
+		s.log.Debugf("Search mode: Search for mate in %d", sl.Mate)
 	}
 	if sl.TimeControl {
 		s.timeLimit = s.setupTimeControl(position, sl)

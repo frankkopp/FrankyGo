@@ -53,6 +53,7 @@
       <w>startpos</w>
       <w>stockfish</w>
       <w>subcommand</w>
+      <w>testsets</w>
       <w>transpositiontable</w>
       <w>ucihandler</w>
       <w>ucinewgame</w>

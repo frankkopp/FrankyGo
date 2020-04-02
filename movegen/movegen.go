@@ -452,7 +452,7 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 	promotion := matches[6]
 	checkSign := matches[7]
 	if debug {
-		log.Debugf("SAN pattern: Piece Type: %s File: %s Row: %s Target: %s Promotion: %s CheckSign: %s\n", pieceType, disambFile, disambRank, toSquare, promotion, checkSign)
+		log.Debugf("SAN pattern: Piece tType: %s File: %s Row: %s target: %s Promotion: %s CheckSign: %s\n", pieceType, disambFile, disambRank, toSquare, promotion, checkSign)
 	}
 
 	movesFound := 0
@@ -495,7 +495,7 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 		moveTarget := genMove.To().String()
 		if moveTarget == toSquare {
 			if debug {
-				log.Debugf("Target square of legal move %s matches SAN move %s", genMove.StringUci(), sanMove)
+				log.Debugf("target square of legal move %s matches SAN move %s", genMove.StringUci(), sanMove)
 			}
 
 			// determine if piece types match - if not skip

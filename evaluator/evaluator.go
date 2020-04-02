@@ -136,7 +136,7 @@ func (e *Evaluator) Report(position *position.Position) string {
 	report.WriteString(out.Sprintf("Positional  : %d\n", e.positional(position, position.GamePhaseFactor())))
 	report.WriteString(out.Sprintf("Tempo       : %d\n", e.tempo(position.GamePhaseFactor())))
 	report.WriteString(out.Sprintf("-------------------------\n", e.Evaluate(position)))
-	report.WriteString(out.Sprintf("Eval Value  : %d \n(from the view of next player = %s)\n", e.Evaluate(position), position.NextPlayer().String()))
+	report.WriteString(out.Sprintf("Eval value  : %d \n(from the view of next player = %s)\n", e.Evaluate(position), position.NextPlayer().String()))
 
 	return report.String()
 }

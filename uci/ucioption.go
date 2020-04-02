@@ -57,6 +57,7 @@ func init() {
 		"Quiescence",
 		"Use_QHash",
 		"Use_PVS",
+		"Use_Killer",
 		"Use_Mdp",
 		"Use_Mpp",
 	}

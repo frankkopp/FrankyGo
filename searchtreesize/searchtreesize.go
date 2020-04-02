@@ -95,7 +95,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 		sl.TimeControl = true
 	}
 	r := result{Fen: fen}
-	p := position.NewPositionFen(fen)
+	p, _ := position.NewPositionFen(fen)
 	// turn off all options to turn them on later for each test
 	turnOffFeatures()
 
@@ -179,7 +179,7 @@ func SizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 	out.Printf("\n################## Results for depth %d ##########################\n\n", depth)
 
 	out.Printf("%-15s | %-6s | %-8s | %-15s | %-12s | %-10s | %-7s | %-12s | %s | %s\n",
-		"Test Name", "Move", "Value", "Nodes", "Nps", "Time", "Depth", "Special", "PV", "Fen")
+		"Test Name", "Move", "value", "Nodes", "Nps", "Time", "Depth", "Special", "PV", "fen")
 	out.Println("----------------------------------------------------------------------------------------------------------------------------------------------")
 
 	sums := make(map[string]testSums, len(results))
