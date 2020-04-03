@@ -148,7 +148,7 @@ func TestBlunderTests(t *testing.T) {
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
 // Test time: 300.238 ms
-func TestMateTests(t *testing.T) {
+func _TestMateTests(t *testing.T) {
 	ts, _ := NewTestSuite("testsets/mate_test_suite.epd", 15 * time.Second, 0)
 	ts.RunTests()
 }
@@ -370,7 +370,7 @@ func TestMateTests(t *testing.T) {
 // Not tested: 0   (0 %)
 //
 // Test time: 1.006.697 ms
-func TestWACTests(t *testing.T) {
+func _TestWACTests(t *testing.T) {
 	ts, _ := NewTestSuite("testsets/wac.epd", 5 * time.Second, 0)
 	ts.RunTests()
 }
@@ -738,7 +738,7 @@ func TestWACTests(t *testing.T) {
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
 // Test time: 1.728.274 ms
-func TestCraftyTests(t *testing.T) {
+func _TestCraftyTests(t *testing.T) {
 	ts, _ := NewTestSuite("testsets/crafty_test.epd", 5 * time.Second, 0)
 	ts.RunTests()
 }

@@ -114,7 +114,7 @@ func TestSetupTimeControl(t *testing.T) {
 		MovesToGo:   0,
 	}
 	timeLimit = s.setupTimeControl(p, sl)
-	assert.EqualValues(t, 5400, timeLimit.Milliseconds())
+	assert.EqualValues(t, 3600, timeLimit.Milliseconds())
 }
 
 func TestWaitWhileSearching(t *testing.T) {

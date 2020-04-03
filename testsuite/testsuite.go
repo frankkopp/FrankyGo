@@ -25,7 +25,7 @@
  */
 
 // Package testsuite contains data structures and functionality to be able to
-// run chess test suites which contain ches positions as EPD (Extended Position Description).
+// run chess test suites which contain chess positions as EPD (Extended Position Description).
 // EPD contain a standard FEN of a position but also meta data to describe a result for
 // a successful test. This could be best move on the position, mate in x or avoid moves.
 // https://www.chessprogramming.org/Extended_Position_Description

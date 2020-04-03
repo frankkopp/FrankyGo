@@ -13,14 +13,12 @@ v 0.7 (planned)
     - Other Prunings
     - Use TestSuites, TreeSize and Arena to test features
     - Remove MPP if not worth
-
-v 0.6 (in progress)
-================================================================================
-- TODO
     - Better Evaluation
     - Pawn Structure Cache
     - Performance/Profiling/Testing
 
+v 0.6 (in progress)
+================================================================================
 - DONE
     - Enhance TestSuite / run from command line options
     - TestSuite Tests
