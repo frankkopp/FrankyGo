@@ -39,6 +39,7 @@ import (
 	"github.com/frankkopp/FrankyGo/moveslice"
 	"github.com/frankkopp/FrankyGo/position"
 	"github.com/frankkopp/FrankyGo/search"
+	"github.com/frankkopp/FrankyGo/testutil"
 	"github.com/frankkopp/FrankyGo/types"
 	"github.com/frankkopp/FrankyGo/util"
 )
@@ -94,7 +95,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 		sl.TimeControl = true
 	}
 	r := result{Fen: fen}
-	p := position.NewPositionFen(fen)
+	p, _ := position.NewPositionFen(fen)
 	// turn off all options to turn them on later for each test
 	turnOffFeatures()
 
@@ -102,14 +103,14 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().StandpatCuts
+	ptrToSpecial = &s.Statistics().PvsResearches
 
 	// Base
-	r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
 
 	// + Quiescence
 	config.Settings.Search.UseQuiescence = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "QS"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "Base+QS"))
 
 	// + QS Standpat
 	config.Settings.Search.UseQSStandpat = true
@@ -127,6 +128,26 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	config.Settings.Search.UseTTValue = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
 
+	// + QS TT
+	config.Settings.Search.UseQSTT = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "QSTT"))
+
+	// + MDP
+	config.Settings.Search.UseMDP = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "MDP"))
+
+	// PVS
+	config.Settings.Search.UsePVS = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "PVS"))
+
+	// PVS
+	config.Settings.Search.UseKiller = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "Killer"))
+
+	// MPP
+	config.Settings.Search.UseMPP = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "MPP"))
+
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -142,16 +163,16 @@ func SizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 	out.Printf("Start Search Tree Size Test for depth %d\n", depth)
 
 	// prepare the slice for the tests
-	if endFen > len(Fens) {
-		endFen = len(Fens)
+	if endFen > len(testutil.Fens) {
+		endFen = len(testutil.Fens)
 	}
 	if startFen > endFen {
 		startFen = endFen
 	}
-	testFens := Fens[startFen:endFen]
+	testFens := testutil.Fens[startFen:endFen]
 
 	// prepare slice of results to store them for the report
-	results := make([]result, 0, len(Fens))
+	results := make([]result, 0, len(testutil.Fens))
 
 	// execute tests and store results
 	for _, fen := range testFens {
@@ -162,7 +183,7 @@ func SizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 	out.Printf("\n################## Results for depth %d ##########################\n\n", depth)
 
 	out.Printf("%-15s | %-6s | %-8s | %-15s | %-12s | %-10s | %-7s | %-12s | %s | %s\n",
-		"Test Name", "Move", "Value", "Nodes", "Nps", "Time", "Depth", "Special", "PV", "Fen")
+		"Test Name", "Move", "value", "Nodes", "Nps", "Time", "Depth", "Special", "PV", "fen")
 	out.Println("----------------------------------------------------------------------------------------------------------------------------------------------")
 
 	sums := make(map[string]testSums, len(results))
@@ -246,8 +267,14 @@ func turnOffFeatures() {
 	config.Settings.Search.UseBook = false
 	config.Settings.Search.UsePonder = false
 	config.Settings.Search.UseQuiescence = false
+	config.Settings.Search.UseQSStandpat = false
 	config.Settings.Search.UseTT = false
 	config.Settings.Search.UseTTMove = false
 	config.Settings.Search.UseTTValue = false
-	config.Settings.Search.UseQSStandpat = false
+	config.Settings.Search.UseQSTT = false
+	config.Settings.Search.UseMDP = false
+	config.Settings.Search.UseMPP = false
+	config.Settings.Search.UsePVS = false
+	config.Settings.Search.UseKiller = false
+
 }

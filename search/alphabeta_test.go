@@ -28,7 +28,6 @@ package search
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -59,7 +58,7 @@ func Test_savePV(t *testing.T) {
 func TestMate(t *testing.T) {
 	config.Settings.Search.UseBook = false
 	s:= NewSearch()
-	p := position.NewPositionFen("8/8/8/8/8/3K4/R7/5k2 w - -")
+	p, _ := position.NewPositionFen("8/8/8/8/8/3K4/R7/5k2 w - -")
 	sl:=NewSearchLimits()
 	sl.Depth = 8
 	s.StartSearch(*p, *sl)
@@ -72,10 +71,12 @@ func TestTiming(t *testing.T) {
 	s:= NewSearch()
 	p := position.NewPosition()
 	sl:=NewSearchLimits()
-	sl.TimeControl = true
-	sl.MoveTime = 30 * time.Second
+	sl.Depth = 10
+	// sl.TimeControl = true
+	// sl.MoveTime = 60 * time.Second
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
+	out.Println("TT : ", s.tt.String())
 	out.Println("NPS: ", util.Nps(s.nodesVisited, s.lastSearchResult.SearchTime))
 }
 

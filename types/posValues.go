@@ -136,7 +136,7 @@ var (
 	// positional values for pieces
 	// @formatter:off
 	// PAWN Tables
-		pawnsMidGame = [SqLength]Value {
+	pawnsMidGame = [SqLength]Value {
 	0,  0,  0,  0,  0,  0,  0,  0,
 	0,  0,  0,  0,  0,  0,  0,  0,
 	0,  5,  5,  5,  5,  5,  5,  0,

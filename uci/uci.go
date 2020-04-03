@@ -354,7 +354,7 @@ func (u *UciHandler) positionCommand(tokens []string) {
 		log.Warning(msg)
 		return
 	}
-	u.myPosition = position.NewPositionFen(fen)
+	u.myPosition, _ = position.NewPositionFen(fen)
 
 	// check for moves to make
 	if i < len(tokens) {
