@@ -80,6 +80,7 @@ type Search struct {
 	mg                []*movegen.Movegen
 	pv                []*moveslice.MoveSlice
 	rootMoves         *moveslice.MoveSlice
+	hadBookMove       bool
 	lastUciUpdateTime time.Time
 	statistics        Statistics
 }
@@ -111,8 +112,9 @@ func NewSearch() *Search {
 		mg:                nil,
 		pv:                nil,
 		rootMoves:         nil,
-		statistics:        Statistics{},
+		hadBookMove:       false,
 		lastUciUpdateTime: time.Time{},
+		statistics:        Statistics{},
 	}
 	return s
 }
@@ -323,6 +325,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	} else {
 		// create result based on book move
 		searchResult = &Result{BestMove: bookMove, BookMove: true}
+		s.hadBookMove = true
 	}
 
 	// If we arrive here and the search is not stopped it means that the search
@@ -341,7 +344,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	searchResult.Pv = *s.pv[0]
 
 	// At the end of a search we send the result in any case even if
-	// searched has been stopped. Best move is the best move so far.
+	// searched has been stopped.
 	s.sendResult(searchResult)
 
 	// save result until overwritten by the next search
@@ -374,7 +377,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 // searched first in the next iteration, then overwriting the new
 // move with the old one becomes unnecessary. This way, also the
 // results from the partial search can be accepted
-//  TODO though in case of a severe drop of the score it is wise
+// TODO though in case of a severe drop of the score it is wise
 //  to allocate some more time, as the first alternative is often
 //  a bad capture, delaying the loss instead of preventing it
 func (s *Search) iterativeDeepening(position *position.Position) *Result {
@@ -397,11 +400,13 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 	// check if there are legal moves - if not it's mate or stalemate
 	if s.rootMoves.Len() == 0 {
 		if position.HasCheck() {
+			s.statistics.Checkmates++
 			msg := "Search called on a mate position"
 			s.sendInfoStringToUci(msg)
 			s.log.Warning(msg)
 			result = &Result{BestValue: -ValueCheckMate}
 		} else {
+			s.statistics.Stalemates++
 			msg := "Search called on a stalemate position"
 			s.sendInfoStringToUci(msg)
 			s.log.Warning(msg)
@@ -411,7 +416,13 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 	}
 
 	// add some extra time for the move after the last book move
-	// TODO
+	// hasBook move will be true after the last book move found and arriving at this point.
+	if s.hadBookMove && s.searchLimits.TimeControl && s.searchLimits.MoveTime == 0 {
+		s.log.Debugf(out.Sprintf("First non-book move to search. Adding extra time: Before: %d ms After: %s ms",
+			s.timeLimit.Milliseconds(), 2*s.timeLimit.Milliseconds()))
+		s.addExtraTime(2.0)
+		s.hadBookMove = false
+	}
 
 	// prepare max depth from search limits
 	maxDepth := MaxDepth
@@ -419,8 +430,8 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 		maxDepth = s.searchLimits.Depth
 	}
 
-	// In preparation for aspiration window search - not needed yet
-	// max window search
+	// In preparation for aspiration window search
+	// not needed yet max window search
 	alpha := ValueMin
 	beta := ValueMax
 
@@ -462,19 +473,28 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 	// best move is pv[0][0] - we need to make sure this array entry exists at this time
 	// best value is pv[0][0].valueOf
 	result = &Result{
-		BestMove:    s.pv[0].At(0),
+		BestMove:    s.pv[0].At(0).MoveOf(),
 		BestValue:   s.pv[0].At(0).ValueOf(),
-		PonderMove:  0,
+		PonderMove:  MoveNone,
 		SearchTime:  0,
 		SearchDepth: s.statistics.CurrentIterationDepth,
 		ExtraDepth:  s.statistics.CurrentExtraSearchDepth,
 		BookMove:    false,
 	}
 
+	// see if we have a move we could ponder on
 	if s.pv[0].Len() > 1 {
-		result.PonderMove = s.pv[0].At(1)
+		result.PonderMove = s.pv[0].At(1).MoveOf()
 	} else {
-		// TODO try to get ponder move from TT
+		if config.Settings.Search.UseTT {
+			position.DoMove(result.BestMove)
+			ttEntry := s.tt.Probe(position.ZobristKey())
+			if ttEntry != nil { // tt hit
+				s.statistics.TTHit++
+				result.PonderMove = ttEntry.Move
+				s.log.Debugf(out.Sprintf("Using ponder move from hash: %s", result.PonderMove.StringUci()))
+			}
+		}
 	}
 
 	return result
@@ -542,7 +562,7 @@ func (s *Search) setupSearchLimits(position *position.Position, sl *Limits) {
 		s.log.Debug("Search mode: Ponder")
 	}
 	if sl.Mate > 0 {
-		s.log.Debug("Search mode: Search for mate in %s", sl.Mate)
+		s.log.Debugf("Search mode: Search for mate in %d", sl.Mate)
 	}
 	if sl.TimeControl {
 		s.timeLimit = s.setupTimeControl(position, sl)
@@ -583,9 +603,9 @@ func (s *Search) setupTimeControl(p *position.Position, sl *Limits) time.Duratio
 		// moves left
 		movesLeft := int64(sl.MovesToGo)
 		if movesLeft == 0 { // default
-			// we estimate minimum 10 more moves in final game phases
+			// we estimate minimum 15 more moves in final game phases
 			// in early game phases this grows up to 40
-			movesLeft = int64(10 + (30 * (p.GamePhase() / GamePhaseMax)))
+			movesLeft = int64(15 + (25 * p.GamePhaseFactor()))
 		}
 		// time left for current player
 		var timeLeft time.Duration
@@ -627,12 +647,11 @@ func (s *Search) addExtraTime(f float64) {
 
 // startTimer starts a go routine which regularly checks the elapsed time against
 // the time limit and extra time given. If time limit is reached this will set
-// the stopFlag to true and terminate the go routine
+// the stopFlag to true and terminate itself
 func (s *Search) startTimer() {
 	go func() {
 		timerStart := time.Now()
 		s.log.Debugf("Timer started with time limit of %d ms", s.timeLimit.Milliseconds())
-
 		// relaxed busy wait
 		// as timeLimit changes due to extra times we can't set a fixed timeout
 		for time.Since(timerStart) < s.timeLimit+s.extraTime && !s.stopFlag {

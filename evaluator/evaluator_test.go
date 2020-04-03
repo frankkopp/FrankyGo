@@ -33,34 +33,59 @@ import (
 
 	"github.com/frankkopp/FrankyGo/config"
 	"github.com/frankkopp/FrankyGo/position"
+	"github.com/frankkopp/FrankyGo/testutil"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
 func TestMaterial(t *testing.T) {
-	e:=NewEvaluator()
+	e := NewEvaluator()
 	config.Settings.Eval.Tempo = 0
 
 	// Startpos
 	p := position.NewPosition()
-	gpf := float32(p.GamePhase() / GamePhaseMax)
-	assert.EqualValues(t,0, e.material(p, gpf))
-	assert.EqualValues(t,0, e.positional(p, gpf))
+	gpf := float64(p.GamePhase() / GamePhaseMax)
+	assert.EqualValues(t, 0, e.material(p, gpf))
+	assert.EqualValues(t, 0, e.positional(p, gpf))
 
 	p.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
-	gpf = float32(p.GamePhase() / GamePhaseMax)
-	assert.EqualValues(t,0, e.material(p, gpf))
-	assert.EqualValues(t,55, e.positional(p, gpf))
+	gpf = float64(p.GamePhase() / GamePhaseMax)
+	assert.EqualValues(t, 0, e.material(p, gpf))
+	assert.EqualValues(t, 55, e.positional(p, gpf))
 
 	p.DoMove(CreateMove(SqD7, SqD5, Normal, PtNone))
-	gpf = float32(p.GamePhase() / GamePhaseMax)
-	assert.EqualValues(t,0, e.material(p, gpf))
-	assert.EqualValues(t,0, e.positional(p, gpf))
+	gpf = float64(p.GamePhase() / GamePhaseMax)
+	assert.EqualValues(t, 0, e.material(p, gpf))
+	assert.EqualValues(t, 0, e.positional(p, gpf))
 
 	p.DoMove(CreateMove(SqE4, SqD5, Normal, PtNone))
-	gpf = float32(p.GamePhase() / GamePhaseMax)
-	assert.EqualValues(t,100, e.material(p, gpf))
-	assert.EqualValues(t,30, e.positional(p, gpf))
+	gpf = float64(p.GamePhase() / GamePhaseMax)
+	assert.EqualValues(t, 100, e.material(p, gpf))
+	assert.EqualValues(t, 30, e.positional(p, gpf))
 
 	// TODO - this will change with additional evaluations
-	assert.EqualValues(t,-130, e.Evaluate(p))
+	assert.EqualValues(t, -130, e.Evaluate(p))
+}
+
+func TestTestFensCheck(t *testing.T) {
+	e := NewEvaluator()
+	var p *position.Position
+	for i, fen := range testutil.Fens {
+		p, _ = position.NewPositionFen(fen)
+		out.Printf("%d: %s\n", i+1, e.Report(p))
+	}
+}
+
+func TestManualFenCheck(t *testing.T) {
+	var fen string
+	e := NewEvaluator()
+	var p *position.Position
+
+	fen = "r2qk2r/pppn1ppp/3bpn2/1P1p3b/8/4PN1P/PBPPBPP1/RN1QK2R w KQkq - 1 8 "
+	p, _ = position.NewPositionFen(fen)
+	out.Printf("%s\n", e.Report(p))
+
+	fen = "r2q1rk1/pppn1ppp/3bpn2/1P1p3b/8/2N1PN1P/PBPPBPP1/R2Q1RK1 b - - 4 9 "
+	p, _ = position.NewPositionFen(fen)
+	out.Printf("%s\n", e.Report(p))
+
 }

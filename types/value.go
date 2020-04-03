@@ -33,7 +33,7 @@ import (
 	"github.com/frankkopp/FrankyGo/util"
 )
 
-// Value represents the positional value of a chess position
+// value represents the positional value of a chess position
 type Value int16
 
 // Constants for values

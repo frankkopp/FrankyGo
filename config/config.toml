@@ -9,21 +9,30 @@ LogFilePath = "../logs"             # path to logfiles absolut or relative to wo
 #LogFilePath = "D:/_DEV/go/src/github.com/frankkopp/FrankyGo/logs"
 
 [search]
+# opening book
 UseBook = true
 BookPath = "../books"               # absolut or relative to working directory
 #BookPath = "D:/_DEV/go/src/github.com/frankkopp/FrankyGo/books"
 BookFile = "book.txt"
 BookFormat = "Simple"               # Simple | San | Pgn
 
+# TT
 UseTT = true
 TTSize = 256
 UseTTMove = true
 UseTTValue = true
+UseQSTT = true
 
+# general search
 Ponder = true
-
 UseQuiescence = true
 UseQSStandpat = true
+UsePVS = true
+UseKiller = true
+
+# prunings
+UseMDP = true
+UseMPP = false # misses some mates
 
 [eval]
 UsePawnCache = true

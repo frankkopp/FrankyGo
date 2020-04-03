@@ -55,7 +55,7 @@ var log = logging.GetLog()
 // table. Each entry has 16-bytes (128-bits)
 type TtEntry struct {
 	Key        position.Key // 64-bit Zobrist Key
-	Move       Move         // 32-bit Move and Value
+	Move       Move         // 32-bit Move and value
 	Depth      int8         // 7-bit 0-127 0b01111111
 	Age        int8         // 3-bit 0-7   0b00000111 0=used 1=generated, not used, >1 older generation
 	Type       ValueType    // 2-bit None, Exact, Alpha (upper), Beta (lower)
@@ -94,7 +94,7 @@ type TtStats struct {
 }
 
 // NewTtTable creates a new TtTable with the given number of bytes
-// as a maximum of memory usage. Actual size will be determined
+// as a maximum of memory usage. actual size will be determined
 // by the number of elements fitting into this size which need
 // to be a power of 2 for efficient hashing/addressing via bit
 // masks
@@ -173,23 +173,25 @@ func (tt *TtTable) Probe(key position.Key) *TtEntry {
 }
 
 // Put an TtEntry into the tt. Encodes value into the move.
-func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, valueType ValueType, mateThreat bool, forced bool) {
-	if assert.DEBUG {
-		assert.Assert(depth >= 0, "TT:put Depth must be > 0")
-	}
+func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, valueType ValueType, mateThreat bool) {
+
 	// if the size of the TT = 0 we
 	// do not store anything
 	if tt.maxNumberOfEntries == 0 {
 		return
 	}
 
-	tt.Stats.numberOfPuts++
 	// read the entries for this hash
 	entryDataPtr := &tt.data[tt.hash(key)]
 	// encode value into the move if it is a valid value (min < v < max)
 	if value.IsValid() {
 		move = move.SetValue(value)
+	} else {
+		log.Warningf("TT Put: Tried to store an invalid value into the TT %s", value.String())
 	}
+
+	tt.Stats.numberOfPuts++
+
 	// NewTtTable entry
 	if entryDataPtr.Key == 0 {
 		tt.numberOfEntries++
@@ -209,7 +211,7 @@ func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, val
 		// - the new entry's depth is higher
 		// - the new entry's depth is same and the previous entry is old (is aged)
 		if depth > entryDataPtr.Depth ||
-			(depth == entryDataPtr.Depth && (forced || entryDataPtr.Age > 1)) {
+			(depth == entryDataPtr.Depth && entryDataPtr.Age > 1) {
 			tt.Stats.numberOfOverwrites++
 			entryDataPtr.Key = key
 			entryDataPtr.Move = move
@@ -264,9 +266,9 @@ func (tt *TtTable) Hashfull() int {
 
 // String returns a string representation of this TtTable instance
 func (tt *TtTable) String() string {
-	return out.Sprintf("TT: size %d MB max entries %d of size %d Bytes entries %d (%d) puts %d "+
-		"updates %d collisions %d overwrites %d probes %d hits %d (%d) misses %d (%d)",
-		tt.sizeInByte/MB, tt.maxNumberOfEntries, unsafe.Sizeof(TtEntry{}), tt.numberOfEntries, tt.Hashfull(),
+	return out.Sprintf("TT: size %d MB max entries %d of size %d Bytes entries %d (%d%%) puts %d "+
+		"updates %d collisions %d overwrites %d probes %d hits %d (%d%%) misses %d (%d%%)",
+		tt.sizeInByte/MB, tt.maxNumberOfEntries, unsafe.Sizeof(TtEntry{}), tt.numberOfEntries, tt.Hashfull()/10,
 		tt.Stats.numberOfPuts, tt.Stats.numberOfUpdates, tt.Stats.numberOfCollisions, tt.Stats.numberOfOverwrites, tt.Stats.numberOfProbes,
 		tt.Stats.numberOfHits, (tt.Stats.numberOfHits*100)/(1+tt.Stats.numberOfProbes),
 		tt.Stats.numberOfMisses, (tt.Stats.numberOfMisses*100)/(1+tt.Stats.numberOfProbes))

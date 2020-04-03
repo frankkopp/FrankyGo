@@ -42,7 +42,7 @@ import (
 func TestPositionCreation(t *testing.T) {
 
 	fen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-	p := NewPositionFen(fen)
+	p, _ := NewPositionFen(fen)
 	// fmt.Print(p.String())
 	assert.Equal(t, SqA1.Bb()|SqH1.Bb()|SqA8.Bb()|SqH8.Bb(), p.piecesBb[White][Rook]|p.piecesBb[Black][Rook])
 	assert.Equal(t, SqB1.Bb()|SqG1.Bb()|SqB8.Bb()|SqG8.Bb(), p.piecesBb[White][Knight]|p.piecesBb[Black][Knight])
@@ -64,7 +64,7 @@ func TestPositionCreation(t *testing.T) {
 	fmt.Println()
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3 0 14"
-	p = NewPositionFen(fen)
+	p, _ = NewPositionFen(fen)
 	// fmt.Print(p.String())
 	assert.Equal(t, SqB1.Bb()|SqG3.Bb()|SqA8.Bb()|SqH8.Bb(), p.piecesBb[White][Rook]|p.piecesBb[Black][Rook])
 	assert.Equal(t, SqD7.Bb()|SqG6.Bb(), p.piecesBb[White][Knight]|p.piecesBb[Black][Knight])
@@ -90,11 +90,11 @@ func TestPositionEquality(t *testing.T) {
 
 	// equal
 	p1 := NewPosition()
-	p2 := NewPositionFen(StartFen)
+	p2, _ := NewPositionFen(StartFen)
 	assert.Equal(t, p1, p2)
 
 	// not equal
-	p3 := NewPositionFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3 0 14")
+	p3, _ := NewPositionFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3 0 14")
 	assert.NotEqual(t, p1, p3)
 
 	// copy
@@ -132,21 +132,21 @@ func TestPosition_DoMoveNormal(t *testing.T) {
 	var move Move
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	move = CreateMove(SqC4, SqD4, Normal, PtNone)
 	position.DoMove(move)
 	// log.Println(position.String())
 	assert.Equal(t, "r3k2r/1ppn3p/2q1q1n1/8/3qPp2/B5R1/p1p2PPP/1R4K1 w kq - 1 2", position.StringFen())
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	move = CreateMove(SqC4, SqE4, Normal, PtNone)
 	position.DoMove(move)
 	// log.Println(position.String())
 	assert.Equal(t, "r3k2r/1ppn3p/2q1q1n1/8/4qp2/B5R1/p1p2PPP/1R4K1 w kq - 0 2", position.StringFen())
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 w kq -"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	move = CreateMove(SqG3, SqG6, Normal, PtNone)
 	position.DoMove(move)
 	// log.Println(position.String())
@@ -160,14 +160,14 @@ func TestPosition_DoMoveCastling(t *testing.T) {
 	var move Move
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	move = CreateMove(SqE8, SqG8, Castling, PtNone)
 	position.DoMove(move) // would be illegal as King crosses attacked square
 	// log.Println(position.String())
 	assert.Equal(t, "r4rk1/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 w - - 1 2", position.StringFen())
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	move = CreateMove(SqE8, SqC8, Castling, PtNone)
 	position.DoMove(move)
 	// log.Println(position.String())
@@ -181,7 +181,7 @@ func TestPosition_DoMoveEnPassant(t *testing.T) {
 	var move Move
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	move = CreateMove(SqF4, SqE3, EnPassant, PtNone)
 	position.DoMove(move) // would be illegal as King crosses attacked square
 	// log.Println(position.String())
@@ -195,14 +195,14 @@ func TestPosition_DoMovePromotion(t *testing.T) {
 	var move Move
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	move = CreateMove(SqA2, SqA1, Promotion, Queen)
 	position.DoMove(move) // would be illegal as King crosses attacked square
 	// log.Println(position.String())
 	assert.Equal(t, "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/2p2PPP/qR4K1 w kq - 0 2", position.StringFen())
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	move = CreateMove(SqA2, SqB1, Promotion, Rook)
 	position.DoMove(move) // would be illegal as King crosses attacked square
 	// log.Println(position.String())
@@ -215,7 +215,7 @@ func TestPosition_IsAttacked(t *testing.T) {
 	var position *Position
 
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 
 	// pawns
 	assert.True(t, position.IsAttacked(SqG3, White))
@@ -234,7 +234,7 @@ func TestPosition_IsAttacked(t *testing.T) {
 	assert.True(t, position.IsAttacked(SqA5, Black))
 
 	fen = "rnbqkbnr/1ppppppp/8/p7/Q1P5/8/PP1PPPPP/RNB1KBNR b KQkq - 1 2"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 
 	// king
 	assert.True(t, position.IsAttacked(SqD1, White))
@@ -251,34 +251,34 @@ func TestPosition_IsAttacked(t *testing.T) {
 
 	// en passant
 	fen = "rnbqkbnr/1pp1pppp/p7/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	assert.True(t, position.IsAttacked(SqD5, White))
 
 	fen = "rnbqkbnr/1pp1pppp/p7/2Pp4/8/8/PP1PPPPP/RNBQKBNR w KQkq d6"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	assert.True(t, position.IsAttacked(SqD5, White))
 
 	fen = "rnbqkbnr/pppp1ppp/8/8/3Pp3/7P/PPP1PPP1/RNBQKBNR b - d3"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	assert.True(t, position.IsAttacked(SqD4, Black))
 
 	fen = "rnbqkbnr/pppp1ppp/8/8/2pP4/7P/PPP1PPP1/RNBQKBNR b - d3"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	assert.True(t, position.IsAttacked(SqD4, Black))
 
 	// bug tests
 	fen = "r1bqk1nr/pppp1ppp/2nb4/1B2B3/3pP3/8/PPP2PPP/RN1QK1NR b KQkq -"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	assert.False(t, position.IsAttacked(SqE8, White))
 	assert.False(t, position.IsAttacked(SqE1, Black))
 
 	fen = "rnbqkbnr/ppp1pppp/8/1B6/3Pp3/8/PPP2PPP/RNBQK1NR b KQkq -"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	assert.True(t, position.IsAttacked(SqE8, White))
 	assert.False(t, position.IsAttacked(SqE1, Black))
 
 	fen = "8/1pk2p2/2p5/5p2/8/1pp2Q2/5K2/8 w - -"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	assert.False(t, position.IsAttacked(SqF7, White))
 	assert.False(t, position.IsAttacked(SqB7, White))
 	assert.False(t, position.IsAttacked(SqB3, White))
@@ -291,13 +291,13 @@ func TestPosition_IsLegalMoves(t *testing.T) {
 
 	// no o-o castling / o-o-o is allowed
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	assert.False(t, position.IsLegalMove(CreateMove(SqE8, SqG8, Castling, PtNone)))
 	assert.True(t, position.IsLegalMove(CreateMove(SqE8, SqC8, Castling, PtNone)))
 
 	// in check - no castling at all
 	fen = "r3k2r/1ppn3p/2q1qNn1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	assert.False(t, position.IsLegalMove(CreateMove(SqE8, SqG8, Castling, PtNone)))
 	assert.False(t, position.IsLegalMove(CreateMove(SqE8, SqC8, Castling, PtNone)))
 
@@ -310,7 +310,7 @@ func TestPosition_WasLegalMove(t *testing.T) {
 
 	// no o-o castling
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	position.DoMove(CreateMove(SqE8, SqG8, Castling, PtNone)) // illegal as king crosses attacked square
 	assert.False(t, position.WasLegalMove())
 	position.UndoMove()
@@ -319,7 +319,7 @@ func TestPosition_WasLegalMove(t *testing.T) {
 
 	// in check - no castling at all
 	fen = "r3k2r/1ppn3p/2q1qNn1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq -"
-	position = NewPositionFen(fen)
+	position, _ = NewPositionFen(fen)
 	position.DoMove(CreateMove(SqE8, SqG8, Castling, PtNone)) // illegal as king crosses attacked square
 	assert.False(t, position.IsLegalMove(CreateMove(SqE8, SqG8, Castling, PtNone)))
 	position.UndoMove()
@@ -379,7 +379,7 @@ func TestPosition_CheckRepetitions(t *testing.T) {
 	assert.True(t, position.CheckRepetitions(2))
 
 	// test 2
-	position = NewPositionFen("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -")
+	position, _ = NewPositionFen("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -")
 	position.DoMove(CreateMove(SqE7, SqE3, Normal, PtNone))
 	position.DoMove(CreateMove(SqG1, SqG2, Normal, PtNone))
 	// takes 3 loops to get to repetition
@@ -394,46 +394,46 @@ func TestPosition_CheckRepetitions(t *testing.T) {
 
 func TestPosition_CheckInsufficientMaterial(t *testing.T) {
 	// 	both sides have a bare king
-	position := NewPositionFen("8/3k4/8/8/8/8/4K3/8 w - -")
+	position, _ := NewPositionFen("8/3k4/8/8/8/8/4K3/8 w - -")
 	assert.True(t, position.HasInsufficientMaterial())
 
 	// 	one side has a king and a minor piece against a bare king
 	// 	both sides have a king and a minor piece each
-	position = NewPositionFen("8/3k4/8/8/8/2B5/4K3/8 w - -")
+	position, _ = NewPositionFen("8/3k4/8/8/8/2B5/4K3/8 w - -")
 	assert.True(t, position.HasInsufficientMaterial())
-	position = NewPositionFen("8/8/4K3/8/8/2b5/4k3/8 b - -")
+	position, _ = NewPositionFen("8/8/4K3/8/8/2b5/4k3/8 b - -")
 	assert.True(t, position.HasInsufficientMaterial())
 
 	// 	both sides have a king and a bishop, the bishops being the same color
-	position = NewPositionFen("8/8/3BK3/8/8/2b5/4k3/8 b - -")
+	position, _ = NewPositionFen("8/8/3BK3/8/8/2b5/4k3/8 b - -")
 	assert.True(t, position.HasInsufficientMaterial())
-	position = NewPositionFen("8/8/2B1K3/8/8/8/2b1k3/8 b - -")
+	position, _ = NewPositionFen("8/8/2B1K3/8/8/8/2b1k3/8 b - -")
 	assert.True(t, position.HasInsufficientMaterial())
-	position = NewPositionFen("8/8/4K3/2B5/8/8/2b1k3/8 b - -")
+	position, _ = NewPositionFen("8/8/4K3/2B5/8/8/2b1k3/8 b - -")
 	assert.True(t, position.HasInsufficientMaterial())
 
 	// one side has two bishops a mate can be forced
-	position = NewPositionFen("8/8/2B1K3/2B5/8/8/2n1k3/8 b - -")
+	position, _ = NewPositionFen("8/8/2B1K3/2B5/8/8/2n1k3/8 b - -")
 	assert.False(t, position.HasInsufficientMaterial())
 
 	// 	two knights against the bare king
-	position = NewPositionFen("8/8/2NNK3/8/8/8/4k3/8 w - -")
+	position, _ = NewPositionFen("8/8/2NNK3/8/8/8/4k3/8 w - -")
 	assert.True(t, position.HasInsufficientMaterial())
-	position = NewPositionFen("8/8/2nnk3/8/8/8/4K3/8 w - -")
+	position, _ = NewPositionFen("8/8/2nnk3/8/8/8/4K3/8 w - -")
 	assert.True(t, position.HasInsufficientMaterial())
 
 	// 	the weaker side has a minor piece against two knights
-	position = NewPositionFen("8/8/2n1kn2/8/8/8/4K3/4B3 w - -")
+	position, _ = NewPositionFen("8/8/2n1kn2/8/8/8/4K3/4B3 w - -")
 	assert.True(t, position.HasInsufficientMaterial())
 
 	// 	two bishops draw against a bishop
-	position = NewPositionFen("8/8/3bk1b1/8/8/8/4K3/4B3 w - -")
+	position, _ = NewPositionFen("8/8/3bk1b1/8/8/8/4K3/4B3 w - -")
 	assert.True(t, position.HasInsufficientMaterial())
 
 	// 	two minor pieces against one draw, except when the stronger side has a bishop pair
-	position = NewPositionFen("8/8/3bk1b1/8/8/8/4K3/4N3 w - -")
+	position, _ = NewPositionFen("8/8/3bk1b1/8/8/8/4K3/4N3 w - -")
 	assert.False(t, position.HasInsufficientMaterial())
-	position = NewPositionFen("8/8/3bk1n1/8/8/8/4K3/4N3 w - -")
+	position, _ = NewPositionFen("8/8/3bk1n1/8/8/8/4K3/4N3 w - -")
 	assert.True(t, position.HasInsufficientMaterial())
 
 }
@@ -446,7 +446,7 @@ func Test_TimingMatvsPop(t *testing.T) {
 	const rounds = 5
 	const iterations uint64 = 1_000_000_000
 
-	p := NewPositionFen("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -")
+	p, _ := NewPositionFen("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -")
 
 	for r := 1; r <= rounds; r++ {
 		out.Printf("Round %d\n", r)
@@ -469,7 +469,7 @@ func Test_TimingMatvsPop2(t *testing.T) {
 	const rounds = 5
 	const iterations uint64 = 1_000_000_000
 
-	p := NewPositionFen("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -")
+	p, _ := NewPositionFen("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -")
 
 	for r := 1; r <= rounds; r++ {
 		out.Printf("Round %d\n", r)

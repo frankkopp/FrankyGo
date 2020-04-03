@@ -343,7 +343,7 @@ func TestForEach(t *testing.T) {
 	assert.Equal(t, Value(999), ma.At(100).ValueOf())
 	assert.Equal(t, Value(999), ma.Back().ValueOf())
 
-	fmt.Printf("Counter %d\n", counter)
+	fmt.Printf("counter %d\n", counter)
 	ma.ForEach(func(i int) {
 		fmt.Printf("%d: %s\n", i, ma.At(i).String())
 	})
@@ -358,7 +358,7 @@ func Test_GoLand_WithVeryLongName(t *testing.T) {
 		ma.PushBack(e2e4)
 	}
 
-	fmt.Printf("Counter %d\n", noOfItems)
+	fmt.Printf("counter %d\n", noOfItems)
 	ma.ForEach(func (i int) {
 		fmt.Printf("%d: %s\n", i, ma.At(i).String())
 	})

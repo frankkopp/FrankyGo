@@ -139,19 +139,21 @@ const (
 // // Public
 // //////////////////////////////////////////////////////
 
-// NewPosition creates a new position with Start Fen as default
+// NewPosition creates a new position with Start fen as default
 func NewPosition() *Position {
-	return NewPositionFen(StartFen)
+	fen, _ := NewPositionFen(StartFen)
+	return fen
 }
 
 // NewPositionFen creates a new position with the given fen string
 // as board position
-func NewPositionFen(fen string) *Position {
+func NewPositionFen(fen string) (*Position, error) {
 	p := &Position{}
 	if e := p.setupBoard(fen); e != nil {
-		panic(fmt.Sprintf("fen for position setup not valid and position can't be created: %s", e))
+		log.Errorf("fen for position setup not valid and position can't be created: %s", e)
+		return nil, e
 	}
-	return p
+	return p, nil
 }
 
 // DoMove commits a move to the board. Due to performance there is no check if this
@@ -553,8 +555,8 @@ func (p *Position) String() string {
 	os.WriteString(fmt.Sprintf("Game Phase     : %d\n", p.gamePhase))
 	os.WriteString(fmt.Sprintf("Material White : %d\n", p.material[White]))
 	os.WriteString(fmt.Sprintf("Material Black : %d\n", p.material[Black]))
-	os.WriteString(fmt.Sprintf("Pos Value White: %d/%d\n", p.psqMidValue[White], p.psqEndValue[White]))
-	os.WriteString(fmt.Sprintf("Pos Value Black: %d/%d\n", p.psqMidValue[Black], p.psqEndValue[Black]))
+	os.WriteString(fmt.Sprintf("Pos value White: %d/%d\n", p.psqMidValue[White], p.psqEndValue[White]))
+	os.WriteString(fmt.Sprintf("Pos value Black: %d/%d\n", p.psqMidValue[Black], p.psqEndValue[Black]))
 	return os.String()
 }
 
@@ -1028,6 +1030,12 @@ func (p *Position) OccupiedBb(c Color) Bitboard {
 // End games when no officers are left have a GamePhase value of 0.
 func (p *Position) GamePhase() int {
 	return p.gamePhase
+}
+
+// GamePhaseFactor returns a factor between 0 and 1 which reflects
+// the ratio between the actual game phase and the max game phase
+func (p *Position) GamePhaseFactor() float64 {
+	return float64(p.gamePhase) / GamePhaseMax
 }
 
 // GetEnPassantSquare returns the en passant square or SqNone if not set

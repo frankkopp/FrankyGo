@@ -33,9 +33,9 @@ import (
 // Version information as constants
 const (
 	Major  = 0
-	Minor  = 5
-	Status = "rel"
-	Date   = "30.03.2020"
+	Minor  = 6
+	Status = "rc"
+	Date   = "3.4.2020"
 )
 
 // Version returns the version of the application as a string
