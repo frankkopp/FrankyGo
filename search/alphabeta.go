@@ -247,6 +247,8 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 		// Skip non queen or knight promotion as they are
 		// redundant. Exception would be stale mate situations
 		// which we ignore.
+		// This causes some mates to be missed:
+		// 5R2/6r1/3P4/1BBk4/8/3N4/8/K7 w - - dm 5;
 		if Settings.Search.UseMPP {
 			if move.MoveType() == Promotion && move.PromotionType() != Queen && move.PromotionType() != Knight {
 				s.statistics.Mpp++
@@ -498,6 +500,8 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 		// Skip non queen or knight promotion as they are
 		// redundant. Exception would be stale mate situations
 		// which we ignore.
+		// This causes some mates to be missed:
+		// 5R2/6r1/3P4/1BBk4/8/3N4/8/K7 w - - dm 5;
 		if Settings.Search.UseMPP {
 			if move.MoveType() == Promotion && move.PromotionType() != Queen && move.PromotionType() != Knight {
 				s.statistics.Mpp++

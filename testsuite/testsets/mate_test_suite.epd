@@ -2,9 +2,9 @@
 4r1b1/1p4B1/pN2pR2/RB2k3/1P2N2p/2p3b1/n2P1p1r/5K1n w - - dm 3;
 b7/p1BR2pK/B1p5/pNk3p1/Pp4Pp/1P3n2/4R2r/7n w - - dm 3;
 6K1/n1P2N1p/6pr/b1pp3b/n2Bp1k1/1R2R1Pp/3p1P2/2qN1B2 w - - dm 3;
+8/2P1P1P1/3PkP2/8/4K3/8/8/8 w - - dm 3;
 
 # Mate 4
-8/2P1P1P1/3PkP2/8/4K3/8/8/8 w - - dm 4;
 r4rk1/pppqbp1p/3pp1p1/8/4P3/1P1P3R/PBP2PPP/R2Q2K1 w - - dm 4;
 r4qrk/ppp1b1pp/3p1p2/4pPPQ/4P2P/3PB3/PPP5/1K4RR w - - dm 4;
 r3r3/p1p2p1k/3p2pp/2p5/2P2n2/2N2B2/PPR1PP1q/3RQK2 b - - dm 4;
@@ -32,7 +32,6 @@ b7/8/7B/7p/8/2p3r1/2P1P1pp/4K1kq w - - dm 5;
 5R2/6r1/3P4/1BBk4/8/3N4/8/K7 w - - dm 5;
 # no engine found it
 1r1r2k1/p4ppp/1qp5/4Pb2/3b1P2/1PP2N2/P2BQ1PP/2KR3R w - - dm 5;
-
 # Mate 6
 4k3/8/4K3/8/4N3/4B3/3P1P2/8 w - - dm 6;
 

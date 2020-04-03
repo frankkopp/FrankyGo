@@ -132,10 +132,9 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	config.Settings.Search.UseQSTT = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "QSTT"))
 
-	// + MDP/MPP
+	// + MDP
 	config.Settings.Search.UseMDP = true
-	config.Settings.Search.UseMPP = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "MDP/MPP"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "MDP"))
 
 	// PVS
 	config.Settings.Search.UsePVS = true
@@ -144,6 +143,11 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// PVS
 	config.Settings.Search.UseKiller = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "Killer"))
+
+	// MPP
+	config.Settings.Search.UseMPP = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "MPP"))
+
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////

@@ -11,16 +11,18 @@ v 0.7 (planned)
 - TODO
     - Null Move
     - Other Prunings
+    - Use TestSuites, TreeSize and Arena to test features
+    - Remove MPP if not worth
 
 v 0.6 (in progress)
 ================================================================================
 - TODO
-    - Enhance TestSuite / run from command line options
     - Better Evaluation
     - Pawn Structure Cache
     - Performance/Profiling/Testing
 
 - DONE
+    - Enhance TestSuite / run from command line options
     - TestSuite Tests
     - PVS
     - Killer

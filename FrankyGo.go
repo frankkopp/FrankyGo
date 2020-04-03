@@ -30,12 +30,14 @@ import (
 	"flag"
 	"os"
 	"runtime"
+	"time"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
 	"github.com/frankkopp/FrankyGo/config"
 	"github.com/frankkopp/FrankyGo/logging"
+	"github.com/frankkopp/FrankyGo/testsuite"
 	"github.com/frankkopp/FrankyGo/uci"
 	"github.com/frankkopp/FrankyGo/version"
 )
@@ -53,6 +55,9 @@ func main() {
 	bookPath := flag.String("bookpath", "", "path to opening book files")
 	bookFile := flag.String("bookfile", "", "opening book file\nprovide path if file is not in same directory as executable\nPlease also provide bookFormat otherwise this will be ignored")
 	bookFormat := flag.String("bookFormat", "", "format of opening book\n(Simple|San|Pgn)")
+	testSuite := flag.String("testsuite", "", "path to file containing EPD tests")
+	testMovetime := flag.Int("testtime", 2000, "search time for each test position in milliseconds")
+	testSearchdepth := flag.Int("testdepth", 0, "search depth limit for each test position")
 	flag.Parse()
 
 	// print version info and exit
@@ -98,6 +103,13 @@ func main() {
 	// called. These loggers start with the default log level and must be reset
 	// to the actual level required.
 	logging.GetLog()
+
+	// execute test suite if command line options are given
+	if *testSuite != "" {
+		ts, _ := testsuite.NewTestSuite(*testSuite, time.Duration(*testMovetime*1_000_000), *testSearchdepth)
+		ts.RunTests()
+		return
+	}
 
 	// starting the uci handler and waiting for communication with
 	// the UCI user interface

@@ -64,7 +64,7 @@ func init() {
 	Settings.Search.UseTTValue = true
 	Settings.Search.UseQSTT = true
 	Settings.Search.UseMDP = true
-	Settings.Search.UseMPP = true
+	Settings.Search.UseMPP = false // causes mates to be missed - needs some testing
 
 }
 

@@ -172,6 +172,7 @@ func (ts *TestSuite) RunTests() {
 	out.Printf("EPD File:   %s\n", ts.FilePath)
 	out.Printf("SearchTime: %d ms\n", ts.Time.Milliseconds())
 	out.Printf("MaxDepth:   %d\n", ts.Depth)
+	out.Printf("Date:       %s\n", time.Now().Local())
 	out.Println()
 
 	// execute all tests and store results in the
@@ -200,7 +201,12 @@ func (ts *TestSuite) RunTests() {
 	elapsed := time.Since(startTime)
 
 	// print report
-	out.Printf("Results for Test Suite %s\n", ts.FilePath)
+	out.Printf("Results for Test Suite\n", ts.FilePath)
+	out.Printf("------------------------------------------------------------------------------------------------------------------------------------\n")
+	out.Printf("EPD File:   %s\n", ts.FilePath)
+	out.Printf("SearchTime: %d ms\n", ts.Time.Milliseconds())
+	out.Printf("MaxDepth:   %d\n", ts.Depth)
+	out.Printf("Date:       %s\n", time.Now().Local())
 	out.Printf("====================================================================================================================================\n")
 	out.Printf(" %-4s | %-10s | %-8s | %-8s | %-15s | %s | %s\n"," Nr.", "Result", "Move", "Value", "Expected Result", "Fen", "Id");
 	out.Printf("====================================================================================================================================\n")

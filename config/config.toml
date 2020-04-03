@@ -32,7 +32,7 @@ UseKiller = true
 
 # prunings
 UseMDP = true
-UseMPP = true
+UseMPP = false # misses some mates
 
 [eval]
 UsePawnCache = true
