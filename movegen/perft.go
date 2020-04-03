@@ -89,7 +89,7 @@ func (p *Perft) StartPerft(fen string, depth int, onDemandFlag bool) {
 
 	// prepare
 	p.resetCounter()
-	posPtr := position.NewPositionFen(fen)
+	posPtr, _ := position.NewPositionFen(fen)
 	mgList := make([]*Movegen, depth+1)
 	for i := 0; i <= depth; i++ {
 		mgList[i] = NewMoveGen()

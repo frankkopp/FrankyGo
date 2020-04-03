@@ -36,6 +36,7 @@ type searchConfiguration struct {
 	UsePonder     bool
 	UseQuiescence bool
 	UseQSStandpat bool
+	UsePVS        bool
 	UseTT         bool
 	TTSize        int
 	UseTTMove     bool
@@ -43,6 +44,7 @@ type searchConfiguration struct {
 	UseQSTT       bool
 	UseMDP        bool
 	UseMPP        bool
+	UseKiller     bool
 }
 
 // sets defaults which might be overwritten by config file
@@ -54,13 +56,15 @@ func init() {
 	Settings.Search.UsePonder = true
 	Settings.Search.UseQuiescence = true
 	Settings.Search.UseQSStandpat = true
+	Settings.Search.UsePVS = true
+	Settings.Search.UseKiller = true
 	Settings.Search.UseTT = true
 	Settings.Search.TTSize = 128
 	Settings.Search.UseTTMove = true
 	Settings.Search.UseTTValue = true
 	Settings.Search.UseQSTT = true
 	Settings.Search.UseMDP = true
-	Settings.Search.UseMPP = true
+	Settings.Search.UseMPP = false // causes mates to be missed - needs some testing
 
 }
 

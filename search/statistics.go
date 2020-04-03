@@ -46,16 +46,21 @@ type Statistics struct {
 	CurrentBestRootMove      Move
 	CurrentBestRootMoveValue Value
 
-	BetaCuts     uint64
-	TTHit        uint64
-	TTMiss       uint64
-	TTMoveUsed   uint64
-	NoTTMove     uint64
-	TTCuts       uint64
-	TTNoCuts     uint64
-	StandpatCuts uint64
-	Mdp          uint64
-	Mpp          uint64
+	LeafPositionsEvaluated uint64
+	Checkmates             uint64
+	Stalemates             uint64
+	BetaCuts               uint64
+	TTHit                  uint64
+	TTMiss                 uint64
+	TTMoveUsed             uint64
+	NoTTMove               uint64
+	TTCuts                 uint64
+	TTNoCuts               uint64
+	StandpatCuts           uint64
+	Mdp                    uint64
+	Mpp                    uint64
+	RootPvsResearches      uint64
+	PvsResearches          uint64
 }
 
 func (s *Statistics) String() string {
@@ -79,7 +84,7 @@ func (s *Statistics) String() string {
 //  uint64_t nodesVisited = 0; // legal nodes visited
 //
 //  // PERFT Values
-//  uint64_t leafPositionsEvaluated = 0;
+//  uint64_t LeafPositionsEvaluated = 0;
 //  uint64_t nonLeafPositionsEvaluated = 0;
 //  uint64_t checkCounter = 0;
 //  uint64_t checkMateCounter = 0;
