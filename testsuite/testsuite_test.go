@@ -106,6 +106,7 @@ func TestNewTestSuite(t *testing.T) {
 func TestRunTestSuiteTest(t *testing.T) {
 	ts, _ := NewTestSuite("testsets/franky_tests.epd", 2 * time.Second, 0)
 	ts.RunTests()
+	assert.EqualValues(t, 13, ts.LastResult.SuccessCounter)
 }
 
 func TestBlunderTests(t *testing.T) {

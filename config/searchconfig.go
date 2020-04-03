@@ -43,7 +43,6 @@ type searchConfiguration struct {
 	UseTTValue    bool
 	UseQSTT       bool
 	UseMDP        bool
-	UseMPP        bool
 	UseKiller     bool
 }
 
@@ -64,8 +63,6 @@ func init() {
 	Settings.Search.UseTTValue = true
 	Settings.Search.UseQSTT = true
 	Settings.Search.UseMDP = true
-	Settings.Search.UseMPP = false // causes mates to be missed - needs some testing
-
 }
 
 // set defaults for configurations here in case a configuration

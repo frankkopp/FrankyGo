@@ -45,7 +45,6 @@ func init() {
 		"Use_QHash":  {NameID: "Use_QHash", HandlerFunc: useQSHash, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseQSTT), CurrentValue: strconv.FormatBool(config.Settings.Search.UseQSTT)},
 		"Use_PVS":    {NameID: "Use_PVS", HandlerFunc: usePvs, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UsePVS), CurrentValue: strconv.FormatBool(config.Settings.Search.UsePVS)},
 		"Use_Mdp":    {NameID: "Use_Mdp", HandlerFunc: useMdp, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseMDP), CurrentValue: strconv.FormatBool(config.Settings.Search.UseMDP)},
-		"Use_Mpp":    {NameID: "Use_Mpp", HandlerFunc: useMpp, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseMPP), CurrentValue: strconv.FormatBool(config.Settings.Search.UseMPP)},
 		"Use_Killer": {NameID: "Use_Killer", HandlerFunc: useKiller, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseKiller), CurrentValue: strconv.FormatBool(config.Settings.Search.UseKiller)},
 	}
 	sortOrderUciOptions = []string{
@@ -59,9 +58,7 @@ func init() {
 		"Use_PVS",
 		"Use_Killer",
 		"Use_Mdp",
-		"Use_Mpp",
 	}
-
 }
 
 // GetOptions returns all available uci options a slice of strings
@@ -207,12 +204,6 @@ func useMdp(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	config.Settings.Search.UseMDP = v
 	log.Debugf("Set Use MDP to %v", config.Settings.Search.UseMDP)
-}
-
-func useMpp(u *UciHandler, o *uciOption) {
-	v, _ := strconv.ParseBool(o.CurrentValue)
-	config.Settings.Search.UseMPP = v
-	log.Debugf("Set Use MPP to %v", config.Settings.Search.UseMPP)
 }
 
 func useKiller(u *UciHandler, o *uciOption) {

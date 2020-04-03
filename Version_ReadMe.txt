@@ -6,13 +6,13 @@ v 0.x (planned)
     - IID??
     - Aspiration
 
-v 0.7 (planned)
+v 0.7 (in progress)
 ================================================================================
 - TODO
+    - Remove MPP if not worth
     - Null Move
     - Other Prunings
     - Use TestSuites, TreeSize and Arena to test features
-    - Remove MPP if not worth
     - Better Evaluation
     - Pawn Structure Cache
     - Performance/Profiling/Testing
