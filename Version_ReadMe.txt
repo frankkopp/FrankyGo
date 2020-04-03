@@ -17,7 +17,7 @@ v 0.7 (planned)
     - Pawn Structure Cache
     - Performance/Profiling/Testing
 
-v 0.6 (in progress)
+v 0.6 (done)
 ================================================================================
 - DONE
     - Enhance TestSuite / run from command line options
