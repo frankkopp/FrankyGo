@@ -115,6 +115,46 @@ func TestBlunderTests(t *testing.T) {
 
 // Results for Test Suite
 // ------------------------------------------------------------------------------------------------------------------------------------
+// EPD File:   testsets/mate_test_suite.epd
+// SearchTime: 15.000 ms
+// MaxDepth:   0
+// Date:       2020-04-03 10:13:27.7114253 +0200 CEST
+// ====================================================================================================================================
+//  Nr. | Result     | Move     | Value    | Expected Result | Fen| Id
+// ====================================================================================================================================
+// 1    | Success    | f1e2     | mate 3   | dm 3               | 4r1b1/1p4B1/pN2pR2/RB2k3/1P2N2p/2p3b1/n2P1p1r/5K1n w - - |
+// 2    | Success    | a6b7     | mate 3   | dm 3               | b7/p1BR2pK/B1p5/pNk3p1/Pp4Pp/1P3n2/4R2r/7n w - - |
+// 3    | Success    | b3b6     | mate 3   | dm 3               | 6K1/n1P2N1p/6pr/b1pp3b/n2Bp1k1/1R2R1Pp/3p1P2/2qN1B2 w - - |
+// 4    | Success    | e7e8B    | mate 3   | dm 3               | 8/2P1P1P1/3PkP2/8/4K3/8/8/8 w - - |
+// 5    | Success    | d1h5     | mate 4   | dm 4               | r4rk1/pppqbp1p/3pp1p1/8/4P3/1P1P3R/PBP2PPP/R2Q2K1 w - - |
+// 6    | Success    | h5h7     | mate 4   | dm 4               | r4qrk/ppp1b1pp/3p1p2/4pPPQ/4P2P/3PB3/PPP5/1K4RR w - - |
+// 7    | Success    | e8e3     | mate 4   | dm 4               | r3r3/p1p2p1k/3p2pp/2p5/2P2n2/2N2B2/PPR1PP1q/3RQK2 b - - |
+// 8    | Success    | d4h4     | mate 4   | dm 4               | 3r4/1p1r4/1Pp5/3p4/p2R4/K1NN4/1P6/kqBB3R w - - |
+// 9    | Success    | d4g1     | mate 4   | dm 4               | n7/3p1p2/NpkNp1p1/1p2P3/3Q4/6B1/b7/4K3 w - - |
+// 10   | Success    | d8c8     | mate 4   | dm 4               | 1b1R2B1/p1n1p3/p3P2K/N1k5/2N2P2/5P2/2PP4/R7 w - - |
+// 11   | Success    | f1a6     | mate 4   | dm 4               | K6Q/1p6/pPq4P/P2p2P1/4pP1N/7k/n5R1/1n2BB2 w - - |
+// 12   | Success    | g4h6     | mate 5   | dm 5               | 1r4k1/1b2K1pp/7b/2pp3P/6NB/2Q2pp1/4p3/5r2 w - - |
+// 13   | Success    | d1g1     | mate 5   | dm 5               | r2r4/1p1R3p/5pk1/b1B1Pp2/p4P2/P7/1P5P/1K1R4 w - - |
+// 14   | Success    | f2h1     | mate 5   | dm 5               | 5rk1/pp4p1/8/3N3p/2P4P/1P4K1/P2r1n2/R3R3 b - - |
+// 15   | Success    | h3h6     | mate 5   | dm 5               | 6b1/4Kpk1/5r2/8/3B2P1/7R/8/8 w - - |
+// 16   | Success    | a2f2     | mate 5   | dm 5               | 8/8/8/p7/8/8/R6p/2K2Rbk w - - |
+// 17   | Success    | h6c1     | mate 5   | dm 5               | b7/8/7B/7p/8/2p3r1/2P1P1pp/4K1kq w - - |
+// 18   | Success    | f8e8     | mate 5   | dm 5               | 5R2/6r1/3P4/1BBk4/8/3N4/8/K7 w - - |
+// 19   | Failed     | c3d4     | cp 447   | dm 5               | 1r1r2k1/p4ppp/1qp5/4Pb2/3b1P2/1PP2N2/P2BQ1PP/2KR3R w - - |
+// 20   | Success    | e3c5     | mate 6   | dm 6               | 4k3/8/4K3/8/4N3/4B3/3P1P2/8 w - - |
+// ====================================================================================================================================
+// Successful: 19  (95 %)
+// Failed:     1   (5 %)
+// Skipped:    0   (0 %)
+// Not tested: 0   (0 %)
+// Test time: 300.238 ms
+func TestMateTests(t *testing.T) {
+	ts, _ := NewTestSuite("testsets/mate_test_suite.epd", 15 * time.Second, 0)
+	ts.RunTests()
+}
+
+// Results for Test Suite
+// ------------------------------------------------------------------------------------------------------------------------------------
 // EPD File:   testsets/wac.epd
 // SearchTime: 5.000 ms
 // MaxDepth:   0
@@ -332,46 +372,6 @@ func TestBlunderTests(t *testing.T) {
 // Test time: 1.006.697 ms
 func TestWACTests(t *testing.T) {
 	ts, _ := NewTestSuite("testsets/wac.epd", 5 * time.Second, 0)
-	ts.RunTests()
-}
-
-// Results for Test Suite
-// ------------------------------------------------------------------------------------------------------------------------------------
-// EPD File:   testsets/mate_test_suite.epd
-// SearchTime: 15.000 ms
-// MaxDepth:   0
-// Date:       2020-04-03 10:13:27.7114253 +0200 CEST
-// ====================================================================================================================================
-//  Nr. | Result     | Move     | Value    | Expected Result | Fen| Id
-// ====================================================================================================================================
-// 1    | Success    | f1e2     | mate 3   | dm 3               | 4r1b1/1p4B1/pN2pR2/RB2k3/1P2N2p/2p3b1/n2P1p1r/5K1n w - - |
-// 2    | Success    | a6b7     | mate 3   | dm 3               | b7/p1BR2pK/B1p5/pNk3p1/Pp4Pp/1P3n2/4R2r/7n w - - |
-// 3    | Success    | b3b6     | mate 3   | dm 3               | 6K1/n1P2N1p/6pr/b1pp3b/n2Bp1k1/1R2R1Pp/3p1P2/2qN1B2 w - - |
-// 4    | Success    | e7e8B    | mate 3   | dm 3               | 8/2P1P1P1/3PkP2/8/4K3/8/8/8 w - - |
-// 5    | Success    | d1h5     | mate 4   | dm 4               | r4rk1/pppqbp1p/3pp1p1/8/4P3/1P1P3R/PBP2PPP/R2Q2K1 w - - |
-// 6    | Success    | h5h7     | mate 4   | dm 4               | r4qrk/ppp1b1pp/3p1p2/4pPPQ/4P2P/3PB3/PPP5/1K4RR w - - |
-// 7    | Success    | e8e3     | mate 4   | dm 4               | r3r3/p1p2p1k/3p2pp/2p5/2P2n2/2N2B2/PPR1PP1q/3RQK2 b - - |
-// 8    | Success    | d4h4     | mate 4   | dm 4               | 3r4/1p1r4/1Pp5/3p4/p2R4/K1NN4/1P6/kqBB3R w - - |
-// 9    | Success    | d4g1     | mate 4   | dm 4               | n7/3p1p2/NpkNp1p1/1p2P3/3Q4/6B1/b7/4K3 w - - |
-// 10   | Success    | d8c8     | mate 4   | dm 4               | 1b1R2B1/p1n1p3/p3P2K/N1k5/2N2P2/5P2/2PP4/R7 w - - |
-// 11   | Success    | f1a6     | mate 4   | dm 4               | K6Q/1p6/pPq4P/P2p2P1/4pP1N/7k/n5R1/1n2BB2 w - - |
-// 12   | Success    | g4h6     | mate 5   | dm 5               | 1r4k1/1b2K1pp/7b/2pp3P/6NB/2Q2pp1/4p3/5r2 w - - |
-// 13   | Success    | d1g1     | mate 5   | dm 5               | r2r4/1p1R3p/5pk1/b1B1Pp2/p4P2/P7/1P5P/1K1R4 w - - |
-// 14   | Success    | f2h1     | mate 5   | dm 5               | 5rk1/pp4p1/8/3N3p/2P4P/1P4K1/P2r1n2/R3R3 b - - |
-// 15   | Success    | h3h6     | mate 5   | dm 5               | 6b1/4Kpk1/5r2/8/3B2P1/7R/8/8 w - - |
-// 16   | Success    | a2f2     | mate 5   | dm 5               | 8/8/8/p7/8/8/R6p/2K2Rbk w - - |
-// 17   | Success    | h6c1     | mate 5   | dm 5               | b7/8/7B/7p/8/2p3r1/2P1P1pp/4K1kq w - - |
-// 18   | Success    | f8e8     | mate 5   | dm 5               | 5R2/6r1/3P4/1BBk4/8/3N4/8/K7 w - - |
-// 19   | Failed     | c3d4     | cp 447   | dm 5               | 1r1r2k1/p4ppp/1qp5/4Pb2/3b1P2/1PP2N2/P2BQ1PP/2KR3R w - - |
-// 20   | Success    | e3c5     | mate 6   | dm 6               | 4k3/8/4K3/8/4N3/4B3/3P1P2/8 w - - |
-// ====================================================================================================================================
-// Successful: 19  (95 %)
-// Failed:     1   (5 %)
-// Skipped:    0   (0 %)
-// Not tested: 0   (0 %)
-// Test time: 300.238 ms
-func TestMateTests(t *testing.T) {
-	ts, _ := NewTestSuite("testsets/mate_test_suite.epd", 15 * time.Second, 0)
 	ts.RunTests()
 }
 
