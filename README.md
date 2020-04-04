@@ -1,27 +1,57 @@
 # FrankyGo
 Learning Go by re-implementing FrankyUciChess
 
+FrankyGo v0.6
+=========
+
 v 0.x (planned)
 ================================================================================
-- TODO 
-    - add prunings
-    - SEE
-    
-v 0.6 (planned)
+- TODO:
+    - MultiCut Pruning
+       - https://hci.iwr.uni-heidelberg.de/system/files/private/downloads/1935772097/report_qingyang-cao_enhanced-forward-pruning.pdf
+    - IID??
+    - Aspiration
+
+v 0.7 (planned)
 ================================================================================
 - TODO
-    - SearchTreeSize
-    - TestSuite Tests
-    - Use TT
+    - Null Move
+    - Other Prunings
+    - Use TestSuites, TreeSize and Arena to test features
+    - Remove MPP if not worth
     - Better Evaluation
     - Pawn Structure Cache
+    - Performance/Profiling/Testing
 
-v 0.5 (in progress)
+v 0.6 (done)
 ================================================================================
-- TODO
-    - Testing
-
 - DONE
+    - Enhance TestSuite / run from command line options
+    - TestSuite Tests
+    - PVS
+    - Killer
+    - TT in QS
+    - MDP/MPP
+
+- Remarks
+    PVS and TT might have some dependencies which I have not fully understood yet.
+    Some engines for example only cut with TT values for alpha/beta value in non PV nodes.
+    Tests show no drop in Search strength either way and also search tree size shows no
+    obvious issues
+
+- Measurements
+    Test	Standpat	Nodes	4.837.838			        Nps	3.507.125   		        Time	1.450
+    Test	TT	        Nodes	1.763.431	63,55%	        Nps	3.137.947	10,53%	    	Time	544	62,48%
+    Test	QSTT	    Nodes	1.022.318	42,03%	        Nps	2.748.463	12,41%		    Time	379	30,33%
+    Test	MDP/MPP	    Nodes	1.010.160	1,19%	        Nps	2.769.100	-0,75%		    Time	367	3,17%
+    Test	PVS     	Nodes	893.718	    11,53%	        Nps	2.777.407	-0,30%		    Time	322	12,26%
+    Test	Killer	    Nodes	857.379	    4,07%   82,28%	Nps	2.802.207	-0,89%	20,10%	Time	309	4,04%	78,69%
+
+v 0.5 (done)
+================================================================================
+-DONE
+    - Use TT
+    - SearchTreeSize
     - Quiescence search
     - Score as string()
     - Evaluation (simple)
