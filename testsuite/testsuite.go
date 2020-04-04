@@ -81,7 +81,7 @@ const (
 	Success   resultType = iota
 )
 
-// suiteResult data structure to collect sum of the results of tests
+// SuiteResult data structure to collect sum of the results of tests
 type SuiteResult struct {
 	Counter          int
 	SuccessCounter   int

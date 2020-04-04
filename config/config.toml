@@ -35,6 +35,9 @@ UseMDP = true
 UseNullMove = true
 NmpDepth = 3
 NmpReduction = 2
+UseIID = true
+IIDDepth = 6
+IIDReduction = 2
 
 [eval]
 UsePawnCache = true

@@ -747,8 +747,7 @@ func (s *Search) sendIterationEndInfoToUci() {
 // limits the value to 15M to avoid very small times
 // returning unrealistic values.
 func (s *Search) getNps() uint64 {
-	elapsed := time.Since(s.startTime) + 100
-	nps := util.Nps(s.nodesVisited, elapsed)
+	nps := util.Nps(s.nodesVisited, time.Since(s.startTime)+100)
 	if nps > 15_000_000 { // sanity value for very short times
 		nps = 0
 	}

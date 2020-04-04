@@ -170,9 +170,6 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	bestNodeMove := MoveNone // used to store in the TT
 	ttMove := MoveNone
 	ttType := ALPHA
-	myMg := s.mg[ply]
-	myMg.ResetOnDemand()
-	s.pv[ply].Clear()
 
 	// TT Lookup
 	// Results of searches are stored in the TT to be used to
@@ -232,9 +229,8 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	// - Zugzwang - it would be better not to move
 	// - in check - this would lead to an illegal situation where the king is captured
 	// - recursive null moves should be avoided
-	//
 	if Settings.Search.UseNullMove {
-		if !isPV &&
+		if isPV &&
 			doNull &&
 			depth >= Settings.Search.NmpDepth &&
 			position.MaterialNonPawn(position.NextPlayer()) > 0 &&
@@ -242,7 +238,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 
 			// determine depth reduction
 			// ICCA Journal, Vol. 22, No. 3
-			// Ernst A. Heinz, Adaptive Null-Move Pruning, postscipt
+			// Ernst A. Heinz, Adaptive Null-Move Pruning, postscript
 			// http://people.csail.mit.edu/heinz/ps/adpt_null.ps.gz
 			r := Settings.Search.NmpReduction
 			if depth > 8 || (depth > 6 && position.GamePhase() >= 3) {
@@ -265,7 +261,8 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				return ValueNA
 			}
 
-			// if the value is higher than beta even after the null move prune it
+			// if the value is higher than beta even after making two
+			// moves it is not worth searching and it will be cut
 			if nValue >= beta {
 				s.statistics.NullMoveCuts++
 				// Store TT
@@ -276,6 +273,49 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			}
 		}
 	}
+
+	// Internal Iterative Deepening (IID)
+	// https://www.chessprogramming.org/Internal_Iterative_Deepening
+	// Used when no best move from the tt is available from a previous
+	// searches.  IID is used to find a good move to search first by
+	// searching the current position to a reduced depth, and using
+	// the best move of that search as the first move at the real depth.
+	// TODO Does not make a big difference in search tree size - needs to be tested
+	if Settings.Search.UseIID {
+		if depth >= Settings.Search.IIDDepth &&
+			ttMove != MoveNone && // no move from TT
+			doNull && // avoid in null move search
+			isPV { // TODO test if this is necessary
+
+			// get the new depth and make sure it is >0
+			newDepth := depth - Settings.Search.IIDReduction
+			if newDepth < 0 {
+				newDepth = 0
+			}
+
+			// do the actual reduced search
+			s.search(position, newDepth, ply, alpha, beta, isPV, true)
+			s.statistics.IIDsearches++
+
+			// check if we should stop the search
+			if s.stopConditions() {
+				return ValueNA
+			}
+
+			// get the best move from the reduced search if available
+			if s.pv[ply].Len() > 0 {
+				s.statistics.IIDmoves++
+				ttMove = (*s.pv[ply])[0]
+			}
+		}
+	}
+
+	// reset search
+	// !important to do this after IID!
+	// or IID need to do this itself
+	myMg := s.mg[ply]
+	myMg.ResetOnDemand()
+	s.pv[ply].Clear()
 
 	// PV Move Sort
 	// When we received a best move for the position from the
@@ -374,6 +414,10 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				// earlier in another node of the ply.
 				if value >= beta {
 					s.statistics.BetaCuts++
+					// s.log.Debugf("Beta Cuts on %d th move\n", movesSearched)
+					if movesSearched == 1 {
+						s.statistics.BetaCuts1st++
+					}
 					if Settings.Search.UseKiller {
 						myMg.StoreKiller(move)
 					}

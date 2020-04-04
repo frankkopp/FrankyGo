@@ -103,7 +103,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().NullMoveCuts
+	ptrToSpecial = &s.Statistics().IIDmoves
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
@@ -114,14 +114,14 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// + QS Standpat
 	config.Settings.Search.UseQSStandpat = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "Standpat"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "Standpat"))
 
 	// + TT
 	config.Settings.Search.UseTT = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
 
 	// + TTMove
-	config.Settings.Search.UseTTMove = true
+	// config.Settings.Search.UseTTMove = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "TTMove"))
 
 	// + TTValue
@@ -130,7 +130,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// + QS TT
 	config.Settings.Search.UseQSTT = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "QSTT"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "QSTT"))
 
 	// + MDP
 	config.Settings.Search.UseMDP = true
@@ -138,7 +138,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// PVS
 	config.Settings.Search.UsePVS = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "PVS"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "PVS"))
 
 	// PVS
 	config.Settings.Search.UseKiller = true
@@ -147,6 +147,13 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// Null Move
 	config.Settings.Search.UseNullMove = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "NMP"))
+
+	config.Settings.Search.UseTTMove = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "TTMove"))
+
+	config.Settings.Search.UseIID = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "IID"))
+
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -211,6 +218,9 @@ func SizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 	out.Println("----------------------------------------------------------------------------------------------------------------------------------------------")
 	out.Print("\n################## Totals/Avg results for each feature test ##################\n\n")
 
+	out.Printf("Date                   : %s\n", time.Now().Local())
+	out.Printf("SearchTime             : %s\n", movetime)
+	out.Printf("MaxDepth               : %d\n", depth)
 	out.Printf("Number of feature tests: %d\n", len(results[0].Tests))
 	out.Printf("Number of fens         : %d\n", len(testFens))
 	out.Printf("Total tests            : %d\n\n", len(results[0].Tests) * len(testFens))
@@ -275,6 +285,5 @@ func turnOffFeatures() {
 	config.Settings.Search.UsePVS = false
 	config.Settings.Search.UseKiller = false
 	config.Settings.Search.UseNullMove = false
-
-
+	config.Settings.Search.UseIID = false
 }

@@ -1,4 +1,4 @@
-// +build release
+// +build !debug
 
 /*
  * FrankyGo - UCI chess engine in GO for learning purposes

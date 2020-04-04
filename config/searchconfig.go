@@ -38,15 +38,18 @@ type searchConfiguration struct {
 	UseQSStandpat bool
 	UsePVS        bool
 	UseTT         bool
-	TTSize        int
-	UseTTMove     bool
-	UseTTValue    bool
-	UseQSTT       bool
-	UseMDP        bool
-	UseKiller     bool
-	UseNullMove   bool
-	NmpDepth      int
-	NmpReduction  int
+	TTSize       int
+	UseTTMove    bool
+	UseTTValue   bool
+	UseQSTT      bool
+	UseMDP       bool
+	UseKiller    bool
+	UseNullMove  bool
+	NmpDepth     int
+	NmpReduction int
+	UseIID       bool
+	IIDDepth     int
+	IIDReduction int
 }
 
 // sets defaults which might be overwritten by config file
@@ -69,6 +72,10 @@ func init() {
 	Settings.Search.UseNullMove = true
 	Settings.Search.NmpDepth = 3
 	Settings.Search.NmpReduction = 2
+	Settings.Search.UseIID = true
+	Settings.Search.IIDDepth = 6
+	Settings.Search.IIDReduction = 2
+
 }
 
 // set defaults for configurations here in case a configuration

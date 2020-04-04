@@ -47,6 +47,7 @@ func init() {
 		"Use_Mdp":    {NameID: "Use_Mdp", HandlerFunc: useMdp, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseMDP), CurrentValue: strconv.FormatBool(config.Settings.Search.UseMDP)},
 		"Use_Killer": {NameID: "Use_Killer", HandlerFunc: useKiller, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseKiller), CurrentValue: strconv.FormatBool(config.Settings.Search.UseKiller)},
 		"Use_NullMove": {NameID: "Use_NullMove", HandlerFunc: useNullMove, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseNullMove), CurrentValue: strconv.FormatBool(config.Settings.Search.UseNullMove)},
+		"Use_IID": {NameID: "Use_IID", HandlerFunc: useIID, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseIID), CurrentValue: strconv.FormatBool(config.Settings.Search.UseIID)},
 	}
 	sortOrderUciOptions = []string{
 		"Clear Hash",
@@ -60,6 +61,7 @@ func init() {
 		"Use_Killer",
 		"Use_Mdp",
 		"Use_NullMove",
+		"Use_IID",
 	}
 }
 
@@ -218,4 +220,10 @@ func useNullMove(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	config.Settings.Search.UseNullMove = v
 	log.Debugf("Set Use Null Move Pruning to %v", config.Settings.Search.UseNullMove)
+}
+
+func useIID(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	config.Settings.Search.UseIID = v
+	log.Debugf("Set Use IID to %v", config.Settings.Search.UseIID)
 }

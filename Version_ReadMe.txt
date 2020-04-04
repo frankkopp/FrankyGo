@@ -3,7 +3,6 @@ v 0.x (planned)
 - TODO:
     - MultiCut Pruning
        - https://hci.iwr.uni-heidelberg.de/system/files/private/downloads/1935772097/report_qingyang-cao_enhanced-forward-pruning.pdf
-    - IID??
     - Aspiration
 
 v 0.7 (in progress)
@@ -16,8 +15,32 @@ v 0.7 (in progress)
     - Performance/Profiling/Testing
 
 - DONE
+    - IID
     - Null Move
     - Remove MPP if not worth
+
+Measurements:
+    With Null Move
+    Without IID
+    -----------------00 FrankyGo-----------------
+    00 FrankyGo - 00 FrankyGo -NMP : 71,0/100 59-17-24  71%  +156
+    00 FrankyGo - 20 Franky-1.0    : 37,0/100 31-57-12  37%   -92
+    00 FrankyGo - Stockfish Weak   : 64,5/100 61-32-7   65%  +108
+    -----------------00 FrankyGo -NMP-----------------
+    00 FrankyGo -NMP - 00 FrankyGo : 29,0/100 17-59-24  29%  -156
+    -----------------20 Franky-1.0-----------------
+    20 Franky-1.0 - 00 FrankyGo    : 63,0/100 57-31-12  63%   +92
+    -----------------Stockfish Weak-----------------
+    Stockfish Weak - 00 FrankyGo   : 35,5/100 32-61-7   36%  -100
+
+    Number of feature tests: 4
+    Number of fens         : 30
+    Total tests            : 120
+    Depth                  : 8
+    Test: Killer        Nodes: 336.173.679     Nps: 2.488.845    Time: 139.059    Depth:   9/22  Special: 0
+    Test: NMP           Nodes: 340.970.294     Nps: 2.545.551    Time: 141.480    Depth:   9/22  Special: 0
+    Test: TTMove        Nodes: 176.388.883     Nps: 2.532.209    Time: 77.622     Depth:   9/22  Special: 0
+    Test: IID           Nodes: 174.964.952     Nps: 2.512.220    Time: 77.746     Depth:   9/22  Special: 912
 
 v 0.6 (done)
 ================================================================================

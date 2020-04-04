@@ -45,6 +45,9 @@ import (
 var out = message.NewPrinter(language.German)
 
 func main() {
+	// defer profile.Start().Stop()
+	// defer profile.Start(profile.TraceProfile, profile.ProfilePath("./trace.out")).Stop()
+	// go tool pprof -http :8080 ./main ./prof.null/cpu.pprof
 
 	// command line args
 	versionInfo := flag.Bool("version", false, "prints version and exits")
