@@ -487,3 +487,17 @@ func Test_TimingMatvsPop2(t *testing.T) {
 		out.Printf("Test per sec %d tps\n", (iterations*1e9)/uint64(elapsed.Nanoseconds()))
 	}
 }
+
+func TestPosition_DoNullMove(t *testing.T) {
+	var fen string
+	var position *Position
+
+	// no o-o castling / o-o-o is allowed
+	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
+	position, _ = NewPositionFen(fen)
+	p1 := *position
+	position.DoNullMove()
+	position.UndoNullMove()
+	assert.Equal(t, p1.StringFen(), position.StringFen())
+	assert.Equal(t, p1.ZobristKey(), position.ZobristKey())
+}

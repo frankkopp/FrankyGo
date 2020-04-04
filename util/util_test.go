@@ -27,8 +27,9 @@
 package util
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAbs(t *testing.T) {
@@ -61,3 +62,4 @@ func BenchmarkMin64(b *testing.B) {
 	}
 	result = tmp
 }
+

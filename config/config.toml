@@ -32,6 +32,9 @@ UseKiller = true
 
 # prunings
 UseMDP = true
+UseNullMove = true
+NmpDepth = 3
+NmpReduction = 2
 
 [eval]
 UsePawnCache = true

@@ -231,7 +231,7 @@ func (ts *TestSuite) RunTests() {
 	out.Printf("Skipped:    %-3d (%d %%)\n", tr.SkippedCounter, 100*tr.SkippedCounter/tr.Counter)
 	out.Printf("Not tested: %-3d (%d %%)\n", tr.NotTestedCounter, 100*tr.NotTestedCounter/tr.Counter)
 	out.Printf("\n")
-	out.Printf("Test time: %d ms\n", elapsed.Milliseconds())
+	out.Printf("Test time: %s\n", elapsed)
 }
 
 // determines which test type the test is and call the appropriate

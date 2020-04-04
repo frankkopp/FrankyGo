@@ -92,15 +92,15 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 			// PVS
 			// Initial PVS move are search without PVS uses full search window.
 			if !Settings.Search.UsePVS || i == 0 {
-				value = -s.search(position, depth-1, 1, -beta, -alpha, true)
+				value = -s.search(position, depth-1, 1, -beta, -alpha, true, true)
 			} else {
 				// Null window search after the initial PV search.
-				value = -s.search(position, depth-1, 1, -alpha-1, -alpha, false)
+				value = -s.search(position, depth-1, 1, -alpha-1, -alpha, false, true)
 				// If this move improved alpha without exceeding beta we do a proper full window
 				// search to get an accurate score.
 				if value > alpha && value < beta && !s.stopConditions() {
 					s.statistics.RootPvsResearches++
-					value = -s.search(position, depth-1, 1, -beta, -alpha, true)
+					value = -s.search(position, depth-1, 1, -beta, -alpha, true, true)
 				}
 			}
 			// ///////////////////////////////////////////////////////////////////
@@ -133,7 +133,7 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 	// ///////////////////////////////////////////////////////
 }
 
-func (s *Search) search(position *position.Position, depth int, ply int, alpha Value, beta Value, isPV bool) Value {
+func (s *Search) search(position *position.Position, depth int, ply int, alpha Value, beta Value, isPV bool, doNull bool) Value {
 	if trace {
 		slog.Debugf("%0*s Ply %-2.d Depth %-2.d a:%-6.d b:%-6.d pv:%-6.v start:  %s", ply, "", ply, depth, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
 		defer slog.Debugf("%0*s Ply %-2.d Depth %-2.d a:%-6.d b:%-6.d pv:%-6.v end  :  %s", ply, "", ply, depth, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
@@ -222,6 +222,61 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 		}
 	}
 
+	// NULL MOVE PRUNING
+	// https://www.chessprogramming.org/Null_Move_Pruning
+	// Under the assumption the in most chess position it would be better
+	// do make a move than to not make a move we can assume that if
+	// our positional value after a null move is already above beta (>beta)
+	// it would be above beta when doing a move in any case.
+	// Certain situations need to be considered though:
+	// - Zugzwang - it would be better not to move
+	// - in check - this would lead to an illegal situation where the king is captured
+	// - recursive null moves should be avoided
+	//
+	if Settings.Search.UseNullMove {
+		if !isPV &&
+			doNull &&
+			depth >= Settings.Search.NmpDepth &&
+			position.MaterialNonPawn(position.NextPlayer()) > 0 &&
+			!position.HasCheck() {
+
+			// determine depth reduction
+			// ICCA Journal, Vol. 22, No. 3
+			// Ernst A. Heinz, Adaptive Null-Move Pruning, postscipt
+			// http://people.csail.mit.edu/heinz/ps/adpt_null.ps.gz
+			r := Settings.Search.NmpReduction
+			if depth > 8 || (depth > 6 && position.GamePhase() >= 3) {
+				r += 1
+			}
+			newDepth := depth - r - 1
+			// double check that depth does not get negative
+			if newDepth < 0 {
+				newDepth = 0
+			}
+
+			// do null move search
+			position.DoNullMove()
+			s.nodesVisited++
+			nValue := -s.search(position, newDepth, ply+1, -beta, -beta+1, isPV, false)
+			position.UndoNullMove()
+
+			// check if we should stop the search
+			if s.stopConditions() {
+				return ValueNA
+			}
+
+			// if the value is higher than beta even after the null move prune it
+			if nValue >= beta {
+				s.statistics.NullMoveCuts++
+				// Store TT
+				if Settings.Search.UseTT {
+					s.storeTT(position, depth, ply, ttMove, nValue, BETA)
+				}
+				return nValue
+			}
+		}
+	}
+
 	// PV Move Sort
 	// When we received a best move for the position from the
 	// TT we set it as PV move in the movegen so it will be
@@ -267,15 +322,15 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			// Initial PVS move are search without PVS uses full search window.
 			// https://www.chessprogramming.org/Principal_Variation_Search
 			if !Settings.Search.UsePVS || movesSearched == 0 {
-				value = -s.search(position, depth-1, ply+1, -beta, -alpha, true)
+				value = -s.search(position, depth-1, ply+1, -beta, -alpha, true, true)
 			} else {
 				// Null window search after the initial PV search.
-				value = -s.search(position, depth-1, ply+1, -alpha-1, -alpha, false)
+				value = -s.search(position, depth-1, ply+1, -alpha-1, -alpha, false, true)
 				// If this move improved alpha without exceeding beta we do a proper full window
 				// search to get an accurate score.
 				if value > alpha && value < beta && !s.stopConditions() {
 					s.statistics.PvsResearches++
-					value = -s.search(position, depth-1, ply+1, -beta, -alpha, true)
+					value = -s.search(position, depth-1, ply+1, -beta, -alpha, true, true)
 				}
 			}
 			// ///////////////////////////////////////////////////////////////////
@@ -319,7 +374,6 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				// earlier in another node of the ply.
 				if value >= beta {
 					s.statistics.BetaCuts++
-					// TODO Beta Move Nr stat
 					if Settings.Search.UseKiller {
 						myMg.StoreKiller(move)
 					}

@@ -103,7 +103,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().PvsResearches
+	ptrToSpecial = &s.Statistics().NullMoveCuts
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
@@ -126,7 +126,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// + TTValue
 	config.Settings.Search.UseTTValue = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
 
 	// + QS TT
 	config.Settings.Search.UseQSTT = true
@@ -134,7 +134,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// + MDP
 	config.Settings.Search.UseMDP = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "MDP"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "MDP"))
 
 	// PVS
 	config.Settings.Search.UsePVS = true
@@ -144,10 +144,9 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	config.Settings.Search.UseKiller = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "Killer"))
 
-	// MPP
-	config.Settings.Search.UseMPP = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "MPP"))
-
+	// Null Move
+	config.Settings.Search.UseNullMove = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "NMP"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -273,8 +272,9 @@ func turnOffFeatures() {
 	config.Settings.Search.UseTTValue = false
 	config.Settings.Search.UseQSTT = false
 	config.Settings.Search.UseMDP = false
-	config.Settings.Search.UseMPP = false
 	config.Settings.Search.UsePVS = false
 	config.Settings.Search.UseKiller = false
+	config.Settings.Search.UseNullMove = false
+
 
 }

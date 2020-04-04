@@ -9,13 +9,15 @@ v 0.x (planned)
 v 0.7 (in progress)
 ================================================================================
 - TODO
-    - Remove MPP if not worth
-    - Null Move
     - Other Prunings
-    - Use TestSuites, TreeSize and Arena to test features
     - Better Evaluation
     - Pawn Structure Cache
+    - Use TestSuites, TreeSize and Arena to test features
     - Performance/Profiling/Testing
+
+- DONE
+    - Null Move
+    - Remove MPP if not worth
 
 v 0.6 (done)
 ================================================================================

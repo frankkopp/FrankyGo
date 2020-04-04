@@ -270,6 +270,38 @@ func (p *Position) UndoMove() {
 	p.zobristKey = p.history[p.historyCounter].zobristKey
 }
 
+func (p *Position) DoNullMove() {
+	// save state of board for undo
+	p.history[p.historyCounter] = historyState{
+		p.zobristKey,
+		MoveNone,
+		PieceNone,
+		PieceNone,
+		p.castlingRights,
+		p.enPassantSquare,
+		p.halfMoveClock,
+		p.hasCheckFlag}
+	p.historyCounter++
+	// update state for null move
+	p.hasCheckFlag = flagTBD
+	p.clearEnPassant()
+	p.nextHalfMoveNumber++
+	p.nextPlayer = p.nextPlayer.Flip()
+	p.zobristKey ^= zobristBase.nextPlayer
+}
+
+func (p *Position) UndoNullMove() {
+	// Restore state
+	p.historyCounter--
+	p.nextHalfMoveNumber--
+	p.nextPlayer = p.nextPlayer.Flip()
+	p.castlingRights = p.history[p.historyCounter].castlingRights
+	p.enPassantSquare = p.history[p.historyCounter].enpassantSquare
+	p.halfMoveClock = p.history[p.historyCounter].halfMoveClock
+	p.hasCheckFlag = p.history[p.historyCounter].hasCheckFlag
+	p.zobristKey = p.history[p.historyCounter].zobristKey
+}
+
 // IsAttacked checks if the given square is attacked by a piece
 // of the given color.
 func (p *Position) IsAttacked(sq Square, by Color) bool {
@@ -476,8 +508,8 @@ func (p *Position) CheckRepetitions(reps int) bool {
 	   [7]     491763876012767476  <<< history
 	   [8]     3185849660387886977 <<< 3rd REPETITION from current zobrist
 	*/
-	counter      := 0
-	i            := p.historyCounter - 2
+	counter := 0
+	i := p.historyCounter - 2
 	lastHalfMove := p.halfMoveClock
 	for i >= 0 {
 		// every time the half move clock gets reset (non reversible position) there
@@ -509,7 +541,7 @@ func (p *Position) HasInsufficientMaterial() bool {
 
 	// no material
 	// both sides have a bare king
-	if p.material[White] + p.material[Black] == 0 {
+	if p.material[White]+p.material[Black] == 0 {
 		return true
 	}
 
@@ -521,17 +553,17 @@ func (p *Position) HasInsufficientMaterial() bool {
 			return true
 		}
 		// the weaker side has a minor piece against two knights
-		if (p.materialNonPawn[White] == 2 * Knight.ValueOf() && p.materialNonPawn[Black] <= Bishop.ValueOf()) ||
-			(p.materialNonPawn[Black] == 2 * Knight.ValueOf() && p.materialNonPawn[White] <= Bishop.ValueOf()) {
+		if (p.materialNonPawn[White] == 2*Knight.ValueOf() && p.materialNonPawn[Black] <= Bishop.ValueOf()) ||
+			(p.materialNonPawn[Black] == 2*Knight.ValueOf() && p.materialNonPawn[White] <= Bishop.ValueOf()) {
 			return true
 		}
 		// two bishops draw against a bishop
-		if (p.materialNonPawn[White] == 2 * Bishop.ValueOf() && p.materialNonPawn[Black] == Bishop.ValueOf()) ||
-			(p.materialNonPawn[Black] == 2 * Bishop.ValueOf() && p.materialNonPawn[White] == Bishop.ValueOf()) {
+		if (p.materialNonPawn[White] == 2*Bishop.ValueOf() && p.materialNonPawn[Black] == Bishop.ValueOf()) ||
+			(p.materialNonPawn[Black] == 2*Bishop.ValueOf() && p.materialNonPawn[White] == Bishop.ValueOf()) {
 			return true
 		}
 		// one side has two bishops a mate can be forced
-		if p.materialNonPawn[White] == 2 * Bishop.ValueOf()  || p.materialNonPawn[Black] == 2 * Bishop.ValueOf() {
+		if p.materialNonPawn[White] == 2*Bishop.ValueOf() || p.materialNonPawn[Black] == 2*Bishop.ValueOf() {
 			return false
 		}
 		// two minor pieces against one draw, except when the stronger side has a bishop pair
@@ -1064,6 +1096,12 @@ func (p *Position) Material(c Color) Value {
 	return p.material[c]
 }
 
+// MaterialNonPawn returns the non pawn material value for
+// given color
+func (p *Position) MaterialNonPawn(c Color) Value {
+	return p.materialNonPawn[c]
+}
+
 // PsqMidValue returns the positional value for the given color
 // for early game phases. Best used together with a game phase
 // factor
@@ -1096,4 +1134,3 @@ func (p *Position) LastCapturedPiece() Piece {
 	}
 	return p.history[p.historyCounter-1].capturedPiece
 }
-

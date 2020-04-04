@@ -37,6 +37,8 @@ import (
 
 // Statistics are extra data and stats not essential for a functioning search
 type Statistics struct {
+	NullMoveCuts           uint64
+
 	CurrentIterationDepth    int
 	CurrentSearchDepth       int
 	CurrentExtraSearchDepth  int
