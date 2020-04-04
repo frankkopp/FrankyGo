@@ -3,6 +3,11 @@
   <component name="Go" enabled="true">
     <buildTags>
       <option name="compiler" value="gc" />
+      <option name="customFlags">
+        <array>
+          <option value="release" />
+        </array>
+      </option>
     </buildTags>
   </component>
   <component name="GoLibraries">
