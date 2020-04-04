@@ -325,19 +325,12 @@ func (mg *Movegen) HasLegalMove(position *position.Position) bool {
 	occupiedBb := position.OccupiedAll()
 
 	// pawn pushes - check step one to unoccupied squares
+	// don't have to test double steps as they would be redundant to single steps
+	// for the purpose of finding at least one legal move
 	tmpMoves = ShiftBitboard(myPawns, Direction(nextPlayer.MoveDirection())*North) &^ occupiedBb
-	// double pawn steps
-	tmpMoves2 := ShiftBitboard(tmpMoves&nextPlayer.PawnDoubleRank(), Direction(nextPlayer.MoveDirection())*North) &^ occupiedBb
 	for tmpMoves != 0 {
 		toSquare := tmpMoves.PopLsb()
 		fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection()) * North)
-		if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
-			return true
-		}
-	}
-	for tmpMoves2 != 0 {
-		toSquare := tmpMoves2.PopLsb()
-		fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection()) * North).To(Direction(nextPlayer.Flip().MoveDirection()) * North)
 		if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
 			return true
 		}
