@@ -28,38 +28,22 @@ package util
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
-func TestAbs(t *testing.T) {
-	assert.Equal(t, 5, Abs(-5))
-	assert.Equal(t, 5, Abs(5))
-	assert.Equal(t, int64(5), Abs64(int64(-5)))
-	assert.Equal(t, int64(5), Abs64(int64(5)))
-}
+var Result = false
 
-func TestMinMax(t *testing.T) {
-	assert.Equal(t, -5, Min(-5, -3))
-	assert.Equal(t, -3, Max(-5, -3))
-	assert.Equal(t, int64(-5), Min64(int64(-5), int64(-3)))
-	assert.Equal(t, int64(-3), Max64(int64(-5), int64(-3)))
-}
-
-var tmp, result int64
-var index int64
-
-func BenchmarkMax64(b *testing.B) {
-	for index = -int64(b.N); index < int64(b.N); index++ {
-		tmp = Max64(index, index+2)
+func BenchmarkAtomicBool(b *testing.B) {
+	atomicBool := NewBool(Result)
+	for i := 0; i < b.N; i++ {
+		atomicBool.CAS(Result, !Result)
+		Result = atomicBool.Load()
 	}
-	result = tmp
 }
 
-func BenchmarkMin64(b *testing.B) {
-	for index = -int64(b.N); index < int64(b.N); index++ {
-		tmp = Min64(index, index+2)
+func BenchmarkBool(b *testing.B) {
+	bool2 := Result
+	for i := 0; i < b.N; i++ {
+		bool2 = !Result
+		Result = bool2
 	}
-	result = tmp
 }
-
