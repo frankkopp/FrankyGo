@@ -443,19 +443,6 @@ func TestPseudoLegalPVKiller(t *testing.T) {
 
 }
 
-// MoveList
-// GeneratePseudoLegalMoves took 6.948.781.000 ns for 1.000.000 iterations
-// GeneratePseudoLegalMoves took 6.948 ns
-// GeneratePseudoLegalMoves 86.000.000 generated 12.376.271 mps
-// Move Array
-// GeneratePseudoLegalMoves took 3.050.877.900 ns for 1.000.000 iterations
-// GeneratePseudoLegalMoves took 3.050 ns
-// GeneratePseudoLegalMoves 86.000.000 generated 28.188.607 mps
-// MoveArray with ForEach cleanup of moves
-// GeneratePseudoLegalMoves took 1.965.578.500 ns for 1.000.000 iterations
-// GeneratePseudoLegalMoves took 1.965 ns
-// GeneratePseudoLegalMoves 86.000.000 generated 43.753.022 mps
-//noinspection GoUnhandledErrorResult
 func TestTimingPseudoMoveGen(t *testing.T) {
 	out := message.NewPrinter(language.German)
 

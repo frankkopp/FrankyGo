@@ -673,7 +673,7 @@ func (s *Search) evaluate(position *position.Position) Value {
 	return s.eval.Evaluate(position)
 }
 
-// reduce the number of move searched in quiescence search by trying
+// reduce the number of moves searched in quiescence search by trying
 // to only look at good captures. Might be improved with SEE in the
 // future
 func (s *Search) goodCapture(p *position.Position, move Move) bool {

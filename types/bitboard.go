@@ -492,6 +492,10 @@ const (
 	DiagDownC1 Bitboard = (DiagDownD1 >> 1) & FileHMask
 	DiagDownB1 Bitboard = (DiagDownC1 >> 1) & FileHMask
 	DiagDownA1 Bitboard = (DiagDownB1 >> 1) & FileHMask
+
+	CenterFiles   Bitboard = FileD_Bb | FileE_Bb
+	CenterRanks   Bitboard = Rank4_Bb | Rank5_Bb
+	CenterSquares Bitboard = CenterFiles & CenterRanks
 )
 
 // ////////////////////
@@ -656,6 +660,10 @@ var (
 	// Needs to be initialized with initBb()
 	rankBb [8]Bitboard
 
+	// Internal pre computed file bitboard array.
+	// Needs to be initialized with initBb()
+	fileBb [8]Bitboard
+
 	// Internal pre computed index for quick square distance lookup
 	squareDistance [SqLength][SqLength]int
 
@@ -712,7 +720,7 @@ var (
 	queenSideCastleMask [2]Bitboard
 
 	// array to store all possible CastlingRights for squares which impact castlings
-	castlingRights[SqLength] CastlingRights
+	castlingRights [SqLength]CastlingRights
 
 	// mask for all white  and black squares
 	squaresBb [2]Bitboard
@@ -728,7 +736,7 @@ var (
 // Pre computes various bitboards to avoid runtime calculation
 func initBb() {
 	squareBitboardsPreCompute()
-	rankBbPreCompute()
+	rankFileBbPreCompute()
 	castleMasksPreCompute()
 	squareDistancePreCompute()
 	movesRankPreCompute()
@@ -744,9 +752,12 @@ func initBb() {
 	centerDistancePreCompute()
 }
 
-func rankBbPreCompute() {
+func rankFileBbPreCompute() {
 	for i := Rank1; i <= Rank8; i++ {
 		rankBb[i] = Rank1_Bb << (8 * i)
+	}
+	for i := FileA; i <= FileH; i++ {
+		fileBb[i] = FileA_Bb << i
 	}
 }
 

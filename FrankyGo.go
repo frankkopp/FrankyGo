@@ -46,7 +46,7 @@ var out = message.NewPrinter(language.German)
 
 func main() {
 	// defer profile.Start().Stop()
-	// defer profile.Start(profile.TraceProfile, profile.ProfilePath("./trace.out")).Stop()
+	// defer profile.Start(profile.TraceProfile, profile.ProfilePath(".")).Stop()
 	// go tool pprof -http :8080 ./main ./prof.null/cpu.pprof
 
 	// command line args

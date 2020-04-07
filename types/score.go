@@ -26,40 +26,36 @@
 
 package types
 
-// File represents a chess board file a-h
-type File uint8
-
-// File represents a chess board file a-h
-//noinspection GoUnusedConst
-const (
-	FileA    File = iota
-	FileB    File = iota
-	FileC    File = iota
-	FileD    File = iota
-	FileE    File = iota
-	FileF    File = iota
-	FileG    File = iota
-	FileH    File = iota
-	FileNone File = iota
+import (
+	"fmt"
 )
 
-// IsValid checks if f represents a valid file
-func (f File) IsValid() bool {
-	return f < FileNone
+// Score is a small struct for mid game and end game values
+type Score struct {
+	MidGameValue int
+	EndGameValue int
 }
 
-const fileLabels string = "abcdefgh"
-
-// Bb returns a Bitboard of the given file
-func (f File) Bb() Bitboard {
-	return fileBb[f]
+// Add adds the corresponding parts of the given score to the
+// calling score
+func (s *Score) Add(a Score) {
+	s.MidGameValue += a.MidGameValue
+	s.EndGameValue += a.EndGameValue
 }
 
-// String returns a string letter for the file (e.g. a - h)
-// if f is not a valid file returns "-"
-func (f File) String() string {
-	if f > FileH {
-		return "-"
-	}
-	return string(fileLabels[f])
+// Sub subtracts the corresponding parts of the given score from the
+// calling score
+func (s *Score) Sub(a Score) {
+	s.MidGameValue -= a.MidGameValue
+	s.EndGameValue -= a.EndGameValue
+}
+
+// ValueFromScore adds up the mid and end games scores after multiplying
+// them with the game phase factor
+func (s * Score) ValueFromScore(gpf float64) Value {
+	return Value(float64(s.MidGameValue)*gpf) + Value(float64(s.EndGameValue)*(1.0-gpf))
+}
+
+func (s *Score) String() string {
+	return fmt.Sprintf("{ mid:%d end:%d }", s.MidGameValue, s.EndGameValue)
 }

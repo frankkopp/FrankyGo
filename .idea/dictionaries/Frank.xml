@@ -10,7 +10,9 @@
       <w>bufio</w>
       <w>castlings</w>
       <w>cmds</w>
+      <w>debugf</w>
       <w>diagstart</w>
+      <w>disamb</w>
       <w>dosomething</w>
       <w>dsfile</w>
       <w>enpassant</w>
@@ -25,6 +27,7 @@
       <w>kpnbrq</w>
       <w>loglvl</w>
       <w>logpath</w>
+      <w>malus</w>
       <w>movearray</w>
       <w>movegen</w>
       <w>movegens</w>
@@ -38,11 +41,13 @@
       <w>permill</w>
       <w>ponderhit</w>
       <w>pppppppp</w>
+      <w>pprof</w>
       <w>prunings</w>
       <w>qsearch</w>
       <w>qstt</w>
       <w>readyok</w>
       <w>rnbqkbnr</w>
+      <w>searchdepth</w>
       <w>searchlog</w>
       <w>searchloglvl</w>
       <w>searchtreesize</w>
@@ -53,7 +58,10 @@
       <w>startpos</w>
       <w>stockfish</w>
       <w>subcommand</w>
+      <w>testdepth</w>
       <w>testsets</w>
+      <w>testsuite</w>
+      <w>testtime</w>
       <w>transpositiontable</w>
       <w>ucihandler</w>
       <w>ucinewgame</w>

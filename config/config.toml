@@ -40,7 +40,29 @@ IIDDepth = 6
 IIDReduction = 2
 
 [eval]
-UsePawnCache = true
-PawnCacheSize = 64
+UsePawnCache = true # not implemented yet
+PawnCacheSize = 64  # not implemented yet
+
+UseLazyEval = true
+LazyEvalThreshold = 700
+
 # Evaluation values
 Tempo = 30
+
+UseMobility = true
+MobilityBonus = 5           # per piece and attacked square
+
+UseAdvancedPieceEval = true
+KingRingAttacksBonus = 10   # per piece and attacked king ring square
+BishopPairBonus = 20        # once
+MinorBehindPawnBonus = 15   # per piece and times game phase
+BishopPawnMalus = 5         # per pawn and times ~game phase
+BishopCenterAimBonus = 20   # per bishop and times game phase
+BishopBlockedMalus = 40     # per bishop
+RookOnQueenFileBonus = 6    # per rook
+RookOnOpenFileBonus = 25    # per rook and time game phase
+RookTrappedMalus = 40       # per rook and time game phase
+
+UseKingEval = true
+KingDangerMalus = 50        # number of number of attacker - defender times malus if attacker > defender
+KingDefenderBonus = 10      # number of number of defender - attacker times bonus if attacker <= defender

@@ -4,6 +4,12 @@ v 0.x (planned)
     - MultiCut Pruning
        - https://hci.iwr.uni-heidelberg.de/system/files/private/downloads/1935772097/report_qingyang-cao_enhanced-forward-pruning.pdf
     - Aspiration
+    - SEE
+    - Magic Bitboards
+    - NullMove Threat Detection
+    - LMR
+    - FP
+    - Ext
 
 v 0.7 (in progress)
 ================================================================================
@@ -11,10 +17,10 @@ v 0.7 (in progress)
     - Other Prunings
     - Better Evaluation
     - Pawn Structure Cache
-    - Use TestSuites, TreeSize and Arena to test features
     - Performance/Profiling/Testing
 
 - DONE
+    - Use TestSuites, TreeSize and Arena to test features
     - IID
     - Null Move
     - Remove MPP if not worth
@@ -26,12 +32,14 @@ Measurements:
     00 FrankyGo - 00 FrankyGo -NMP : 71,0/100 59-17-24  71%  +156
     00 FrankyGo - 20 Franky-1.0    : 37,0/100 31-57-12  37%   -92
     00 FrankyGo - Stockfish Weak   : 64,5/100 61-32-7   65%  +108
-    -----------------00 FrankyGo -NMP-----------------
-    00 FrankyGo -NMP - 00 FrankyGo : 29,0/100 17-59-24  29%  -156
-    -----------------20 Franky-1.0-----------------
-    20 Franky-1.0 - 00 FrankyGo    : 63,0/100 57-31-12  63%   +92
-    -----------------Stockfish Weak-----------------
-    Stockfish Weak - 00 FrankyGo   : 35,5/100 32-61-7   36%  -100
+
+    With Null Move and IID
+    -----------------00 FrankyGo-----------------
+    00 FrankyGo - 00 FrankyGo -IID : 51,0/100 27-25-48 51%    +7
+    00 FrankyGo - 20 Franky-1.0    : 37,5/100 32-57-11 38%   -85
+    00 FrankyGo - Stockfish Weak   : 66,5/100 61-28-11 67%  +123
+
+
 
     Number of feature tests: 4
     Number of fens         : 30

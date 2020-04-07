@@ -226,11 +226,15 @@ func (ts *TestSuite) RunTests() {
 		}
 	}
 	out.Printf("====================================================================================================================================\n")
+	out.Printf("Summary:\n")
+	out.Printf("EPD File:   %s\n", ts.FilePath)
+	out.Printf("SearchTime: %d ms\n", ts.Time.Milliseconds())
+	out.Printf("MaxDepth:   %d\n", ts.Depth)
+	out.Printf("Date:       %s\n", time.Now().Local())
 	out.Printf("Successful: %-3d (%d %%)\n", tr.SuccessCounter, 100*tr.SuccessCounter/tr.Counter)
 	out.Printf("Failed:     %-3d (%d %%)\n", tr.FailedCounter, 100*tr.FailedCounter/tr.Counter)
 	out.Printf("Skipped:    %-3d (%d %%)\n", tr.SkippedCounter, 100*tr.SkippedCounter/tr.Counter)
 	out.Printf("Not tested: %-3d (%d %%)\n", tr.NotTestedCounter, 100*tr.NotTestedCounter/tr.Counter)
-	out.Printf("\n")
 	out.Printf("Test time: %s\n", elapsed)
 }
 

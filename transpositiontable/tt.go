@@ -187,7 +187,7 @@ func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, val
 	if value.IsValid() {
 		move = move.SetValue(value)
 	} else {
-		log.Warningf("TT Put: Tried to store an invalid value into the TT %s", value.String())
+		log.Warningf("TT Put: Tried to store an invalid Value into the TT %s (%d)", value.String(), int(value))
 	}
 
 	tt.Stats.numberOfPuts++

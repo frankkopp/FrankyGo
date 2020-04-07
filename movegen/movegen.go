@@ -933,6 +933,7 @@ func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, ml *
 
 		for pieces != 0 {
 			fromSquare := pieces.PopLsb()
+			// TODO: use magic bitboard attack lookup
 			pseudoMoves := GetPseudoAttacks(pt, fromSquare)
 
 			// captures

@@ -139,14 +139,22 @@ const (
 // // Public
 // //////////////////////////////////////////////////////
 
-// NewPosition creates a new position with Start fen as default
-func NewPosition() *Position {
-	fen, _ := NewPositionFen(StartFen)
-	return fen
+// NewPosition creates a new position.
+// When called without an argument the position will have the start position
+// When a fen string is given it will create a position with based on this fen.
+// Additional fens/strings are ignored
+func NewPosition(fen ...string) *Position {
+	if len(fen) == 0 {
+		f, _ := NewPositionFen(StartFen)
+		return f
+	}
+	f, _ := NewPositionFen(fen[0])
+	return f
 }
 
 // NewPositionFen creates a new position with the given fen string
 // as board position
+// It returns nil and an error if the fen was invalid.
 func NewPositionFen(fen string) (*Position, error) {
 	p := &Position{}
 	if e := p.setupBoard(fen); e != nil {
@@ -270,6 +278,12 @@ func (p *Position) UndoMove() {
 	p.zobristKey = p.history[p.historyCounter].zobristKey
 }
 
+// DoNullMove is used in Null Move Pruning. The position is basically unchanged but
+// the next player changes. The state before the null move will be stored to
+// history.
+// The history entry will be changed. So in effect after an UndoNullMove()
+// the external view on the position is unchanged (e.g. fenBeforeNull == fenAfterNull
+// and zobristBeforeNull == zobristAfterNull but positionBeforeNull != positionAfterNull.
 func (p *Position) DoNullMove() {
 	// save state of board for undo
 	p.history[p.historyCounter] = historyState{
@@ -290,6 +304,13 @@ func (p *Position) DoNullMove() {
 	p.zobristKey ^= zobristBase.nextPlayer
 }
 
+// UndoNullMove restores the state of the position to before the DoNullMove() call.
+// The history entry will be changed but the history counter reset. So in effect
+// the external view on the position is unchanged (e.g. fenBeforeNull == fenAfterNull
+// and zobristBeforeNull == zobristAfterNull but positionBeforeNull != positionAfterNull
+// If positionBeforeNull != positionAfterNull would be required this function would have
+// to be changed to reset the history entry as well. Currently this is not necessary
+// and therefore we spare the time to do this.
 func (p *Position) UndoNullMove() {
 	// Restore state
 	p.historyCounter--

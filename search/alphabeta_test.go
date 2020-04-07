@@ -30,6 +30,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/pkg/profile"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/frankkopp/FrankyGo/config"
@@ -68,17 +69,20 @@ func TestMate(t *testing.T) {
 }
 
 func TestTiming(t *testing.T) {
+	defer profile.Start().Stop()
 	config.Settings.Search.UseBook = false
+	config.Settings.Eval.UseMobility = true
+	config.Settings.Eval.UseAdvancedPieceEval = true
 	s:= NewSearch()
 	p := position.NewPosition()
 	sl:=NewSearchLimits()
 	// sl.Depth = 10
 	sl.TimeControl = true
-	sl.MoveTime = 10 * time.Second
+	sl.MoveTime = 60 * time.Second
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
-	out.Println("TT : ", s.tt.String())
-	out.Println("NPS: ", util.Nps(s.nodesVisited, s.lastSearchResult.SearchTime))
+	out.Println("TT  : ", s.tt.String())
+	out.Println("NPS : ", util.Nps(s.nodesVisited, s.lastSearchResult.SearchTime))
 }
 
 
