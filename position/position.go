@@ -327,6 +327,9 @@ func (p *Position) UndoNullMove() {
 // of the given color.
 func (p *Position) IsAttacked(sq Square, by Color) bool {
 
+	// to test if a position is attacked we do a reverse attack from the
+	// target square to see if we hit a piece of the same or similar type
+
 	// non sliding
 	if (GetPawnAttacks(by.Flip(), sq)&p.piecesBb[by][Pawn] != 0) || // check pawns
 		(GetPseudoAttacks(Knight, sq)&p.piecesBb[by][Knight] != 0) || // check knights
@@ -334,8 +337,15 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 		return true
 	}
 
+	// New code - slower see tests
+	// we do check a reverse attack with a queen to see if we can hit any other sliders. If yes
+	// they also could hit us which means the square is attacked.
+	// if	(GetAttacksBb(Queen, sq, p.OccupiedAll())&(p.piecesBb[by][Rook]|p.piecesBb[by][Bishop]|p.piecesBb[by][Queen]) > 0) {
+	// 	return true
+	// }
+
 	// sliding rooks and queens
-	if (GetPseudoAttacks(Rook, sq)&p.piecesBb[by][Rook] != 0 || (GetPseudoAttacks(Queen, sq)&p.piecesBb[by][Queen] != 0)) &&
+	if (GetPseudoAttacks(Rook, sq)&p.piecesBb[by][Rook] != 0 || (GetPseudoAttacks(Rook, sq)&p.piecesBb[by][Queen] != 0)) &&
 		(((GetMovesOnRank(sq, p.OccupiedAll()) |
 			GetMovesOnFileRotated(sq, p.occupiedBbL90[White]|p.occupiedBbL90[Black])) &
 			(p.piecesBb[by][Rook] | p.piecesBb[by][Queen])) != 0) {
@@ -343,7 +353,7 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 	}
 
 	// sliding bishop and queens
-	if (GetPseudoAttacks(Bishop, sq)&p.piecesBb[by][Bishop] != 0 || (GetPseudoAttacks(Queen, sq)&p.piecesBb[by][Queen] != 0)) &&
+	if (GetPseudoAttacks(Bishop, sq)&p.piecesBb[by][Bishop] != 0 || (GetPseudoAttacks(Bishop, sq)&p.piecesBb[by][Queen] != 0)) &&
 		(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[White]|p.occupiedBbR45[Black]) |
 			GetMovesDiagDownRotated(sq, p.occupiedBbL45[White]|p.occupiedBbL45[Black])) &
 			(p.piecesBb[by][Bishop] | p.piecesBb[by][Queen])) != 0) {

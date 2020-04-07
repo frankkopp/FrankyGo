@@ -349,15 +349,11 @@ func GetAttacksBb(pt PieceType, sq Square, occupied Bitboard) Bitboard {
 	}
 	switch pt {
 	case Bishop:
-		m := &bishopMagics[sq]
-		return m.Attacks[m.index(occupied)]
+		return bishopMagics[sq].Attacks[bishopMagics[sq].index(occupied)]
 	case Rook:
-		m := &rookMagics[sq]
-		return m.Attacks[m.index(occupied)]
+		return rookMagics[sq].Attacks[rookMagics[sq].index(occupied)]
 	case Queen:
-		mb := &bishopMagics[sq]
-		mr := &rookMagics[sq]
-		return mb.Attacks[mb.index(occupied)] | mr.Attacks[mr.index(occupied)]
+		return bishopMagics[sq].Attacks[bishopMagics[sq].index(occupied)] | rookMagics[sq].Attacks[rookMagics[sq].index(occupied)]
 	default:
 		return pseudoAttacks[pt][sq]
 	}
@@ -720,11 +716,11 @@ var (
 	pseudoAttacks [PtLength][SqLength]Bitboard
 
 	// magic bitboards - rook attacks
-	rookTable []Bitboard
+	rookTable  []Bitboard
 	rookMagics [SqLength]Magic
 
 	// magic bitboards - bishop attacks
-	bishopTable []Bitboard
+	bishopTable  []Bitboard
 	bishopMagics [SqLength]Magic
 
 	// Internal pre computed bitboards
@@ -794,8 +790,8 @@ func initBb() {
 func initMagicBitboards() {
 	start := time.Now()
 
-	rookDirections := [4]Direction {North, East, South, West }
-	bishopDirections := [4]Direction { Northeast, Southeast, Southwest, Northwest }
+	rookDirections := [4]Direction{North, East, South, West}
+	bishopDirections := [4]Direction{Northeast, Southeast, Southwest, Northwest}
 
 	rookTable = make([]Bitboard, 0x19000, 0x19000)
 	bishopTable = make([]Bitboard, 0x1480, 0x1480)

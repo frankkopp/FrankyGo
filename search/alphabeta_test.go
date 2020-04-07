@@ -71,8 +71,6 @@ func TestMate(t *testing.T) {
 func TestTiming(t *testing.T) {
 	defer profile.Start().Stop()
 	config.Settings.Search.UseBook = false
-	config.Settings.Eval.UseMobility = true
-	config.Settings.Eval.UseAdvancedPieceEval = true
 	s:= NewSearch()
 	p := position.NewPosition()
 	sl:=NewSearchLimits()

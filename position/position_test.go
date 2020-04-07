@@ -327,43 +327,6 @@ func TestPosition_WasLegalMove(t *testing.T) {
 	assert.False(t, position.IsLegalMove(CreateMove(SqE8, SqC8, Castling, PtNone)))
 }
 
-//noinspection GoUnhandledErrorResult
-func Test_TimingDoUndo(t *testing.T) {
-	out := message.NewPrinter(language.German)
-
-	const rounds = 5
-	const iterations uint64 = 10_000_000
-
-	// prepare moves
-	e2e4 := CreateMove(SqE2, SqE4, Normal, PtNone)
-	d7d5 := CreateMove(SqD7, SqD5, Normal, PtNone)
-	e4d5 := CreateMove(SqE4, SqD5, Normal, PtNone)
-	d8d5 := CreateMove(SqD8, SqD5, Normal, PtNone)
-	b1c3 := CreateMove(SqB1, SqC3, Normal, PtNone)
-
-	for r := 1; r <= rounds; r++ {
-		out.Printf("Round %d\n", r)
-		p := NewPosition()
-		start := time.Now()
-		for i := uint64(0); i < iterations; i++ {
-			p.DoMove(e2e4)
-			p.DoMove(d7d5)
-			p.DoMove(e4d5)
-			p.DoMove(d8d5)
-			p.DoMove(b1c3)
-			p.UndoMove()
-			p.UndoMove()
-			p.UndoMove()
-			p.UndoMove()
-			p.UndoMove()
-		}
-		elapsed := time.Since(start)
-		out.Printf("DoMove/UndoMove took %d ns for %d iterations with 5 do/undo pairs\n", elapsed.Nanoseconds(), iterations)
-		out.Printf("DoMove/UndoMove took %d ns per do/undo pair\n", elapsed.Nanoseconds()/int64(iterations*5))
-		out.Printf("Positions per sec %d pps\n", int64(iterations*5*1e9)/elapsed.Nanoseconds())
-	}
-}
-
 func TestPosition_CheckRepetitions(t *testing.T) {
 	// test 1
 	position := NewPosition()
@@ -390,6 +353,20 @@ func TestPosition_CheckRepetitions(t *testing.T) {
 		position.DoMove(CreateMove(SqG1, SqG2, Normal, PtNone))
 	}
 	assert.True(t, position.CheckRepetitions(2))
+}
+
+func TestPosition_DoNullMove(t *testing.T) {
+	var fen string
+	var position *Position
+
+	// no o-o castling / o-o-o is allowed
+	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
+	position, _ = NewPositionFen(fen)
+	p1 := *position
+	position.DoNullMove()
+	position.UndoNullMove()
+	assert.Equal(t, p1.StringFen(), position.StringFen())
+	assert.Equal(t, p1.ZobristKey(), position.ZobristKey())
 }
 
 func TestPosition_CheckInsufficientMaterial(t *testing.T) {
@@ -436,6 +413,43 @@ func TestPosition_CheckInsufficientMaterial(t *testing.T) {
 	position, _ = NewPositionFen("8/8/3bk1n1/8/8/8/4K3/4N3 w - -")
 	assert.True(t, position.HasInsufficientMaterial())
 
+}
+
+//noinspection GoUnhandledErrorResult
+func Test_TimingDoUndo(t *testing.T) {
+	out := message.NewPrinter(language.German)
+
+	const rounds = 5
+	const iterations uint64 = 10_000_000
+
+	// prepare moves
+	e2e4 := CreateMove(SqE2, SqE4, Normal, PtNone)
+	d7d5 := CreateMove(SqD7, SqD5, Normal, PtNone)
+	e4d5 := CreateMove(SqE4, SqD5, Normal, PtNone)
+	d8d5 := CreateMove(SqD8, SqD5, Normal, PtNone)
+	b1c3 := CreateMove(SqB1, SqC3, Normal, PtNone)
+
+	for r := 1; r <= rounds; r++ {
+		out.Printf("Round %d\n", r)
+		p := NewPosition()
+		start := time.Now()
+		for i := uint64(0); i < iterations; i++ {
+			p.DoMove(e2e4)
+			p.DoMove(d7d5)
+			p.DoMove(e4d5)
+			p.DoMove(d8d5)
+			p.DoMove(b1c3)
+			p.UndoMove()
+			p.UndoMove()
+			p.UndoMove()
+			p.UndoMove()
+			p.UndoMove()
+		}
+		elapsed := time.Since(start)
+		out.Printf("DoMove/UndoMove took %d ns for %d iterations with 5 do/undo pairs\n", elapsed.Nanoseconds(), iterations)
+		out.Printf("DoMove/UndoMove took %d ns per do/undo pair\n", elapsed.Nanoseconds()/int64(iterations*5))
+		out.Printf("Positions per sec %d pps\n", int64(iterations*5*1e9)/elapsed.Nanoseconds())
+	}
 }
 
 var res bool
@@ -488,16 +502,80 @@ func Test_TimingMatvsPop2(t *testing.T) {
 	}
 }
 
-func TestPosition_DoNullMove(t *testing.T) {
-	var fen string
-	var position *Position
+func Test_TimingIsAttacked(t *testing.T) {
+	// defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
 
-	// no o-o castling / o-o-o is allowed
-	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
-	position, _ = NewPositionFen(fen)
-	p1 := *position
-	position.DoNullMove()
-	position.UndoNullMove()
-	assert.Equal(t, p1.StringFen(), position.StringFen())
-	assert.Equal(t, p1.ZobristKey(), position.ZobristKey())
+	out := message.NewPrinter(language.German)
+
+	const rounds = 5
+	const iterations uint64 = 10_000_000
+
+	p, _ := NewPositionFen("r5k1/p1qb1p1p/1p3np1/2b2p2/2B5/2P3N1/PP2QPPP/R3N1K1 b - -")
+
+	for r := 1; r <= rounds; r++ {
+		out.Printf("Round %d\n", r)
+		start := time.Now()
+		test := false
+		for i := uint64(0); i < iterations; i++ {
+			for sq := SqA1; sq <= SqH8; sq++ {
+				test = p.IsAttacked(sq, White)
+				test = p.IsAttacked(sq, Black)
+			}
+			res = test
+		}
+		elapsed := time.Since(start)
+		out.Printf("Test took %s for %d iterations\n", elapsed, iterations)
+		out.Printf("Test took %d ns per test\n", elapsed.Nanoseconds()/int64(iterations))
+		out.Printf("Tests per sec %d tps\n", iterations*1e9/uint64(elapsed.Nanoseconds()))
+	}
+}
+
+func Benchmark(b *testing.B) {
+
+	p, _ := NewPositionFen("r5k1/p1qb1p1p/1p3np1/2b2p2/2B5/2P3N1/PP2QPPP/R3N1K1 b - -")
+	p = NewPosition()
+
+	f1 := func() {
+		for sq := SqA1; sq <= SqH8; sq++ {
+			res = GetAttacksBb(Queen, sq, p.OccupiedAll())&(p.piecesBb[White][Rook]|p.piecesBb[White][Bishop]|p.piecesBb[White][Queen]) > 0
+			res = GetAttacksBb(Queen, sq, p.OccupiedAll())&(p.piecesBb[Black][Rook]|p.piecesBb[Black][Bishop]|p.piecesBb[Black][Queen]) > 0
+		}
+	}
+
+	f2 := func() {
+		for sq := SqA1; sq <= SqH8; sq++ {
+			res = (GetPseudoAttacks(Rook, sq)&p.piecesBb[White][Rook] != 0 || (GetPseudoAttacks(Rook, sq)&p.piecesBb[White][Queen] != 0)) &&
+				(((GetMovesOnRank(sq, p.OccupiedAll()) |
+					GetMovesOnFileRotated(sq, p.occupiedBbL90[White]|p.occupiedBbL90[Black])) &
+					(p.piecesBb[White][Rook] | p.piecesBb[White][Queen])) != 0) &&
+				(GetPseudoAttacks(Bishop, sq)&p.piecesBb[White][Bishop] != 0 || (GetPseudoAttacks(Bishop, sq)&p.piecesBb[White][Queen] != 0)) &&
+				(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[White]|p.occupiedBbR45[Black]) |
+					GetMovesDiagDownRotated(sq, p.occupiedBbL45[White]|p.occupiedBbL45[Black])) &
+					(p.piecesBb[White][Bishop] | p.piecesBb[White][Queen])) != 0)
+
+			res = (GetPseudoAttacks(Rook, sq)&p.piecesBb[Black][Rook] != 0 || (GetPseudoAttacks(Rook, sq)&p.piecesBb[Black][Queen] != 0)) &&
+				(((GetMovesOnRank(sq, p.OccupiedAll()) |
+					GetMovesOnFileRotated(sq, p.occupiedBbL90[Black]|p.occupiedBbL90[Black])) &
+					(p.piecesBb[Black][Rook] | p.piecesBb[Black][Queen])) != 0) &&
+				(GetPseudoAttacks(Bishop, sq)&p.piecesBb[Black][Bishop] != 0 || (GetPseudoAttacks(Bishop, sq)&p.piecesBb[Black][Queen] != 0)) &&
+				(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[Black]|p.occupiedBbR45[Black]) |
+					GetMovesDiagDownRotated(sq, p.occupiedBbL45[Black]|p.occupiedBbL45[Black])) &
+					(p.piecesBb[Black][Bishop] | p.piecesBb[Black][Queen])) != 0)
+		}
+	}
+
+	benchmarks := []struct {
+		name string
+		f    func()
+	}{
+		{"Magic", f1},
+		{"NonMagic", f2},
+	}
+	for _, bm := range benchmarks {
+		b.Run(bm.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.f()
+			}
+		})
+	}
 }
