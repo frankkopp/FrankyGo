@@ -30,17 +30,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pkg/profile"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
-func TestAttacks_NonPawnAttacks(t *testing.T) {
+func TestAttacks(t *testing.T) {
 	p := position.NewPosition("r1b1k2r/pppp1ppp/2n2n2/1Bb1p2q/4P3/2NP1N2/1PP2PPP/R1BQK2R w KQkq -")
 	a := NewAttacks()
-	a.NonPawnAttacks(p)
+	a.Compute(p)
 
 	assert.Equal(t, p.ZobristKey(), a.Zobrist)
 	assert.EqualValues(t, SqF1.Bb()|SqG1.Bb(), a.From[White][SqH1]&^p.OccupiedBb(White))
@@ -52,22 +51,49 @@ func TestAttacks_NonPawnAttacks(t *testing.T) {
 func TestCompareWithPseudo(t *testing.T) {
 	p := position.NewPosition("r1b1k2r/pppp1ppp/2n2n2/1Bb1p2q/4P3/2NP1N2/1PP2PPP/R1BQK2R w KQkq -")
 	a := NewAttacks()
-	a.NonPawnAttacks(p)
+	a.nonPawnAttacks(p)
 	for sq := SqA1; sq <= SqH8; sq++ {
+		if p.GetPiece(sq) == PieceNone || p.GetPiece(sq).TypeOf() == Pawn {
+			continue
+		}
 		c := p.GetPiece(sq).ColorOf()
 		pt := p.GetPiece(sq).TypeOf()
-		nonMagicAttacks := a.From[c][sq].StringBoard()
-		magicAttacks := AttacksBb(pt, sq, p.OccupiedAll()).StringBoard()
-		out.Println(nonMagicAttacks)
-		out.Println(magicAttacks)
-		assert.EqualValues(t, nonMagicAttacks, magicAttacks)
+
+		// compare the Attacks build with Attack and Magic bitboards
+		// to the attacks calculated with the lopp in the local function
+		magicAttacks := a.From[c][sq]
+		nonMagicAttacks := buildAttacks(p, pt, sq)
+
+		out.Println("Non Magic Attacks:\n", magicAttacks.StringBoard())
+		out.Println("Build Attacks:\n", nonMagicAttacks.StringBoard())
+
+		assert.EqualValues(t, magicAttacks, nonMagicAttacks)
+
 		out.Println("==================================================")
 	}
-
 }
 
-func Test_TimingNonPawnAttacks(t *testing.T) {
-	defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
+// to compare magic bitboard attacks with loop generated attacks
+func buildAttacks(p *position.Position, pt PieceType, sq Square) Bitboard{
+	occupiedAll := p.OccupiedAll()
+	attacks := BbZero
+	pseudoTo := GetPseudoAttacks(pt, sq) // & ^myPieces
+	// iterate over all target squares of the piece
+	if pt < Bishop { // king, knight
+		attacks = pseudoTo
+	} else {
+		for tmp := pseudoTo; tmp != BbZero; {
+			to := tmp.PopLsb()
+			if Intermediate(sq, to)&occupiedAll == 0 {
+				attacks.PushSquare(to)
+			}
+		}
+	}
+	return attacks
+}
+
+func Test_TimingAttacks(t *testing.T) {
+	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 
 	p := position.NewPosition("r1b1k2r/pppp1ppp/2n2n2/1Bb1p2q/4P3/2NP1N2/1PP2PPP/R1BQK2R w KQkq -")
@@ -81,7 +107,7 @@ func Test_TimingNonPawnAttacks(t *testing.T) {
 		start := time.Now()
 		for i := uint64(0); i < iterations; i++ {
 			a.Clear()
-			a.NonPawnAttacks(p)
+			a.Compute(p)
 		}
 		elapsed := time.Since(start)
 		out.Printf("Test took %s for %d iterations\n", elapsed, iterations)
@@ -97,7 +123,7 @@ func Benchmark_NonPawnAttacks(b *testing.B) {
 
 	f1 := func() {
 		a.Clear()
-		a.NonPawnAttacks(p)
+		a.Compute(p)
 	}
 
 	benchmarks := []struct {

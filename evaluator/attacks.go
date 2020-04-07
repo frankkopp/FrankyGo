@@ -27,9 +27,12 @@
 package evaluator
 
 import (
+	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
+
+var log = logging.GetLog()
 
 // Attacks is a data structure to store all attacks and defends of a position.
 type Attacks struct {
@@ -49,6 +52,10 @@ type Attacks struct {
 	Piece   [ColorLength][PtLength]Bitboard
 	// sum of possible moves for each color (moves to ownPieces already excluded)
 	Mobility[ColorLength]int
+	// pawn attacks - squares attacked by pawn of the given color
+	Pawns [ColorLength]Bitboard
+	// pawn double - squares which are attacked twice by pawns of the given color
+	PawnsDouble [ColorLength]Bitboard
 }
 
 // NewAttacks creates a new instance of Attacks
@@ -77,11 +84,29 @@ func (a *Attacks) Clear() {
 	a.All[Black] = BbZero
 	a.Mobility[White] = 0
 	a.Mobility[Black] = 0
+	a.Pawns[White] = 0
+	a.Pawns[Black] = 0
+	a.PawnsDouble[White] = 0
+	a.PawnsDouble[Black] = 0
 }
 
-// NonPawnAttacks calculates all attacks of non pawn pieces including king
-func (a *Attacks) NonPawnAttacks(p *position.Position) {
+// Compute calculates all attacks on the position.
+// Stores the positions zobrist key to be able to
+// check if the position is already computed.
+// if a position is called twice the already
+// stored attacks are untouched.
+func (a *Attacks) Compute(p *position.Position) {
+	if p.ZobristKey() == a.Zobrist {
+		log.Debugf("attacks compute: position was already computed")
+		return
+	}
 	a.Zobrist = p.ZobristKey()
+	a.nonPawnAttacks(p)
+	a.pawnAttacks(p) // TODO safe time with pawn has table?
+}
+
+// nonPawnAttacks calculates all attacks of non pawn pieces including king
+func (a *Attacks) nonPawnAttacks(p *position.Position) {
 
 	ptList := [5]PieceType{King, Knight, Bishop, Rook, Queen}
 	var attacks Bitboard
@@ -90,36 +115,41 @@ func (a *Attacks) NonPawnAttacks(p *position.Position) {
 	// iterate over colors
 	for c := White; c <= Black; c++ {
 		myPieces := p.OccupiedBb(c)
-		_ = myPieces
 		// iterate over all piece types
 		for _, pt := range ptList {
 			// iterate over pieces of piece type
 			for pieces := p.PiecesBb(c, pt); pieces != BbZero; {
 				psq := pieces.PopLsb() // piece square
+
 				// attacks will include attacks to opponents pieces
 				// and defending own pieces
-				attacks = BbZero
-				// TODO: Decide if only attacks or also defends!!
-				pseudoTo := GetPseudoAttacks(pt, psq) // & ^myPieces
-				if pt < Bishop { // king, knight
-					attacks = pseudoTo
-				} else { // sliding pieces
-					// iterate over all target squares of the piece
-					// TODO: replace by magic bitboard attack lookup
-					for tmp := pseudoTo; tmp != BbZero; {
-						to := tmp.PopLsb()
-						if Intermediate(psq, to) &allPieces == 0 {
-							attacks.PushSquare(to)
-						}
-					}
-				}
+				attacks = AttacksBb(pt, psq, allPieces)
+
+				// old code
+				// Test took 7.5247449s for 10.000.000 iterations
+				// Test took 752 ns per iteration
+				// Iterations per sec 1.328.948
+				// pseudoTo := GetPseudoAttacks(pt, psq) // & ^myPieces
+				// if pt < Bishop { // king, knight
+				// 	attacks = pseudoTo
+				// } else { // sliding pieces
+				// 	// iterate over all target squares of the piece
+				// 	for tmp := pseudoTo; tmp != BbZero; {
+				// 		to := tmp.PopLsb()
+				// 		if Intermediate(psq, to) &allPieces == 0 {
+				// 			attacks.PushSquare(to)
+				// 		}
+				// 	}
+				// }
+
 				// accumulate all attacks of this piece type for the color
-				a.All[c] |= attacks
-				a.Piece[c][pt] |= attacks
 				a.From[c][psq] = attacks
+				a.Piece[c][pt] |= attacks
+				a.All[c] |= attacks
 				// store all attacks to the square
-				for pseudoTo != BbZero {
-					toSq := pseudoTo.PopLsb() // attacked square
+				tmp := attacks
+				for tmp != BbZero {
+					toSq := tmp.PopLsb() // attacked square
 					a.To[c][toSq].PushSquare(psq)
 				}
 				a.Mobility[c] += (attacks &^ myPieces).PopCount()
@@ -128,11 +158,12 @@ func (a *Attacks) NonPawnAttacks(p *position.Position) {
 	}
 }
 
-// PawnAttacks calculate all attacks for pawns.
-// TODO: It has to be possible to use stored values from
-//  the pawn hash table
-func (a *Attacks) PawnAttacks(p *position.Position) {
-	a.Zobrist = p.ZobristKey()
+// pawnAttacks calculate all attacks for pawns.
+func (a *Attacks) pawnAttacks(p *position.Position) {
+	a.Pawns[White] = ShiftBitboard(p.PiecesBb(White, Pawn), Northwest) | ShiftBitboard(p.PiecesBb(White, Pawn), Northeast)
+	a.Pawns[Black] = ShiftBitboard(p.PiecesBb(Black, Pawn), Northwest) | ShiftBitboard(p.PiecesBb(Black, Pawn), Northeast)
+	a.PawnsDouble[White] = ShiftBitboard(p.PiecesBb(White, Pawn), Northwest) & ShiftBitboard(p.PiecesBb(White, Pawn), Northeast)
+	a.PawnsDouble[Black] = ShiftBitboard(p.PiecesBb(Black, Pawn), Northwest) & ShiftBitboard(p.PiecesBb(Black, Pawn), Northeast)
 }
 
 

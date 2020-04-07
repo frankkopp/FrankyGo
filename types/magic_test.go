@@ -32,9 +32,6 @@ import (
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
-
-	"github.com/frankkopp/FrankyGo/evaluator"
-	"github.com/frankkopp/FrankyGo/position"
 )
 
 var out = message.NewPrinter(language.German)

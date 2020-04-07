@@ -177,7 +177,9 @@ func slidingAttack(directions *[4]Direction, sq Square, occupied Bitboard) Bitbo
 }
 
 // AttacksBb returns a bitboard representing all the squares attacked by a
-// piece of type Pt (bishop or rook) placed on 's'.
+// piece of the given type pt (not pawn) placed on 's'.
+// For sliding pieces this uses the pre-computed Magic Bitboard Attack arrays.
+// For Knight and King this uses the pre-computed pseudo attacks.
 // From Stockfish
 func AttacksBb(pt PieceType, s Square, occupied Bitboard) Bitboard {
 	switch pt {
