@@ -102,7 +102,7 @@ func (a *Attacks) Compute(p *position.Position) {
 	}
 	a.Zobrist = p.ZobristKey()
 	a.nonPawnAttacks(p)
-	// a.pawnAttacks(p) // TODO safe time with pawn has table?
+	a.pawnAttacks(p) // TODO safe time with pawn has table?
 }
 
 // nonPawnAttacks calculates all attacks of non pawn pieces including king
@@ -120,28 +120,9 @@ func (a *Attacks) nonPawnAttacks(p *position.Position) {
 			// iterate over pieces of piece type
 			for pieces := p.PiecesBb(c, pt); pieces != BbZero; {
 				psq := pieces.PopLsb() // piece square
-
 				// attacks will include attacks to opponents pieces
 				// and defending own pieces
-				attacks = AttacksBb(pt, psq, allPieces)
-
-				// old code
-				// Test took 7.5247449s for 10.000.000 iterations
-				// Test took 752 ns per iteration
-				// Iterations per sec 1.328.948
-				// pseudoTo := GetPseudoAttacks(pt, psq) // & ^myPieces
-				// if pt < Bishop { // king, knight
-				// 	attacks = pseudoTo
-				// } else { // sliding pieces
-				// 	// iterate over all target squares of the piece
-				// 	for tmp := pseudoTo; tmp != BbZero; {
-				// 		to := tmp.PopLsb()
-				// 		if Intermediate(psq, to) &allPieces == 0 {
-				// 			attacks.PushSquare(to)
-				// 		}
-				// 	}
-				// }
-
+				attacks = GetAttacksBb(pt, psq, allPieces)
 				// accumulate all attacks of this piece type for the color
 				a.From[c][psq] = attacks
 				a.Piece[c][pt] |= attacks

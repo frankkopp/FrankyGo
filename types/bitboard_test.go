@@ -656,7 +656,6 @@ func TestGetMovesDiagDown(t *testing.T) {
 }
 
 func Test_pseudoAttacksPreCompute(t *testing.T) {
-
 	tests := []struct {
 		name  string
 		piece PieceType

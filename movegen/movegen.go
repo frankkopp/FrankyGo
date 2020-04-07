@@ -934,6 +934,7 @@ func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, ml *
 		for pieces != 0 {
 			fromSquare := pieces.PopLsb()
 			// TODO: use magic bitboard attack lookup
+			//  measure time before and after
 			pseudoMoves := GetPseudoAttacks(pt, fromSquare)
 
 			// captures

@@ -35,21 +35,9 @@ type Magic struct {
 	Shift   uint
 }
 
-// Index calculates the index in the table for the attacks
-// https://www.chessprogramming.org/Magic_Bitboards
-//   occ      &= mBishopTbl[sq].mask;
-//   occ      *= mBishopTbl[sq].magic;
-//   occ     >>= mBishopTbl[sq].shift;
-func (m *Magic) index(occupied Bitboard) uint {
-	occ := occupied & m.Mask
-	occ = occ * m.Magic
-	occ = occ >> m.Shift
-	return uint(occ)
-}
-
 // init_magics() computes all rook and bishop attacks at startup. Magic
 // bitboards are used to look up attacks of sliding pieces. As a reference see
-// www.chessprogramming.org/Magic_Bitboards. In particular, here we use the so
+// https://www.chessprogramming.org/Magic_Bitboards. In particular, here we use the so
 // called "fancy" approach.
 // Taken from Stockfish
 func initMagics(table *[]Bitboard, magics *[64]Magic, directions *[4]Direction) {
@@ -69,18 +57,15 @@ func initMagics(table *[]Bitboard, magics *[64]Magic, directions *[4]Direction) 
 
 		// Board edges are not considered in the relevant occupancies
 		edges = ((Rank1_Bb | Rank8_Bb) &^ sq.RankOf().Bb()) | ((FileA_Bb | FileH_Bb) &^ sq.FileOf().Bb())
-		// fmt.Printf("Edge:\n%s", edges.StringBoard())
 
-		// Given a square 's', the mask is the bitboard of sliding attacks from
-		// 's' computed on an empty board. The index must be big enough to contain
+		// Given a square 'sq', the mask is the bitboard of sliding attacks from
+		// 'sq' computed on an empty board. The index must be big enough to contain
 		// all the attacks for each possible subset of the mask and so is 2 power
 		// the number of 1s of the mask. Hence we deduce the size of the shift to
-		// apply to the 64 or 32 bits word to get the index.
+		// apply to the 64 bits word to get the index.
 		m := &(*magics)[sq]
 		m.Mask = slidingAttack(directions, sq, BbZero) &^ edges
-		// fmt.Printf("Mask: \n%s\n", m.Mask.StringBoard())
 		m.Shift = uint(64 - m.Mask.PopCount())
-		// fmt.Printf("Shift: %d\n", m.Shift)
 
 		// Set the offset for the attacks table of the square. We have individual
 		// table sizes for each square with "Fancy Magic Bitboards".
@@ -90,44 +75,34 @@ func initMagics(table *[]Bitboard, magics *[64]Magic, directions *[4]Direction) 
 			m.Attacks = magics[sq-1].Attacks[size:] // instead of pointer offset use slice offset
 		}
 
-		// log.Debug("Init magic bitboards: Phase 2")
 		// Use Carry-Rippler trick to enumerate all subsets of masks[s] and
 		// store the corresponding sliding attack bitboard in reference[].
+		// https://www.chessprogramming.org/Traversing_Subsets_of_a_Set
 		b = 0
 		size = 0
 		for {
 			occupancy[size] = b
-			// fmt.Printf("occupancy[%d]: \n%s\n", size, occupancy[size].StringBoard())
 			reference[size] = slidingAttack(directions, sq, b)
-			// fmt.Printf("reference[%d]: \n%s\n", size, reference[size].StringBoard())
 			size++
-			bitboard := b - m.Mask
-			// fmt.Printf("b: \n%s\n", bitboard.StringBoard())
-			b = bitboard & m.Mask // TODO: understand this better
-			// fmt.Printf("b: \n%s\n", b.StringBoard())
+			b = (b - m.Mask) & m.Mask
 			if b == 0 { // do - while(b)
 				break
 			}
 		}
 
 		// special random number generator
-		rng := NewPrnG(seeds[sq.RankOf()])
+		rng := newPrnG(seeds[sq.RankOf()])
 
-		// log.Debug("Init magic bitboards: Phase 3")
 		// Find a magic for square 's' picking up an (almost) random number
 		// until we find the one that passes the verification test.
+		// TODO: understand this better
 		for i := 0; i < size; {
-			// fmt.Printf("Searching for Magic %d\n", i)
-			for m.Magic = 0;; { // TODO: understand this better
+			for m.Magic = 0;; {
 				m.Magic = Bitboard(rng.sparseRand())
-				popCount := ((m.Magic * m.Mask) >> 56).PopCount()
-				if popCount < 6 {
-					// fmt.Printf("Popcount %d < 6\n", i)
+				if ((m.Magic * m.Mask) >> 56).PopCount() < 6 {
 					break
 				}
-				// fmt.Printf("Popcount %d >= 6\n", i)
 			}
-			// fmt.Printf("Magic %d: %d\n", i, m.Magic)
 
 			// A good magic must map every possible occupancy to an index that
 			// looks up the correct sliding attack in the attacks[s] database.
@@ -145,11 +120,8 @@ func initMagics(table *[]Bitboard, magics *[64]Magic, directions *[4]Direction) 
 					break
 				}
 			}
-			// fmt.Printf("Attacks:  %d\n", len(m.Attacks))
 		}
-		// log.Debug("Init magic bitboards: Phase 4")
 	}
-	// log.Debug("Init magic bitboards: Done")
 }
 
 // slidingAttack calculate sliding attacks along the given directions for the given square
@@ -176,26 +148,16 @@ func slidingAttack(directions *[4]Direction, sq Square, occupied Bitboard) Bitbo
 	return attack
 }
 
-// AttacksBb returns a bitboard representing all the squares attacked by a
-// piece of the given type pt (not pawn) placed on 's'.
-// For sliding pieces this uses the pre-computed Magic Bitboard Attack arrays.
-// For Knight and King this uses the pre-computed pseudo attacks.
-// From Stockfish
-func AttacksBb(pt PieceType, s Square, occupied Bitboard) Bitboard {
-	switch pt {
-	case Bishop:
-		m := &bishopMagics[s]
-		return m.Attacks[m.index(occupied)]
-	case Rook:
-		m := &rookMagics[s]
-		return m.Attacks[m.index(occupied)]
-	case Queen:
-		mb := &bishopMagics[s]
-		mr := &rookMagics[s]
-		return mb.Attacks[mb.index(occupied)] | mr.Attacks[mr.index(occupied)]
-	default:
-		return pseudoAttacks[pt][s]
-	}
+// Index calculates the index in the table for the attacks
+// https://www.chessprogramming.org/Magic_Bitboards
+//  occ      &= mBishopTbl[sq].mask;
+//  occ      *= mBishopTbl[sq].magic;
+//  occ     >>= mBishopTbl[sq].shift;
+func (m *Magic) index(occupied Bitboard) uint {
+	occ := occupied & m.Mask
+	occ = occ * m.Magic
+	occ = occ >> m.Shift
+	return uint(occ)
 }
 
 // PrnG random generator for magic bitboards
@@ -216,8 +178,8 @@ type PrnG struct {
 	s uint64
 }
 
-// NewPrnG creates a new instance of the pseudo random generator
-func NewPrnG(seed uint64) *PrnG {
+// newPrnG creates a new instance of the pseudo random generator
+func newPrnG(seed uint64) *PrnG {
 	return &PrnG{s: seed}
 }
 

@@ -32,7 +32,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/frankkopp/FrankyGo/assert"
 	"github.com/frankkopp/FrankyGo/util"
 )
 
@@ -337,12 +336,36 @@ func RotateSquareL45(sq Square) Square {
 	return indexMapL45[sq]
 }
 
+// GetAttacksBb returns a bitboard representing all the squares attacked by a
+// piece of the given type pt (not pawn) placed on 's'.
+// For sliding pieces this uses the pre-computed Magic Bitboard Attack arrays.
+// For Knight and King this uses the pre-computed pseudo attacks.
+// From Stockfish
+func GetAttacksBb(pt PieceType, sq Square, occupied Bitboard) Bitboard {
+	if pt == Pawn {
+		msg := fmt.Sprint("GetAttackBb called with piece type Pawn is not supported")
+		log.Error(msg)
+		panic(msg)
+	}
+	switch pt {
+	case Bishop:
+		m := &bishopMagics[sq]
+		return m.Attacks[m.index(occupied)]
+	case Rook:
+		m := &rookMagics[sq]
+		return m.Attacks[m.index(occupied)]
+	case Queen:
+		mb := &bishopMagics[sq]
+		mr := &rookMagics[sq]
+		return mb.Attacks[mb.index(occupied)] | mr.Attacks[mr.index(occupied)]
+	default:
+		return pseudoAttacks[pt][sq]
+	}
+}
+
 // GetPseudoAttacks returns a Bb of possible attacks of a piece
 // as if on an empty board
 func GetPseudoAttacks(pt PieceType, sq Square) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(!(pt == PtNone || pt == Pawn || pt > Queen), "Invalid piece type for GetPseudoAttacks()")
-	}
 	return pseudoAttacks[pt][sq]
 }
 
@@ -766,9 +789,9 @@ func initBb() {
 }
 
 // start calculating the magic bitboards
-// ideas from Stockfish and Fancy from  www.chessprogramming.org/Magic_Bitboards
+// Taken from Stockfish and
+// from  https://www.chessprogramming.org/Magic_Bitboards
 func initMagicBitboards() {
-	log.Debug("Start initializing magic bitboards")
 	start := time.Now()
 
 	rookDirections := [4]Direction {North, East, South, West }
@@ -777,15 +800,12 @@ func initMagicBitboards() {
 	rookTable = make([]Bitboard, 0x19000, 0x19000)
 	bishopTable = make([]Bitboard, 0x1480, 0x1480)
 
-	log.Debugf("Init magic bitboards for rooks")
 	initMagics(&rookTable, &rookMagics, &rookDirections)
-	log.Debugf("Init magic bitboards for bishops")
 	initMagics(&bishopTable, &bishopMagics, &bishopDirections)
 
 	elapsed := time.Since(start)
 	log.Debugf("Init Magic Bitboards took %s\n", elapsed)
 }
-
 
 func rankFileBbPreCompute() {
 	for i := Rank1; i <= Rank8; i++ {

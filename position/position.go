@@ -326,9 +326,6 @@ func (p *Position) UndoNullMove() {
 // IsAttacked checks if the given square is attacked by a piece
 // of the given color.
 func (p *Position) IsAttacked(sq Square, by Color) bool {
-	if assert.DEBUG {
-		assert.Assert(sq != SqNone, "Position IsAttacked: SqNone is invalid")
-	}
 
 	// non sliding
 	if (GetPawnAttacks(by.Flip(), sq)&p.piecesBb[by][Pawn] != 0) || // check pawns
