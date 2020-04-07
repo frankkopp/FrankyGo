@@ -30,6 +30,7 @@ import (
 	"fmt"
 	"math/bits"
 	"strings"
+	"time"
 
 	"github.com/frankkopp/FrankyGo/assert"
 	"github.com/frankkopp/FrankyGo/util"
@@ -275,6 +276,9 @@ func RankDistance(r1 Rank, r2 Rank) int {
 
 // SquareDistance returns the absolute distance in squares between two squares
 func SquareDistance(s1 Square, s2 Square) int {
+	if !s1.IsValid() || !s2.IsValid() || s1 == s2 {
+		return 0
+	}
 	return squareDistance[s1][s2]
 }
 
@@ -692,6 +696,14 @@ var (
 	// Internal Bb for attacks for each piece for each square
 	pseudoAttacks [PtLength][SqLength]Bitboard
 
+	// magic bitboards - rook attacks
+	rookTable []Bitboard
+	rookMagics [SqLength]Magic
+
+	// magic bitboards - bishop attacks
+	bishopTable []Bitboard
+	bishopMagics [SqLength]Magic
+
 	// Internal pre computed bitboards
 	filesWestMask      [SqLength]Bitboard
 	filesEastMask      [SqLength]Bitboard
@@ -750,7 +762,30 @@ func initBb() {
 	maskPassedPawnsPreCompute()
 	squareColorsPreCompute()
 	centerDistancePreCompute()
+	initMagicBitboards()
 }
+
+// start calculating the magic bitboards
+// ideas from Stockfish and Fancy from  www.chessprogramming.org/Magic_Bitboards
+func initMagicBitboards() {
+	log.Debug("Start initializing magic bitboards")
+	start := time.Now()
+
+	rookDirections := [4]Direction {North, East, South, West }
+	bishopDirections := [4]Direction { Northeast, Southeast, Southwest, Northwest }
+
+	rookTable = make([]Bitboard, 0x19000, 0x19000)
+	bishopTable = make([]Bitboard, 0x1480, 0x1480)
+
+	log.Debugf("Init magic bitboards for rooks")
+	initMagics(&rookTable, &rookMagics, &rookDirections)
+	log.Debugf("Init magic bitboards for bishops")
+	initMagics(&bishopTable, &bishopMagics, &bishopDirections)
+
+	elapsed := time.Since(start)
+	log.Debugf("Init Magic Bitboards took %s\n", elapsed)
+}
+
 
 func rankFileBbPreCompute() {
 	for i := Rank1; i <= Rank8; i++ {

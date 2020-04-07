@@ -43,10 +43,27 @@ func TestAttacks_NonPawnAttacks(t *testing.T) {
 	a.NonPawnAttacks(p)
 
 	assert.Equal(t, p.ZobristKey(), a.Zobrist)
-	assert.EqualValues(t, SqF1.Bb()|SqG1.Bb(), a.From[White][SqH1] &^ p.OccupiedBb(White))
-	assert.EqualValues(t, SqD8.Bb()|SqE7.Bb()|SqF8.Bb(), a.From[Black][SqE8] &^ p.OccupiedBb(Black))
+	assert.EqualValues(t, SqF1.Bb()|SqG1.Bb(), a.From[White][SqH1]&^p.OccupiedBb(White))
+	assert.EqualValues(t, SqD8.Bb()|SqE7.Bb()|SqF8.Bb(), a.From[Black][SqE8]&^p.OccupiedBb(Black))
 	assert.EqualValues(t, SqC6.Bb()|SqH5.Bb(), a.To[Black][SqE5]&p.OccupiedBb(Black))
 	out.Println(a.To[Black][SqE5].StringBoard())
+}
+
+func TestCompareWithPseudo(t *testing.T) {
+	p := position.NewPosition("r1b1k2r/pppp1ppp/2n2n2/1Bb1p2q/4P3/2NP1N2/1PP2PPP/R1BQK2R w KQkq -")
+	a := NewAttacks()
+	a.NonPawnAttacks(p)
+	for sq := SqA1; sq <= SqH8; sq++ {
+		c := p.GetPiece(sq).ColorOf()
+		pt := p.GetPiece(sq).TypeOf()
+		nonMagicAttacks := a.From[c][sq].StringBoard()
+		magicAttacks := AttacksBb(pt, sq, p.OccupiedAll()).StringBoard()
+		out.Println(nonMagicAttacks)
+		out.Println(magicAttacks)
+		assert.EqualValues(t, nonMagicAttacks, magicAttacks)
+		out.Println("==================================================")
+	}
+
 }
 
 func Test_TimingNonPawnAttacks(t *testing.T) {
