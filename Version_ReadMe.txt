@@ -39,8 +39,6 @@ Measurements:
     00 FrankyGo - 20 Franky-1.0    : 37,5/100 32-57-11 38%   -85
     00 FrankyGo - Stockfish Weak   : 66,5/100 61-28-11 67%  +123
 
-
-
     Number of feature tests: 4
     Number of fens         : 30
     Total tests            : 120

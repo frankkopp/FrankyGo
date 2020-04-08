@@ -27,6 +27,8 @@
 package uci
 
 import (
+	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -36,6 +38,7 @@ import (
 // init will define all available uci options and store them into the uciOption map
 func init() {
 	uciOptions = map[string]*uciOption{
+		"Print Config": {NameID: "Print Config", HandlerFunc: printConfig, OptionType: Button},
 		"Clear Hash": {NameID: "Clear Hash", HandlerFunc: clearCache, OptionType: Button},
 		"Use_Hash":   {NameID: "Use_Hash", HandlerFunc: useCache, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseTT), CurrentValue: strconv.FormatBool(Settings.Search.UseTT)},
 		"Hash":       {NameID: "Hash", HandlerFunc: cacheSize, OptionType: Spin, DefaultValue: strconv.Itoa(Settings.Search.TTSize), CurrentValue: strconv.Itoa(Settings.Search.TTSize), MinValue: "0", MaxValue: "65000"},
@@ -53,6 +56,7 @@ func init() {
 		"Eval_AdvPiece": {NameID: "Eval_AdvPiece", HandlerFunc: evalAdv, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseAdvancedPieceEval), CurrentValue: strconv.FormatBool(Settings.Eval.UseAdvancedPieceEval)},
 	}
 	sortOrderUciOptions = []string{
+		"Print Config",
 		"Clear Hash",
 		"Use_Hash",
 		"Hash",
@@ -161,6 +165,25 @@ var sortOrderUciOptions []string
 // ////////////////////////////////////////////////////////////////
 // HandlerFunc for uci options changes
 // ////////////////////////////////////////////////////////////////
+
+func printConfig(handler *UciHandler, option *uciOption) {
+	s := reflect.ValueOf(&Settings.Eval).Elem()
+	typeOfT := s.Type()
+	for i := s.NumField() - 1; i >= 0; i-- {
+		f := s.Field(i)
+		handler.SendInfoString(fmt.Sprintf("%-2d: %-22s %-6s = %v\n", i, typeOfT.Field(i).Name, f.Type(), f.Interface()))
+	}
+	handler.SendInfoString("Evaluation Config:\n")
+	s = reflect.ValueOf(&Settings.Search).Elem()
+	typeOfT = s.Type()
+	for i := s.NumField() - 1; i >= 0; i-- {
+		f := s.Field(i)
+		handler.SendInfoString(fmt.Sprintf("%-2d: %-22s %-6s = %v\n", i, typeOfT.Field(i).Name, f.Type(), f.Interface()))
+	}
+	handler.SendInfoString("Search Config:\n")
+	log.Debug(Settings.String())
+
+}
 
 func clearCache(u *UciHandler, o *uciOption) {
 	u.mySearch.ClearHash()

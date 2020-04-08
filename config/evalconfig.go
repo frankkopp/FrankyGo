@@ -29,6 +29,7 @@ package config
 type evalConfiguration struct {
 	UsePawnCache  bool
 	PawnCacheSize int
+
 	// evaluation values
 	UseLazyEval       bool
 	LazyEvalThreshold int

@@ -81,6 +81,23 @@ func TestEvaluator_valueFromScore(t *testing.T) {
 	assert.EqualValues(t, 50, v)
 }
 
+func TestLazyEval(t *testing.T) {
+	e := NewEvaluator()
+	Settings.Eval.Tempo = 0
+	Settings.Eval.UseLazyEval = true
+	Settings.Eval.UseAttacksInEval = false
+	Settings.Eval.UseAdvancedPieceEval = false
+	Settings.Eval.UseKingEval = false
+	p := position.NewPosition("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
+	value := e.Evaluate(p)
+	out.Println(value)
+	assert.EqualValues(t, 3337, value)
+	p = position.NewPosition("5r1k/1q6/8/8/8/8/6P1/7K b - - 0 1 ")
+	value = e.Evaluate(p)
+	out.Println(value)
+	assert.EqualValues(t, 1293, value)
+}
+
 // func TestEvaluator_evalPieceKnights(t *testing.T) {
 // 	e := NewEvaluator()
 // 	Settings.Eval.Tempo = 0

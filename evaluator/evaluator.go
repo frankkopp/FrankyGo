@@ -42,8 +42,6 @@ import (
 	"github.com/frankkopp/FrankyGo/util"
 )
 
-const trace = true
-
 var out = message.NewPrinter(language.German)
 
 // Evaluator  represents a data structure and functionality fo

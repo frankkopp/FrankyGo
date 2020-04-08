@@ -42,3 +42,9 @@ func TestInit(t *testing.T) {
 	fmt.Printf("UsePawnCache: %v\n", Settings.Eval.UsePawnCache)
 	fmt.Printf("PawnCacheSize: %v\n", Settings.Eval.PawnCacheSize)
 }
+
+func Test(t *testing.T) {
+	Setup()
+	fmt.Println(Settings.String())
+}
+

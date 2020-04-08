@@ -30,7 +30,10 @@
 package config
 
 import (
+	"fmt"
 	"log"
+	"reflect"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 )
@@ -79,6 +82,25 @@ func Setup() {
 	// setup eval config after reading from configuration file if necessary
 	setupEval()
 	initialized = true
+}
+
+func (settings *conf) String() string {
+	var c strings.Builder
+	c.WriteString("Search Config:\n")
+	s := reflect.ValueOf(&settings.Search).Elem()
+	typeOfT := s.Type()
+	for i := 0; i < s.NumField(); i++ {
+		f := s.Field(i)
+		c.WriteString(fmt.Sprintf("%-2d: %-22s %-6s = %v\n", i, typeOfT.Field(i).Name, f.Type(), f.Interface()))
+	}
+	c.WriteString("\nEvaluation Config:\n")
+	s = reflect.ValueOf(&settings.Eval).Elem()
+	typeOfT = s.Type()
+	for i := 0; i < s.NumField(); i++ {
+		f := s.Field(i)
+		c.WriteString(fmt.Sprintf("%-2d: %-22s %-6s = %v\n", i, typeOfT.Field(i).Name, f.Type(), f.Interface()))
+	}
+	return c.String()
 }
 
 

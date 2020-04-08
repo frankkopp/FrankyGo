@@ -44,7 +44,7 @@ IIDReduction = 2
 UsePawnCache = false # not implemented yet
 PawnCacheSize = 64  # not implemented yet
 
-UseLazyEval = false
+UseLazyEval = true
 LazyEvalThreshold = 700
 
 # Evaluation values
