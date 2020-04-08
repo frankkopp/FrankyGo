@@ -64,9 +64,7 @@ type Evaluator struct {
 
 	score Score
 
-	attacks    [ColorLength][PtLength]Bitboard
-	attacksAll [ColorLength]Bitboard
-	mobility   [ColorLength]int
+	attacks *Attacks
 }
 
 // to avoid object creation and memory allocation
@@ -88,6 +86,7 @@ func init() {
 func NewEvaluator() *Evaluator {
 	return &Evaluator{
 		log: myLogging.GetLog(),
+		attacks: NewAttacks(),
 	}
 }
 
@@ -109,10 +108,11 @@ func (e *Evaluator) InitEval(p *position.Position) {
 	// reset all values
 	e.score.MidGameValue = 0
 	e.score.EndGameValue = 0
-	e.mobility[White] = 0
-	e.mobility[Black] = 0
-	e.attacksAll[White] = 0
-	e.attacksAll[Black] = 0
+
+	// reset attacks
+	if Settings.Eval.UseAttacksInEval {
+		e.attacks.Clear()
+	}
 }
 
 // Evaluate calculates a value for a chess positions by
@@ -168,6 +168,15 @@ func (e *Evaluator) evaluate() Value {
 		}
 	}
 
+	// Get all attacks
+	// find out where this should be done to be most effective
+	// This is expensive and we should use this investment as often as
+	// possible. If we could use it in search as well we could move
+	// creating this to an earlier point in time in the search
+	if Settings.Eval.UseAttacksInEval {
+		e.attacks.Compute(e.position)
+	}
+
 	// evaluate pawns
 	// TODO
 
@@ -184,9 +193,9 @@ func (e *Evaluator) evaluate() Value {
 	}
 
 	// mobility
-	if Settings.Eval.UseMobility {
-		// e.score.MidGameValue += (e.mobility[White] - e.mobility[Black]) * Settings.Eval.MobilityBonus
-		// e.score.EndGameValue += e.score.MidGameValue
+	if Settings.Eval.UseAttacksInEval && Settings.Eval.UseMobility {
+		e.score.MidGameValue += (e.attacks.Mobility[White] - e.attacks.Mobility[Black]) * Settings.Eval.MobilityBonus
+		e.score.EndGameValue += e.score.MidGameValue
 	}
 
 	// evaluate king
@@ -217,34 +226,30 @@ func (e *Evaluator) finalEval(value Value) Value {
 func (e *Evaluator) evalKing(c Color) *Score {
 	tmpScore.MidGameValue = 0
 	tmpScore.EndGameValue = 0
-	// us := c
-	// them := us.Flip()
+	us := c
+	them := us.Flip()
 
-	// // attacks
-	// attacks := GetPseudoAttacks(King, e.position.KingSquare(us)) & ^e.position.OccupiedBb(us)
-	// e.attacks[us][King] = attacks
-	// e.attacksAll[us] |= attacks
-	//
-	// // pawn shield is done in pawns
-	//
-	// // king safety / attacks to the king and king ring
-	// enemyAttacks := e.kingRing[us] & e.attacksAll[them]
-	// ourDefence := e.kingRing[us] & e.attacksAll[us]
-	// // malus for difference between attacker and defender
-	// if enemyAttacks > ourDefence {
-	// 	tmpScore.MidGameValue -= (enemyAttacks.PopCount() - ourDefence.PopCount()) * Settings.Eval.KingDangerMalus
-	// 	tmpScore.EndGameValue -= tmpScore.MidGameValue
-	// } else {
-	// 	tmpScore.MidGameValue += (ourDefence.PopCount() - enemyAttacks.PopCount()) * Settings.Eval.KingDefenderBonus
-	// 	tmpScore.EndGameValue += tmpScore.MidGameValue
-	// }
+	// pawn shield is done in pawns
 
-	// // king ring attacks
-	// if a := attacks & e.kingRing[them]; a > 0 {
-	// 	tmpScore.MidGameValue += Settings.Eval.KingRingAttacksBonus
-	// 	tmpScore.EndGameValue += Settings.Eval.KingRingAttacksBonus
-	// }
+	if Settings.Eval.UseAttacksInEval {
+		// king safety / attacks to the king and king ring
+		enemyAttacks := e.kingRing[us] & e.attacks.All[them]
+		ourDefence := e.kingRing[us] & e.attacks.All[us]
+		// malus for difference between attacker and defender
+		if enemyAttacks > ourDefence {
+			tmpScore.MidGameValue -= (enemyAttacks.PopCount() - ourDefence.PopCount()) * Settings.Eval.KingDangerMalus
+			tmpScore.EndGameValue -= tmpScore.MidGameValue
+		} else {
+			tmpScore.MidGameValue += (ourDefence.PopCount() - enemyAttacks.PopCount()) * Settings.Eval.KingDefenderBonus
+			tmpScore.EndGameValue += tmpScore.MidGameValue
+		}
 
+		// king ring attacks
+		if a := e.attacks.All[us] & e.kingRing[them]; a > 0 {
+			tmpScore.MidGameValue += Settings.Eval.KingRingAttacksBonus
+			tmpScore.EndGameValue += Settings.Eval.KingRingAttacksBonus
+		}
+	}
 	return &tmpScore
 }
 
@@ -304,12 +309,12 @@ func (e *Evaluator) rookEval(sq Square, us Color) {
 
 	// trapped by king
 	// on same row as king but on the outside from king
-	// if attacks.PopCount() < 3 &&
-	// 	e.position.KingSquare(us).RankOf() == sq.RankOf() &&
-	// 	(e.position.KingSquare(us).FileOf() < FileE) == (sq.FileOf() < e.position.KingSquare(us).FileOf()) {
-	// 	tmpScore.MidGameValue -= Settings.Eval.RookTrappedMalus
-	// 	// endGameValue -= 0
-	// }
+	if Settings.Eval.UseAttacksInEval && e.attacks.From[us][sq].PopCount() < 3 &&
+		e.position.KingSquare(us).RankOf() == sq.RankOf() &&
+		(e.position.KingSquare(us).FileOf() < FileE) == (sq.FileOf() < e.position.KingSquare(us).FileOf()) {
+		tmpScore.MidGameValue -= Settings.Eval.RookTrappedMalus
+		// endGameValue -= 0
+	}
 }
 
 func (e *Evaluator) bishopEval(us Color, them Color, sq Square) {

@@ -22,6 +22,7 @@ TTSize = 256
 UseTTMove = true
 UseTTValue = true
 UseQSTT = true
+UseEvalTT = false
 
 # general search
 Ponder = true
@@ -40,19 +41,21 @@ IIDDepth = 6
 IIDReduction = 2
 
 [eval]
-UsePawnCache = true # not implemented yet
+UsePawnCache = false # not implemented yet
 PawnCacheSize = 64  # not implemented yet
 
-UseLazyEval = true
+UseLazyEval = false
 LazyEvalThreshold = 700
 
 # Evaluation values
 Tempo = 30
 
-UseMobility = true
+UseAttacksInEval = false
+
+UseMobility = false
 MobilityBonus = 5           # per piece and attacked square
 
-UseAdvancedPieceEval = true
+UseAdvancedPieceEval = false
 KingRingAttacksBonus = 10   # per piece and attacked king ring square
 BishopPairBonus = 20        # once
 MinorBehindPawnBonus = 15   # per piece and times game phase
@@ -63,6 +66,6 @@ RookOnQueenFileBonus = 6    # per rook
 RookOnOpenFileBonus = 25    # per rook and time game phase
 RookTrappedMalus = 40       # per rook and time game phase
 
-UseKingEval = true
+UseKingEval = false
 KingDangerMalus = 50        # number of number of attacker - defender times malus if attacker > defender
 KingDefenderBonus = 10      # number of number of defender - attacker times bonus if attacker <= defender

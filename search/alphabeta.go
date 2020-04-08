@@ -467,7 +467,7 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 	}
 
 	if !Settings.Search.UseQuiescence {
-		return s.evaluate(position)
+		return s.evaluate(position, ply)
 	}
 
 	if s.statistics.CurrentExtraSearchDepth < ply {
@@ -499,7 +499,7 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 	// if in check we simply do a normal search (all moves) in qsearch
 	if !hasCheck {
 		// get an evaluation for the position
-		staticEval := s.evaluate(position)
+		staticEval := s.evaluate(position, ply)
 		// Quiescence StandPat
 		// Use evaluation as a standing pat (lower bound)
 		// https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
@@ -668,9 +668,30 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 }
 
 // call evaluation on the position
-func (s *Search) evaluate(position *position.Position) Value {
+func (s *Search) evaluate(position *position.Position, ply int) Value {
 	s.statistics.LeafPositionsEvaluated++
-	return s.eval.Evaluate(position)
+
+	var value = ValueNA
+
+	if Settings.Search.UseTT && Settings.Search.UseEvalTT {
+		ttEntry := s.tt.Probe(position.ZobristKey())
+		if ttEntry != nil { // tt hit
+			s.statistics.TTHit++
+			s.statistics.EvaluationsFromTT++
+			value = valueFromTT(ttEntry.Move.ValueOf(), ply)
+		}
+	}
+
+	if value == ValueNA {
+		s.statistics.Evaluations++
+		value = s.eval.Evaluate(position)
+	}
+
+	if Settings.Search.UseTT && Settings.Search.UseEvalTT {
+		s.storeTT(position, 0, ply, MoveNone, value, EXACT)
+	}
+
+	return value
 }
 
 // reduce the number of moves searched in quiescence search by trying

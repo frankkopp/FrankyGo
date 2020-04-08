@@ -30,9 +30,17 @@ type evalConfiguration struct {
 	UsePawnCache  bool
 	PawnCacheSize int
 	// evaluation values
-	Tempo                int
-	LazyEvalThreshold    int
-	MobilityBonus        int
+	UseLazyEval       bool
+	LazyEvalThreshold int
+
+	Tempo int
+
+	UseAttacksInEval bool
+
+	UseMobility   bool
+	MobilityBonus int
+
+	UseAdvancedPieceEval bool
 	BishopPairBonus      int
 	MinorBehindPawnBonus int
 	BishopPawnMalus      int
@@ -42,28 +50,29 @@ type evalConfiguration struct {
 	RookOnOpenFileBonus  int
 	RookTrappedMalus     int
 	KingRingAttacksBonus int
-	UseLazyEval          bool
-	UseAdvancedPieceEval bool
-	UseMobility          bool
-	UseKingEval          bool
-	KingDangerMalus      int
-	KingDefenderBonus    int
+
+	UseKingEval       bool
+	KingDangerMalus   int
+	KingDefenderBonus int
 }
 
 // sets defaults which might be overwritten by config file
 func init() {
-	Settings.Eval.UsePawnCache = true
-	Settings.Eval.PawnCacheSize = 64
-	Settings.Eval.UseLazyEval = true
+	Settings.Eval.UsePawnCache = false // not implemented yet
+	Settings.Eval.PawnCacheSize = 64  // not implemented yet
+
+	Settings.Eval.UseLazyEval = false
 	Settings.Eval.LazyEvalThreshold = 700
 
 	// evaluation value
 	Settings.Eval.Tempo = 30
 
-	Settings.Eval.UseMobility = true
+	Settings.Eval.UseAttacksInEval = false
+
+	Settings.Eval.UseMobility = false
 	Settings.Eval.MobilityBonus = 5 // per piece and attacked square
 
-	Settings.Eval.UseAdvancedPieceEval = true
+	Settings.Eval.UseAdvancedPieceEval = false
 	Settings.Eval.KingRingAttacksBonus = 10 // per piece and attacked king ring square
 	Settings.Eval.MinorBehindPawnBonus = 15 // per piece and times game phase
 	Settings.Eval.BishopPairBonus = 20      // once
@@ -74,9 +83,10 @@ func init() {
 	Settings.Eval.RookOnOpenFileBonus = 25  // per rook and time game phase
 	Settings.Eval.RookTrappedMalus = 40     // per rook and time game phase
 
-	Settings.Eval.UseKingEval = true
+	Settings.Eval.UseKingEval = false
 	Settings.Eval.KingDangerMalus = 50   // number of number of attacker - defender times malus if attacker > defender
 	Settings.Eval.KingDefenderBonus = 10 // number of number of defender - attacker times bonus if attacker <= defender
+
 }
 
 // set defaults for configurations here in case a configuration

@@ -27,7 +27,6 @@
 package evaluator
 
 import (
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -82,190 +81,190 @@ func TestEvaluator_valueFromScore(t *testing.T) {
 	assert.EqualValues(t, 50, v)
 }
 
-func TestEvaluator_evalPieceKnights(t *testing.T) {
-	e := NewEvaluator()
-	Settings.Eval.Tempo = 0
-	p := position.NewPosition("rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq -")
-	var score *Score
-
-	// Knights
-	e.InitEval(p)
-	score = e.evalPiece(White, Knight)
-	out.Printf("White Knight: %s\n", score)
-	assert.EqualValues(t, Score{}, *score)
-	out.Printf("Mobility    : %d\n", e.mobility[White])
-	assert.EqualValues(t, 6, e.mobility[White])
-	fmt.Printf("Attacks     : \n%s\n", e.attacks[White][Knight].StringBoard())
-	assert.EqualValues(t, SqA3.Bb()|SqC3.Bb()|SqF3.Bb()|SqH3.Bb()|SqD2.Bb()|SqE2.Bb(), e.attacks[White][Knight])
-
-	score = e.evalPiece(Black, Knight)
-	out.Printf("Black Knight: %s\n", score)
-	assert.EqualValues(t, Score{}, *score)
-	out.Printf("Mobility    : %d\n", e.mobility[Black])
-	assert.EqualValues(t, 6, e.mobility[Black])
-	fmt.Printf("Attacks     : \n%s\n", e.attacks[Black][Knight].StringBoard())
-	assert.EqualValues(t, SqA6.Bb()|SqC6.Bb()|SqF6.Bb()|SqH6.Bb()|SqD7.Bb()|SqE7.Bb(), e.attacks[Black][Knight])
-}
-
-func TestEvaluator_evalPieceBishop(t *testing.T) {
-	e := NewEvaluator()
-	Settings.Eval.Tempo = 0
-	var score *Score
-
-	// Bishop
-	p := position.NewPosition("rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq -")
-	e.InitEval(p)
-	score = e.evalPiece(White, Bishop)
-	fmt.Printf("Attacks     : \n%s\n%d\n", e.attacks[White][Bishop].StringBoard(), e.attacks[White][Bishop])
-	out.Printf("White Bishop: %s\n", score)
-	assert.EqualValues(t, Score{20,20}, *score)
-	assert.EqualValues(t, 20, score.ValueFromScore(p.GamePhaseFactor()))
-	out.Printf("Mobility    : %d\n", e.mobility[White])
-	assert.EqualValues(t, 14, e.mobility[White])
-	assert.EqualValues(t, 142121081854464, e.attacks[White][Bishop])
-
-	score = e.evalPiece(Black, Bishop)
-	fmt.Printf("Attacks     : \n%s\n%d\n", e.attacks[White][Bishop].StringBoard(), e.attacks[White][Bishop])
-	out.Printf("Black Bishop: %s\n", score)
-	assert.EqualValues(t, Score{20,20}, *score)
-	assert.EqualValues(t, 20, score.ValueFromScore(p.GamePhaseFactor()))
-	out.Printf("Mobility    : %d\n", e.mobility[Black])
-	assert.EqualValues(t, 14, e.mobility[Black])
-	assert.EqualValues(t, 25501128917581824, e.attacks[Black][Bishop])
-
-	p = position.NewPosition("4k3/1p3bb1/p1p3p1/8/3P4/1P6/2PPP1P1/2B1KB2 w - -")
-	e.InitEval(p)
-	score = e.evalPiece(White, Bishop)
-	fmt.Printf("Attacks     : \n%s\n%d\n", e.attacks[White][Bishop].StringBoard(), e.attacks[White][Bishop])
-	out.Printf("White Bishop: %s\n", score)
-	assert.EqualValues(t, Score{-5, -50}, *score)
-	assert.EqualValues(t, -41, score.ValueFromScore(p.GamePhaseFactor()))
-	out.Printf("Mobility    : %d\n", e.mobility[White])
-	assert.EqualValues(t, 2, e.mobility[White])
-	assert.EqualValues(t, 66048, e.attacks[White][Bishop])
-
-	score = e.evalPiece(Black, Bishop)
-	fmt.Printf("Attacks     : \n%s\n%d\n", e.attacks[Black][Bishop].StringBoard(), e.attacks[Black][Bishop])
-	out.Printf("Black Bishop: %s\n", score)
-	assert.EqualValues(t, Score{95,0}, *score)
-	assert.EqualValues(t, 15, score.ValueFromScore(p.GamePhaseFactor()))
-	out.Printf("Mobility    : %d\n", e.mobility[Black])
-	assert.EqualValues(t, 11, e.mobility[Black])
-	assert.EqualValues(t, Bitboard(16141094681823019008), e.attacks[Black][Bishop])
-}
-
-func TestEvaluator_evalPieceRook(t *testing.T) {
-	e := NewEvaluator()
-	Settings.Eval.Tempo = 0
-	var score *Score
-
-	// Rook
-	p := position.NewPosition("rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq -")
-	e.InitEval(p)
-	score = e.evalPiece(White, Rook)
-	out.Printf("White Rook: %s\n", score)
-	assert.EqualValues(t, Score{50,0}, *score)
-	assert.EqualValues(t, 50, score.ValueFromScore(p.GamePhaseFactor()))
-	out.Printf("Mobility    : %d\n", e.mobility[White])
-	assert.EqualValues(t, 14, e.mobility[White])
-	fmt.Printf("Attacks     : \n%s\n", e.attacks[White][Rook].StringBoard())
-	assert.EqualValues(t, uint64(9331882296111890688), e.attacks[White][Rook])
-
-	score = e.evalPiece(Black, Rook)
-	out.Printf("Black Rook: %s\n", score)
-	assert.EqualValues(t, Score{50,0}, *score)
-	assert.EqualValues(t, 50, score.ValueFromScore(p.GamePhaseFactor()))
-	out.Printf("Mobility    : %d\n", e.mobility[Black])
-	assert.EqualValues(t, 14, e.mobility[Black])
-	fmt.Printf("Attacks     : \n%s\n", e.attacks[Black][Rook].StringBoard())
-	assert.EqualValues(t, uint64(36452665219187073), e.attacks[Black][Rook])
-
-	p = position.NewPosition("r1b1k2r/pppp1ppp/2n2n2/1Bb1p2q/4P3/2NP1N2/1PP2PPP/R1BQK2R w KQkq -")
-	e.InitEval(p)
-	score = e.evalPiece(White, Rook)
-	fmt.Printf("Attacks     : \n%s\n%d\n", e.attacks[White][Rook].StringBoard(), e.attacks[White][Rook])
-	out.Printf("White Rook: %s\n", score)
-	assert.EqualValues(t, Score{-15,0}, *score)
-	assert.EqualValues(t, -15, score.ValueFromScore(p.GamePhaseFactor()))
-	out.Printf("Mobility    : %d\n", e.mobility[White])
-	assert.EqualValues(t, 9, e.mobility[White])
-	assert.EqualValues(t, uint64(282578800148834), e.attacks[White][Rook])
-
-	score = e.evalPiece(Black, Rook)
-	fmt.Printf("Attacks     : \n%s\n%d\n", e.attacks[Black][Rook].StringBoard(), e.attacks[Black][Rook])
-	out.Printf("Black Rook: %s\n", score)
-	assert.EqualValues(t, Score{-34,6}, *score)
-	assert.EqualValues(t, -34, score.ValueFromScore(p.GamePhaseFactor()))
-	out.Printf("Mobility    : %d\n", e.mobility[Black])
-	assert.EqualValues(t, 3, e.mobility[Black])
-	assert.EqualValues(t, uint64(7061644215716937728), e.attacks[Black][Rook])
-}
-
-func TestEvaluator_evalPieceQueen(t *testing.T) {
-	e := NewEvaluator()
-	Settings.Eval.Tempo = 0
-	p := position.NewPosition("rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq -")
-	var score *Score
-
-	// Queen
-	e.InitEval(p)
-	score = e.evalPiece(White, Queen)
-	out.Printf("White Queen: %s\n", score)
-	assert.EqualValues(t, Score{10,10}, *score)
-	assert.EqualValues(t, 10, score.ValueFromScore(p.GamePhaseFactor()))
-	out.Printf("Mobility    : %d\n", e.mobility[White])
-	assert.EqualValues(t, 14, e.mobility[White])
-	fmt.Printf("Attacks     : \n%s\n", e.attacks[White][Queen].StringBoard())
-	assert.EqualValues(t, uint64(578721933553179648), e.attacks[White][Queen])
-
-	score = e.evalPiece(Black, Queen)
-	out.Printf("Black Queen: %s\n", score)
-	assert.EqualValues(t, Score{10,10}, *score)
-	assert.EqualValues(t, 10, score.ValueFromScore(p.GamePhaseFactor()))
-	out.Printf("Mobility    : %d\n", e.mobility[Black])
-	assert.EqualValues(t, 14, e.mobility[Black])
-	fmt.Printf("Attacks     : \n%s\n", e.attacks[Black][Queen].StringBoard())
-	assert.EqualValues(t, uint64(7927794651105288), e.attacks[Black][Queen])
-}
-
-func TestEvaluator_evalPieceKing(t *testing.T) {
-	e := NewEvaluator()
-	Settings.Eval.Tempo = 0
-	p := position.NewPosition("6k1/p1qb1p1p/1p3np1/2b2p2/2B5/2P3N1/PP2QPPP/4N1K1 b - -")
-	var score *Score
-
-
-	e.InitEval(p)
-	// prepare attacks
-	// TODO pawns
-	e.evalPiece(White, Knight)
-	e.evalPiece(Black, Knight)
-	e.evalPiece(White, Bishop)
-	e.evalPiece(Black, Bishop)
-	e.evalPiece(White, Rook)
-	e.evalPiece(Black, Rook)
-	e.evalPiece(White, Queen)
-	e.evalPiece(Black, Queen)
-
-	// King
-	score = e.evalKing(White)
-	out.Printf("White King: %s\n", score)
-	assert.EqualValues(t, Score{10,10}, *score)
-	assert.EqualValues(t, 10, score.ValueFromScore(p.GamePhaseFactor()))
-	out.Printf("Mobility    : %d\n", e.mobility[White])
-	assert.EqualValues(t, 14, e.mobility[White])
-	fmt.Printf("Attacks     : \n%s\n", e.attacks[White][King].StringBoard())
-	assert.EqualValues(t, uint64(578721933553179648), e.attacks[White][King])
-
-	score = e.evalKing(Black)
-	out.Printf("Black King: %s\n", score)
-	assert.EqualValues(t, Score{10,10}, *score)
-	assert.EqualValues(t, 10, score.ValueFromScore(p.GamePhaseFactor()))
-	out.Printf("Mobility    : %d\n", e.mobility[Black])
-	assert.EqualValues(t, 14, e.mobility[Black])
-	fmt.Printf("Attacks     : \n%s\n", e.attacks[Black][King].StringBoard())
-	assert.EqualValues(t, uint64(7927794651105288), e.attacks[Black][King])
-}
+// func TestEvaluator_evalPieceKnights(t *testing.T) {
+// 	e := NewEvaluator()
+// 	Settings.Eval.Tempo = 0
+// 	p := position.NewPosition("rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq -")
+// 	var score *Score
+//
+// 	// Knights
+// 	e.InitEval(p)
+// 	score = e.evalPiece(White, Knight)
+// 	out.Printf("White Knight: %s\n", score)
+// 	assert.EqualValues(t, Score{}, *score)
+// 	out.Printf("Mobility    : %d\n", e.mobility[White])
+// 	assert.EqualValues(t, 6, e.mobility[White])
+// 	fmt.Printf("Attacks     : \n%s\n", e.attacks[White][Knight].StringBoard())
+// 	assert.EqualValues(t, SqA3.Bb()|SqC3.Bb()|SqF3.Bb()|SqH3.Bb()|SqD2.Bb()|SqE2.Bb(), e.attacks[White][Knight])
+//
+// 	score = e.evalPiece(Black, Knight)
+// 	out.Printf("Black Knight: %s\n", score)
+// 	assert.EqualValues(t, Score{}, *score)
+// 	out.Printf("Mobility    : %d\n", e.mobility[Black])
+// 	assert.EqualValues(t, 6, e.mobility[Black])
+// 	fmt.Printf("Attacks     : \n%s\n", e.attacks[Black][Knight].StringBoard())
+// 	assert.EqualValues(t, SqA6.Bb()|SqC6.Bb()|SqF6.Bb()|SqH6.Bb()|SqD7.Bb()|SqE7.Bb(), e.attacks[Black][Knight])
+// }
+//
+// func TestEvaluator_evalPieceBishop(t *testing.T) {
+// 	e := NewEvaluator()
+// 	Settings.Eval.Tempo = 0
+// 	var score *Score
+//
+// 	// Bishop
+// 	p := position.NewPosition("rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq -")
+// 	e.InitEval(p)
+// 	score = e.evalPiece(White, Bishop)
+// 	fmt.Printf("Attacks     : \n%s\n%d\n", e.attacks[White][Bishop].StringBoard(), e.attacks[White][Bishop])
+// 	out.Printf("White Bishop: %s\n", score)
+// 	assert.EqualValues(t, Score{20,20}, *score)
+// 	assert.EqualValues(t, 20, score.ValueFromScore(p.GamePhaseFactor()))
+// 	out.Printf("Mobility    : %d\n", e.mobility[White])
+// 	assert.EqualValues(t, 14, e.mobility[White])
+// 	assert.EqualValues(t, 142121081854464, e.attacks[White][Bishop])
+//
+// 	score = e.evalPiece(Black, Bishop)
+// 	fmt.Printf("Attacks     : \n%s\n%d\n", e.attacks[White][Bishop].StringBoard(), e.attacks[White][Bishop])
+// 	out.Printf("Black Bishop: %s\n", score)
+// 	assert.EqualValues(t, Score{20,20}, *score)
+// 	assert.EqualValues(t, 20, score.ValueFromScore(p.GamePhaseFactor()))
+// 	out.Printf("Mobility    : %d\n", e.mobility[Black])
+// 	assert.EqualValues(t, 14, e.mobility[Black])
+// 	assert.EqualValues(t, 25501128917581824, e.attacks[Black][Bishop])
+//
+// 	p = position.NewPosition("4k3/1p3bb1/p1p3p1/8/3P4/1P6/2PPP1P1/2B1KB2 w - -")
+// 	e.InitEval(p)
+// 	score = e.evalPiece(White, Bishop)
+// 	fmt.Printf("Attacks     : \n%s\n%d\n", e.attacks[White][Bishop].StringBoard(), e.attacks[White][Bishop])
+// 	out.Printf("White Bishop: %s\n", score)
+// 	assert.EqualValues(t, Score{-5, -50}, *score)
+// 	assert.EqualValues(t, -41, score.ValueFromScore(p.GamePhaseFactor()))
+// 	out.Printf("Mobility    : %d\n", e.mobility[White])
+// 	assert.EqualValues(t, 2, e.mobility[White])
+// 	assert.EqualValues(t, 66048, e.attacks[White][Bishop])
+//
+// 	score = e.evalPiece(Black, Bishop)
+// 	fmt.Printf("Attacks     : \n%s\n%d\n", e.attacks[Black][Bishop].StringBoard(), e.attacks[Black][Bishop])
+// 	out.Printf("Black Bishop: %s\n", score)
+// 	assert.EqualValues(t, Score{95,0}, *score)
+// 	assert.EqualValues(t, 15, score.ValueFromScore(p.GamePhaseFactor()))
+// 	out.Printf("Mobility    : %d\n", e.mobility[Black])
+// 	assert.EqualValues(t, 11, e.mobility[Black])
+// 	assert.EqualValues(t, Bitboard(16141094681823019008), e.attacks[Black][Bishop])
+// }
+//
+// func TestEvaluator_evalPieceRook(t *testing.T) {
+// 	e := NewEvaluator()
+// 	Settings.Eval.Tempo = 0
+// 	var score *Score
+//
+// 	// Rook
+// 	p := position.NewPosition("rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq -")
+// 	e.InitEval(p)
+// 	score = e.evalPiece(White, Rook)
+// 	out.Printf("White Rook: %s\n", score)
+// 	assert.EqualValues(t, Score{50,0}, *score)
+// 	assert.EqualValues(t, 50, score.ValueFromScore(p.GamePhaseFactor()))
+// 	out.Printf("Mobility    : %d\n", e.mobility[White])
+// 	assert.EqualValues(t, 14, e.mobility[White])
+// 	fmt.Printf("Attacks     : \n%s\n", e.attacks[White][Rook].StringBoard())
+// 	assert.EqualValues(t, uint64(9331882296111890688), e.attacks[White][Rook])
+//
+// 	score = e.evalPiece(Black, Rook)
+// 	out.Printf("Black Rook: %s\n", score)
+// 	assert.EqualValues(t, Score{50,0}, *score)
+// 	assert.EqualValues(t, 50, score.ValueFromScore(p.GamePhaseFactor()))
+// 	out.Printf("Mobility    : %d\n", e.mobility[Black])
+// 	assert.EqualValues(t, 14, e.mobility[Black])
+// 	fmt.Printf("Attacks     : \n%s\n", e.attacks[Black][Rook].StringBoard())
+// 	assert.EqualValues(t, uint64(36452665219187073), e.attacks[Black][Rook])
+//
+// 	p = position.NewPosition("r1b1k2r/pppp1ppp/2n2n2/1Bb1p2q/4P3/2NP1N2/1PP2PPP/R1BQK2R w KQkq -")
+// 	e.InitEval(p)
+// 	score = e.evalPiece(White, Rook)
+// 	fmt.Printf("Attacks     : \n%s\n%d\n", e.attacks[White][Rook].StringBoard(), e.attacks[White][Rook])
+// 	out.Printf("White Rook: %s\n", score)
+// 	assert.EqualValues(t, Score{-15,0}, *score)
+// 	assert.EqualValues(t, -15, score.ValueFromScore(p.GamePhaseFactor()))
+// 	out.Printf("Mobility    : %d\n", e.mobility[White])
+// 	assert.EqualValues(t, 9, e.mobility[White])
+// 	assert.EqualValues(t, uint64(282578800148834), e.attacks[White][Rook])
+//
+// 	score = e.evalPiece(Black, Rook)
+// 	fmt.Printf("Attacks     : \n%s\n%d\n", e.attacks[Black][Rook].StringBoard(), e.attacks[Black][Rook])
+// 	out.Printf("Black Rook: %s\n", score)
+// 	assert.EqualValues(t, Score{-34,6}, *score)
+// 	assert.EqualValues(t, -34, score.ValueFromScore(p.GamePhaseFactor()))
+// 	out.Printf("Mobility    : %d\n", e.mobility[Black])
+// 	assert.EqualValues(t, 3, e.mobility[Black])
+// 	assert.EqualValues(t, uint64(7061644215716937728), e.attacks[Black][Rook])
+// }
+//
+// func TestEvaluator_evalPieceQueen(t *testing.T) {
+// 	e := NewEvaluator()
+// 	Settings.Eval.Tempo = 0
+// 	p := position.NewPosition("rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq -")
+// 	var score *Score
+//
+// 	// Queen
+// 	e.InitEval(p)
+// 	score = e.evalPiece(White, Queen)
+// 	out.Printf("White Queen: %s\n", score)
+// 	assert.EqualValues(t, Score{10,10}, *score)
+// 	assert.EqualValues(t, 10, score.ValueFromScore(p.GamePhaseFactor()))
+// 	out.Printf("Mobility    : %d\n", e.mobility[White])
+// 	assert.EqualValues(t, 14, e.mobility[White])
+// 	fmt.Printf("Attacks     : \n%s\n", e.attacks[White][Queen].StringBoard())
+// 	assert.EqualValues(t, uint64(578721933553179648), e.attacks[White][Queen])
+//
+// 	score = e.evalPiece(Black, Queen)
+// 	out.Printf("Black Queen: %s\n", score)
+// 	assert.EqualValues(t, Score{10,10}, *score)
+// 	assert.EqualValues(t, 10, score.ValueFromScore(p.GamePhaseFactor()))
+// 	out.Printf("Mobility    : %d\n", e.mobility[Black])
+// 	assert.EqualValues(t, 14, e.mobility[Black])
+// 	fmt.Printf("Attacks     : \n%s\n", e.attacks[Black][Queen].StringBoard())
+// 	assert.EqualValues(t, uint64(7927794651105288), e.attacks[Black][Queen])
+// }
+//
+// func TestEvaluator_evalPieceKing(t *testing.T) {
+// 	e := NewEvaluator()
+// 	Settings.Eval.Tempo = 0
+// 	p := position.NewPosition("6k1/p1qb1p1p/1p3np1/2b2p2/2B5/2P3N1/PP2QPPP/4N1K1 b - -")
+// 	var score *Score
+//
+//
+// 	e.InitEval(p)
+// 	// prepare attacks
+// 	// TODO pawns
+// 	e.evalPiece(White, Knight)
+// 	e.evalPiece(Black, Knight)
+// 	e.evalPiece(White, Bishop)
+// 	e.evalPiece(Black, Bishop)
+// 	e.evalPiece(White, Rook)
+// 	e.evalPiece(Black, Rook)
+// 	e.evalPiece(White, Queen)
+// 	e.evalPiece(Black, Queen)
+//
+// 	// King
+// 	score = e.evalKing(White)
+// 	out.Printf("White King: %s\n", score)
+// 	assert.EqualValues(t, Score{10,10}, *score)
+// 	assert.EqualValues(t, 10, score.ValueFromScore(p.GamePhaseFactor()))
+// 	out.Printf("Mobility    : %d\n", e.mobility[White])
+// 	assert.EqualValues(t, 14, e.mobility[White])
+// 	fmt.Printf("Attacks     : \n%s\n", e.attacks[White][King].StringBoard())
+// 	assert.EqualValues(t, uint64(578721933553179648), e.attacks[White][King])
+//
+// 	score = e.evalKing(Black)
+// 	out.Printf("Black King: %s\n", score)
+// 	assert.EqualValues(t, Score{10,10}, *score)
+// 	assert.EqualValues(t, 10, score.ValueFromScore(p.GamePhaseFactor()))
+// 	out.Printf("Mobility    : %d\n", e.mobility[Black])
+// 	assert.EqualValues(t, 14, e.mobility[Black])
+// 	fmt.Printf("Attacks     : \n%s\n", e.attacks[Black][King].StringBoard())
+// 	assert.EqualValues(t, uint64(7927794651105288), e.attacks[Black][King])
+// }
 
 func TestStartPosZeroEval(t *testing.T) {
 	Settings.Eval.Tempo = 0
@@ -312,7 +311,7 @@ func TestMirroredZeroEval(t *testing.T) {
 // }
 
 func Test_TimingEval(t *testing.T) {
-	// defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
+	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
 	// go tool pprof -http :8080 ./main ./prof.null/cpu.pprof
 
 	out := message.NewPrinter(language.German)

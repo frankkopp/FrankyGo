@@ -59,28 +59,62 @@ func Test_savePV(t *testing.T) {
 
 func TestMate(t *testing.T) {
 	config.Settings.Search.UseBook = false
-	s:= NewSearch()
+	s := NewSearch()
 	p, _ := position.NewPositionFen("8/8/8/8/8/3K4/R7/5k2 w - -")
-	sl:=NewSearchLimits()
+	sl := NewSearchLimits()
 	sl.Depth = 8
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
 	assert.EqualValues(t, 9993, s.lastSearchResult.BestValue)
 }
 
+func TestTimingTTSize(t *testing.T) {
+
+	results := []string{}
+
+	for ttSize := 1; ttSize < 10_000; ttSize = ttSize * 2 {
+
+		out.Println("TT Size", ttSize)
+
+		// defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
+		// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
+		config.LogLevel = 2
+		config.SearchLogLevel = 2
+		config.Settings.Search.UseBook = false
+		config.Settings.Search.TTSize = ttSize
+
+		s := NewSearch()
+		p := position.NewPosition()
+		sl := NewSearchLimits()
+		// sl.Depth = 8
+		sl.TimeControl = true
+		sl.MoveTime = 10 * time.Second
+		s.StartSearch(*p, *sl)
+		s.WaitWhileSearching()
+		nps := util.Nps(s.nodesVisited, s.lastSearchResult.SearchTime)
+		results = append(results, out.Sprintf("tt size: %-6d time: %-12s nodes: %-12d depth: %2d/%-2d nps: %-12d stats: %s tt: %s",
+			ttSize, s.lastSearchResult.SearchTime, s.nodesVisited, s.lastSearchResult.SearchDepth, s.lastSearchResult.ExtraDepth,
+			nps, s.statistics.String(), s.tt.String()))
+	}
+
+	out.Println()
+	for _, r := range results {
+		out.Println(r)
+	}
+}
+
 func TestTiming(t *testing.T) {
-	defer profile.Start().Stop()
+	defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
+	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 	config.Settings.Search.UseBook = false
-	s:= NewSearch()
+	s := NewSearch()
 	p := position.NewPosition()
-	sl:=NewSearchLimits()
-	// sl.Depth = 10
-	sl.TimeControl = true
-	sl.MoveTime = 60 * time.Second
+	sl := NewSearchLimits()
+	sl.Depth = 10
+	// sl.TimeControl = true
+	sl.MoveTime = 30 * time.Second
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
 	out.Println("TT  : ", s.tt.String())
 	out.Println("NPS : ", util.Nps(s.nodesVisited, s.lastSearchResult.SearchTime))
 }
-
-

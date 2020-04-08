@@ -37,6 +37,16 @@ import (
 
 // Statistics are extra data and stats not essential for a functioning search
 type Statistics struct {
+	Evaluations       uint64
+	EvaluationsFromTT uint64
+
+	TTHit             uint64
+	TTMiss            uint64
+	TTMoveUsed        uint64
+	NoTTMove          uint64
+	TTCuts            uint64
+	TTNoCuts          uint64
+
 	BetaCuts    uint64
 	BetaCuts1st uint64
 	IIDmoves    uint64
@@ -45,12 +55,6 @@ type Statistics struct {
 	LeafPositionsEvaluated uint64
 	Checkmates             uint64
 	Stalemates             uint64
-	TTHit                  uint64
-	TTMiss                 uint64
-	TTMoveUsed             uint64
-	NoTTMove               uint64
-	TTCuts                 uint64
-	TTNoCuts               uint64
 	RootPvsResearches      uint64
 	PvsResearches          uint64
 	NullMoveCuts           uint64
