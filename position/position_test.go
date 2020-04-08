@@ -530,10 +530,10 @@ func Test_TimingIsAttacked(t *testing.T) {
 	}
 }
 
-func Benchmark(b *testing.B) {
+func BenchmarkIsAttackedVariations(b *testing.B) {
 
 	p, _ := NewPositionFen("r5k1/p1qb1p1p/1p3np1/2b2p2/2B5/2P3N1/PP2QPPP/R3N1K1 b - -")
-	p = NewPosition()
+	// p = NewPosition()
 
 	f1 := func() {
 		for sq := SqA1; sq <= SqH8; sq++ {

@@ -916,7 +916,7 @@ func (mg *Movegen) generateKingMoves(position *position.Position, mode GenMode, 
 }
 
 // generates officers moves
-func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
+func (mg *Movegen) generateMovesOld(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
 	nextPlayer := position.NextPlayer()
 	gamePhase := position.GamePhase()
 	occupiedBb := position.OccupiedAll()
@@ -970,6 +970,60 @@ func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, ml *
 						value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
 						ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 					}
+				}
+			}
+		}
+	}
+}
+
+// generates officers moves using the attacks pre-computed with magic bitboards
+// Performance improvement to the previous loop based version:
+// Old version:
+// Test took 2.0049508s for 10.000.000 iterations
+// Test took 200 ns per iteration
+// Iterations per sec 4.987.653
+// This version:
+// Test took 1.516326s for 10.000.000 iterations
+// Test took 151 ns per iteration
+// Iterations per sec 6.594.887
+// Improvement: +32%
+func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
+	nextPlayer := position.NextPlayer()
+	gamePhase := position.GamePhase()
+	occupiedBb := position.OccupiedAll()
+
+	// loop through all piece types, get pseudo attacks for the piece and
+	// AND it with the opponents pieces.
+	// For sliding pieces check if there are other pieces in between the
+	// piece and the target square. If free this is a valid move (or
+	// capture)
+
+	for pt := Knight; pt <= Queen; pt++ {
+		pieces := position.PiecesBb(nextPlayer, pt)
+		piece := MakePiece(nextPlayer, pt)
+
+		for pieces != 0 {
+			fromSquare := pieces.PopLsb()
+
+			moves := GetAttacksBb(pt, fromSquare, occupiedBb)
+
+			// captures
+			if mode&GenCap != 0 {
+				captures := moves & position.OccupiedBb(nextPlayer.Flip())
+				for captures != 0 {
+					toSquare := captures.PopLsb()
+					value := position.GetPiece(toSquare).ValueOf() - position.GetPiece(fromSquare).ValueOf() + PosValue(piece, toSquare, gamePhase)
+					ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
+				}
+			}
+
+			// non captures
+			if mode&GenNonCap != 0 {
+				nonCaptures := moves &^ occupiedBb
+				for nonCaptures != 0 {
+					toSquare := nonCaptures.PopLsb()
+					value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
+					ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 				}
 			}
 		}

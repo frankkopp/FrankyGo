@@ -28,6 +28,7 @@ package types
 
 // Magic holds all magic bitboards relevant for a single square
 // Taken from Stockfish
+// License see https://stockfishchess.org/about/
 type Magic struct {
 	Mask    Bitboard
 	Magic   Bitboard

@@ -337,7 +337,7 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 		return true
 	}
 
-	// New code - slower see tests
+	// New code - using GetAttacksBb from Magics - slower see tests
 	// we do check a reverse attack with a queen to see if we can hit any other sliders. If yes
 	// they also could hit us which means the square is attacked.
 	// if	(GetAttacksBb(Queen, sq, p.OccupiedAll())&(p.piecesBb[by][Rook]|p.piecesBb[by][Bishop]|p.piecesBb[by][Queen]) > 0) {

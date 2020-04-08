@@ -450,7 +450,8 @@ func TestTimingPseudoMoveGen(t *testing.T) {
 	const iterations uint64 = 1_000_000
 
 	mg := NewMoveGen()
-	pos, _ := position.NewPositionFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
+	// kiwi pete
+	pos := position.NewPosition("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ")
 	moves := mg.GeneratePseudoLegalMoves(pos, GenAll)
 
 	for r := 1; r <= rounds; r++ {
@@ -500,6 +501,8 @@ func TestTimingOnDemandMoveGen(t *testing.T) {
 	}
 }
 
+// Old: 86.000.000 moves generated in 2.281 ns: 37.697.142 mps
+// New: 86.000.000 moves generated in 2.213 ns: 38.851.528 mps
 func TestTimingOnDemandRealMoveGen(t *testing.T) {
 	out := message.NewPrinter(language.German)
 
@@ -535,3 +538,56 @@ func TestTimingOnDemandRealMoveGen(t *testing.T) {
 			(generated*uint64(1_000_000_000))/uint64(elapsed.Nanoseconds()))
 	}
 }
+
+func Test_TimingGenerateMovesOld(t *testing.T) {
+	// defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
+	// go tool pprof -http :8080 ./main ./prof.null/cpu.pprof
+
+	mg := NewMoveGen()
+	p := position.NewPosition("r1b1k2r/pppp1ppp/2n2n2/1Bb1p2q/4P3/2NP1N2/1PP2PPP/R1BQK2R w KQkq -")
+	result := Value(0)
+
+	const rounds = 5
+	const iterations uint64 = 10_000_000
+
+	for r := 1; r <= rounds; r++ {
+		out.Printf("Round %d\n", r)
+		start := time.Now()
+		for i := uint64(0); i < iterations; i++ {
+			mg.pseudoLegalMoves.Clear()
+			mg.generateMovesOld(p, GenAll, mg.pseudoLegalMoves)
+		}
+		elapsed := time.Since(start)
+		out.Printf("Test took %s for %d iterations\n", elapsed, iterations)
+		out.Printf("Test took %d ns per iteration\n", elapsed.Nanoseconds()/int64(iterations))
+		out.Printf("Iterations per sec %d\n", int64(iterations*1e9)/elapsed.Nanoseconds())
+	}
+	_ = result
+}
+
+func Test_TimingGenerateMovesNew(t *testing.T) {
+	// defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
+	// go tool pprof -http :8080 ./main ./prof.null/cpu.pprof
+
+	mg := NewMoveGen()
+	p := position.NewPosition("r1b1k2r/pppp1ppp/2n2n2/1Bb1p2q/4P3/2NP1N2/1PP2PPP/R1BQK2R w KQkq -")
+	result := Value(0)
+
+	const rounds = 5
+	const iterations uint64 = 10_000_000
+
+	for r := 1; r <= rounds; r++ {
+		out.Printf("Round %d\n", r)
+		start := time.Now()
+		for i := uint64(0); i < iterations; i++ {
+			mg.pseudoLegalMoves.Clear()
+			mg.generateMoves(p, GenAll, mg.pseudoLegalMoves)
+		}
+		elapsed := time.Since(start)
+		out.Printf("Test took %s for %d iterations\n", elapsed, iterations)
+		out.Printf("Test took %d ns per iteration\n", elapsed.Nanoseconds()/int64(iterations))
+		out.Printf("Iterations per sec %d\n", int64(iterations*1e9)/elapsed.Nanoseconds())
+	}
+	_ = result
+}
+
