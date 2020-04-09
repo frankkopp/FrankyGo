@@ -503,6 +503,7 @@ func TestTimingOnDemandMoveGen(t *testing.T) {
 
 // Old: 86.000.000 moves generated in 2.281 ns: 37.697.142 mps
 // New: 86.000.000 moves generated in 2.213 ns: 38.851.528 mps
+// New: 86.000.000 moves generated in 1.729 ns: 49.719.892 mps
 func TestTimingOnDemandRealMoveGen(t *testing.T) {
 	out := message.NewPrinter(language.German)
 

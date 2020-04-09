@@ -184,7 +184,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	// this branch and return the value.
 	// Alpha or Beta entries will only be used if they improve
 	// the current values.
-	// TODO : Some engine treat the cut for alpha and beta nodes
+	// TODO : Some engines treat the cut for alpha and beta nodes
 	//  differently for PV and non PV nodes - needs more testing
 	//  if this is relevant
 	var ttEntry *transpositiontable.TtEntry
@@ -230,11 +230,12 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	// - in check - this would lead to an illegal situation where the king is captured
 	// - recursive null moves should be avoided
 	if Settings.Search.UseNullMove {
-		if isPV &&
-			doNull &&
+		if doNull &&
+			// isPV && // TODO needs testing - tree size significantly reduced and moves equal
 			depth >= Settings.Search.NmpDepth &&
 			position.MaterialNonPawn(position.NextPlayer()) > 0 &&
 			!position.HasCheck() {
+			// possible other criteria: eval > beta
 
 			// determine depth reduction
 			// ICCA Journal, Vol. 22, No. 3
@@ -280,12 +281,12 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	// searches.  IID is used to find a good move to search first by
 	// searching the current position to a reduced depth, and using
 	// the best move of that search as the first move at the real depth.
-	// TODO Does not make a big difference in search tree size - needs to be tested
+	// Does not make a big difference in search tree size.
 	if Settings.Search.UseIID {
 		if depth >= Settings.Search.IIDDepth &&
 			ttMove != MoveNone && // no move from TT
 			doNull && // avoid in null move search
-			isPV { // TODO test if this is necessary
+			isPV {
 
 			// get the new depth and make sure it is >0
 			newDepth := depth - Settings.Search.IIDReduction

@@ -99,8 +99,6 @@ func ShiftBitboard(b Bitboard, d Direction) Bitboard {
 // GetMovesOnRank returns a Bb for all possible horizontal moves
 // on the rank of the square with the rank content (blocking pieces)
 // determined from the given pieces bitboard.
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func GetMovesOnRank(sq Square, content Bitboard) Bitboard {
 	// content = the pieces currently on the board and maybe blocking the moves
 	// no rotation necessary for ranks - their squares are already in a row
@@ -114,8 +112,6 @@ func GetMovesOnRank(sq Square, content Bitboard) Bitboard {
 // GetMovesOnFileRotated Bb for all possible horizontal moves on the
 // rank of the square with the rank content (blocking pieces) determined
 // from the given L90 rotated bitboard.
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func GetMovesOnFileRotated(sq Square, rotated Bitboard) Bitboard {
 	// shift to the lsb
 	contentIdx := rotated >> (int(sq.FileOf()) * 8)
@@ -128,8 +124,6 @@ func GetMovesOnFileRotated(sq Square, rotated Bitboard) Bitboard {
 // the square with the rank content (blocking pieces) determined from the
 // given bitboard (not rotated - use GetMovesOnFileRotated for already rotated
 // bitboards)
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func GetMovesOnFile(sq Square, content Bitboard) Bitboard {
 	// content = the pieces currently on the board and maybe blocking the moves
 	// rotate the content of the board to get all file squares in a row
@@ -139,8 +133,6 @@ func GetMovesOnFile(sq Square, content Bitboard) Bitboard {
 // GetMovesDiagUpRotated  Bb for all possible diagonal up moves of
 // the square with the content (blocking pieces) determined from the
 // given R45 rotated bitboard.
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func GetMovesDiagUpRotated(sq Square, rotated Bitboard) Bitboard {
 	// shift the correct row to the lsb
 	shifted := rotated >> shiftsDiagUp[sq]
@@ -154,8 +146,6 @@ func GetMovesDiagUpRotated(sq Square, rotated Bitboard) Bitboard {
 // GetMovesDiagUp Bb for all possible diagonal up moves of the square with
 // the content (blocking pieces) determined from the given non rotated
 // bitboard.
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func GetMovesDiagUp(sq Square, content Bitboard) Bitboard {
 	// content = the pieces currently on the board and maybe blocking the moves
 	// rotate the content of the board to get all diagonals in a row

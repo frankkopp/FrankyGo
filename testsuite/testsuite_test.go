@@ -182,16 +182,16 @@ func TestMateTests(t *testing.T) {
 	ts.RunTests()
 }
 
-// Summary: (+Null +IID)
+// Summary:
 // EPD File:   testsets/wac.epd
 // SearchTime: 5.000 ms
 // MaxDepth:   0
-// Date:       2020-04-06 10:07:06.0884287 +0200 CEST
-// Successful: 173 (86 %)
-// Failed:     28  (13 %)
+// Date:       2020-04-09 19:14:13.1463946 +0200 CEST
+// Successful: 170 (84 %)
+// Failed:     31  (15 %)
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
-// Test time: 16m46.7099381s
+// Test time: 16m47.1436222s
 func TestWACTests(t *testing.T) {
 	ts, _ := NewTestSuite("testsets/wac.epd", 5 * time.Second, 0)
 	ts.RunTests()
@@ -201,30 +201,40 @@ func TestWACTests(t *testing.T) {
 // EPD File:   testsets/crafty_test.epd
 // SearchTime: 5.000 ms
 // MaxDepth:   0
-// Date:       2020-04-06 13:06:31.3417019 +0200 CEST
-// Successful: 146 (42 %)
-// Failed:     199 (57 %)
+// Date:       2020-04-09 17:59:55.9396432 +0200 CEST
+// Successful: 159 (46 %)
+// Failed:     186 (53 %)
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
-// Test time: 28m48.1070003s
+// Test time: 28m47.8638566s
 func TestCraftyTests(t *testing.T) {
 	config.Settings.Search.UseIID = true
 	ts, _ := NewTestSuite("testsets/crafty_test.epd", 5 * time.Second, 0)
 	ts.RunTests()
 }
 
-// Results for Test Suite
-// ------------------------------------------------------------------------------------------------------------------------------------
+// Summary:
 // EPD File:   testsets/ecm98.epd
 // SearchTime: 5.000 ms
 // MaxDepth:   0
-// Date:       2020-04-04 03:20:57.8061003 +0200 CEST
-// Successful: 356 (46 %)
-// Failed:     413 (53 %)
+// Date:       2020-04-09 19:11:17.4001431 +0200 CEST
+// Successful: 350 (45 %)
+// Failed:     419 (54 %)
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
-// Test time: 1h4m11.727s
+// Test time: 1h4m12.8359563s
 func TestECMTests(t *testing.T) {
 	ts, _ := NewTestSuite("testsets/ecm98.epd", 5 * time.Second, 0)
 	ts.RunTests()
+}
+
+func TestStressTests(t *testing.T) {
+	for {
+		ts, _ := NewTestSuite("testsets/ecm98.epd", 5*time.Second, 0)
+		ts.RunTests()
+		ts, _ = NewTestSuite("testsets/wac.epd", 5*time.Second, 0)
+		ts.RunTests()
+		ts, _ = NewTestSuite("testsets/crafty_test.epd", 5*time.Second, 0)
+		ts.RunTests()
+	}
 }

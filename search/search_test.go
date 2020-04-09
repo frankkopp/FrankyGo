@@ -178,12 +178,11 @@ func TestStaleMatePosition(t *testing.T) {
 
 func TestSearchDev(t *testing.T) {
 	config.Settings.Search.UseBook = false
-	config.Settings.Search.UseNullMove = true
 	search := NewSearch()
-	p, _ := position.NewPositionFen("8/1P6/6k1/8/8/8/p1K5/8 w - -")
+	p := position.NewPosition("8/k1b5/P4p2/1Pp2p1p/K1P2P1P/8/3B4/8 w - -")
 	sl := NewSearchLimits()
 	sl.TimeControl = true
-	sl.MoveTime = 15 * time.Second
+	sl.MoveTime = 5 * time.Second
 	search.StartSearch(*p, *sl)
 	search.WaitWhileSearching()
 }

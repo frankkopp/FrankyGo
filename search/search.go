@@ -377,7 +377,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 // searched first in the next iteration, then overwriting the new
 // move with the old one becomes unnecessary. This way, also the
 // results from the partial search can be accepted
-// TODO though in case of a severe drop of the score it is wise
+// IDEA though in case of a severe drop of the score it is wise
 //  to allocate some more time, as the first alternative is often
 //  a bad capture, delaying the loss instead of preventing it
 func (s *Search) iterativeDeepening(position *position.Position) *Result {

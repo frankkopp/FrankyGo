@@ -916,6 +916,7 @@ func (mg *Movegen) generateKingMoves(position *position.Position, mode GenMode, 
 }
 
 // generates officers moves
+// DEBUG - kept for testing
 func (mg *Movegen) generateMovesOld(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
 	nextPlayer := position.NextPlayer()
 	gamePhase := position.GamePhase()
@@ -933,8 +934,6 @@ func (mg *Movegen) generateMovesOld(position *position.Position, mode GenMode, m
 
 		for pieces != 0 {
 			fromSquare := pieces.PopLsb()
-			// TODO: use magic bitboard attack lookup
-			//  measure time before and after
 			pseudoMoves := GetPseudoAttacks(pt, fromSquare)
 
 			// captures
@@ -1012,6 +1011,14 @@ func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, ml *
 				captures := moves & position.OccupiedBb(nextPlayer.Flip())
 				for captures != 0 {
 					toSquare := captures.PopLsb()
+
+					// DEBUG
+					if  position.GetPiece(toSquare).TypeOf() == King {
+						msg := fmt.Sprintf("MoveGen: Capturing a King is not allowed!")
+						log.Criticalf(msg)
+						panic(msg)
+					}
+
 					value := position.GetPiece(toSquare).ValueOf() - position.GetPiece(fromSquare).ValueOf() + PosValue(piece, toSquare, gamePhase)
 					ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 				}

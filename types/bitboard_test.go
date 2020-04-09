@@ -496,7 +496,6 @@ func TestBitboardRotateBb(t *testing.T) {
 
 func TestBitboardRotateSq(t *testing.T) {
 
-
 	tests := []struct {
 		rotation string
 		square   Square
@@ -535,8 +534,6 @@ func TestBitboardRotateSq(t *testing.T) {
 		assert.Equal(t, test.expected, rotated)
 	}
 }
-
-// TODO implement getMoves functions and test
 
 // //////////////////////////////////////////////////////////////////////////
 // benchmarks

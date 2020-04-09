@@ -136,17 +136,15 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	config.Settings.Search.UseMDP = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "MDP"))
 
+	r.Tests = append(r.Tests, measure(s, sl, p, "BASE"))
+
 	// PVS
 	config.Settings.Search.UsePVS = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "PVS"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "PVS"))
 
 	// PVS
 	config.Settings.Search.UseKiller = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "Killer"))
-
-	// Null Move
-	config.Settings.Search.UseNullMove = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "NMP"))
 
 	config.Settings.Search.UseTTMove = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "TTMove"))
@@ -154,6 +152,9 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	config.Settings.Search.UseIID = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "IID"))
 
+	// Null Move
+	config.Settings.Search.UseNullMove = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "NMP"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////

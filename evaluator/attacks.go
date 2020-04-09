@@ -102,7 +102,7 @@ func (a *Attacks) Compute(p *position.Position) {
 	}
 	a.Zobrist = p.ZobristKey()
 	a.nonPawnAttacks(p)
-	a.pawnAttacks(p) // TODO safe time with pawn has table?
+	a.pawnAttacks(p) // TODO safe time with pawn hash table?
 }
 
 // nonPawnAttacks calculates all attacks of non pawn pieces including king

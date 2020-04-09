@@ -415,8 +415,14 @@ func TestPosition_CheckInsufficientMaterial(t *testing.T) {
 
 }
 
+// DoMove/UndoMove took 3.065.041.200 ns for 10.000.000 iterations with 5 do/undo pairs
+// DoMove/UndoMove took 61 ns per do/undo pair
+// Positions per sec 16.312.994 pps
+//
 //noinspection GoUnhandledErrorResult
 func Test_TimingDoUndo(t *testing.T) {
+	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
+
 	out := message.NewPrinter(language.German)
 
 	const rounds = 5

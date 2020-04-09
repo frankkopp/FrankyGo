@@ -33,12 +33,14 @@ UseKiller = true
 
 # prunings
 UseMDP = true
-UseNullMove = true
-NmpDepth = 3
-NmpReduction = 2
+
 UseIID = true
 IIDDepth = 6
 IIDReduction = 2
+
+UseNullMove = true
+NmpDepth = 3
+NmpReduction = 2
 
 [eval]
 UsePawnCache = false # not implemented yet

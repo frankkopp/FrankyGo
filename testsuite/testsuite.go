@@ -178,8 +178,8 @@ func (ts *TestSuite) RunTests() {
 
 	// execute all tests and store results in the
 	// test instance
-	for _, t := range ts.Tests {
-		out.Printf("Test %s -- Target Result %s\n", t.line, t.targetMoves.StringUci())
+	for i, t := range ts.Tests {
+		out.Printf("Test %d of %d\nTest: %s -- Target Result %s\n", i+1, len(ts.Tests), t.line, t.targetMoves.StringUci())
 		startTime2 := time.Now()
 		runSingleTest(s, sl, t)
 		elapsedTime := time.Since(startTime2)
@@ -236,6 +236,7 @@ func (ts *TestSuite) RunTests() {
 	out.Printf("Skipped:    %-3d (%d %%)\n", tr.SkippedCounter, 100*tr.SkippedCounter/tr.Counter)
 	out.Printf("Not tested: %-3d (%d %%)\n", tr.NotTestedCounter, 100*tr.NotTestedCounter/tr.Counter)
 	out.Printf("Test time: %s\n", elapsed)
+	out.Printf("Configuration: %s\n", config.Settings.String())
 }
 
 // determines which test type the test is and call the appropriate
