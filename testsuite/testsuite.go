@@ -53,6 +53,7 @@ import (
 	"github.com/frankkopp/FrankyGo/position"
 	"github.com/frankkopp/FrankyGo/search"
 	. "github.com/frankkopp/FrankyGo/types"
+	"github.com/frankkopp/FrankyGo/util"
 )
 
 var out = message.NewPrinter(language.German)
@@ -105,6 +106,7 @@ type Test struct {
 	value       Value
 	rType       resultType
 	line        string
+	nps         uint64
 }
 
 // TestSuite is the data structure for the running a file of EPD tests.
@@ -183,8 +185,9 @@ func (ts *TestSuite) RunTests() {
 		startTime2 := time.Now()
 		runSingleTest(s, sl, t)
 		elapsedTime := time.Since(startTime2)
-		out.Printf("Test finished in %d ms with result %s (%s)\n\n",
-			elapsedTime.Milliseconds(), t.rType.String(), t.actual.StringUci())
+		t.nps = util.Nps(s.NodesVisited(), s.LastSearchResult().SearchTime)
+		out.Printf("Test finished in %d ms with result %s (%s) - nps: %d\n\n",
+			elapsedTime.Milliseconds(), t.rType.String(), t.actual.StringUci(), t.nps)
 	}
 
 	// sum up result for report

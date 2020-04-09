@@ -103,7 +103,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().IIDmoves
+	ptrToSpecial = &s.Statistics().NullMoveCuts
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))

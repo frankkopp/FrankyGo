@@ -30,7 +30,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pkg/profile"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/frankkopp/FrankyGo/config"
@@ -104,7 +103,7 @@ func TestTimingTTSize(t *testing.T) {
 }
 
 func TestTiming(t *testing.T) {
-	defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
+	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 	config.Settings.Search.UseBook = false
 	s := NewSearch()

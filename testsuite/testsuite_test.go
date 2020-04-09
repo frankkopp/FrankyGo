@@ -27,6 +27,8 @@
 package testsuite
 
 import (
+	"io/ioutil"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -71,11 +73,11 @@ func TestGetTest(t *testing.T) {
 }
 
 func TestNewTestSuite(t *testing.T) {
-	ts, err := NewTestSuite("testsets/franky_tests.epd", 2 * time.Second, 0)
+	ts, err := NewTestSuite("testsets/franky_tests.epd", 2*time.Second, 0)
 	assert.NotNil(t, ts)
 	assert.Nil(t, err)
 	assert.EqualValues(t, 13, len(ts.Tests))
-	for _,tt := range ts.Tests {
+	for _, tt := range ts.Tests {
 		out.Println(tt)
 	}
 }
@@ -106,13 +108,13 @@ func TestNewTestSuite(t *testing.T) {
 //
 // Test time: 26.101 ms
 func TestRunTestSuiteTest(t *testing.T) {
-	ts, _ := NewTestSuite("testsets/franky_tests.epd", 2 * time.Second, 0)
+	ts, _ := NewTestSuite("testsets/franky_tests.epd", 2*time.Second, 0)
 	ts.RunTests()
 	assert.EqualValues(t, 13, ts.LastResult.SuccessCounter)
 }
 
 func TestBlunderTests(t *testing.T) {
-	ts, _ := NewTestSuite("testsets/franky_blunders.epd", 2 * time.Second, 0)
+	ts, _ := NewTestSuite("testsets/franky_blunders.epd", 2*time.Second, 0)
 	ts.RunTests()
 }
 
@@ -138,7 +140,7 @@ func TestBlunderTests(t *testing.T) {
 //
 // Test time: 25.0314359s
 func TestZugzwangTests(t *testing.T) {
-	ts, _ := NewTestSuite("testsets/nullMoveZugZwangTest.epd", 5 * time.Second, 0)
+	ts, _ := NewTestSuite("testsets/nullMoveZugZwangTest.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
 
@@ -178,7 +180,7 @@ func TestZugzwangTests(t *testing.T) {
 // Not tested: 0   (0 %)
 // Test time: 5m0.1596541s
 func TestMateTests(t *testing.T) {
-	ts, _ := NewTestSuite("testsets/mate_test_suite.epd", 15 * time.Second, 0)
+	ts, _ := NewTestSuite("testsets/mate_test_suite.epd", 15*time.Second, 0)
 	ts.RunTests()
 }
 
@@ -193,7 +195,7 @@ func TestMateTests(t *testing.T) {
 // Not tested: 0   (0 %)
 // Test time: 16m47.1436222s
 func TestWACTests(t *testing.T) {
-	ts, _ := NewTestSuite("testsets/wac.epd", 5 * time.Second, 0)
+	ts, _ := NewTestSuite("testsets/wac.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
 
@@ -209,7 +211,7 @@ func TestWACTests(t *testing.T) {
 // Test time: 28m47.8638566s
 func TestCraftyTests(t *testing.T) {
 	config.Settings.Search.UseIID = true
-	ts, _ := NewTestSuite("testsets/crafty_test.epd", 5 * time.Second, 0)
+	ts, _ := NewTestSuite("testsets/crafty_test.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
 
@@ -224,17 +226,25 @@ func TestCraftyTests(t *testing.T) {
 // Not tested: 0   (0 %)
 // Test time: 1h4m12.8359563s
 func TestECMTests(t *testing.T) {
-	ts, _ := NewTestSuite("testsets/ecm98.epd", 5 * time.Second, 0)
+	ts, _ := NewTestSuite("testsets/ecm98.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
 
 func TestStressTests(t *testing.T) {
+	files, err := ioutil.ReadDir("testsets/")
+	if err != nil {
+		log.Fatal(err)
+	}
+	var list []string
+	for _, f := range files {
+		if filepath.Ext(f.Name()) == ".epd" {
+			list = append(list, f.Name())
+		}
+	}
 	for {
-		ts, _ := NewTestSuite("testsets/ecm98.epd", 5*time.Second, 0)
-		ts.RunTests()
-		ts, _ = NewTestSuite("testsets/wac.epd", 5*time.Second, 0)
-		ts.RunTests()
-		ts, _ = NewTestSuite("testsets/crafty_test.epd", 5*time.Second, 0)
-		ts.RunTests()
+		for _, ts := range list {
+			ts, _ := NewTestSuite("testsets/"+ts, 5*time.Second, 0)
+			ts.RunTests()
+		}
 	}
 }
