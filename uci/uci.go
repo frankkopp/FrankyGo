@@ -584,7 +584,8 @@ func getUciLog() *logging2.Logger {
 	if filepath.IsAbs(config.Settings.Log.LogPath) {
 		logPath = config.Settings.Log.LogPath
 	} else {
-		dir, _ := os.Getwd()
+		executable, _ := os.Executable()
+		dir := filepath.Dir(executable)
 		logPath = dir + "/" + config.Settings.Log.LogPath
 	}
 	uciLogFilePath := logPath + "/" + exeName + "_ucilog.log"

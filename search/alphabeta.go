@@ -884,7 +884,8 @@ func getSearchTraceLog() *logging.Logger {
 	if filepath.IsAbs(Settings.Log.LogPath) {
 		logPath = Settings.Log.LogPath
 	} else {
-		dir, _ := os.Getwd()
+		executable, _ := os.Executable()
+		dir := filepath.Dir(executable)
 		logPath = dir + "/" + Settings.Log.LogPath
 	}
 	searchLogFilePath := logPath + "/" + exeName + "_searchlog.log"
