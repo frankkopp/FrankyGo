@@ -159,6 +159,11 @@ func NewTestSuite(filePath string, searchTime time.Duration, depth int) (*TestSu
 // RunTests runs tests on a successfully created instance of a TestSuite
 func (ts *TestSuite) RunTests() {
 
+	if len(ts.Tests) == 0 {
+		out.Printf("No tests to run\n")
+		return
+	}
+
 	startTime := time.Now()
 
 	// setup search
@@ -176,6 +181,7 @@ func (ts *TestSuite) RunTests() {
 	out.Printf("SearchTime: %d ms\n", ts.Time.Milliseconds())
 	out.Printf("MaxDepth:   %d\n", ts.Depth)
 	out.Printf("Date:       %s\n", time.Now().Local())
+	out.Printf("No of ests: %d\n", len(ts.Tests))
 	out.Println()
 
 	// execute all tests and store results in the
