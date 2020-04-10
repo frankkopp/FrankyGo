@@ -103,7 +103,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().NullMoveCuts
+	ptrToSpecial = &s.Statistics().LmrResearches
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
@@ -155,6 +155,10 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// Null Move
 	config.Settings.Search.UseNullMove = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "NMP"))
+
+	// Null Move
+	config.Settings.Search.UseLmr = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "LMR"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -287,4 +291,5 @@ func turnOffFeatures() {
 	config.Settings.Search.UseKiller = false
 	config.Settings.Search.UseNullMove = false
 	config.Settings.Search.UseIID = false
+	config.Settings.Search.UseLmr = false
 }

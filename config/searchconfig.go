@@ -29,34 +29,37 @@ package config
 // searchConfiguration is a data structure to hold the configuration of an
 // instance of a search.
 type searchConfiguration struct {
-	UseBook       bool
-	BookPath      string
-	BookFile      string
-	BookFormat    string
+	UseBook    bool
+	BookPath   string
+	BookFile   string
+	BookFormat string
 
 	UsePonder     bool
 	UseQuiescence bool
 	UseQSStandpat bool
 
-	UsePVS        bool
-	UseKiller     bool
+	UsePVS       bool
+	UseKiller    bool
+	UseIID       bool
+	IIDDepth     int
+	IIDReduction int
 
-	UseTT         bool
-	TTSize        int
-	UseTTMove     bool
-	UseTTValue    bool
-	UseQSTT       bool
-	UseEvalTT     bool
+	UseTT      bool
+	TTSize     int
+	UseTTMove  bool
+	UseTTValue bool
+	UseQSTT    bool
+	UseEvalTT  bool
 
-	UseMDP        bool
-	UseNullMove   bool
+	UseMDP      bool
+	UseNullMove bool
 
-	NmpDepth      int
-	NmpReduction  int
+	NmpDepth     int
+	NmpReduction int
 
-	UseIID        bool
-	IIDDepth      int
-	IIDReduction  int
+	UseLmr           bool
+	LmrDepth         int
+	LmrMovesSearched int
 }
 
 // sets defaults which might be overwritten by config file
@@ -83,6 +86,9 @@ func init() {
 	Settings.Search.UseIID = true
 	Settings.Search.IIDDepth = 6
 	Settings.Search.IIDReduction = 2
+	Settings.Search.UseLmr = true
+	Settings.Search.LmrDepth = 3
+	Settings.Search.LmrMovesSearched = 3
 
 }
 

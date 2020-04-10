@@ -306,11 +306,11 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	}
 
 	// Initialize ply based data
-	s.mg = make([]*movegen.Movegen, 0, MaxDepth)
-	s.pv = make([]*moveslice.MoveSlice, 0, MaxDepth)
-	for i := 0; i < MaxDepth; i++ {
+	s.mg = make([]*movegen.Movegen, 0, MaxDepth+1)
+	s.pv = make([]*moveslice.MoveSlice, 0, MaxDepth+1)
+	for i := 0; i <= MaxDepth; i++ {
 		s.mg = append(s.mg, movegen.NewMoveGen())
-		s.pv = append(s.pv, moveslice.NewMoveSlice(MaxDepth))
+		s.pv = append(s.pv, moveslice.NewMoveSlice(MaxDepth+1))
 	}
 
 	// release the init phase lock to signal the calling go routine

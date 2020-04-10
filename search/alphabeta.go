@@ -27,6 +27,7 @@
 package search
 
 import (
+	"fmt"
 	golog "log"
 	"os"
 	"path/filepath"
@@ -231,7 +232,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	// - recursive null moves should be avoided
 	if Settings.Search.UseNullMove {
 		if doNull &&
-			// isPV && // TODO needs testing - tree size significantly reduced and moves equal
+			!isPV &&
 			depth >= Settings.Search.NmpDepth &&
 			position.MaterialNonPawn(position.NextPlayer()) > 0 &&
 			!position.HasCheck() {
@@ -254,7 +255,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			// do null move search
 			position.DoNullMove()
 			s.nodesVisited++
-			nValue := -s.search(position, newDepth, ply+1, -beta, -beta+1, isPV, false)
+			nValue := -s.search(position, newDepth, ply+1, -beta, -beta+1, false, false)
 			position.UndoNullMove()
 
 			// check if we should stop the search
@@ -306,7 +307,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			// get the best move from the reduced search if available
 			if s.pv[ply].Len() > 0 {
 				s.statistics.IIDmoves++
-				ttMove = (*s.pv[ply])[0]
+				ttMove = (*s.pv[ply])[0].MoveOf()
 			}
 		}
 	}
@@ -339,6 +340,39 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	// MOVE LOOP
 	for move := myMg.GetNextMove(position, movegen.GenAll); move != MoveNone; move = myMg.GetNextMove(position, movegen.GenAll) {
 
+		if true { // DEBUG
+			err := false
+			msg := ""
+			switch {
+			case !move.IsValid():
+				msg = fmt.Sprintf("Position DoMove: Invalid move %s", move.String())
+				err = true
+			case position.GetPiece(move.From()) == PieceNone:
+				msg = fmt.Sprintf("Position DoMove: No piece on %s for move %s", position.GetPiece(move.From()).String(), move.StringUci())
+				err = true
+			case position.GetPiece(move.From()).ColorOf() != position.NextPlayer():
+				msg = fmt.Sprintf("Position DoMove: Piece to move does not belong to next player %s", position.GetPiece(move.From()).String())
+				err = true
+			case position.GetPiece(move.To()).TypeOf() == King:
+				msg = fmt.Sprintf("Position DoMove: King cannot be captured!")
+				err = true
+			}
+			if err {
+				s.log.Criticalf("Search              : Depth %d Ply %d alpha %d beta %d isPv %t doNull %t\n", depth, ply, alpha, beta, isPV, doNull)
+				s.log.Criticalf("Position            : %s\n", position.StringFen())
+				s.log.Criticalf("Move                : %s\n", move.String())
+				s.log.Criticalf("Moves Searched      : %d\n", movesSearched)
+				s.log.Criticalf("ttMove              : %s\n", ttMove.String())
+				s.log.Criticalf("bestMove            : %s\n", bestNodeMove.String())
+				s.log.Criticalf("MoveGen PV          : %s\n", myMg.PvMove())
+				s.log.Criticalf("MoveGen K1          : %s\n", myMg.KillerMoves()[0])
+				s.log.Criticalf("MoveGen K2          : %s\n", myMg.KillerMoves()[1])
+				s.log.Criticalf("MoveGen Moves       : %s\n", myMg.GeneratePseudoLegalMoves(position, movegen.GenAll).StringUci())
+				s.log.Criticalf(msg)
+				panic(msg)
+			}
+		} // DEBUG
+
 		// ///////////////////////////////////////////////////////
 		// DO MOVE
 		position.DoMove(move)
@@ -354,24 +388,86 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 		s.statistics.CurrentVariation.PushBack(move)
 		s.sendSearchUpdateToUci()
 
+		// ///////////////////////////////////////////////////////
+		// LMR
+		// Late Move Reduction assumes that later moves a rarely
+		// good (> alpha) and therefore the search is reduced in
+		// depth. This is in effect a soft transition into
+		// quiescence search as we usually try the pv move and
+		// capturing moves first. In quiescence only capturing
+		// moves are searched anyway.
+		// To make LMR work with PV we need to distinguish the
+		// PV and non PV case - for now we only use LMR in non
+		// PV nodes.
+		// newDepth is the "standard" new depth (depth - 1)
+		// lmrDepth is set to the same value and only reduced
+		// if conditions apply.
+		// TODO: Test different config value
+		// TODO: Test with PV
+		newDepth := depth - 1
+		lmrDepth := newDepth
+		if Settings.Search.UseLmr {
+			if !isPV &&
+				depth >= Settings.Search.LmrDepth &&
+				movesSearched >= Settings.Search.LmrMovesSearched &&
+				!position.HasCheck() &&
+				position.LastCapturedPiece() == PieceNone &&
+				move.MoveType() != Promotion &&
+				move != (*myMg.KillerMoves())[0] &&
+				move != (*myMg.KillerMoves())[1] {
+
+				// compute reduction from depth and move searched
+				R := depth * movesSearched
+				switch {
+				case R < 25:
+					R = 1
+				case R < 50:
+					R = 2
+				default:
+					R = 3
+				}
+				lmrDepth -= R
+				s.statistics.LmrReductions++
+			}
+			// make sure not to become negative
+			if lmrDepth < 0 {
+				lmrDepth = 0
+			}
+		}
+		// ///////////////////////////////////////////////////////
+
 		// check repetition and 50 moves
 		if s.checkDrawRepAnd50(position, 2) {
 			value = ValueDraw
 		} else {
 			// ///////////////////////////////////////////////////////////////////
 			// PVS
-			// Initial PVS move are search without PVS uses full search window.
+			// First move in Node will be search with the full window. Due to move
+			// ordering we assume this is the PV. Every other move is searched with
+			// a null window as we only try to prove that the move bad (<alpha)
+			// or that the move is too good (>beta). If this prove fails we need
+			// to research the move again with a full window.
 			// https://www.chessprogramming.org/Principal_Variation_Search
 			if !Settings.Search.UsePVS || movesSearched == 0 {
-				value = -s.search(position, depth-1, ply+1, -beta, -alpha, true, true)
+				value = -s.search(position, newDepth, ply+1, -beta, -alpha, true, true)
 			} else {
 				// Null window search after the initial PV search.
-				value = -s.search(position, depth-1, ply+1, -alpha-1, -alpha, false, true)
+				// As depth we use a potentially reduced depth if Late move
+				// conditions have been met above.
+				value = -s.search(position, lmrDepth, ply+1, -alpha-1, -alpha, false, true)
 				// If this move improved alpha without exceeding beta we do a proper full window
 				// search to get an accurate score.
-				if value > alpha && value < beta && !s.stopConditions() {
-					s.statistics.PvsResearches++
-					value = -s.search(position, depth-1, ply+1, -beta, -alpha, true, true)
+				// Without LMR we check for value > alpha && value < beta
+				// With LMR we re-search when value > alpha
+				if value > alpha && !s.stopConditions() {
+					// did we actually have a LMR reduction?
+					if lmrDepth < newDepth {
+						s.statistics.LmrResearches++
+						value = -s.search(position, newDepth, ply+1, -beta, -alpha, true, true)
+					} else if value < beta {
+						s.statistics.PvsResearches++
+						value = -s.search(position, newDepth, ply+1, -beta, -alpha, true, true)
+					}
 				}
 			}
 			// ///////////////////////////////////////////////////////////////////
@@ -467,12 +563,12 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 		defer slog.Debugf("%0*s Ply %-2.d QSearch     a:%-6.d b:%-6.d pv:%-6.v end  :  %s", ply, "", ply, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
 	}
 
-	if !Settings.Search.UseQuiescence {
-		return s.evaluate(position, ply)
-	}
-
 	if s.statistics.CurrentExtraSearchDepth < ply {
 		s.statistics.CurrentExtraSearchDepth = ply
+	}
+
+	if !Settings.Search.UseQuiescence || ply >= MaxDepth {
+		return s.evaluate(position, ply)
 	}
 
 	// Mate Distance Pruning
@@ -734,8 +830,8 @@ func (s *Search) getPVLine(p *position.Position, pv *moveslice.MoveSlice, depth 
 	counter := 0
 	ttMatch := s.tt.GetEntry(p.ZobristKey())
 	for ttMatch != nil && ttMatch.Move != MoveNone && counter < depth {
-		pv.PushBack(ttMatch.Move)
-		p.DoMove(ttMatch.Move)
+		pv.PushBack(ttMatch.Move.MoveOf())
+		p.DoMove(ttMatch.Move.MoveOf())
 		counter++
 		ttMatch = s.tt.GetEntry(p.ZobristKey())
 	}

@@ -242,8 +242,8 @@ func TestStressTests(t *testing.T) {
 		}
 	}
 	for {
-		for _, ts := range list {
-			ts, _ := NewTestSuite("testsets/"+ts, 5*time.Second, 0)
+		for _, t := range list {
+			ts, _ := NewTestSuite("testsets/"+t, 5*time.Second, 0)
 			ts.RunTests()
 		}
 	}
