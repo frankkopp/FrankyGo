@@ -409,6 +409,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			if !isPV &&
 				depth >= Settings.Search.LmrDepth &&
 				movesSearched >= Settings.Search.LmrMovesSearched &&
+				move != ttMove &&
 				!position.HasCheck() &&
 				position.LastCapturedPiece() == PieceNone &&
 				move.MoveType() != Promotion &&
@@ -416,17 +417,9 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				move != (*myMg.KillerMoves())[1] {
 
 				// compute reduction from depth and move searched
-				R := depth * movesSearched
-				switch {
-				case R < 25:
-					R = 1
-				case R < 50:
-					R = 2
-				default:
-					R = 3
-				}
-				lmrDepth -= R
+				lmrDepth -= LmrReduction(depth, movesSearched)
 				s.statistics.LmrReductions++
+				// s.log.Debugf("LMR depth %d ply %d moves searched %d R = %d", depth, ply, movesSearched, R)
 			}
 			// make sure not to become negative
 			if lmrDepth < 0 {

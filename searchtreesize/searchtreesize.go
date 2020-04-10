@@ -140,23 +140,23 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// PVS
 	config.Settings.Search.UsePVS = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "PVS"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "PVS"))
 
 	// PVS
 	config.Settings.Search.UseKiller = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "Killer"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "Killer"))
 
 	config.Settings.Search.UseTTMove = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "TTMove"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "TTMove"))
 
 	config.Settings.Search.UseIID = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "IID"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "MoveSort"))
 
 	// Null Move
 	config.Settings.Search.UseNullMove = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "NMP"))
 
-	// Null Move
+	// Late Move Reduction
 	config.Settings.Search.UseLmr = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "LMR"))
 
