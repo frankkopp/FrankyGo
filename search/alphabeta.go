@@ -403,7 +403,6 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 		// lmrDepth is set to the same value and only reduced
 		// if conditions apply.
 		// TODO: Test different config value
-		// TODO: Test with PV
 		newDepth := depth - 1
 		lmrDepth := newDepth
 		if Settings.Search.UseLmr {

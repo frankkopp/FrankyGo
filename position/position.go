@@ -175,25 +175,26 @@ func (p *Position) DoMove(m Move) {
 	toSq := m.To()
 	targetPc := p.board[toSq]
 
-	// DEBUG
-	switch {
-	case !m.IsValid():
-		msg := fmt.Sprintf("Position DoMove: Invalid move %s", m.String())
-		log.Criticalf(msg)
-		panic(msg)
-	case fromPc == PieceNone:
-		msg := fmt.Sprintf("Position DoMove: No piece on %s for move %s", fromPc.String(), m.StringUci())
-		log.Criticalf(msg)
-		panic(msg)
-	case myColor != p.nextPlayer:
-		msg := fmt.Sprintf("Position DoMove: Piece to move does not belong to next player %s", fromPc.String())
-		log.Criticalf(msg)
-		panic(msg)
-	case targetPc.TypeOf() == King:
-		msg := fmt.Sprintf("Position DoMove: King cannot be captured!")
-		log.Criticalf(msg)
-		panic(msg)
-	}
+	if true { // DEBUG
+		switch {
+		case !m.IsValid():
+			msg := fmt.Sprintf("Position DoMove: Invalid move %s", m.String())
+			log.Criticalf(msg)
+			panic(msg)
+		case fromPc == PieceNone:
+			msg := fmt.Sprintf("Position DoMove: No piece on %s for move %s", fromPc.String(), m.StringUci())
+			log.Criticalf(msg)
+			panic(msg)
+		case myColor != p.nextPlayer:
+			msg := fmt.Sprintf("Position DoMove: Piece to move does not belong to next player %s", fromPc.String())
+			log.Criticalf(msg)
+			panic(msg)
+		case targetPc.TypeOf() == King:
+			msg := fmt.Sprintf("Position DoMove: King cannot be captured!")
+			log.Criticalf(msg)
+			panic(msg)
+		}
+	} // DEBUG
 
 	if assert.DEBUG {
 		assert.Assert(m.IsValid(), "Position DoMove: Invalid move %s", m.String())
