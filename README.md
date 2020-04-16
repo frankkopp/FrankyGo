@@ -1,7 +1,7 @@
 # FrankyGo
 Go implementation of a UCI compatible chess engine.
 
-[![Build Status](https://travis-ci.org/frankkopp/FrankyGo?branch=master)](https://travis-ci.org/frankkopp/FrankyGo)
+[![Build Status](https://travis-ci.org/frankkopp/FrankyGo.svg?branch=master)](https://travis-ci.org/frankkopp/FrankyGo)
 [![codecov](https://codecov.io/gh/frankkopp/FrankyGo/branch/master/graph/badge.svg)](https://codecov.io/gh/frankkopp/FrankyGo)
 [![Go Report Card](https://goreportcard.com/badge/github.com/frankkopp/FrankyGo)](https://goreportcard.com/report/github.com/frankkopp/FrankyGo)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/frankkopp/WorkerPool/blob/master/LICENSE)
