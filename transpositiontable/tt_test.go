@@ -165,7 +165,7 @@ func TestClear(t *testing.T) {
 
 func TestAge(t *testing.T) {
 	// setup
-	tt := NewTtTable(20_000)
+	tt := NewTtTable(5_000)
 
 	logTest.Debug("Filling tt")
 	startTime := time.Now()

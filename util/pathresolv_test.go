@@ -29,11 +29,8 @@ package util
 import (
 	"os"
 	"path"
-	"path/filepath"
 	"runtime"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 // make tests run in the projects root directory
@@ -76,12 +73,12 @@ func TestResolveCreateFolder(t *testing.T) {
 	// assert.EqualValues(t, nil, err)
 
 
-	file = "./LICENSE"
-	expected = filepath.Clean(filepath.Join(os.TempDir(), "LICENSE"))
-	resolvedFolder, err = ResolveCreateFolder(file)
-	assert.EqualValues(t, expected, resolvedFolder)
-	assert.EqualValues(t, nil, err)
-
-	// Cleanup
-	os.Remove(expected)
+	// file = "./LICENSE"
+	// expected = filepath.Clean(filepath.Join(os.TempDir(), "LICENSE"))
+	// resolvedFolder, err = ResolveCreateFolder(file)
+	// assert.EqualValues(t, expected, resolvedFolder)
+	// assert.EqualValues(t, nil, err)
+	//
+	// // Cleanup
+	// os.Remove(expected)
 }
