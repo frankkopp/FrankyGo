@@ -184,15 +184,18 @@ func fileExists(filename string) bool {
 	if os.IsNotExist(err) {
 		return false
 	}
-	return !info.IsDir()
+	return info.Mode().IsRegular()
 }
 
 func folderExists(foldername string) bool {
+	fmt.Println("Folder", foldername)
 	info, err := os.Stat(foldername)
+	fmt.Println("Stat", info, "Err: ", err)
 	if os.IsNotExist(err) {
 		return false
 	}
-	return info.IsDir()
+	fmt.Println("Dir", info.Mode().IsDir())
+	return info.Mode().IsDir()
 }
 
 // 	tmp, err := os.TempDir()
