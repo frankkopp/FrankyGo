@@ -186,10 +186,15 @@ func ResolveCreateFolder(folderPath string) (string, error) {
 }
 
 func fileExists(filename string) bool {
+	fmt.Println("Folder", filename)
 	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
+	fmt.Println("Stat", info, "Err: ", err)
+	if os.IsNotExist(err) || info == nil {
+		fmt.Println("Folder", filename, "does not exist")
 		return false
 	}
+	fmt.Println("Info", info)
+	fmt.Println("File",info.Mode().IsRegular())
 	return info.Mode().IsRegular()
 }
 
