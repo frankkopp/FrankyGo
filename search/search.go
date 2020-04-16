@@ -56,6 +56,7 @@ var out = message.NewPrinter(language.German)
 //  Create new instance with NewSearch()
 type Search struct {
 	log *logging.Logger
+	slog *logging.Logger
 
 	uciHandlerPtr uciInterface.UciDriver
 	initSemaphore *semaphore.Weighted
@@ -94,6 +95,7 @@ type Search struct {
 func NewSearch() *Search {
 	s := &Search{
 		log:               myLogging.GetLog(),
+		slog:              getSearchTraceLog(),
 		uciHandlerPtr:     nil,
 		initSemaphore:     semaphore.NewWeighted(int64(1)),
 		isRunning:         semaphore.NewWeighted(int64(1)),

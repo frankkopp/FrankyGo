@@ -81,7 +81,7 @@ func TestPositionCreation(t *testing.T) {
 	assert.Equal(t, 28, p.nextHalfMoveNumber)
 	assert.Equal(t, Value(-3770), p.material[White]-p.material[Black])
 	assert.Equal(t, Value(-3670), p.materialNonPawn[White]-p.materialNonPawn[Black])
-	assert.Equal(t, Value(113), p.psqMidValue[White]-p.psqMidValue[Black])
+	assert.Equal(t, Value(118), p.psqMidValue[White]-p.psqMidValue[Black])
 	assert.Equal(t, Value(-165), p.psqEndValue[White]-p.psqEndValue[Black])
 	assert.Equal(t, fen, p.StringFen())
 }
@@ -461,6 +461,7 @@ func Test_TimingDoUndo(t *testing.T) {
 var res bool
 
 func Test_TimingMatvsPop(t *testing.T) {
+	t.SkipNow()
 	out := message.NewPrinter(language.German)
 
 	const rounds = 5
@@ -510,6 +511,8 @@ func Test_TimingMatvsPop2(t *testing.T) {
 
 func Test_TimingIsAttacked(t *testing.T) {
 	// defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
+
+	t.SkipNow()
 
 	out := message.NewPrinter(language.German)
 

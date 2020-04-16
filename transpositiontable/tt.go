@@ -38,18 +38,18 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/op/go-logging"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
 	"github.com/frankkopp/FrankyGo/assert"
-	"github.com/frankkopp/FrankyGo/logging"
+	myLogging "github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 	"github.com/frankkopp/FrankyGo/util"
 )
 
 var out = message.NewPrinter(language.German)
-var log = logging.GetLog()
 
 // TtEntry struct is the data structure for each entry in the transposition
 // table. Each entry has 16-bytes (128-bits)
@@ -74,6 +74,7 @@ const (
 // object holding data and state.
 // Create with NewTtTable()
 type TtTable struct {
+	log                *logging.Logger
 	data               []TtEntry
 	sizeInByte         uint64
 	hashKeyMask        uint64
@@ -100,6 +101,7 @@ type TtStats struct {
 // masks
 func NewTtTable(sizeInMByte int) *TtTable {
 	tt := TtTable{
+		log:                myLogging.GetLog(),
 		data:               nil,
 		sizeInByte:         0,
 		hashKeyMask:        0,
@@ -117,7 +119,7 @@ func NewTtTable(sizeInMByte int) *TtTable {
 // while searching.
 func (tt *TtTable) Resize(sizeInMByte int) {
 	if sizeInMByte > MaxSizeInMB {
-		log.Error(out.Sprintf("Requested size for TT of %d MB reduced to max of %d MB", sizeInMByte, MaxSizeInMB))
+		tt.log.Error(out.Sprintf("Requested size for TT of %d MB reduced to max of %d MB", sizeInMByte, MaxSizeInMB))
 		sizeInMByte = MaxSizeInMB
 	}
 
@@ -137,9 +139,9 @@ func (tt *TtTable) Resize(sizeInMByte int) {
 	// Create new slice/array - garbage collections takes care of cleanup
 	tt.data = make([]TtEntry, tt.maxNumberOfEntries, tt.maxNumberOfEntries)
 
-	log.Info(out.Sprintf("TT Size %d MByte, Capacity %d entries (size=%dByte) (Requested were %d MBytes)",
+	tt.log.Info(out.Sprintf("TT Size %d MByte, Capacity %d entries (size=%dByte) (Requested were %d MBytes)",
 		tt.sizeInByte/MB, tt.maxNumberOfEntries, unsafe.Sizeof(TtEntry{}), sizeInMByte))
-	log.Debug(util.MemStat())
+	tt.log.Debug(util.MemStat())
 }
 
 // GetEntry returns a pointer to the corresponding tt entry.
@@ -187,7 +189,7 @@ func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, val
 	if value.IsValid() {
 		move = move.SetValue(value)
 	} else {
-		log.Warningf("TT Put: Tried to store an invalid Value into the TT %s (%d)", value.String(), int(value))
+		tt.log.Warningf("TT Put: Tried to store an invalid Value into the TT %s (%d)", value.String(), int(value))
 	}
 
 	tt.Stats.numberOfPuts++
@@ -316,5 +318,5 @@ func (tt *TtTable) AgeEntries() {
 		wg.Wait()
 	}
 	elapsed := time.Since(startTime)
-	log.Debug(out.Sprintf("Aged %d entries of %d in %d ms\n", tt.numberOfEntries, len(tt.data), elapsed.Milliseconds()))
+	tt.log.Debug(out.Sprintf("Aged %d entries of %d in %d ms\n", tt.numberOfEntries, len(tt.data), elapsed.Milliseconds()))
 }

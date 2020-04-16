@@ -28,6 +28,8 @@ package searchtreesize
 
 import (
 	"os"
+	"path"
+	"runtime"
 	"testing"
 	"time"
 
@@ -39,6 +41,16 @@ import (
 
 var logTest *logging.Logger
 
+// make tests run in the projects root directory
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
+
 // Setup the tests
 func TestMain(m *testing.M) {
 	config.Setup()
@@ -48,5 +60,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestSearchTreeSize(t *testing.T) {
+	t.SkipNow()
 	SizeTest(0, 10*time.Second, 30, 49)
 }

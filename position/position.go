@@ -40,12 +40,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/op/go-logging"
+
 	"github.com/frankkopp/FrankyGo/assert"
-	"github.com/frankkopp/FrankyGo/logging"
+	myLogging "github.com/frankkopp/FrankyGo/logging"
 	. "github.com/frankkopp/FrankyGo/types"
 )
-
-var log = logging.GetLog()
 
 var initialized = false
 
@@ -73,6 +73,8 @@ type Key uint64
 //
 // Needs to be created with NewPosition() or NewPosition(fen string)
 type Position struct {
+	log *logging.Logger
+
 	// The zobrist key to use as a hash key in transposition tables
 	// The zobrist key will be updated incrementally every time one of the the
 	// state variables change.
@@ -164,8 +166,9 @@ func NewPosition(fen ...string) *Position {
 // It returns nil and an error if the fen was invalid.
 func NewPositionFen(fen string) (*Position, error) {
 	p := &Position{}
+	p.log = myLogging.GetLog()
 	if e := p.setupBoard(fen); e != nil {
-		log.Errorf("fen for position setup not valid and position can't be created: %s", e)
+		p.log.Errorf("fen for position setup not valid and position can't be created: %s", e)
 		return nil, e
 	}
 	return p, nil
@@ -186,19 +189,19 @@ func (p *Position) DoMove(m Move) {
 		switch {
 		case !m.IsValid():
 			msg := fmt.Sprintf("Position DoMove: Invalid move %s", m.String())
-			log.Criticalf(msg)
+			p.log.Criticalf(msg)
 			panic(msg)
 		case fromPc == PieceNone:
 			msg := fmt.Sprintf("Position DoMove: No piece on %s for move %s", fromPc.String(), m.StringUci())
-			log.Criticalf(msg)
+			p.log.Criticalf(msg)
 			panic(msg)
 		case myColor != p.nextPlayer:
 			msg := fmt.Sprintf("Position DoMove: Piece to move does not belong to next player %s", fromPc.String())
-			log.Criticalf(msg)
+			p.log.Criticalf(msg)
 			panic(msg)
 		case targetPc.TypeOf() == King:
 			msg := fmt.Sprintf("Position DoMove: King cannot be captured!")
-			log.Criticalf(msg)
+			p.log.Criticalf(msg)
 			panic(msg)
 		}
 	} // DEBUG

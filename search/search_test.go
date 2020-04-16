@@ -28,6 +28,8 @@ package search
 
 import (
 	"os"
+	"path"
+	"runtime"
 	"testing"
 	"time"
 
@@ -41,6 +43,16 @@ import (
 )
 
 var logTest *logging2.Logger
+
+// make tests run in the projects root directory
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
 
 // Setup the tests
 func TestMain(m *testing.M) {
@@ -177,6 +189,7 @@ func TestStaleMatePosition(t *testing.T) {
 }
 
 func TestSearchDev(t *testing.T) {
+	t.SkipNow()
 	config.Settings.Search.UseBook = false
 	search := NewSearch()
 	p := position.NewPosition("8/k1b5/P4p2/1Pp2p1p/K1P2P1P/8/3B4/8 w - -")

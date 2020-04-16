@@ -61,7 +61,7 @@ func init() {
 			}
 		}
 	}
-	printLmr()
+	// printLmr()
 }
 
 func printLmr() {

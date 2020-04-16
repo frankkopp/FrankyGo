@@ -67,7 +67,7 @@ type searchConfiguration struct {
 // sets defaults which might be overwritten by config file
 func init() {
 	Settings.Search.UseBook = true
-	Settings.Search.BookPath = "D:/_DEV/go/src/github.com/frankkopp/FrankyGo/books"
+	Settings.Search.BookPath = "./books"
 	Settings.Search.BookPath = "book.txt"
 	Settings.Search.BookFormat = "Simple"
 	Settings.Search.UsePonder = true

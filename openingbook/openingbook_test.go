@@ -28,6 +28,8 @@ package openingbook
 
 import (
 	"os"
+	"path"
+	"runtime"
 	"testing"
 
 	logging2 "github.com/op/go-logging"
@@ -42,6 +44,16 @@ import (
 
 var logTest *logging2.Logger
 
+// make tests run in the projects root directory
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
+
 // Setup the tests
 func TestMain(m *testing.M) {
 	out.Println("Test Main Setup Tests ====================")
@@ -52,13 +64,15 @@ func TestMain(m *testing.M) {
 }
 
 func Test_readingFile(t *testing.T) {
-	lines, err := readFile(config.Settings.Search.BookPath+"/superbook.pgn")
+	b := NewBook()
+	lines, err := b.readFile(config.Settings.Search.BookPath+"/superbook.pgn")
 	assert.NoError(t, err, "Reading file threw error: %s", err)
 	assert.Equal(t, 2_620_133, len(*lines))
 }
 
 func Test_readingNonExistingFile(t *testing.T) {
-	_, err := readFile(config.Settings.Search.BookPath+"/abc.txt")
+	b := NewBook()
+	_, err := b.readFile(config.Settings.Search.BookPath+"/abc.txt")
 	assert.Error(t, err, "Reading file should throw error: %s", err)
 }
 
@@ -107,6 +121,7 @@ func Test_processingSimpleSmall(t *testing.T) {
 }
 
 func Test_processingSimple(t *testing.T) {
+	t.SkipNow()
 
 	book := NewBook()
 	err := book.Initialize(config.Settings.Search.BookPath+"/book.txt", "", Simple, false, false)
@@ -202,10 +217,12 @@ func Test_processingPGNSmall(t *testing.T) {
 }
 
 func Test_processingPGNLarge(t *testing.T) {
+	t.SkipNow()
+
 	logTest.Info("Starting PGN large test")
 
 	book := NewBook()
-	log.Debugf("Memory statistics: %s", util.MemStat())
+	logTest.Debugf("Memory statistics: %s", util.MemStat())
 	err := book.Initialize(config.Settings.Search.BookPath+"/superbook.pgn", "", Pgn, false, false)
 	util.GcWithStats()
 
@@ -277,6 +294,8 @@ func Test_processingPGNCacheSmall(t *testing.T) {
 }
 
 func Test_processingPGNCacheLarge(t *testing.T) {
+	t.SkipNow()
+
 	logTest.Info("Starting PGN large cache test")
 
 	book := NewBook()

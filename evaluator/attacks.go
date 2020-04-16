@@ -27,31 +27,33 @@
 package evaluator
 
 import (
-	"github.com/frankkopp/FrankyGo/logging"
+	"github.com/op/go-logging"
+
+	myLogging "github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
-var log = logging.GetLog()
-
 // Attacks is a data structure to store all attacks and defends of a position.
 type Attacks struct {
+	log *logging.Logger
+
 	// the position key for which the attacks have been calculated
 	Zobrist position.Key
 	// bitboards of attacked/defended squares for each color and each from square
 	// to get attackers us &^ ownPieces or & ownPieces for defenders
-	From    [ColorLength][SqLength]Bitboard
+	From [ColorLength][SqLength]Bitboard
 	// bitboards of attackers/defenders for each color and to square
 	// to get attackers us &^ ownPieces or & ownPieces for defenders
-	To      [ColorLength][SqLength]Bitboard
+	To [ColorLength][SqLength]Bitboard
 	// bitboards for all attacked/defended squares of a color
 	// to get attackers us &^ ownPieces or & ownPieces for defenders
-	All     [ColorLength]Bitboard
+	All [ColorLength]Bitboard
 	// bitboards of attacked/defended squares for each color and each piece type
 	// to get attackers us &^ ownPieces or & ownPieces for defenders
-	Piece   [ColorLength][PtLength]Bitboard
+	Piece [ColorLength][PtLength]Bitboard
 	// sum of possible moves for each color (moves to ownPieces already excluded)
-	Mobility[ColorLength]int
+	Mobility [ColorLength]int
 	// pawn attacks - squares attacked by pawn of the given color
 	Pawns [ColorLength]Bitboard
 	// pawn double - squares which are attacked twice by pawns of the given color
@@ -60,7 +62,9 @@ type Attacks struct {
 
 // NewAttacks creates a new instance of Attacks
 func NewAttacks() *Attacks {
-	return &Attacks{}
+	return &Attacks{
+		log: myLogging.GetLog(),
+	}
 }
 
 // Clear resets all fields of the Attacks instance without
@@ -97,7 +101,7 @@ func (a *Attacks) Clear() {
 // stored attacks are untouched.
 func (a *Attacks) Compute(p *position.Position) {
 	if p.ZobristKey() == a.Zobrist {
-		log.Debugf("attacks compute: position was already computed")
+		a.log.Debugf("attacks compute: position was already computed")
 		return
 	}
 	a.Zobrist = p.ZobristKey()
@@ -146,5 +150,3 @@ func (a *Attacks) pawnAttacks(p *position.Position) {
 	a.PawnsDouble[White] = ShiftBitboard(p.PiecesBb(White, Pawn), Northwest) & ShiftBitboard(p.PiecesBb(White, Pawn), Northeast)
 	a.PawnsDouble[Black] = ShiftBitboard(p.PiecesBb(Black, Pawn), Northwest) & ShiftBitboard(p.PiecesBb(Black, Pawn), Northeast)
 }
-
-

@@ -59,7 +59,7 @@ func TestNew(t *testing.T) {
 	tt := NewTtTable(2)
 	assert.Equal(t, uint64(131_072), tt.maxNumberOfEntries)
 	assert.Equal(t, 131_072, cap(tt.data))
-	log.Debug(tt.String())
+	logTest.Debug(tt.String())
 
 	tt = NewTtTable(64)
 	assert.Equal(t, uint64(4_194_304), tt.maxNumberOfEntries)
@@ -177,7 +177,7 @@ func TestAge(t *testing.T) {
 	tt.numberOfEntries--
 	elapsed := time.Since(startTime)
 	logTest.Debug(out.Sprintf("TT of %d elements filled in %d ms\n", len(tt.data), elapsed.Milliseconds()))
-	log.Debug(tt.String())
+	logTest.Debug(tt.String())
 
 	// test
 	assert.EqualValues(t, 0, tt.GetEntry(0).Age)

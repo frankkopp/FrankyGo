@@ -27,6 +27,9 @@
 package search
 
 import (
+	"os"
+	"path"
+	"runtime"
 	"testing"
 	"time"
 
@@ -38,6 +41,16 @@ import (
 	. "github.com/frankkopp/FrankyGo/types"
 	"github.com/frankkopp/FrankyGo/util"
 )
+
+// make tests run in the projects root directory
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
 
 func Test_savePV(t *testing.T) {
 	src := moveslice.NewMoveSlice(10)
@@ -68,6 +81,7 @@ func TestMate(t *testing.T) {
 }
 
 func TestTimingTTSize(t *testing.T) {
+	t.SkipNow()
 
 	results := []string{}
 
@@ -103,6 +117,7 @@ func TestTimingTTSize(t *testing.T) {
 }
 
 func TestTiming(t *testing.T) {
+	t.SkipNow()
 	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 	config.Settings.Search.UseBook = false

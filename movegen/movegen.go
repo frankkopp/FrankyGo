@@ -35,14 +35,14 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/op/go-logging"
+
 	"github.com/frankkopp/FrankyGo/assert"
-	"github.com/frankkopp/FrankyGo/logging"
+	myLogging "github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/moveslice"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
-
-var log = logging.GetLog()
 
 const (
 	// to let the compiler eliminate debugging output completely
@@ -53,6 +53,7 @@ const (
 //  movegen.NewMoveGen()
 // Creating this directly will not work.
 type Movegen struct {
+	log                *logging.Logger
 	pseudoLegalMoves   *moveslice.MoveSlice
 	legalMoves         *moveslice.MoveSlice
 	onDemandMoves      *moveslice.MoveSlice
@@ -82,6 +83,7 @@ const (
 // NewMoveGen creates a new instance of a move generator
 func NewMoveGen() *Movegen {
 	tmpMg := &Movegen{
+		log:                myLogging.GetLog(),
 		pseudoLegalMoves:   moveslice.NewMoveSlice(MaxMoves),
 		legalMoves:         moveslice.NewMoveSlice(MaxMoves),
 		onDemandMoves:      moveslice.NewMoveSlice(MaxMoves),
@@ -432,7 +434,7 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 	matches := regexSanMove.FindStringSubmatch(sanMove)
 	if matches == nil {
 		if debug {
-			log.Debugf("No SAN move pattern found %s", sanMove)
+			mg.log.Debugf("No SAN move pattern found %s", sanMove)
 		}
 		return MoveNone
 	}
@@ -445,7 +447,7 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 	promotion := matches[6]
 	checkSign := matches[7]
 	if debug {
-		log.Debugf("SAN pattern: Piece tType: %s File: %s Row: %s target: %s Promotion: %s CheckSign: %s\n", pieceType, disambFile, disambRank, toSquare, promotion, checkSign)
+		mg.log.Debugf("SAN pattern: Piece tType: %s File: %s Row: %s target: %s Promotion: %s CheckSign: %s\n", pieceType, disambFile, disambRank, toSquare, promotion, checkSign)
 	}
 
 	movesFound := 0
@@ -471,12 +473,12 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 				castlingString = "O-O-O"
 				break
 			default:
-				log.Error("Move type CASTLING but wrong to square: %s %s", castlingString, kingToSquare.String())
+				mg.log.Error("Move type CASTLING but wrong to square: %s %s", castlingString, kingToSquare.String())
 				continue
 			}
 			if castlingString == toSquare {
 				if debug {
-					log.Debugf("Castling match: %s == %s", sanMove, castlingString)
+					mg.log.Debugf("Castling match: %s == %s", sanMove, castlingString)
 				}
 				moveFromSAN = genMove
 				movesFound++
@@ -488,26 +490,26 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 		moveTarget := genMove.To().String()
 		if moveTarget == toSquare {
 			if debug {
-				log.Debugf("target square of legal move %s matches SAN move %s", genMove.StringUci(), sanMove)
+				mg.log.Debugf("target square of legal move %s matches SAN move %s", genMove.StringUci(), sanMove)
 			}
 
 			// determine if piece types match - if not skip
 			legalPt := posPtr.GetPiece(genMove.From()).TypeOf()
 			legalPtChar := legalPt.Char()
 			if debug {
-				log.Debugf("Legal move %s piece type is %s", genMove.StringUci(), legalPtChar)
+				mg.log.Debugf("Legal move %s piece type is %s", genMove.StringUci(), legalPtChar)
 			}
 			if len(pieceType) != 0 && legalPtChar == pieceType {
 				if debug {
-					log.Debugf("Legal move %s matches SAN move's %s piece type", genMove.StringUci(), sanMove)
+					mg.log.Debugf("Legal move %s matches SAN move's %s piece type", genMove.StringUci(), sanMove)
 				}
 			} else if len(pieceType) == 0 && legalPt == Pawn {
 				if debug {
-					log.Debugf("Legal move %s matches SAN move's %s piece type (Pawn)", genMove.StringUci(), sanMove)
+					mg.log.Debugf("Legal move %s matches SAN move's %s piece type (Pawn)", genMove.StringUci(), sanMove)
 				}
 			} else {
 				if debug {
-					log.Debugf("Legal move %s NO MATCH SAN move's %s piece type (Pawn)", genMove.StringUci(), sanMove)
+					mg.log.Debugf("Legal move %s NO MATCH SAN move's %s piece type (Pawn)", genMove.StringUci(), sanMove)
 				}
 				continue
 			}
@@ -516,11 +518,11 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 			if len(disambFile) != 0 {
 				if genMove.From().FileOf().String() == disambFile {
 					if debug {
-						log.Debugf("Legal move %s SAN move %s: file disambiguation match %s", genMove.StringUci(), sanMove, disambFile)
+						mg.log.Debugf("Legal move %s SAN move %s: file disambiguation match %s", genMove.StringUci(), sanMove, disambFile)
 					}
 				} else {
 					if debug {
-						log.Debugf("Legal move %s SAN move %s: file disambiguation MISmatch - skip", genMove.StringUci(), sanMove)
+						mg.log.Debugf("Legal move %s SAN move %s: file disambiguation MISmatch - skip", genMove.StringUci(), sanMove)
 					}
 					continue
 				}
@@ -530,11 +532,11 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 			if len(disambRank) != 0 {
 				if genMove.From().RankOf().String() == disambRank {
 					if debug {
-						log.Debugf("Legal move %s SAN move %s: rank disambiguation match %s", genMove.StringUci(), sanMove, disambRank)
+						mg.log.Debugf("Legal move %s SAN move %s: rank disambiguation match %s", genMove.StringUci(), sanMove, disambRank)
 					}
 				} else {
 					if debug {
-						log.Debugf("Legal move %s SAN move %s: rank disambiguation MISmatch - skip", genMove.StringUci(), sanMove)
+						mg.log.Debugf("Legal move %s SAN move %s: rank disambiguation MISmatch - skip", genMove.StringUci(), sanMove)
 					}
 					continue
 				}
@@ -544,17 +546,17 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 			if len(promotion) != 0 {
 				if genMove.PromotionType().Char() == promotion {
 					if debug {
-						log.Debugf("Legal move %s matches SAN move %s promotion %s", genMove.StringUci(), sanMove, promotion)
+						mg.log.Debugf("Legal move %s matches SAN move %s promotion %s", genMove.StringUci(), sanMove, promotion)
 					}
 				} else {
 					if debug {
-						log.Debugf("Legal move %s SAN move %s: promotion MISmatch - skip", genMove.StringUci(), sanMove)
+						mg.log.Debugf("Legal move %s SAN move %s: promotion MISmatch - skip", genMove.StringUci(), sanMove)
 					}
 					continue
 				}
 			} else if len(promotion) == 0 && genMove.MoveType() == Promotion {
 				if debug {
-					log.Debugf("Legal move %s SAN move %s: promotion MISmatch - skip", genMove.StringUci(), sanMove)
+					mg.log.Debugf("Legal move %s SAN move %s: promotion MISmatch - skip", genMove.StringUci(), sanMove)
 				}
 				continue
 			}
@@ -567,12 +569,12 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 
 	// we should only have one move here
 	if movesFound > 1 {
-		log.Warningf("SAN move %s is ambiguous (%d matches) on %s!", sanMove, movesFound, posPtr.StringFen())
+		mg.log.Warningf("SAN move %s is ambiguous (%d matches) on %s!", sanMove, movesFound, posPtr.StringFen())
 	} else if movesFound == 0 || !moveFromSAN.IsValid() {
-		log.Warningf("SAN move not valid! SAN move %s not found on position: %s", sanMove, posPtr.StringFen())
+		mg.log.Warningf("SAN move not valid! SAN move %s not found on position: %s", sanMove, posPtr.StringFen())
 	} else {
 		if debug {
-			log.Debugf("Found move %s", moveFromSAN.String())
+			mg.log.Debugf("Found move %s", moveFromSAN.String())
 		}
 		return moveFromSAN
 	}

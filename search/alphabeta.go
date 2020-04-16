@@ -42,19 +42,18 @@ import (
 	"github.com/frankkopp/FrankyGo/position"
 	"github.com/frankkopp/FrankyGo/transpositiontable"
 	. "github.com/frankkopp/FrankyGo/types"
+	"github.com/frankkopp/FrankyGo/util"
 )
 
 var trace = false
-
-var slog = getSearchTraceLog()
 
 // rootSearch starts the actual recursive alpha beta search with the root moves for the first ply.
 // As root moves are treated a little different this separate function supports readability
 // as mixing it with the normal search would require quite some "if ply==0" statements.
 func (s *Search) rootSearch(position *position.Position, depth int, alpha Value, beta Value) {
 	if trace {
-		slog.Debugf("Ply %-2.d Depth %-2.d start: %s", 0, depth, s.statistics.CurrentVariation.StringUci())
-		defer slog.Debugf("Ply %-2.d Depth %-2.d end: %s", 0, depth, s.statistics.CurrentVariation.StringUci())
+		s.slog.Debugf("Ply %-2.d Depth %-2.d start: %s", 0, depth, s.statistics.CurrentVariation.StringUci())
+		defer s.slog.Debugf("Ply %-2.d Depth %-2.d end: %s", 0, depth, s.statistics.CurrentVariation.StringUci())
 	}
 
 	// In root search we search all moves and store the value
@@ -136,8 +135,8 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 
 func (s *Search) search(position *position.Position, depth int, ply int, alpha Value, beta Value, isPV bool, doNull bool) Value {
 	if trace {
-		slog.Debugf("%0*s Ply %-2.d Depth %-2.d a:%-6.d b:%-6.d pv:%-6.v start:  %s", ply, "", ply, depth, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
-		defer slog.Debugf("%0*s Ply %-2.d Depth %-2.d a:%-6.d b:%-6.d pv:%-6.v end  :  %s", ply, "", ply, depth, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
+		s.slog.Debugf("%0*s Ply %-2.d Depth %-2.d a:%-6.d b:%-6.d pv:%-6.v start:  %s", ply, "", ply, depth, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
+		defer s.slog.Debugf("%0*s Ply %-2.d Depth %-2.d a:%-6.d b:%-6.d pv:%-6.v end  :  %s", ply, "", ply, depth, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
 	}
 
 	// Check if search should be stopped
@@ -565,8 +564,8 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 
 func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta Value, isPV bool) Value {
 	if trace {
-		slog.Debugf("%0*s Ply %-2.d QSearch     a:%-6.d b:%-6.d pv:%-6.v start:  %s", ply, "", ply, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
-		defer slog.Debugf("%0*s Ply %-2.d QSearch     a:%-6.d b:%-6.d pv:%-6.v end  :  %s", ply, "", ply, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
+		s.slog.Debugf("%0*s Ply %-2.d QSearch     a:%-6.d b:%-6.d pv:%-6.v start:  %s", ply, "", ply, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
+		defer s.slog.Debugf("%0*s Ply %-2.d QSearch     a:%-6.d b:%-6.d pv:%-6.v end  :  %s", ply, "", ply, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
 	}
 
 	if s.statistics.CurrentExtraSearchDepth < ply {
@@ -882,38 +881,32 @@ func getSearchTraceLog() *logging.Logger {
 	backend1Formatter := logging.NewBackendFormatter(backend1, searchLogFormat)
 	searchBackEnd := logging.AddModuleLevel(backend1Formatter)
 	searchBackEnd.SetLevel(logging.Level(SearchLogLevel), "")
+	searchLog.SetBackend(searchBackEnd)
 
 	// File backend
 	programName, _ := os.Executable()
 	exeName := strings.TrimSuffix(filepath.Base(programName), ".exe")
-	var logPath string
-	if filepath.IsAbs(Settings.Log.LogPath) {
-		logPath = Settings.Log.LogPath
-	} else {
-		executable, _ := os.Executable()
-		dir := filepath.Dir(executable)
-		logPath = dir + "/" + Settings.Log.LogPath
+
+	// find log path
+	logPath, err := util.ResolveFolder(Settings.Log.LogPath)
+	if err != nil {
+		golog.Println("Log folder could not be found:", err)
+		return searchLog
 	}
-	searchLogFilePath := logPath + "/" + exeName + "_searchlog.log"
-	searchLogFilePath = filepath.Clean(searchLogFilePath)
+	searchLogFilePath := filepath.Join(logPath, exeName+"_search.log")
 
 	// create file backend
-	var err error
 	searchLogFile, err := os.OpenFile(searchLogFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	// buf := bufio.NewWriter(searchLogFile)
-
-	// we use either Stdout or file - if file is valid we use only file
 	if err != nil {
 		golog.Println("Logfile could not be created:", err)
-		searchLog.SetBackend(searchBackEnd)
-	} else {
-		backend2 := logging.NewLogBackend(searchLogFile, "", golog.Lmsgprefix)
-		backend2Formatter := logging.NewBackendFormatter(backend2, searchLogFormat)
-		searchBackEnd2 := logging.AddModuleLevel(backend2Formatter)
-		searchBackEnd2.SetLevel(logging.DEBUG, "")
-		// multi := logging2.SetBackend(uciBackEnd1, searchBackEnd2)
-		searchLog.SetBackend(searchBackEnd2)
-		searchLog.Infof("Log %s started at %s:", searchLogFile.Name(), time.Now().String())
+		return searchLog
 	}
+	backend2 := logging.NewLogBackend(searchLogFile, "", golog.Lmsgprefix)
+	backend2Formatter := logging.NewBackendFormatter(backend2, searchLogFormat)
+	searchBackEnd2 := logging.AddModuleLevel(backend2Formatter)
+	searchBackEnd2.SetLevel(logging.DEBUG, "")
+	// multi := logging2.SetBackend(uciBackEnd1, searchBackEnd2)
+	searchLog.SetBackend(searchBackEnd2)
+	searchLog.Infof("Log %s started at %s:", searchLogFile.Name(), time.Now().String())
 	return searchLog
 }

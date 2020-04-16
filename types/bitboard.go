@@ -30,7 +30,6 @@ import (
 	"fmt"
 	"math/bits"
 	"strings"
-	"time"
 
 	"github.com/frankkopp/FrankyGo/util"
 )
@@ -334,7 +333,6 @@ func RotateSquareL45(sq Square) Square {
 func GetAttacksBb(pt PieceType, sq Square, occupied Bitboard) Bitboard {
 	if pt == Pawn {
 		msg := fmt.Sprint("GetAttackBb called with piece type Pawn is not supported")
-		log.Error(msg)
 		panic(msg)
 	}
 	switch pt {
@@ -778,8 +776,6 @@ func initBb() {
 // Taken from Stockfish and
 // from  https://www.chessprogramming.org/Magic_Bitboards
 func initMagicBitboards() {
-	start := time.Now()
-
 	rookDirections := [4]Direction{North, East, South, West}
 	bishopDirections := [4]Direction{Northeast, Southeast, Southwest, Northwest}
 
@@ -788,9 +784,6 @@ func initMagicBitboards() {
 
 	initMagics(&rookTable, &rookMagics, &rookDirections)
 	initMagics(&bishopTable, &bishopMagics, &bishopDirections)
-
-	elapsed := time.Since(start)
-	log.Debugf("Init Magic Bitboards took %s\n", elapsed)
 }
 
 func rankFileBbPreCompute() {

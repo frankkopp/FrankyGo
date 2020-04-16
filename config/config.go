@@ -32,18 +32,18 @@ package config
 import (
 	"fmt"
 	"log"
-	"os"
-	"path/filepath"
 	"reflect"
 	"strings"
 
 	"github.com/BurntSushi/toml"
+
+	"github.com/frankkopp/FrankyGo/util"
 )
 
 // globally available config values
 var (
 	// ConfFile hold the path to the used config file (relative to working directory)
-	ConfFile = "../config/config.toml"
+	ConfFile = "./config/config.toml"
 
 	// LogLevel defines the general log level - can be overwritten by cmd line options or config file
 	LogLevel = 5
@@ -72,13 +72,13 @@ func Setup() {
 	if initialized {
 		return
 	}
-	// read configuration file
-	executable, _ := os.Executable()
-	dir := filepath.Dir(executable)
-	if _, err := toml.DecodeFile(dir +"/"+ConfFile, &Settings); err != nil {
+
+	path, _ := util.ResolveFile(ConfFile)
+	if _, err := toml.DecodeFile(path, &Settings); err != nil {
 		log.Fatal("Could not open/read config file", err)
 		return
 	}
+
 	// setup log level - first check cmd line, then config file, finally leave defaults
 	setupLogLvl()
 	// setup search config after reading from configuration file if necessary

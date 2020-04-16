@@ -36,7 +36,7 @@ type logConfiguration struct {
 func init() {
 	Settings.Log.LogLvl = "debug"
 	Settings.Log.SearchLogLvl = "debug"
-	Settings.Log.LogPath = "../logs"
+	Settings.Log.LogPath = "./logs"
 }
 
 // set defaults for configurations here in case a configuration

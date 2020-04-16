@@ -28,6 +28,8 @@ package evaluator
 
 import (
 	"os"
+	"path"
+	"runtime"
 	"testing"
 	"time"
 
@@ -43,6 +45,16 @@ import (
 )
 
 var logTest *logging2.Logger
+
+// make tests run in the projects root directory
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
 
 // Setup the tests
 func TestMain(m *testing.M) {
@@ -91,7 +103,7 @@ func TestLazyEval(t *testing.T) {
 	p := position.NewPosition("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
 	value := e.Evaluate(p)
 	out.Println(value)
-	assert.EqualValues(t, 3337, value)
+	assert.EqualValues(t, 3332, value)
 	p = position.NewPosition("5r1k/1q6/8/8/8/8/6P1/7K b - - 0 1 ")
 	value = e.Evaluate(p)
 	out.Println(value)

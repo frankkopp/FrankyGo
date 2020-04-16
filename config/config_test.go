@@ -32,6 +32,7 @@ import (
 )
 
 func TestInit(t *testing.T) {
+	ConfFile = "D:/_DEV/go/src/github.com/frankkopp/FrankyGo/config/config.toml"
 	Setup()
 	fmt.Printf("LogLvl: %v\n", Settings.Log.LogLvl)
 	fmt.Printf("SearchLogLvl: %v\n", Settings.Log.SearchLogLvl)

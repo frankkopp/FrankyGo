@@ -30,6 +30,8 @@ import (
 	"bufio"
 	"bytes"
 	"os"
+	"path"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -43,6 +45,16 @@ import (
 )
 
 var logTest *logging2.Logger
+
+// make tests run in the projects root directory
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
 
 // Setup the tests
 func TestMain(m *testing.M) {
@@ -301,7 +313,7 @@ func TestFullSearchProcess(t *testing.T) {
 	uh.Command("position startpos moves e2e4 e7e5")
 	assert.EqualValues(t, "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2", uh.myPosition.StringFen())
 
-	result = uh.Command("go moveTime 20000")
+	result = uh.Command("go moveTime 5000")
 	assert.True(t, uh.mySearch.IsSearching())
 	time.Sleep(2 * time.Second)
 	uh.mySearch.WaitWhileSearching()
@@ -358,6 +370,8 @@ func TestInfiniteFinishedBeforeStop(t *testing.T) {
 }
 
 func TestDebug(t *testing.T) {
+	t.SkipNow()
+
 	uh := NewUciHandler()
 	var result string
 
