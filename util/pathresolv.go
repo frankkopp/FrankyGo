@@ -101,6 +101,8 @@ func ResolveFolder(folder string) (string, error) {
 
 	folder = filepath.Clean(folder)
 
+	fmt.Println("Searching folder folder")
+
 	// folder is a absolute path
 	if filepath.IsAbs(folder) {
 		if fileExists(folder) {
@@ -110,6 +112,7 @@ func ResolveFolder(folder string) (string, error) {
 	}
 
 	// folder is a relative path
+	fmt.Println("Testing cwd")
 	dir, err := os.Getwd()
 	if err == nil {
 		if folderExists(filepath.Join(dir, folder)) {
@@ -117,6 +120,7 @@ func ResolveFolder(folder string) (string, error) {
 		}
 	}
 
+	fmt.Println("Testing exe")
 	dir, err = os.Executable()
 	if err == nil {
 		if folderExists(filepath.Join(dir, folder)) {
@@ -124,11 +128,13 @@ func ResolveFolder(folder string) (string, error) {
 		}
 	}
 
+	fmt.Println("Testing home")
 	dir, err = os.UserHomeDir()
 	if folderExists(filepath.Join(dir, folder)) {
 		return filepath.Clean(filepath.Join(dir, folder)), nil
 	}
 
+	fmt.Println("Folder not found", folder)
 	return folder, folderNotFoundErr
 }
 
@@ -192,8 +198,10 @@ func folderExists(foldername string) bool {
 	info, err := os.Stat(foldername)
 	fmt.Println("Stat", info, "Err: ", err)
 	if os.IsNotExist(err) {
+		fmt.Println("Folder", foldername, "does not exist")
 		return false
 	}
+	fmt.Println("Info", info)
 	fmt.Println("Dir", info.Mode().IsDir())
 	return info.Mode().IsDir()
 }
