@@ -1,20 +1,126 @@
 # FrankyGo
-Learning Go by re-implementing FrankyUciChess
+Go implementation of a UCI compatible chess engine.
 
-FrankyGo v0.6
-=========
+[![Build Status](https://travis-ci.org/frankkopp/FrankyGo?branch=master)](https://travis-ci.org/frankkopp/FrankyGo)
+[![codecov](https://codecov.io/gh/frankkopp/FrankyGo/branch/master/graph/badge.svg)](https://codecov.io/gh/frankkopp/FrankyGo)
+[![Go Report Card](https://goreportcard.com/badge/github.com/frankkopp/FrankyGo)](https://goreportcard.com/report/github.com/frankkopp/FrankyGo)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/frankkopp/WorkerPool/blob/master/LICENSE)
 
-v 0.x (planned)
-================================================================================
+## Features 
+* UCI protocol (to use the engine in Arena, xboard, Fritz or other chess user interfaces)
+    * UCI Options
+    * UCI Search Modes
+* FIDE compliant (move repetition, 50-moves rules, draw for low material)
+* Board representation bitboards and 8x8 piece array
+* Bitboards, Magic Bitboards, pre-computed bitboards and data 
+* Move Generation using bitboards 
+    * all moves or on demand in phases 
+    * mode: all, capture only, non capture
+    * move sorting for estimated value of move, pv move and killer moves
+    * ~50Million move per sec on my i7-7700
+* Perft tests
+    * ~4+Million nps 
+* Search as PVS AlphaBeta search
+    * all UCI search modes 
+    * Iterative Deepening
+    * Quiescence
+    * Pondering
+    * Killer Moves
+    * Mate Distance Pruning
+    * Null Move Pruning
+    * Internal Iterative Deepening
+    * Late Move Reductions (needs further tuning)
+    * Late Move Pruning (needs further tuning)
+    * TODO: SEE for quiescence, Futility Pruning, Aspiration Windows, Multi-cut Pruning, History Pruning 
+* Transposition Table
+* Opening Book from PGN files and persistent cache
+* Evaluation
+    * Still very simple: Material, positional piece values
+    * Implemented but not yet tested/activated: Attacks, Mobility, Piece specific evaluations
+    * TODO: pawn evaluations and pawn hash table  
+* Tests:   
+    * Test framework to run EPD test suites
+    * Test to determine search tree size with for features
+* General: logging, command lines options, configuration files, search and eval parameters in config files
+
+* Open topics: 
+    * Parallel search
+            
+     
+## Learning Go
+Learning a new programming language is always most efficient within a real project.
+As I have developed a chess engine in Java in the past and recently migrated it to C++ 
+I thought that implementing a chess engine in Go is a great opportunity to learn the language. 
+
+Chess engines offer a lot of different challenges in many aspects of a programming language. 
+E.g. efficient data types and data structures, high performance code where even nanoseconds count, reading 
+an opening book from files and creating a cache, bit twiddling, caches, recursion, unit testing, 
+performance testing and optimization, logging, configurations, communicationwith other processes over 
+pipes (UCI protocol), protocol implementation, etc. 
+ 
+Especially the high performance code is something I'm interested in. The usual advice in programming 
+is readability/understandability/maintainability of code is more important than performance and also, don't optimize 
+too early, etc. In chess there are some recurring hot spots in the algorithms, which need extra attention 
+on how they are implemented from the beginning, or they would be very slow. So a chess engine is a special 
+case where efficiency and performance has a higher priority than in a typical application.  
+ 
+E.g. a chess engine evaluates (calculating a numerical estimation of how "good" a position is) millions
+of positions per second. For each position there are in average 35 moves to play. So to be able to search 
+a million positions per second you need to generate at least the same amount of moves - usually many more 
+as the alpha-beta search algorithm and other pruning techniques discard many positions before
+they are even evaluated.   
+
+For evaluating 1 million positions per second you have a time budget of 1.000 nanoseconds for creating 
+the move that leads to this position, executing the move on your chess board data structure, evaluate 
+the position, and the many other things you need to do so that your chess engines has at least some
+playing strength. So you see, nanoseconds matter. 
+  
+As an example many years ago, during my first attempt at this in Java, it was quickly clear, that you can't model 
+all of your data types as Java objects. Especially a chess move would be too expensive when implemented 
+as a Java object as you need to create hundreds of millions in a very short time just to throw them away 
+quickly. Object creation and garbage collection made this approach extremely slow. So one of the first "optimizations"
+I did was to use a plain integer to represent a move. With bit twiddling I encoded the necessary data into the 
+integer (from square, to square, move type, etc.). This is a very common approach in all the serious chess engines. 
+
+This example also shows a big difference between Java, C++ and Go. In Java, when implementing a move as an int you
+loose type checking by the compiler. In C++ you have typedef and in Go you have something similar to typdef. With a 
+user defined primitive type the engine can use a plain int internally, but the compiler still can check the type 
+correctness for moves. This is one of my most missed features in Java. 
+
+What I already can say about Go is that implementing the chess engine in it was a joy and much easier done in Go than 
+in Java or C++. Of course, I have experience building a chess engine now but mostly I noticed that in Go I could focus 
+on the program itself and was rarely distracted by the "quirks" of the programming language although it was new to me. 
+I'm aware I did not follow many of Go's best practices but rather "transferred" my existing code from C++/Java to it. 
+Also, some aspects needed some re-thinking (e.g. no cyclic imports) but overall Go required much less language awareness
+than for example C++ where I still find the compile-process unnecessary complicated (.h, cpp - declaration and 
+definition, etc.) or Java where I can't have user defined primitive types.
+
+## Installation
+Todo
+
+## Usage
+Todo
+
+## Versions
+### v0.x (planned)
 - TODO:
+    - SEE
+    - Pawn Structure Cache
+    - Better Evaluation
+    - FP
+    - Ext
+    - Other Prunings
     - MultiCut Pruning
        - https://hci.iwr.uni-heidelberg.de/system/files/private/downloads/1935772097/report_qingyang-cao_enhanced-forward-pruning.pdf
-    - IID??
     - Aspiration
+    - NullMove Threat Detection
 
-v 0.7 (planned)
-================================================================================
-- TODO
+### v0.7 (in progress)
+- TODO 
+    - Performance/Profiling/Testing
+    - LMR and LMP weaken engine - more testing needed
+
+- DONE
     - Null Move
     - Other Prunings
     - Use TestSuites, TreeSize and Arena to test features
@@ -23,8 +129,7 @@ v 0.7 (planned)
     - Pawn Structure Cache
     - Performance/Profiling/Testing
 
-v 0.6 (done)
-================================================================================
+### v0.6 (done)
 - DONE
     - Enhance TestSuite / run from command line options
     - TestSuite Tests
@@ -39,25 +144,15 @@ v 0.6 (done)
     Tests show no drop in Search strength either way and also search tree size shows no
     obvious issues
 
-- Measurements
-    Test	Standpat	Nodes	4.837.838			        Nps	3.507.125   		        Time	1.450
-    Test	TT	        Nodes	1.763.431	63,55%	        Nps	3.137.947	10,53%	    	Time	544	62,48%
-    Test	QSTT	    Nodes	1.022.318	42,03%	        Nps	2.748.463	12,41%		    Time	379	30,33%
-    Test	MDP/MPP	    Nodes	1.010.160	1,19%	        Nps	2.769.100	-0,75%		    Time	367	3,17%
-    Test	PVS     	Nodes	893.718	    11,53%	        Nps	2.777.407	-0,30%		    Time	322	12,26%
-    Test	Killer	    Nodes	857.379	    4,07%   82,28%	Nps	2.802.207	-0,89%	20,10%	Time	309	4,04%	78,69%
-
-v 0.5 (done)
-================================================================================
--DONE
+### v0.5 (done)
+- DONE
     - Use TT
     - SearchTreeSize
     - Quiescence search
     - Score as string()
     - Evaluation (simple)
 
-v 0.4 (done)
-================================================================================
+### v0.4 (done)
 - DONE
     - Pondering
     - Testing for correct play with Arena against Stockfish
@@ -66,8 +161,7 @@ v 0.4 (done)
     - Complete simple search
     - Implement simple Search
 
-v 0.3 (done)
-================================================================================
+### v0.3 (done)
 - DONE:
     - CleanUp and additional documentation
     - complete uci options
@@ -81,8 +175,7 @@ v 0.3 (done)
     - time control
     - limits (except depth limit - needs simple search minimax)
 
-v 0.2 (done)
-================================================================================
+### v0.2 (done)
 - DONE
     - CleanUp
     - Added logging
@@ -94,10 +187,9 @@ v 0.2 (done)
     - Improve performance of Perft - otherwise not worth continuing
     - Added MoveSlice - little optimization of MoveArray - usable directly as Slice
 
-v 0.1 (done)
-================================================================================
+### v0.1 (done)
 - DONE:
-    - Perft works (1.353.761 nps / Java 3.5M, C++ 4.5M)
+    - Perft works (1.353.761 nps / Java 3.5M, C++ 4.5M) - needs improvement
     - MoveGenerator (all required for perft)
     - Position (all required for perft)
     - MoveArray and MoveList - both are for list of moves - MoveArray is faster for sorting
