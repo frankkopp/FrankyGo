@@ -37,7 +37,7 @@ import (
 // rType
 // //////////////////////////////////////////////////////
 
-// rType stores the result of a search. If BestMove is not MoveNone
+// Result stores the result of a search. If BestMove is not MoveNone
 // it can be assumed that all values are valid.
 type Result struct {
 	BestMove    Move

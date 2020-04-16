@@ -32,6 +32,8 @@ package config
 import (
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -71,7 +73,9 @@ func Setup() {
 		return
 	}
 	// read configuration file
-	if _, err := toml.DecodeFile(ConfFile, &Settings); err != nil {
+	executable, _ := os.Executable()
+	dir := filepath.Dir(executable)
+	if _, err := toml.DecodeFile(dir +"/"+ConfFile, &Settings); err != nil {
 		log.Fatal("Could not open/read config file", err)
 		return
 	}

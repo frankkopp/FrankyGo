@@ -28,19 +28,25 @@ UseEvalTT = false
 Ponder = true
 UseQuiescence = true
 UseQSStandpat = true
+
 UsePVS = true
 UseKiller = true
-
-# prunings
-UseMDP = true
 
 UseIID = true
 IIDDepth = 6
 IIDReduction = 2
 
+# prunings
+UseMDP = true
+
 UseNullMove = true
+
 NmpDepth = 3
 NmpReduction = 2
+
+UseLmr = true
+LmrDepth = 3
+LmrMovesSearched = 3
 
 [eval]
 UsePawnCache = false # not implemented yet

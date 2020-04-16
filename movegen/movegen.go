@@ -594,6 +594,16 @@ func (mg *Movegen) ValidateMove(p *position.Position, move Move) bool {
 	return false
 }
 
+// PvMove returns the current PV move
+func (mg *Movegen) PvMove() Move {
+	return mg.pvMove
+}
+
+// KillerMoves returns a pointer to the killer moves array
+func (mg *Movegen) KillerMoves() *[2]Move {
+	return &mg.killerMoves
+}
+
 // String returns a string representation of a MoveGen instance
 func (mg *Movegen) String() string {
 	return fmt.Sprintf("MoveGen: { OnDemand Stage: { %d }, PV Move: %s Killer Move 1: %s Killer Move 2: %s }",
@@ -1011,14 +1021,6 @@ func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, ml *
 				captures := moves & position.OccupiedBb(nextPlayer.Flip())
 				for captures != 0 {
 					toSquare := captures.PopLsb()
-
-					// DEBUG
-					if  position.GetPiece(toSquare).TypeOf() == King {
-						msg := fmt.Sprintf("MoveGen: Capturing a King is not allowed!")
-						log.Criticalf(msg)
-						panic(msg)
-					}
-
 					value := position.GetPiece(toSquare).ValueOf() - position.GetPiece(fromSquare).ValueOf() + PosValue(piece, toSquare, gamePhase)
 					ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 				}
