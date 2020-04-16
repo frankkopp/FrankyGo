@@ -107,7 +107,7 @@ func TestTiming(t *testing.T) {
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 	config.Settings.Search.UseBook = false
 	s := NewSearch()
-	p := position.NewPosition()
+	p := position.NewPosition("r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3")
 	sl := NewSearchLimits()
 	sl.Depth = 10
 	// sl.TimeControl = true

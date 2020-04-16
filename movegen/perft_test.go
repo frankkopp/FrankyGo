@@ -70,6 +70,20 @@ func Test_StandardPerft(t *testing.T) {
 	}
 }
 
+// Performing PERFT Test for Depth 6
+// -----------------------------------------
+// Time         : 28.532 ms
+// NPS          :   - go test -coverprofile=coverage.txt -covermode=atomic172.724 nps
+// Results:
+//   Nodes     : 119.060.324
+//   Captures  : 2.812.008
+//   EnPassant : 5.248
+//   Checks    : 809.099
+//   CheckMates: 10.828
+//   Castles   : 0
+//   Promotions: 0
+// -----------------------------------------
+// Finished PERFT Test for Depth 6
 //noinspection GoImportUsedAsName
 func Test_StandardPerftOd(t *testing.T) {
 

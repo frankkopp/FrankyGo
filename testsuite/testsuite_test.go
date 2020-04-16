@@ -35,7 +35,7 @@ import (
 	"github.com/op/go-logging"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/frankkopp/FrankyGo/config"
+	. "github.com/frankkopp/FrankyGo/config"
 )
 
 var logTest *logging.Logger
@@ -108,6 +108,7 @@ func TestNewTestSuite(t *testing.T) {
 //
 // Test time: 26.101 ms
 func TestRunTestSuiteTest(t *testing.T) {
+	Settings.Search.UseLmp = true
 	ts, _ := NewTestSuite("testsets/franky_tests.epd", 2*time.Second, 0)
 	ts.RunTests()
 	assert.EqualValues(t, 13, ts.LastResult.SuccessCounter)
@@ -140,6 +141,7 @@ func TestBlunderTests(t *testing.T) {
 //
 // Test time: 25.0314359s
 func TestZugzwangTests(t *testing.T) {
+	Settings.Search.UseLmp = true
 	ts, _ := NewTestSuite("testsets/nullMoveZugZwangTest.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
@@ -180,6 +182,7 @@ func TestZugzwangTests(t *testing.T) {
 // Not tested: 0   (0 %)
 // Test time: 5m0.1596541s
 func TestMateTests(t *testing.T) {
+	Settings.Search.UseLmp = true
 	ts, _ := NewTestSuite("testsets/mate_test_suite.epd", 15*time.Second, 0)
 	ts.RunTests()
 }
@@ -195,6 +198,7 @@ func TestMateTests(t *testing.T) {
 // Not tested: 0   (0 %)
 // Test time: 16m47.1436222s
 func TestWACTests(t *testing.T) {
+	Settings.Search.UseLmp = true
 	ts, _ := NewTestSuite("testsets/wac.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
@@ -210,22 +214,24 @@ func TestWACTests(t *testing.T) {
 // Not tested: 0   (0 %)
 // Test time: 28m47.8638566s
 func TestCraftyTests(t *testing.T) {
-	config.Settings.Search.UseIID = true
+	Settings.Search.UseLmp = true
 	ts, _ := NewTestSuite("testsets/crafty_test.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
 
-// Summary:
+// Summary: LMR + LMP
 // EPD File:   testsets/ecm98.epd
 // SearchTime: 5.000 ms
 // MaxDepth:   0
-// Date:       2020-04-09 19:11:17.4001431 +0200 CEST
-// Successful: 350 (45 %)
-// Failed:     419 (54 %)
+// Date:       2020-04-15 00:21:43.5869803 +0200 CEST
+// Successful: 347 (45 %)
+// Failed:     422 (54 %)
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
-// Test time: 1h4m12.8359563s
+// Test time: 1h4m17.0858004s
 func TestECMTests(t *testing.T) {
+	Settings.Search.UseLmr = true
+	Settings.Search.UseLmp = true
 	ts, _ := NewTestSuite("testsets/ecm98.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
@@ -242,8 +248,8 @@ func TestStressTests(t *testing.T) {
 		}
 	}
 	for {
-		for _, ts := range list {
-			ts, _ := NewTestSuite("testsets/"+ts, 5*time.Second, 0)
+		for _, t := range list {
+			ts, _ := NewTestSuite("testsets/"+t, 5*time.Second, 0)
 			ts.RunTests()
 		}
 	}

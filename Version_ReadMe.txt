@@ -1,31 +1,41 @@
 v 0.x (planned)
 ================================================================================
 - TODO:
+    - SEE
+    - Pawn Structure Cache
+    - Better Evaluation
+    - FP
+    - Ext
+    - Other Prunings
     - MultiCut Pruning
        - https://hci.iwr.uni-heidelberg.de/system/files/private/downloads/1935772097/report_qingyang-cao_enhanced-forward-pruning.pdf
     - Aspiration
-    - SEE
-    - Magic Bitboards
     - NullMove Threat Detection
-    - LMR
-    - FP
-    - Ext
+
+v 0.8 (planned)
+================================================================================
+- TODO
 
 v 0.7 (in progress)
 ================================================================================
 - TODO
-    - Other Prunings
-    - Better Evaluation
-    - Pawn Structure Cache
     - Performance/Profiling/Testing
+    - LMR and LMP weaken engine - more testing needed
 
 - DONE
+    - Magic Bitboards
     - Use TestSuites, TreeSize and Arena to test features
     - IID
     - Null Move
     - Remove MPP if not worth
 
 Measurements:
+    LMR
+    -----------------00 FrankyGo Config 1-----------------
+    00 FrankyGo Config 1 - 00 FrankyGo Config 2 : 54,0/100 35-27-38 (=01101==11=0111=1====10=1=10001=011=1==0====110=0=01011===110110==1=010==00===10011=01=0=0==101010=1)  54%   +28
+    -----------------00 FrankyGo Config 2-----------------
+    00 FrankyGo Config 2 - 00 FrankyGo Config 1 : 46,0/100 27-35-38 (=10010==00=1000=0====01=0=01110=100=0==1====001=1=10100===001001==0=101==11===01100=10=1=1==010101=0)  46%   -28
+
     With Null Move
     Without IID
     -----------------00 FrankyGo-----------------
@@ -38,6 +48,13 @@ Measurements:
     00 FrankyGo - 00 FrankyGo -IID : 51,0/100 27-25-48 51%    +7
     00 FrankyGo - 20 Franky-1.0    : 37,5/100 32-57-11 38%   -85
     00 FrankyGo - Stockfish Weak   : 66,5/100 61-28-11 67%  +123
+
+    Config 1 uses Lmr, Config 2 without
+    -----------------00 FrankyGo Config 1-----------------
+    00 FrankyGo Config 1 - 00 FrankyGo Config 2 : 50,5/100 32-31-37 51%    +7
+    00 FrankyGo Config 1 - 20 Franky-1.0        : 48,0/100 40-44-16 48%   -14
+    00 FrankyGo Config 1 - Stockfish Weak       : 51,5/100 46-43-11 52%   +14
+
 
     Number of feature tests: 4
     Number of fens         : 30

@@ -70,7 +70,8 @@ func GetLog() *logging.Logger {
 	if filepath.IsAbs(config.Settings.Log.LogPath) {
 		logPath = config.Settings.Log.LogPath
 	} else {
-		dir, _ := os.Getwd()
+		executable, _ := os.Executable()
+		dir := filepath.Dir(executable)
 		logPath = dir + "/" + config.Settings.Log.LogPath
 	}
 	logFilePath := logPath + "/" + exeName + "_log.log"

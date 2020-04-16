@@ -24,6 +24,13 @@
  * SOFTWARE.
  */
 
+// Package position represents data structures and functions for a chess board
+// and its position.
+// It uses a 8x8 piece board and bitboards, a stack for undo moves, zobrist keys
+// for transposition tables, piece lists, material and positional value counter.
+//
+// Create a new instance with NewPosition(...) with no parameters to get the
+// chess start position.
 package position
 
 import (
@@ -175,20 +182,32 @@ func (p *Position) DoMove(m Move) {
 	toSq := m.To()
 	targetPc := p.board[toSq]
 
-	// DEBUG
-	if targetPc.TypeOf() == King {
-		msg := fmt.Sprintf("Position DoMove: King cannot be captured!")
-		log.Criticalf(msg)
-		panic(msg)
-	}
+	if true { // DEBUG
+		switch {
+		case !m.IsValid():
+			msg := fmt.Sprintf("Position DoMove: Invalid move %s", m.String())
+			log.Criticalf(msg)
+			panic(msg)
+		case fromPc == PieceNone:
+			msg := fmt.Sprintf("Position DoMove: No piece on %s for move %s", fromPc.String(), m.StringUci())
+			log.Criticalf(msg)
+			panic(msg)
+		case myColor != p.nextPlayer:
+			msg := fmt.Sprintf("Position DoMove: Piece to move does not belong to next player %s", fromPc.String())
+			log.Criticalf(msg)
+			panic(msg)
+		case targetPc.TypeOf() == King:
+			msg := fmt.Sprintf("Position DoMove: King cannot be captured!")
+			log.Criticalf(msg)
+			panic(msg)
+		}
+	} // DEBUG
 
 	if assert.DEBUG {
 		assert.Assert(m.IsValid(), "Position DoMove: Invalid move %s", m.String())
 		assert.Assert(fromPc != PieceNone, "Position DoMove: No piece on %s for move %s", fromPc.String(), m.StringUci())
-		assert.Assert(myColor == p.nextPlayer,
-			"Position DoMove: Piece to move does not belong to next player %s", fromPc.String())
-		assert.Assert(targetPc.TypeOf() != King,
-			"Position DoMove: King cannot be captured yet target piece is %s", targetPc.String())
+		assert.Assert(myColor == p.nextPlayer, "Position DoMove: Piece to move does not belong to next player %s", fromPc.String())
+		assert.Assert(targetPc.TypeOf() != King, "Position DoMove: King cannot be captured yet target piece is %s", targetPc.String())
 	}
 
 	// Save state of board for undo
@@ -1172,4 +1191,10 @@ func (p *Position) LastCapturedPiece() Piece {
 		return PieceNone
 	}
 	return p.history[p.historyCounter-1].capturedPiece
+}
+
+// WasCapturingMove returns true if the last move was
+// a capturing move.
+func (p *Position) WasCapturingMove() bool {
+	return p.LastCapturedPiece() != PieceNone
 }
