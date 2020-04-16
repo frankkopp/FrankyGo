@@ -101,7 +101,7 @@ func ResolveFolder(folder string) (string, error) {
 
 	folder = filepath.Clean(folder)
 
-	fmt.Println("Searching folder folder")
+	fmt.Println("Searching folder",  folder)
 
 	// folder is a absolute path
 	if filepath.IsAbs(folder) {
@@ -197,7 +197,7 @@ func folderExists(foldername string) bool {
 	fmt.Println("Folder", foldername)
 	info, err := os.Stat(foldername)
 	fmt.Println("Stat", info, "Err: ", err)
-	if os.IsNotExist(err) {
+	if os.IsNotExist(err) || info == nil {
 		fmt.Println("Folder", foldername, "does not exist")
 		return false
 	}
