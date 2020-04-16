@@ -53,6 +53,7 @@ func init() {
 		"Use_NullMove": {NameID: "Use_NullMove", HandlerFunc: useNullMove, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseNullMove), CurrentValue: strconv.FormatBool(Settings.Search.UseNullMove)},
 		"Use_Mdp":    {NameID: "Use_Mdp", HandlerFunc: useMdp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseMDP), CurrentValue: strconv.FormatBool(Settings.Search.UseMDP)},
 		"Use_Lmr":    {NameID: "Use_Lmr", HandlerFunc: useLmr, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseLmr), CurrentValue: strconv.FormatBool(Settings.Search.UseLmr)},
+		"Use_Lmp":    {NameID: "Use_Lmp", HandlerFunc: useLmp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseLmp), CurrentValue: strconv.FormatBool(Settings.Search.UseLmp)},
 
 		"Eval_Lazy": {NameID: "Eval_Lazy", HandlerFunc: evalLazy, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseLazyEval), CurrentValue: strconv.FormatBool(Settings.Eval.UseLazyEval)},
 		"Eval_Mobility": {NameID: "Eval_Mobility", HandlerFunc: evalMob, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseMobility), CurrentValue: strconv.FormatBool(Settings.Eval.UseMobility)},
@@ -69,14 +70,15 @@ func init() {
 		"Quiescence",
 		"Use_QHash",
 
+		"Use_IID",
 		"Use_PVS",
 		"Use_Killer",
 
 		"Use_Mdp",
 		"Use_NullMove",
 		"Use_Lmr",
+		"Use_Lmp",
 
-		"Use_IID",
 		"Eval_Mobility",
 		"Eval_AdvPiece",
 	}
@@ -268,6 +270,12 @@ func useLmr(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseLmr = v
 	log.Debugf("Set Late Move Reduction to %v", Settings.Search.UseLmr)
+}
+
+func useLmp(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseLmp = v
+	log.Debugf("Set Late Move Pruning to %v", Settings.Search.UseLmp)
 }
 
 func evalLazy(u *UciHandler, o *uciOption) {

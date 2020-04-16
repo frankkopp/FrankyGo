@@ -24,6 +24,13 @@
  * SOFTWARE.
  */
 
+// Package position represents data structures and functions for a chess board
+// and its position.
+// It uses a 8x8 piece board and bitboards, a stack for undo moves, zobrist keys
+// for transposition tables, piece lists, material and positional value counter.
+//
+// Create a new instance with NewPosition(...) with no parameters to get the
+// chess start position.
 package position
 
 import (
@@ -1184,4 +1191,10 @@ func (p *Position) LastCapturedPiece() Piece {
 		return PieceNone
 	}
 	return p.history[p.historyCounter-1].capturedPiece
+}
+
+// WasCapturingMove returns true if the last move was
+// a capturing move.
+func (p *Position) WasCapturingMove() bool {
+	return p.LastCapturedPiece() != PieceNone
 }
