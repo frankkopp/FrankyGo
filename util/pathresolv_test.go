@@ -48,32 +48,32 @@ func init() {
 
 func TestResolveFile(t *testing.T) {
 
-	file := "D:/_DEV/go/src/github.com/frankkopp/FrankyGo/config/config.toml"
-	expected := filepath.Clean("D:/_DEV/go/src/github.com/frankkopp/FrankyGo/config/config.toml")
-	resolveFile, err := ResolveFile(file)
-	assert.EqualValues(t, expected, resolveFile)
-	assert.EqualValues(t, nil, err)
-
-	file = "./config/config.toml"
-	expected = filepath.Clean("D:/_DEV/go/src/github.com/frankkopp/FrankyGo/config/config.toml")
-	resolveFile, err = ResolveFile(file)
-	assert.EqualValues(t, expected, resolveFile)
-	assert.EqualValues(t, nil, err)
+	// file := "D:/_DEV/go/src/github.com/frankkopp/FrankyGo/config/config.toml"
+	// expected := filepath.Clean("D:/_DEV/go/src/github.com/frankkopp/FrankyGo/config/config.toml")
+	// resolveFile, err := ResolveFile(file)
+	// assert.EqualValues(t, expected, resolveFile)
+	// assert.EqualValues(t, nil, err)
+	//
+	// file = "./config/config.toml"
+	// expected = filepath.Clean("D:/_DEV/go/src/github.com/frankkopp/FrankyGo/config/config.toml")
+	// resolveFile, err = ResolveFile(file)
+	// assert.EqualValues(t, expected, resolveFile)
+	// assert.EqualValues(t, nil, err)
 
 }
 
 func TestResolveCreateFolder(t *testing.T) {
-	file := "D:/_DEV/go/src/github.com/frankkopp/FrankyGo/config/"
-	expected := filepath.Clean("D:/_DEV/go/src/github.com/frankkopp/FrankyGo/config/")
-	resolvedFolder, err := ResolveCreateFolder(file)
-	assert.EqualValues(t, expected, resolvedFolder)
-	assert.EqualValues(t, nil, err)
-
-	file = "./config/"
-	expected = filepath.Clean("D:/_DEV/go/src/github.com/frankkopp/FrankyGo/config/")
-	resolvedFolder, err = ResolveCreateFolder(file)
-	assert.EqualValues(t, expected, resolvedFolder)
-	assert.EqualValues(t, nil, err)
+	// file := "D:/_DEV/go/src/github.com/frankkopp/FrankyGo/config/"
+	// expected := filepath.Clean("D:/_DEV/go/src/github.com/frankkopp/FrankyGo/config/")
+	// resolvedFolder, err := ResolveCreateFolder(file)
+	// assert.EqualValues(t, expected, resolvedFolder)
+	// assert.EqualValues(t, nil, err)
+	//
+	// file = "./config/"
+	// expected = filepath.Clean("D:/_DEV/go/src/github.com/frankkopp/FrankyGo/config/")
+	// resolvedFolder, err = ResolveCreateFolder(file)
+	// assert.EqualValues(t, expected, resolvedFolder)
+	// assert.EqualValues(t, nil, err)
 
 
 	file = "./LICENSE"

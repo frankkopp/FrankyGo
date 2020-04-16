@@ -73,16 +73,17 @@ func TestNew(t *testing.T) {
 	assert.Equal(t, uint64(268_435_456), tt.maxNumberOfEntries)
 	assert.Equal(t, 268_435_456, cap(tt.data))
 
-	tt = NewTtTable(35_000)
-	assert.Equal(t, uint64(2_147_483_648), tt.maxNumberOfEntries)
-	assert.Equal(t, 2_147_483_648, cap(tt.data))
-	assert.Equal(t, 2_147_483_648, len(tt.data))
-	assert.Equal(t, 32_768*MB, tt.sizeInByte)
-	for i, _ := range tt.data {
-		tt.data[i].Key = position.Key(i)
-	}
-	assert.Equal(t, position.Key(0), tt.data[0].Key)
-	assert.Equal(t, position.Key(2_147_483_647), tt.data[2_147_483_647].Key)
+	// Too much for Travis
+	// tt = NewTtTable(35_000)
+	// assert.Equal(t, uint64(2_147_483_648), tt.maxNumberOfEntries)
+	// assert.Equal(t, 2_147_483_648, cap(tt.data))
+	// assert.Equal(t, 2_147_483_648, len(tt.data))
+	// assert.Equal(t, 32_768*MB, tt.sizeInByte)
+	// for i, _ := range tt.data {
+	// 	tt.data[i].Key = position.Key(i)
+	// }
+	// assert.Equal(t, position.Key(0), tt.data[0].Key)
+	// assert.Equal(t, position.Key(2_147_483_647), tt.data[2_147_483_647].Key)
 }
 
 func TestGetAndProbe(t *testing.T) {
