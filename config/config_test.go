@@ -28,8 +28,21 @@ package config
 
 import (
 	"fmt"
+	"os"
+	"path"
+	"runtime"
 	"testing"
 )
+
+// make tests run in the projects root directory
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
 
 func TestInit(t *testing.T) {
 	Setup()
