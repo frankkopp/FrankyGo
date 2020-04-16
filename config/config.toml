@@ -48,6 +48,8 @@ UseLmr = true
 LmrDepth = 3
 LmrMovesSearched = 3
 
+UseLmp = false
+
 [eval]
 UsePawnCache = false # not implemented yet
 PawnCacheSize = 64  # not implemented yet
