@@ -27,28 +27,48 @@
 package movegen
 
 import (
+	"os"
+	"path"
+	"runtime"
 	"testing"
 	"time"
 
+	"github.com/op/go-logging"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 
-	"github.com/frankkopp/FrankyGo/logging"
+	"github.com/frankkopp/FrankyGo/config"
+	myLogging "github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/moveslice"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
-var logTest = logging.GetLog()
+var logTest *logging.Logger
 
-func TestMovegen_String(t *testing.T) {
+// make tests run in the projects root directory
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
 
+// Setup the tests
+func TestMain(m *testing.M) {
+	config.Setup()
+	logTest = myLogging.GetTestLog()
+	code := m.Run()
+	os.Exit(code)
+}
+
+func TestMovegenString(t *testing.T) {
 	mg := NewMoveGen()
 	out.Println(mg.String())
 }
 
-func Test_movegen_generatePawnMoves(t *testing.T) {
+func TestMovegenGeneratePawnMoves(t *testing.T) {
 	mg := NewMoveGen()
 	pos, _ := position.NewPositionFen("1kr3nr/pp1pP1P1/2p1p3/3P1p2/1n1bP3/2P5/PP3PPP/RNBQKBNR w KQ -")
 	moves := moveslice.MoveSlice{}
@@ -72,7 +92,7 @@ func Test_movegen_generatePawnMoves(t *testing.T) {
 	// }
 }
 
-func Test_movegen_generateCastling(t *testing.T) {
+func TestMovegenGenerateCastling(t *testing.T) {
 	mg := NewMoveGen()
 	pos, _ := position.NewPositionFen("r3k2r/pbppqppp/1pn2n2/1B2p3/1b2P3/N1PP1N2/PP1BQPPP/R3K2R w KQkq -")
 	moves := moveslice.MoveSlice{}
@@ -89,7 +109,7 @@ func Test_movegen_generateCastling(t *testing.T) {
 
 }
 
-func Test_movegen_generateKingMoves(t *testing.T) {
+func TestMovegenGenerateKingMoves(t *testing.T) {
 	mg := NewMoveGen()
 	moves := moveslice.MoveSlice{}
 
@@ -105,7 +125,7 @@ func Test_movegen_generateKingMoves(t *testing.T) {
 	assert.Equal(t, "e8d7 e8d8 e8f8", moves.StringUci())
 }
 
-func Test_movegen_generateMoves(t *testing.T) {
+func TestMovegenGenerateMoves(t *testing.T) {
 	mg := NewMoveGen()
 	moves := moveslice.MoveSlice{}
 
@@ -172,7 +192,7 @@ func TestOnDemand(t *testing.T) {
 
 }
 
-func Test_movegen_GeneratePseudoLegalMoves(t *testing.T) {
+func TestMovegenGeneratePseudoLegalMoves(t *testing.T) {
 
 	mg := NewMoveGen()
 
@@ -212,7 +232,7 @@ func Test_movegen_GeneratePseudoLegalMoves(t *testing.T) {
 	moves.Clear()
 }
 
-func Test_movegen_GenerateLegalMoves(t *testing.T) {
+func TestMovegenGenerateLegalMoves(t *testing.T) {
 	mg := NewMoveGen()
 
 	pos := position.NewPosition()
@@ -272,7 +292,7 @@ func TestHasLegalMoves(t *testing.T) {
 	assert.False(t, pos.HasCheck())
 }
 
-func TestMovegen_GetMoveFromUci(t *testing.T) {
+func TestMovegenGetMoveFromUci(t *testing.T) {
 
 	pos, _ := position.NewPositionFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
 	mg := NewMoveGen()
@@ -306,7 +326,7 @@ func TestMovegen_GetMoveFromUci(t *testing.T) {
 	assert.Equal(t, MoveNone, move)
 }
 
-func TestMovegen_GetMoveFromSan(t *testing.T) {
+func TestMovegenGetMoveFromSan(t *testing.T) {
 
 	pos, _ := position.NewPositionFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
 	mg := NewMoveGen()
@@ -443,7 +463,10 @@ func TestPseudoLegalPVKiller(t *testing.T) {
 }
 
 func TestTimingPseudoMoveGen(t *testing.T) {
-	out := message.NewPrinter(language.German)
+
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 
 	const rounds = 5
 	const iterations uint64 = 1_000_000
@@ -471,8 +494,10 @@ func TestTimingPseudoMoveGen(t *testing.T) {
 }
 
 func TestTimingOnDemandMoveGen(t *testing.T) {
-	t.SkipNow()
-	out := message.NewPrinter(language.German)
+
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 
 	const rounds = 5
 	const iterations uint64 = 1_000_000
@@ -506,9 +531,9 @@ func TestTimingOnDemandMoveGen(t *testing.T) {
 // New: 86.000.000 moves generated in 1.729 ns: 49.719.892 mps
 func TestTimingOnDemandRealMoveGen(t *testing.T) {
 
-	t.SkipNow()
-
-	out := message.NewPrinter(language.German)
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 
 	const rounds = 5
 	const iterations uint64 = 1_000_000
@@ -543,11 +568,13 @@ func TestTimingOnDemandRealMoveGen(t *testing.T) {
 	}
 }
 
-func Test_TimingGenerateMovesOld(t *testing.T) {
+func TestTimingGenerateMovesOld(t *testing.T) {
 	// defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
 	// go tool pprof -http :8080 ./main ./prof.null/cpu.pprof
 
-	t.SkipNow()
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 
 	mg := NewMoveGen()
 	p := position.NewPosition("r1b1k2r/pppp1ppp/2n2n2/1Bb1p2q/4P3/2NP1N2/1PP2PPP/R1BQK2R w KQkq -")
@@ -571,11 +598,13 @@ func Test_TimingGenerateMovesOld(t *testing.T) {
 	_ = result
 }
 
-func Test_TimingGenerateMovesNew(t *testing.T) {
+func TestTimingGenerateMovesNew(t *testing.T) {
 	// defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
 	// go tool pprof -http :8080 ./main ./prof.null/cpu.pprof
 
-	t.SkipNow()
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 
 	mg := NewMoveGen()
 	p := position.NewPosition("r1b1k2r/pppp1ppp/2n2n2/1Bb1p2q/4P3/2NP1N2/1PP2PPP/R1BQK2R w KQkq -")

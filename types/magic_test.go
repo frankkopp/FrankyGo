@@ -37,6 +37,9 @@ import (
 var out = message.NewPrinter(language.German)
 
 func TestInit(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	for i := 0; i < 100; i++ {
 		initMagicBitboards()
 		fmt.Println("Rook Table  : ", rookTable[:20])

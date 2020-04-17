@@ -28,18 +28,41 @@ package transpositiontable
 
 import (
 	"math/rand"
+	"os"
+	"path"
+	"runtime"
 	"testing"
 	"time"
 	"unsafe"
 
+	logging2 "github.com/op/go-logging"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/frankkopp/FrankyGo/config"
 	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
-var logTest = logging.GetLog()
+var logTest *logging2.Logger
+
+// make tests run in the projects root directory
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
+
+// Setup the tests
+func TestMain(m *testing.M) {
+	config.Setup()
+	logTest = logging.GetTestLog()
+	code := m.Run()
+	os.Exit(code)
+}
 
 func TestEntrySize(t *testing.T) {
 	e := TtEntry{
@@ -266,15 +289,18 @@ func TestPut(t *testing.T) {
 	assert.EqualValues(t, false, e.MateThreat)
 }
 
-func TestPerformance(t *testing.T) {
+func TestTimingTTe(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	// setup
-
 	tt := NewTtTable(1_024)
-
 	move := CreateMove(SqE2, SqE4, Normal, PtNone)
 
 	const rounds = 5
-	const iterations uint64 = 25_000_000
+	const iterations uint64 = 50_000_000
 
 	for r := 1; r <= rounds; r++ {
 		out.Printf("Round %d\n", r)

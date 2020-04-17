@@ -28,16 +28,43 @@ package position
 
 import (
 	"fmt"
+	"os"
+	"path"
+	"runtime"
 	"testing"
 	"time"
 
+	"github.com/op/go-logging"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
+	"github.com/frankkopp/FrankyGo/config"
+	myLogging "github.com/frankkopp/FrankyGo/logging"
 	. "github.com/frankkopp/FrankyGo/types"
 
 	"github.com/stretchr/testify/assert"
 )
+
+var out = message.NewPrinter(language.German)
+var logTest *logging.Logger
+
+// make tests run in the projects root directory
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
+
+// Setup the tests
+func TestMain(m *testing.M) {
+	config.Setup()
+	logTest = myLogging.GetTestLog()
+	code := m.Run()
+	os.Exit(code)
+}
 
 func TestPositionCreation(t *testing.T) {
 
@@ -420,10 +447,12 @@ func TestPosition_CheckInsufficientMaterial(t *testing.T) {
 // Positions per sec 16.312.994 pps
 //
 //noinspection GoUnhandledErrorResult
-func Test_TimingDoUndo(t *testing.T) {
+func TestTimingDoUndo(t *testing.T) {
 	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
 
-	out := message.NewPrinter(language.German)
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 
 	const rounds = 5
 	const iterations uint64 = 10_000_000
@@ -460,9 +489,10 @@ func Test_TimingDoUndo(t *testing.T) {
 
 var res bool
 
-func Test_TimingMatvsPop(t *testing.T) {
-	t.SkipNow()
-	out := message.NewPrinter(language.German)
+func TestTimingMatvsPop(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 
 	const rounds = 5
 	const iterations uint64 = 1_000_000_000
@@ -484,8 +514,11 @@ func Test_TimingMatvsPop(t *testing.T) {
 	}
 }
 
-func Test_TimingMatvsPop2(t *testing.T) {
-	out := message.NewPrinter(language.German)
+func TestTimingMatvsPop2(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 
 	const rounds = 5
 	const iterations uint64 = 1_000_000_000
@@ -509,10 +542,12 @@ func Test_TimingMatvsPop2(t *testing.T) {
 	}
 }
 
-func Test_TimingIsAttacked(t *testing.T) {
+func TestTimingIsAttacked(t *testing.T) {
 	// defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
 
-	t.SkipNow()
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 
 	out := message.NewPrinter(language.German)
 

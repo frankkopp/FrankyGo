@@ -56,10 +56,12 @@
       <w>seldepth</w>
       <w>setoption</w>
       <w>sloglvl</w>
+      <w>smalltest</w>
       <w>standpat</w>
       <w>startpos</w>
       <w>stockfish</w>
       <w>subcommand</w>
+      <w>superbook</w>
       <w>testdepth</w>
       <w>testsets</w>
       <w>testsuite</w>

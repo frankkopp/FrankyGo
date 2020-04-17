@@ -39,7 +39,7 @@ import (
 // ///////////////////////////////////////////////////////////////
 
 //noinspection GoImportUsedAsName
-func Test_StandardPerft(t *testing.T) {
+func TestStandardPerft(t *testing.T) {
 
 	maxDepth := 5
 	var perft Perft
@@ -85,7 +85,7 @@ func Test_StandardPerft(t *testing.T) {
 // -----------------------------------------
 // Finished PERFT Test for Depth 6
 //noinspection GoImportUsedAsName
-func Test_StandardPerftOd(t *testing.T) {
+func TestStandardPerftOd(t *testing.T) {
 
 	maxDepth := 5
 	var perft Perft
@@ -117,7 +117,7 @@ func Test_StandardPerftOd(t *testing.T) {
 }
 
 //noinspection GoImportUsedAsName
-func Test_KiwipetePerft(t *testing.T) {
+func TestKiwipetePerft(t *testing.T) {
 
 	maxDepth := 4
 	var perft Perft
@@ -147,7 +147,7 @@ func Test_KiwipetePerft(t *testing.T) {
 }
 
 //noinspection GoImportUsedAsName
-func Test_MirrorPerft(t *testing.T) {
+func TestMirrorPerft(t *testing.T) {
 
 	maxDepth := 5
 	var perft Perft
@@ -192,7 +192,7 @@ func Test_MirrorPerft(t *testing.T) {
 
 
 //noinspection GoImportUsedAsName
-func Test_Pos5Perft(t *testing.T) {
+func TestPos5Perft(t *testing.T) {
 
 	maxDepth := 4
 	var perft Perft

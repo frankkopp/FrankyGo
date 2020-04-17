@@ -62,12 +62,12 @@ func TestCompareWithPseudo(t *testing.T) {
 		magicAttacks := a.From[c][sq]
 		nonMagicAttacks := buildAttacks(p, pt, sq)
 
-		out.Println("Non Magic Attacks:\n", magicAttacks.StringBoard())
-		out.Println("Build Attacks:\n", nonMagicAttacks.StringBoard())
+		// out.Println("Non Magic Attacks:\n", magicAttacks.StringBoard())
+		// out.Println("Build Attacks:\n", nonMagicAttacks.StringBoard())
 
 		assert.EqualValues(t, magicAttacks, nonMagicAttacks)
 
-		out.Println("==================================================")
+		// out.Println("==================================================")
 	}
 }
 

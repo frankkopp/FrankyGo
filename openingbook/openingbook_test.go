@@ -29,6 +29,7 @@ package openingbook
 import (
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"testing"
 
@@ -63,22 +64,26 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func Test_readingFile(t *testing.T) {
+func TestReadingFile(t *testing.T) {
 	b := NewBook()
-	lines, err := b.readFile(config.Settings.Search.BookPath+"/superbook.pgn")
+	folder,_ := util.ResolveFolder(config.Settings.Search.BookPath)
+	file := filepath.Join(folder, "superbook.pgn")
+	lines, err := b.readFile(file)
 	assert.NoError(t, err, "Reading file threw error: %s", err)
 	assert.Equal(t, 2_620_133, len(*lines))
 }
 
-func Test_readingNonExistingFile(t *testing.T) {
+func TestReadingNonExistingFile(t *testing.T) {
 	b := NewBook()
-	_, err := b.readFile(config.Settings.Search.BookPath+"/abc.txt")
+	folder,_ := util.ResolveFolder(config.Settings.Search.BookPath)
+	file := filepath.Join(folder, "abc.pgn")
+	_, err := b.readFile(file)
 	assert.Error(t, err, "Reading file should throw error: %s", err)
 }
 
-func Test_processingEmpty(t *testing.T) {
+func TestProcessingEmpty(t *testing.T) {
 	book := NewBook()
-	err := book.Initialize(config.Settings.Search.BookPath+"/empty.txt", "", Simple, false, false)
+	err := book.Initialize(config.Settings.Search.BookPath, "empty.txt", Simple, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	assert.Equal(t, 1, book.NumberOfEntries())
 
@@ -92,10 +97,10 @@ func Test_processingEmpty(t *testing.T) {
 	assert.True(t, entry.ZobristKey == 0)
 }
 
-func Test_processingSimpleSmall(t *testing.T) {
+func TestProcessingSimpleSmall(t *testing.T) {
 
 	book := NewBook()
-	err := book.Initialize(config.Settings.Search.BookPath+"/book_smalltest.txt", "", Simple, false, false)
+	err := book.Initialize(config.Settings.Search.BookPath, "book_smalltest.txt", Simple, false, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	assert.Equal(t, 11_196, book.NumberOfEntries())
 
@@ -120,8 +125,10 @@ func Test_processingSimpleSmall(t *testing.T) {
 	// }
 }
 
-func Test_processingSimple(t *testing.T) {
-	t.SkipNow()
+func TestProcessingSimple(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 
 	book := NewBook()
 	err := book.Initialize(config.Settings.Search.BookPath+"/book.txt", "", Simple, false, false)
@@ -152,7 +159,7 @@ func Test_processingSimple(t *testing.T) {
 	}
 }
 
-func Test_processingSANSmall(t *testing.T) {
+func TestProcessingSANSmall(t *testing.T) {
 	logTest.Info("Starting SAN small test")
 
 	book := NewBook()
@@ -184,7 +191,7 @@ func Test_processingSANSmall(t *testing.T) {
 	}
 }
 
-func Test_processingPGNSmall(t *testing.T) {
+func TestProcessingPGNSmall(t *testing.T) {
 	logTest.Info("Starting PGN small test")
 
 	book := NewBook()
@@ -216,8 +223,10 @@ func Test_processingPGNSmall(t *testing.T) {
 	}
 }
 
-func Test_processingPGNLarge(t *testing.T) {
-	t.SkipNow()
+func TestProcessingPGNLarge(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 
 	logTest.Info("Starting PGN large test")
 
@@ -253,7 +262,7 @@ func Test_processingPGNLarge(t *testing.T) {
 	}
 }
 
-func Test_processingPGNCacheSmall(t *testing.T) {
+func TestProcessingPGNCacheSmall(t *testing.T) {
 	logTest.Info("Starting PGN cache test")
 
 	book := NewBook()
@@ -293,18 +302,20 @@ func Test_processingPGNCacheSmall(t *testing.T) {
 	}
 }
 
-func Test_processingPGNCacheLarge(t *testing.T) {
-	t.SkipNow()
+func TestProcessingPGNCacheLarge(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 
 	logTest.Info("Starting PGN large cache test")
 
 	book := NewBook()
-	err := book.Initialize(config.Settings.Search.BookPath+"/superbook.pgn", "", Pgn, true, true)
+	err := book.Initialize(config.Settings.Search.BookPath, "superbook.pgn", Pgn, true, true)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 
 	book.Reset()
 
-	err = book.Initialize(config.Settings.Search.BookPath+"/superbook.pgn", "", Pgn, true, false)
+	err = book.Initialize(config.Settings.Search.BookPath, "superbook.pgn", Pgn, true, false)
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 
 	// get root entry

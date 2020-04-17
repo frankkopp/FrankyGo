@@ -27,9 +27,6 @@
 package search
 
 import (
-	"os"
-	"path"
-	"runtime"
 	"testing"
 	"time"
 
@@ -41,16 +38,6 @@ import (
 	. "github.com/frankkopp/FrankyGo/types"
 	"github.com/frankkopp/FrankyGo/util"
 )
-
-// make tests run in the projects root directory
-func init() {
-	_, filename, _, _ := runtime.Caller(0)
-	dir := path.Join(path.Dir(filename), "..")
-	err := os.Chdir(dir)
-	if err != nil {
-		panic(err)
-	}
-}
 
 func Test_savePV(t *testing.T) {
 	src := moveslice.NewMoveSlice(10)

@@ -56,7 +56,6 @@ func init() {
 
 // Setup the tests
 func TestMain(m *testing.M) {
-	out.Println("Test Main Setup Tests ====================")
 	config.Setup()
 	logTest = logging.GetTestLog()
 	code := m.Run()

@@ -29,6 +29,7 @@ package util
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 )
@@ -50,6 +51,9 @@ func ResolveFile(file string) (string, error) {
 
 	file = filepath.Clean(file)
 
+	log.Println("Searching folder", file)
+
+
 	// file is a absolute path
 	if filepath.IsAbs(file) {
 		if fileExists(file) {
@@ -62,6 +66,7 @@ func ResolveFile(file string) (string, error) {
 	dir, err := os.Getwd()
 	if err == nil {
 		if fileExists(filepath.Join(dir, file)) {
+			log.Println("Found relative to CWD")
 			return filepath.Clean(filepath.Join(dir, file)), nil
 		}
 	}
@@ -69,6 +74,7 @@ func ResolveFile(file string) (string, error) {
 	dir, err = os.Executable()
 	if err == nil {
 		if fileExists(filepath.Join(dir, file)) {
+			log.Println("Found relative to EXE")
 			return filepath.Clean(filepath.Join(dir, file)), nil
 		}
 	}
@@ -76,10 +82,12 @@ func ResolveFile(file string) (string, error) {
 	dir, err = os.UserHomeDir()
 	if err == nil {
 		if fileExists(filepath.Join(dir, file)) {
+			log.Println("Found relative to USER HOME")
 			return filepath.Clean(filepath.Join(dir, file)), nil
 		}
 	}
 
+	log.Println("File not found", file)
 	return file, fileNotFoundErr
 }
 
@@ -101,7 +109,7 @@ func ResolveFolder(folder string) (string, error) {
 
 	folder = filepath.Clean(folder)
 
-	fmt.Println("Searching folder",  folder)
+	log.Println("Searching folder", folder)
 
 	// folder is a absolute path
 	if filepath.IsAbs(folder) {
@@ -112,29 +120,30 @@ func ResolveFolder(folder string) (string, error) {
 	}
 
 	// folder is a relative path
-	fmt.Println("Testing cwd")
 	dir, err := os.Getwd()
 	if err == nil {
 		if folderExists(filepath.Join(dir, folder)) {
+			log.Println("Found relative to CWD")
 			return filepath.Clean(filepath.Join(dir, folder)), nil
 		}
 	}
 
-	fmt.Println("Testing exe")
 	dir, err = os.Executable()
 	if err == nil {
 		if folderExists(filepath.Join(dir, folder)) {
+			log.Println("Found relative to EXE")
 			return filepath.Clean(filepath.Join(dir, folder)), nil
 		}
 	}
 
-	fmt.Println("Testing home")
+	log.Println("Testing home")
 	dir, err = os.UserHomeDir()
 	if folderExists(filepath.Join(dir, folder)) {
+		log.Println("Found relative to USER HOME")
 		return filepath.Clean(filepath.Join(dir, folder)), nil
 	}
 
-	fmt.Println("Folder not found", folder)
+	log.Println("Folder not found", folder)
 	return folder, folderNotFoundErr
 }
 
@@ -186,28 +195,46 @@ func ResolveCreateFolder(folderPath string) (string, error) {
 }
 
 func fileExists(filename string) bool {
-	fmt.Println("Folder", filename)
+	// log.Println("File", filename)
 	info, err := os.Stat(filename)
-	fmt.Println("Stat", info, "Err: ", err)
-	if os.IsNotExist(err) || info == nil {
-		fmt.Println("Folder", filename, "does not exist")
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false
+		} else {
+			log.Println("Error trying to find file", filename)
+			log.Println("Stat", info, "Err: ", err)
+			return false
+		}
+	}
+	if info == nil {
+		log.Println("Stat for file is NIL when trying to find file", filename)
+		log.Println("Stat", info, "Err: ", err)
 		return false
 	}
-	fmt.Println("Info", info)
-	fmt.Println("File",info.Mode().IsRegular())
+	// log.Println("Info", info)
+	// log.Println("File", info.Mode().IsRegular())
 	return info.Mode().IsRegular()
 }
 
 func folderExists(foldername string) bool {
-	fmt.Println("Folder", foldername)
+	// log.Println("Folder", foldername)
 	info, err := os.Stat(foldername)
-	fmt.Println("Stat", info, "Err: ", err)
-	if os.IsNotExist(err) || info == nil {
-		fmt.Println("Folder", foldername, "does not exist")
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false
+		} else {
+			log.Println("Error trying to find folder", foldername)
+			log.Println("Stat", info, "Err: ", err)
+			return false
+		}
+	}
+	if info == nil {
+		log.Println("Stat for folder is NIL when trying to find folder", foldername)
+		log.Println("Stat", info, "Err: ", err)
 		return false
 	}
-	fmt.Println("Info", info)
-	fmt.Println("Dir", info.Mode().IsDir())
+	// log.Println("Info", info)
+	// log.Println("Dir", info.Mode().IsDir())
 	return info.Mode().IsDir()
 }
 

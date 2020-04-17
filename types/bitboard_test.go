@@ -34,7 +34,7 @@ import (
 )
 
 // set To true for printing output during tests
-const verbose bool = true
+const verbose bool = false
 
 func TestBitboardType(t *testing.T) {
 
@@ -269,7 +269,6 @@ func TestBitboardPopLsb(t *testing.T) {
 }
 
 func TestBitboardShift(t *testing.T) {
-
 
 	tests := []struct {
 		preShift  Bitboard
@@ -652,7 +651,7 @@ func TestGetMovesDiagDown(t *testing.T) {
 	}
 }
 
-func Test_pseudoAttacksPreCompute(t *testing.T) {
+func TestPseudoAttacksPreCompute(t *testing.T) {
 	tests := []struct {
 		name  string
 		piece PieceType
@@ -674,7 +673,7 @@ func Test_pseudoAttacksPreCompute(t *testing.T) {
 	}
 }
 
-func Test_pawnAttacksPreCompute(t *testing.T) {
+func TestPawnAttacksPreCompute(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -805,8 +804,7 @@ func TestSquare_CenterDistance(t *testing.T) {
 	}
 }
 
-func Test_rankBbPreCompute(t *testing.T) {
-
+func TestRankBbPreCompute(t *testing.T) {
 	assert.Equal(t, Rank1_Bb, rankBb[Rank1])
 	assert.Equal(t, Rank2_Bb, rankBb[Rank2])
 	assert.Equal(t, Rank7_Bb, rankBb[Rank7])

@@ -58,7 +58,6 @@ func init() {
 
 // Setup the tests
 func TestMain(m *testing.M) {
-	out.Println("Test Main Setup Tests ====================")
 	Setup()
 	logTest = logging.GetTestLog()
 	code := m.Run()
@@ -66,7 +65,7 @@ func TestMain(m *testing.M) {
 }
 
 //noinspection GoStructInitializationWithoutFieldNames
-func TestEvaluator_valueFromScore(t *testing.T) {
+func TestEvaluatorValueFromScore(t *testing.T) {
 	e := NewEvaluator()
 	v:= Value(0)
 
@@ -300,8 +299,8 @@ func TestStartPosZeroEval(t *testing.T) {
 	p := position.NewPosition()
 	e := NewEvaluator()
 	v := e.Evaluate(p)
-	out.Println("Value =", v)
-	assert.EqualValues(t, 0, e.Evaluate(p))
+	// out.Println("Value =", v)
+	assert.EqualValues(t, 0, v)
 }
 
 func TestMirroredZeroEval(t *testing.T) {
@@ -309,8 +308,8 @@ func TestMirroredZeroEval(t *testing.T) {
 	p := position.NewPosition("r1bq1rk1/pppp1pp1/2n2n1p/1B2p3/1b2P3/2N2N1P/PPPP1PP1/R1BQ1RK1 w - -")
 	e := NewEvaluator()
 	v := e.Evaluate(p)
-	out.Println("Value =", v)
-	assert.EqualValues(t, 0, e.Evaluate(p))
+	// out.Println("Value =", v)
+	assert.EqualValues(t, 0, v)
 }
 
 // func TestTestFensCheck(t *testing.T) {
@@ -339,9 +338,13 @@ func TestMirroredZeroEval(t *testing.T) {
 // 	out.Printf("%s\n", e.Report())
 // }
 
-func Test_TimingEval(t *testing.T) {
+func TestTimingEval(t *testing.T) {
 	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
 	// go tool pprof -http :8080 ./main ./prof.null/cpu.pprof
+
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 
 	out := message.NewPrinter(language.German)
 	p := position.NewPosition("r1b1k2r/pppp1ppp/2n2n2/1Bb1p2q/4P3/2NP1N2/1PP2PPP/R1BQK2R w KQkq -")
