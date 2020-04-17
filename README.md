@@ -118,6 +118,10 @@ Todo
     - LMR and LMP - more testing needed
 
 ## Versions
+### v0.8 (in progress)
+- TODO
+    - -
+
 ### v0.7 (done)
 - DONE
     - LMP and LMR 
