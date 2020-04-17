@@ -55,7 +55,7 @@ I thought that implementing a chess engine in Go is a great opportunity to learn
 Chess engines offer a lot of different challenges in many aspects of a programming language. 
 E.g. efficient data types and data structures, high performance code where even nanoseconds count, reading 
 an opening book from files and creating a cache, bit twiddling, caches, recursion, unit testing, 
-performance testing and optimization, logging, configurations, communicationwith other processes over 
+performance testing and optimization, logging, configurations, communication with other processes over 
 pipes (UCI protocol), protocol implementation, etc. 
  
 Especially the high performance code is something I'm interested in. The usual advice in programming 
