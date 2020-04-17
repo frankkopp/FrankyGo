@@ -56,6 +56,7 @@ var out = message.NewPrinter(language.German)
 //  Create new instance with NewSearch()
 type Search struct {
 	log *logging.Logger
+	slog *logging.Logger
 
 	uciHandlerPtr uciInterface.UciDriver
 	initSemaphore *semaphore.Weighted
@@ -94,6 +95,7 @@ type Search struct {
 func NewSearch() *Search {
 	s := &Search{
 		log:               myLogging.GetLog(),
+		slog:              getSearchTraceLog(),
 		uciHandlerPtr:     nil,
 		initSemaphore:     semaphore.NewWeighted(int64(1)),
 		isRunning:         semaphore.NewWeighted(int64(1)),
@@ -306,11 +308,11 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	}
 
 	// Initialize ply based data
-	s.mg = make([]*movegen.Movegen, 0, MaxDepth)
-	s.pv = make([]*moveslice.MoveSlice, 0, MaxDepth)
-	for i := 0; i < MaxDepth; i++ {
+	s.mg = make([]*movegen.Movegen, 0, MaxDepth+1)
+	s.pv = make([]*moveslice.MoveSlice, 0, MaxDepth+1)
+	for i := 0; i <= MaxDepth; i++ {
 		s.mg = append(s.mg, movegen.NewMoveGen())
-		s.pv = append(s.pv, moveslice.NewMoveSlice(MaxDepth))
+		s.pv = append(s.pv, moveslice.NewMoveSlice(MaxDepth+1))
 	}
 
 	// release the init phase lock to signal the calling go routine
@@ -352,7 +354,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.hasResult = true
 
 	// print stats to log
-	s.log.Info(out.Sprintf("Search finished after %d ms ", searchResult.SearchTime.Milliseconds()))
+	s.log.Info(out.Sprintf("Search finished after %s", searchResult.SearchTime))
 	s.log.Info(out.Sprintf("Search depth was %d(%d) with %d nodes visited. NPS = %d nps",
 		s.statistics.CurrentSearchDepth, s.statistics.CurrentExtraSearchDepth, s.nodesVisited,
 		util.Nps(s.nodesVisited, searchResult.SearchTime)))
@@ -377,7 +379,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 // searched first in the next iteration, then overwriting the new
 // move with the old one becomes unnecessary. This way, also the
 // results from the partial search can be accepted
-// TODO though in case of a severe drop of the score it is wise
+// IDEA though in case of a severe drop of the score it is wise
 //  to allocate some more time, as the first alternative is often
 //  a bad capture, delaying the loss instead of preventing it
 func (s *Search) iterativeDeepening(position *position.Position) *Result {
@@ -568,14 +570,11 @@ func (s *Search) setupSearchLimits(position *position.Position, sl *Limits) {
 		s.timeLimit = s.setupTimeControl(position, sl)
 		s.extraTime = 0
 		if sl.MoveTime > 0 {
-			s.log.Debugf("Search mode: Time controlled: Time per move %s ms",
-				out.Sprintf("%d", sl.MoveTime.Milliseconds()))
+			s.log.Debugf("Search mode: Time controlled: Time per move %s", sl.MoveTime)
 		} else {
-			s.log.Debug(out.Sprintf("Search mode: Time controlled: White = %d ms (inc %d ms) Black = %d ms (inc %d ms) Moves to go: %d",
-				sl.WhiteTime.Milliseconds(), sl.WhiteInc.Milliseconds(),
-				sl.BlackTime.Milliseconds(), sl.BlackInc.Milliseconds(),
-				sl.MovesToGo))
-			s.log.Debug(out.Sprintf("Search mode: Time limit     : %d ms", s.timeLimit.Milliseconds()))
+			s.log.Debug(out.Sprintf("Search mode: Time controlled: White = %s (inc %s) Black = %s (inc %s) Moves to go: %d",
+				sl.WhiteTime, sl.WhiteInc, sl.BlackTime, sl.BlackInc, sl.MovesToGo))
+			s.log.Debug(out.Sprintf("Search mode: Time limit     : %s", s.timeLimit))
 		}
 		if sl.Ponder {
 			s.log.Debug("Search mode: Ponder - time control postponed until ponderhit received")
@@ -640,8 +639,8 @@ func (s *Search) addExtraTime(f float64) {
 	if s.searchLimits.TimeControl && s.searchLimits.MoveTime == 0 {
 		duration := time.Duration(int64((f - 1.0) * float64(s.timeLimit.Nanoseconds())))
 		s.extraTime += duration
-		s.log.Debugf(out.Sprintf("Time added/reduced by %d ms to %d ms",
-			duration.Milliseconds(), (s.timeLimit + s.extraTime).Milliseconds()))
+		s.log.Debugf(out.Sprintf("Time added/reduced by %s to %s ",
+			duration, s.timeLimit+s.extraTime))
 	}
 }
 
@@ -651,18 +650,18 @@ func (s *Search) addExtraTime(f float64) {
 func (s *Search) startTimer() {
 	go func() {
 		timerStart := time.Now()
-		s.log.Debugf("Timer started with time limit of %d ms", s.timeLimit.Milliseconds())
+		s.log.Debugf("Timer started with time limit of %s", s.timeLimit)
 		// relaxed busy wait
 		// as timeLimit changes due to extra times we can't set a fixed timeout
 		for time.Since(timerStart) < s.timeLimit+s.extraTime && !s.stopFlag {
 			time.Sleep(5 * time.Millisecond)
 		}
 		if s.stopFlag {
-			s.log.Debugf("Timer stopped early after wall time: %d ms (time limit %d ms and extra time %d)",
-				time.Since(timerStart).Milliseconds(), s.timeLimit.Milliseconds(), s.extraTime.Milliseconds())
+			s.log.Debugf("Timer stopped early after wall time: %s (time limit %s and extra time %s)",
+				time.Since(timerStart), s.timeLimit, s.extraTime)
 		} else {
-			s.log.Debugf("Timer stops search after wall time: %d ms (time limit %d ms and extra time %d)",
-				time.Since(timerStart).Milliseconds(), s.timeLimit.Milliseconds(), s.extraTime.Milliseconds())
+			s.log.Debugf("Timer stops search after wall time: %s (time limit %s and extra time %s)",
+				time.Since(timerStart), s.timeLimit, s.extraTime)
 			s.stopFlag = true
 		}
 	}()
@@ -750,8 +749,7 @@ func (s *Search) sendIterationEndInfoToUci() {
 // limits the value to 15M to avoid very small times
 // returning unrealistic values.
 func (s *Search) getNps() uint64 {
-	elapsed := time.Since(s.startTime) + 100
-	nps := util.Nps(s.nodesVisited, elapsed)
+	nps := util.Nps(s.nodesVisited, time.Since(s.startTime)+100)
 	if nps > 15_000_000 { // sanity value for very short times
 		nps = 0
 	}

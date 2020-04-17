@@ -29,28 +29,45 @@ package config
 // searchConfiguration is a data structure to hold the configuration of an
 // instance of a search.
 type searchConfiguration struct {
-	UseBook       bool
-	BookPath      string
-	BookFile      string
-	BookFormat    string
+	UseBook    bool
+	BookPath   string
+	BookFile   string
+	BookFormat string
+
 	UsePonder     bool
 	UseQuiescence bool
 	UseQSStandpat bool
-	UsePVS        bool
-	UseTT         bool
-	TTSize        int
-	UseTTMove     bool
-	UseTTValue    bool
-	UseQSTT       bool
-	UseMDP        bool
-	UseMPP        bool
-	UseKiller     bool
+
+	UsePVS       bool
+	UseKiller    bool
+	UseIID       bool
+	IIDDepth     int
+	IIDReduction int
+
+	UseTT      bool
+	TTSize     int
+	UseTTMove  bool
+	UseTTValue bool
+	UseQSTT    bool
+	UseEvalTT  bool
+
+	UseMDP      bool
+	UseNullMove bool
+
+	NmpDepth     int
+	NmpReduction int
+
+	UseLmr           bool
+	LmrDepth         int
+	LmrMovesSearched int
+
+	UseLmp           bool
 }
 
 // sets defaults which might be overwritten by config file
 func init() {
 	Settings.Search.UseBook = true
-	Settings.Search.BookPath = "D:/_DEV/go/src/github.com/frankkopp/FrankyGo/books"
+	Settings.Search.BookPath = "./books"
 	Settings.Search.BookPath = "book.txt"
 	Settings.Search.BookFormat = "Simple"
 	Settings.Search.UsePonder = true
@@ -63,14 +80,23 @@ func init() {
 	Settings.Search.UseTTMove = true
 	Settings.Search.UseTTValue = true
 	Settings.Search.UseQSTT = true
+	Settings.Search.UseEvalTT = false
 	Settings.Search.UseMDP = true
-	Settings.Search.UseMPP = false // causes mates to be missed - needs some testing
+	Settings.Search.UseNullMove = true
+	Settings.Search.NmpDepth = 3
+	Settings.Search.NmpReduction = 2
+	Settings.Search.UseIID = true
+	Settings.Search.IIDDepth = 6
+	Settings.Search.IIDReduction = 2
+	Settings.Search.UseLmr = true
+	Settings.Search.LmrDepth = 3
+	Settings.Search.LmrMovesSearched = 3
+	Settings.Search.UseLmp = false
 
 }
 
 // set defaults for configurations here in case a configuration
 // is not available from the config file
 func setupSearch() {
-
 
 }

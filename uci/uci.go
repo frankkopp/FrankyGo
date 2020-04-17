@@ -53,6 +53,7 @@ import (
 	"github.com/frankkopp/FrankyGo/search"
 	. "github.com/frankkopp/FrankyGo/types"
 	"github.com/frankkopp/FrankyGo/uciInterface"
+	"github.com/frankkopp/FrankyGo/util"
 	"github.com/frankkopp/FrankyGo/version"
 )
 
@@ -576,39 +577,33 @@ func getUciLog() *logging2.Logger {
 	backend1Formatter := logging2.NewBackendFormatter(backend1, uciFormat)
 	uciBackEnd1 := logging2.AddModuleLevel(backend1Formatter)
 	uciBackEnd1.SetLevel(logging2.DEBUG, "")
+	uciLog.SetBackend(uciBackEnd1)
 
 	// File backend
 	programName, _ := os.Executable()
 	exeName := strings.TrimSuffix(filepath.Base(programName), ".exe")
-	var logPath string
-	if filepath.IsAbs(config.Settings.Log.LogPath) {
-		logPath = config.Settings.Log.LogPath
-	} else {
-		dir, _ := os.Getwd()
-		logPath = dir + "/" + config.Settings.Log.LogPath
+
+	// find log path
+	logPath, err := util.ResolveFolder(config.Settings.Log.LogPath)
+	if err != nil {
+		golog.Println("Log folder could not be found:", err)
+		return uciLog
 	}
-	uciLogFilePath := logPath + "/" + exeName + "_ucilog.log"
-	uciLogFilePath = filepath.Clean(uciLogFilePath)
-	// out.Printf("Log %s \n", uciLogFilePath)
+	logFilePath := filepath.Join(logPath, exeName+"_uci.log")
 
 	// create file backend
-	var err error
-	uciLogFile, err := os.OpenFile(uciLogFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-
-	// we use either Stdout or file - if file is valid we use only file
+	uciLogFile, err := os.OpenFile(logFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		golog.Println("Logfile could not be created:", err)
-		uciLog.SetBackend(uciBackEnd1)
-	} else {
-		backend2 := logging2.NewLogBackend(uciLogFile, "", golog.Lmsgprefix)
-		backend2Formatter := logging2.NewBackendFormatter(backend2, uciFormat)
-		uciBackEnd2 := logging2.AddModuleLevel(backend2Formatter)
-		uciBackEnd2.SetLevel(logging2.DEBUG, "")
-		// multi := logging2.SetBackend(uciBackEnd1, uciBackEnd2)
-		uciLog.SetBackend(uciBackEnd2)
-		uciLog.Infof("Log %s started at %s:", uciLogFile.Name(), time.Now().String())
+		return uciLog
 	}
-
+	backend2 := logging2.NewLogBackend(uciLogFile, "", golog.Lmsgprefix)
+	backend2Formatter := logging2.NewBackendFormatter(backend2, uciFormat)
+	uciBackEnd2 := logging2.AddModuleLevel(backend2Formatter)
+	uciBackEnd2.SetLevel(logging2.DEBUG, "")
+	// multi := logging2.SetBackend(uciBackEnd1, uciBackEnd2)
+	uciLog.SetBackend(uciBackEnd2)
+	uciLog.Infof("Log %s started at %s:", uciLogFile.Name(), time.Now().String())
 	return uciLog
 }
 

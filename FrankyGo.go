@@ -45,10 +45,13 @@ import (
 var out = message.NewPrinter(language.German)
 
 func main() {
+	// defer profile.Start().Stop()
+	// defer profile.Start(profile.TraceProfile, profile.ProfilePath(".")).Stop()
+	// go tool pprof -http :8080 ./main ./prof.null/cpu.pprof
 
 	// command line args
 	versionInfo := flag.Bool("version", false, "prints version and exits")
-	configFile := flag.String("config", "../config/config.toml", "path to configuration settings file")
+	configFile := flag.String("config", "./config/config.toml", "path to configuration settings file")
 	logLvl := flag.String("loglvl", "", "standard log level\n(critical|error|warning|notice|info|debug)")
 	searchlogLvl := flag.String("searchloglvl", "", "search log level\n(critical|error|warning|notice|info|debug)")
 	logPath := flag.String("logpath", "", "path where to write log files to")

@@ -153,7 +153,7 @@ func SquareOf(f File, r Rank) Square {
 }
 
 // To returns the square on the chess board in the given direction
-// TODO: should maybe be pre-calculated
+// TODO: should maybe be pre-computed
 func (sq Square) To(d Direction) Square {
 	// overflow To south or north are easily detected <0 ot >63
 	// east and west need check

@@ -35,13 +35,12 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
-	"github.com/frankkopp/FrankyGo/config"
+	. "github.com/frankkopp/FrankyGo/config"
 	myLogging "github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
+	"github.com/frankkopp/FrankyGo/util"
 )
-
-const trace = true
 
 var out = message.NewPrinter(language.German)
 
@@ -51,26 +50,94 @@ var out = message.NewPrinter(language.German)
 //  Create a new instance with NewEvaluator()
 type Evaluator struct {
 	log *logging.Logger
+
+	position        *position.Position
+	gamePhaseFactor float64
+	us              Color
+	them            Color
+	ourKing         Square
+	theirKing       Square
+	kingRing        [ColorLength]Bitboard
+	ourPieces       Bitboard
+
+	score Score
+
+	attacks *Attacks
+}
+
+// to avoid object creation and memory allocation
+// during evaluation we reuse this tmp Score
+var tmpScore = Score{}
+
+// pre-computed list
+var threshold [GamePhaseMax + 1]int
+
+// initialize pre-computed values
+func init() {
+	for i := 0; i <= GamePhaseMax; i++ {
+		gamePhaseFactor := float64(i) / GamePhaseMax
+		threshold[i] = Settings.Eval.LazyEvalThreshold + int(float64(Settings.Eval.LazyEvalThreshold)*gamePhaseFactor)
+	}
 }
 
 // NewEvaluator creates a new instance of an Evaluator.
 func NewEvaluator() *Evaluator {
 	return &Evaluator{
 		log: myLogging.GetLog(),
+		attacks: NewAttacks(),
+	}
+}
+
+// InitEval initializes data structures and values which are used several times
+// Is called at the beginning of Evaluate() but can be called separately to be able
+// to run single evaluations in unit tests.
+func (e *Evaluator) InitEval(p *position.Position) {
+	// set some value which we need regularly
+	e.position = p
+	e.gamePhaseFactor = p.GamePhaseFactor()
+	e.us = p.NextPlayer()
+	e.them = e.us.Flip()
+	e.ourKing = e.position.KingSquare(e.us)
+	e.theirKing = e.position.KingSquare(e.them)
+	e.kingRing[e.us] = GetPseudoAttacks(King, e.ourKing)
+	e.kingRing[e.them] = GetPseudoAttacks(King, e.theirKing)
+	e.ourPieces = e.position.OccupiedBb(e.us)
+
+	// reset all values
+	e.score.MidGameValue = 0
+	e.score.EndGameValue = 0
+
+	// reset attacks
+	if Settings.Eval.UseAttacksInEval {
+		e.attacks.Clear()
 	}
 }
 
 // Evaluate calculates a value for a chess positions by
 // using various evaluation heuristics like material,
 // positional values, pawn structure, etc.
+// It calls InitEval and then the internal evaluation function
+// which calculates the value for the position of the given
+// position for the current game phase and from the
+// view of the next player.
 func (e *Evaluator) Evaluate(position *position.Position) Value {
+	e.InitEval(position)
+	return e.evaluate()
+}
 
+// value adds up the mid and end games scores after multiplying
+// them with the game phase factor
+func (e *Evaluator) value() Value {
+	return e.score.ValueFromScore(e.gamePhaseFactor)
+}
+
+// internal evaluation to sum up all partial evaluations.
+// This assumes that InitEval() has been called beforehand
+func (e *Evaluator) evaluate() Value {
 	// if not enough material on the board to achieve a mate it is a draw
-	if position.HasInsufficientMaterial() {
+	if e.position.HasInsufficientMaterial() {
 		return ValueDraw
 	}
-
-	gamePhaseFactor := position.GamePhaseFactor()
 
 	// Each position is evaluated from the view of the white
 	// player. Before returning the value this will be adjusted
@@ -79,64 +146,237 @@ func (e *Evaluator) Evaluate(position *position.Position) Value {
 	// have a dedicated configurable weight to adjust and test
 
 	// Material
-	value := e.material(position, gamePhaseFactor)
+	e.score.MidGameValue = int(e.position.Material(White) - e.position.Material(Black))
+	e.score.EndGameValue = e.score.MidGameValue
 
 	// Positional values
-	value += e.positional(position, gamePhaseFactor)
+	e.score.MidGameValue += int(e.position.PsqMidValue(White) - e.position.PsqMidValue(Black))
+	e.score.EndGameValue += int(e.position.PsqEndValue(White) - e.position.PsqEndValue(Black))
 
-	// value is always from the view of the next player
-	if position.NextPlayer() == Black {
-		value *= -1
+	// early exit
+	// arbitrary threshold - in early phases (game phase = 1.0) this is doubled
+	// in late phases it stands as it is
+	// threshold needs testing
+	if Settings.Eval.UseLazyEval {
+		valueFromScore := e.value()
+		th := threshold[e.position.GamePhase()]
+		value := util.Abs(int(valueFromScore))
+		if value > th {
+			return e.finalEval(valueFromScore)
+		}
+	}
+
+	// Get all attacks
+	// find out where this should be done to be most effective
+	// This is expensive and we should use this investment as often as
+	// possible. If we could use it in search as well we could move
+	// creating this to an earlier point in time in the search
+	if Settings.Eval.UseAttacksInEval {
+		e.attacks.Compute(e.position)
 	}
 
 	// evaluate pawns
 	// TODO
 
-	// development of pieces when game face <20-22
-	// TODO
+	// evaluate pieces - builds attacks and mobility
+	if Settings.Eval.UseAdvancedPieceEval {
+		e.score.Add(*e.evalPiece(White, Knight))
+		e.score.Sub(*e.evalPiece(Black, Knight))
+		e.score.Add(*e.evalPiece(White, Bishop))
+		e.score.Sub(*e.evalPiece(Black, Bishop))
+		e.score.Add(*e.evalPiece(White, Rook))
+		e.score.Sub(*e.evalPiece(Black, Rook))
+		e.score.Add(*e.evalPiece(White, Queen))
+		e.score.Sub(*e.evalPiece(Black, Queen))
+	}
 
-	// evaluate pieces
-	// TODO
+	// mobility
+	if Settings.Eval.UseAttacksInEval && Settings.Eval.UseMobility {
+		e.score.MidGameValue += (e.attacks.Mobility[White] - e.attacks.Mobility[Black]) * Settings.Eval.MobilityBonus
+		e.score.EndGameValue += e.score.MidGameValue
+	}
 
 	// evaluate king
-	// TODO
+	if Settings.Eval.UseKingEval {
+		e.score.Add(*e.evalKing(White))
+		e.score.Sub(*e.evalKing(Black))
+	}
 
 	// TEMPO Bonus for the side to move (helps with evaluation alternation -
 	// less difference between side which makes aspiration search faster
 	// (not empirically tested)
-	value += e.tempo(gamePhaseFactor)
+	e.score.MidGameValue += Settings.Eval.Tempo
+	// e.score.EndGameValue += Value(0) // can be ignored
 
-	return value
+	// value is always from the view of the next player
+	valueFromScore := e.value()
+	return e.finalEval(valueFromScore)
 }
 
-
-func (e *Evaluator) material(position *position.Position, gamePhaseFactor float64) Value {
-	return position.Material(White) - position.Material(Black)
+// finalEval returns the value which is calculated always from the view of
+// white from the view of the next player of the position
+func (e *Evaluator) finalEval(value Value) Value {
+	// we can use the MoveDirection factor to avoid an if statement
+	// MoveDirection returns positive 1 for White and negative 1 (-1) for Black
+	return value * Value(e.position.NextPlayer().MoveDirection())
 }
 
-func (e *Evaluator) positional(position *position.Position, gamePhaseFactor float64) Value {
-	return Value(float64(position.PsqMidValue(White)-position.PsqMidValue(Black))*gamePhaseFactor +
-		float64(position.PsqEndValue(White)-position.PsqEndValue(Black))*(1-gamePhaseFactor))
+func (e *Evaluator) evalKing(c Color) *Score {
+	tmpScore.MidGameValue = 0
+	tmpScore.EndGameValue = 0
+	us := c
+	them := us.Flip()
+
+	// pawn shield is done in pawns
+
+	if Settings.Eval.UseAttacksInEval {
+		// king safety / attacks to the king and king ring
+		enemyAttacks := e.kingRing[us] & e.attacks.All[them]
+		ourDefence := e.kingRing[us] & e.attacks.All[us]
+		// malus for difference between attacker and defender
+		if enemyAttacks > ourDefence {
+			tmpScore.MidGameValue -= (enemyAttacks.PopCount() - ourDefence.PopCount()) * Settings.Eval.KingDangerMalus
+			tmpScore.EndGameValue -= tmpScore.MidGameValue
+		} else {
+			tmpScore.MidGameValue += (ourDefence.PopCount() - enemyAttacks.PopCount()) * Settings.Eval.KingDefenderBonus
+			tmpScore.EndGameValue += tmpScore.MidGameValue
+		}
+
+		// king ring attacks
+		if a := e.attacks.All[us] & e.kingRing[them]; a > 0 {
+			tmpScore.MidGameValue += Settings.Eval.KingRingAttacksBonus
+			tmpScore.EndGameValue += Settings.Eval.KingRingAttacksBonus
+		}
+	}
+	return &tmpScore
 }
 
-func (e *Evaluator) tempo(gamePhaseFactor float64) Value {
-	return Value(float64(config.Settings.Eval.Tempo) * gamePhaseFactor)
+// evalPiece is the evaluation function for all pieces except pawns and kings
+func (e *Evaluator) evalPiece(c Color, pieceType PieceType) *Score {
+	tmpScore.MidGameValue = 0
+	tmpScore.EndGameValue = 0
+	us := c
+	them := us.Flip()
+
+	// get bitboard with all pieces of this color and type
+	pieceBb := e.position.PiecesBb(us, pieceType)
+
+	// piece type specific evaluation which are done once
+	// for all pieces of one type
+	switch pieceType {
+	case Bishop:
+		// bonus for pair
+		if pieceBb.PopCount() > 1 {
+			tmpScore.MidGameValue += Settings.Eval.BishopPairBonus
+			tmpScore.EndGameValue += Settings.Eval.BishopPairBonus
+		}
+	}
+
+	// loop over all pieces of the given piece type
+	for pieceBb != BbZero {
+		sq := pieceBb.PopLsb()
+
+		// piece type specific evaluations per piece of piece type
+		switch pieceType {
+		case Knight:
+			e.knightEval(us, them, sq)
+		case Bishop:
+			e.bishopEval(us, them, sq)
+		case Rook:
+			e.rookEval(sq, us)
+		case Queen:
+			// none yet
+		}
+	}
+
+	return &tmpScore
 }
 
-func (e *Evaluator) Report(position *position.Position) string {
+func (e *Evaluator) rookEval(sq Square, us Color) {
+	// same file as queen
+	if sq.FileOf().Bb()&e.position.PiecesBb(us, Queen) > 0 {
+		tmpScore.MidGameValue += Settings.Eval.RookOnQueenFileBonus
+		tmpScore.EndGameValue += Settings.Eval.RookOnQueenFileBonus
+	}
+
+	// open file / semi open file (no own pawns on the file)
+	if sq.FileOf().Bb()&e.position.PiecesBb(us, Pawn) == 0 {
+		tmpScore.MidGameValue += Settings.Eval.RookOnOpenFileBonus
+		// s.EndGameValue += 0
+	}
+
+	// trapped by king
+	// on same row as king but on the outside from king
+	if Settings.Eval.UseAttacksInEval && e.attacks.From[us][sq].PopCount() < 3 &&
+		e.position.KingSquare(us).RankOf() == sq.RankOf() &&
+		(e.position.KingSquare(us).FileOf() < FileE) == (sq.FileOf() < e.position.KingSquare(us).FileOf()) {
+		tmpScore.MidGameValue -= Settings.Eval.RookTrappedMalus
+		// endGameValue -= 0
+	}
+}
+
+func (e *Evaluator) bishopEval(us Color, them Color, sq Square) {
+	// behind a pawn
+	down := Direction(them.MoveDirection()) * North
+	if ShiftBitboard(e.position.PiecesBb(us, Pawn), down)&sq.Bb() > 0 {
+		tmpScore.MidGameValue += Settings.Eval.MinorBehindPawnBonus
+		// s.EndGameValue += 0
+	}
+
+	// malus for pawns on same color - worse in end game
+	if SquaresBb(White).Has(sq) { // on white square
+		popCount := (e.position.PiecesBb(us, Pawn) & SquaresBb(White)).PopCount()
+		// s.MidGameValue -= 0
+		tmpScore.EndGameValue -= Settings.Eval.BishopPawnMalus * popCount
+	} else { // on black square
+		popCount := (e.position.PiecesBb(us, Pawn) & SquaresBb(Black)).PopCount()
+		// s.MidGameValue -= 0
+		tmpScore.EndGameValue -= Settings.Eval.BishopPawnMalus * popCount
+	}
+
+	// long diagonal / seeing center
+	popCount := (GetPseudoAttacks(Bishop, sq) & CenterSquares).PopCount()
+	tmpScore.MidGameValue += Settings.Eval.BishopCenterAimBonus * popCount
+	// s.EndGameValue += 0
+
+	// blocked by pawn - if the bishop has no attacks (no move to go) and is block
+	// by its own pawns we give a malus
+	// this is done by pretending the bishop is a pawn to use pawn's
+	// precomputed attacks
+	if (us == White && sq.RankOf() == Rank1) || (us == Black && sq.RankOf() == Rank8) {
+		count := (GetPawnAttacks(us, sq) & e.position.PiecesBb(us, Pawn)).PopCount()
+		count2 := GetPawnAttacks(us, sq).PopCount()
+		if count == count2 {
+			tmpScore.MidGameValue -= Settings.Eval.BishopBlockedMalus
+			tmpScore.EndGameValue -= Settings.Eval.BishopBlockedMalus
+		}
+	}
+}
+
+func (e *Evaluator) knightEval(us Color, them Color, sq Square) {
+	// Knight behind pawn
+	down := Direction(them.MoveDirection()) * North
+	if ShiftBitboard(e.position.PiecesBb(us, Pawn), down)&sq.Bb() > 0 {
+		tmpScore.MidGameValue += Settings.Eval.MinorBehindPawnBonus
+		// s.EndGameValue += 0
+	}
+}
+
+// Report prints a report about the evaluations done. Used in debugging.
+func (e *Evaluator) Report() string {
 	var report strings.Builder
 
 	report.WriteString("Evaluation Report\n")
 	report.WriteString("=============================================\n")
-	report.WriteString(out.Sprintf("Position: %s\n", position.StringFen()))
-	report.WriteString(out.Sprintf("%s\n", position.StringBoard()))
-	report.WriteString(out.Sprintf("GamePhase Factor: %f\n", position.GamePhaseFactor()))
-	report.WriteString(out.Sprintf("(evals from the view of white player)\n", e.Evaluate(position)))
-	report.WriteString(out.Sprintf("Material    : %d\n", e.material(position, position.GamePhaseFactor())))
-	report.WriteString(out.Sprintf("Positional  : %d\n", e.positional(position, position.GamePhaseFactor())))
-	report.WriteString(out.Sprintf("Tempo       : %d\n", e.tempo(position.GamePhaseFactor())))
-	report.WriteString(out.Sprintf("-------------------------\n", e.Evaluate(position)))
-	report.WriteString(out.Sprintf("Eval value  : %d \n(from the view of next player = %s)\n", e.Evaluate(position), position.NextPlayer().String()))
+	report.WriteString(out.Sprintf("Position: %s\n", e.position.StringFen()))
+	report.WriteString(out.Sprintf("%s\n", e.position.StringBoard()))
+	report.WriteString(out.Sprintf("GamePhase Factor: %f\n", e.position.GamePhaseFactor()))
+	report.WriteString(out.Sprintf("(evals from the view of white player)\n", e.Evaluate(e.position)))
+	// report.WriteString(out.Sprintf("Material    : %d\n", e.material()))
+	// report.WriteString(out.Sprintf("Positional  : %d\n", e.positional()))
+	// report.WriteString(out.Sprintf("Tempo       : %d\n", e.tempo()))
+	report.WriteString(out.Sprintf("-------------------------\n", e.Evaluate(e.position)))
+	report.WriteString(out.Sprintf("Eval value  : %d \n(from the view of next player = %s)\n", e.Evaluate(e.position), e.position.NextPlayer().String()))
 
 	return report.String()
 }

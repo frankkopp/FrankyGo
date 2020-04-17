@@ -132,7 +132,7 @@ func (ms *MoveSlice) At(i int) Move {
 }
 
 // Set puts a move at index i in the slice. Set shares the same purpose
-// than At() but perform the opposite operation. The index i is the same
+// than At() but performs the opposite operation. The index i is the same
 // index defined by At().
 // Index will be checked against bounds and panics if out of bounds
 func (ms *MoveSlice) Set(i int, move Move) {

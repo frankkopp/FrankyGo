@@ -27,41 +27,61 @@
 package uci
 
 import (
+	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 
-	"github.com/frankkopp/FrankyGo/config"
+	. "github.com/frankkopp/FrankyGo/config"
 )
 
 // init will define all available uci options and store them into the uciOption map
 func init() {
 	uciOptions = map[string]*uciOption{
+		"Print Config": {NameID: "Print Config", HandlerFunc: printConfig, OptionType: Button},
 		"Clear Hash": {NameID: "Clear Hash", HandlerFunc: clearCache, OptionType: Button},
-		"Use_Hash":   {NameID: "Use_Hash", HandlerFunc: useCache, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseTT), CurrentValue: strconv.FormatBool(config.Settings.Search.UseTT)},
-		"Hash":       {NameID: "Hash", HandlerFunc: cacheSize, OptionType: Spin, DefaultValue: strconv.Itoa(config.Settings.Search.TTSize), CurrentValue: strconv.Itoa(config.Settings.Search.TTSize), MinValue: "0", MaxValue: "65000"},
-		"Use_Book":   {NameID: "Use_Book", HandlerFunc: useBook, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseBook), CurrentValue: strconv.FormatBool(config.Settings.Search.UseBook)},
-		"Ponder":     {NameID: "Ponder", HandlerFunc: usePonder, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UsePonder), CurrentValue: strconv.FormatBool(config.Settings.Search.UsePonder)},
-		"Quiescence": {NameID: "Quiescence", HandlerFunc: useQuiescence, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseQuiescence), CurrentValue: strconv.FormatBool(config.Settings.Search.UseQuiescence)},
-		"Use_QHash":  {NameID: "Use_QHash", HandlerFunc: useQSHash, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseQSTT), CurrentValue: strconv.FormatBool(config.Settings.Search.UseQSTT)},
-		"Use_PVS":    {NameID: "Use_PVS", HandlerFunc: usePvs, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UsePVS), CurrentValue: strconv.FormatBool(config.Settings.Search.UsePVS)},
-		"Use_Mdp":    {NameID: "Use_Mdp", HandlerFunc: useMdp, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseMDP), CurrentValue: strconv.FormatBool(config.Settings.Search.UseMDP)},
-		"Use_Mpp":    {NameID: "Use_Mpp", HandlerFunc: useMpp, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseMPP), CurrentValue: strconv.FormatBool(config.Settings.Search.UseMPP)},
-		"Use_Killer": {NameID: "Use_Killer", HandlerFunc: useKiller, OptionType: Check, DefaultValue: strconv.FormatBool(config.Settings.Search.UseKiller), CurrentValue: strconv.FormatBool(config.Settings.Search.UseKiller)},
+		"Use_Hash":   {NameID: "Use_Hash", HandlerFunc: useCache, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseTT), CurrentValue: strconv.FormatBool(Settings.Search.UseTT)},
+		"Hash":       {NameID: "Hash", HandlerFunc: cacheSize, OptionType: Spin, DefaultValue: strconv.Itoa(Settings.Search.TTSize), CurrentValue: strconv.Itoa(Settings.Search.TTSize), MinValue: "0", MaxValue: "65000"},
+		"Use_Book":   {NameID: "Use_Book", HandlerFunc: useBook, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseBook), CurrentValue: strconv.FormatBool(Settings.Search.UseBook)},
+		"Ponder":     {NameID: "Ponder", HandlerFunc: usePonder, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePonder), CurrentValue: strconv.FormatBool(Settings.Search.UsePonder)},
+		"Quiescence": {NameID: "Quiescence", HandlerFunc: useQuiescence, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQuiescence), CurrentValue: strconv.FormatBool(Settings.Search.UseQuiescence)},
+		"Use_QHash":  {NameID: "Use_QHash", HandlerFunc: useQSHash, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQSTT), CurrentValue: strconv.FormatBool(Settings.Search.UseQSTT)},
+		"Use_PVS":    {NameID: "Use_PVS", HandlerFunc: usePvs, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePVS), CurrentValue: strconv.FormatBool(Settings.Search.UsePVS)},
+		"Use_IID": {NameID: "Use_IID", HandlerFunc: useIID, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseIID), CurrentValue: strconv.FormatBool(Settings.Search.UseIID)},
+		"Use_Killer": {NameID: "Use_Killer", HandlerFunc: useKiller, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseKiller), CurrentValue: strconv.FormatBool(Settings.Search.UseKiller)},
+
+		"Use_NullMove": {NameID: "Use_NullMove", HandlerFunc: useNullMove, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseNullMove), CurrentValue: strconv.FormatBool(Settings.Search.UseNullMove)},
+		"Use_Mdp":    {NameID: "Use_Mdp", HandlerFunc: useMdp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseMDP), CurrentValue: strconv.FormatBool(Settings.Search.UseMDP)},
+		"Use_Lmr":    {NameID: "Use_Lmr", HandlerFunc: useLmr, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseLmr), CurrentValue: strconv.FormatBool(Settings.Search.UseLmr)},
+		"Use_Lmp":    {NameID: "Use_Lmp", HandlerFunc: useLmp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseLmp), CurrentValue: strconv.FormatBool(Settings.Search.UseLmp)},
+
+		"Eval_Lazy": {NameID: "Eval_Lazy", HandlerFunc: evalLazy, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseLazyEval), CurrentValue: strconv.FormatBool(Settings.Eval.UseLazyEval)},
+		"Eval_Mobility": {NameID: "Eval_Mobility", HandlerFunc: evalMob, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseMobility), CurrentValue: strconv.FormatBool(Settings.Eval.UseMobility)},
+		"Eval_AdvPiece": {NameID: "Eval_AdvPiece", HandlerFunc: evalAdv, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseAdvancedPieceEval), CurrentValue: strconv.FormatBool(Settings.Eval.UseAdvancedPieceEval)},
 	}
 	sortOrderUciOptions = []string{
+		"Print Config",
 		"Clear Hash",
 		"Use_Hash",
 		"Hash",
 		"Use_Book",
 		"Ponder",
+
 		"Quiescence",
 		"Use_QHash",
+
+		"Use_IID",
 		"Use_PVS",
 		"Use_Killer",
-		"Use_Mdp",
-		"Use_Mpp",
-	}
 
+		"Use_Mdp",
+		"Use_NullMove",
+		"Use_Lmr",
+		"Use_Lmp",
+
+		"Eval_Mobility",
+		"Eval_AdvPiece",
+	}
 }
 
 // GetOptions returns all available uci options a slice of strings
@@ -156,6 +176,25 @@ var sortOrderUciOptions []string
 // HandlerFunc for uci options changes
 // ////////////////////////////////////////////////////////////////
 
+func printConfig(handler *UciHandler, option *uciOption) {
+	s := reflect.ValueOf(&Settings.Eval).Elem()
+	typeOfT := s.Type()
+	for i := s.NumField() - 1; i >= 0; i-- {
+		f := s.Field(i)
+		handler.SendInfoString(fmt.Sprintf("%-2d: %-22s %-6s = %v\n", i, typeOfT.Field(i).Name, f.Type(), f.Interface()))
+	}
+	handler.SendInfoString("Evaluation Config:\n")
+	s = reflect.ValueOf(&Settings.Search).Elem()
+	typeOfT = s.Type()
+	for i := s.NumField() - 1; i >= 0; i-- {
+		f := s.Field(i)
+		handler.SendInfoString(fmt.Sprintf("%-2d: %-22s %-6s = %v\n", i, typeOfT.Field(i).Name, f.Type(), f.Interface()))
+	}
+	handler.SendInfoString("Search Config:\n")
+	log.Debug(Settings.String())
+
+}
+
 func clearCache(u *UciHandler, o *uciOption) {
 	u.mySearch.ClearHash()
 	log.Debug("Cleared Cache")
@@ -163,60 +202,97 @@ func clearCache(u *UciHandler, o *uciOption) {
 
 func useCache(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
-	config.Settings.Search.UseTT = v
-	log.Debugf("Set Use Hash to %v", config.Settings.Search.UseTT)
+	Settings.Search.UseTT = v
+	log.Debugf("Set Use Hash to %v", Settings.Search.UseTT)
 }
 
 func cacheSize(u *UciHandler, o *uciOption) {
 	v, _ := strconv.Atoi(o.CurrentValue)
-	config.Settings.Search.TTSize = v
+	Settings.Search.TTSize = v
 	u.mySearch.ResizeCache()
 }
 
 func useBook(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
-	config.Settings.Search.UseBook = v
-	log.Debugf("Set Use Book to %v", config.Settings.Search.UseBook)
+	Settings.Search.UseBook = v
+	log.Debugf("Set Use Book to %v", Settings.Search.UseBook)
 }
 
 func usePonder(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
-	config.Settings.Search.UsePonder = v
-	log.Debugf("Set Use Ponder to %v", config.Settings.Search.UsePonder)
+	Settings.Search.UsePonder = v
+	log.Debugf("Set Use Ponder to %v", Settings.Search.UsePonder)
 }
 
 func useQuiescence(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
-	config.Settings.Search.UseQuiescence = v
-	log.Debugf("Set Use Quiescence to %v", config.Settings.Search.UseQuiescence)
+	Settings.Search.UseQuiescence = v
+	log.Debugf("Set Use Quiescence to %v", Settings.Search.UseQuiescence)
 }
 
 func useQSHash(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
-	config.Settings.Search.UseQSTT = v
-	log.Debugf("Set Use Hash in Quiescence to %v", config.Settings.Search.UseQSTT)
+	Settings.Search.UseQSTT = v
+	log.Debugf("Set Use Hash in Quiescence to %v", Settings.Search.UseQSTT)
 }
 
 func usePvs(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
-	config.Settings.Search.UsePVS = v
-	log.Debugf("Set Use PVS to %v", config.Settings.Search.UsePVS)
+	Settings.Search.UsePVS = v
+	log.Debugf("Set Use PVS to %v", Settings.Search.UsePVS)
 }
 
 func useMdp(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
-	config.Settings.Search.UseMDP = v
-	log.Debugf("Set Use MDP to %v", config.Settings.Search.UseMDP)
-}
-
-func useMpp(u *UciHandler, o *uciOption) {
-	v, _ := strconv.ParseBool(o.CurrentValue)
-	config.Settings.Search.UseMPP = v
-	log.Debugf("Set Use MPP to %v", config.Settings.Search.UseMPP)
+	Settings.Search.UseMDP = v
+	log.Debugf("Set Use MDP to %v", Settings.Search.UseMDP)
 }
 
 func useKiller(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
-	config.Settings.Search.UseKiller = v
-	log.Debugf("Set Use Killer Moves to %v", config.Settings.Search.UseKiller)
+	Settings.Search.UseKiller = v
+	log.Debugf("Set Use Killer Moves to %v", Settings.Search.UseKiller)
 }
+
+func useNullMove(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseNullMove = v
+	log.Debugf("Set Use Null Move Pruning to %v", Settings.Search.UseNullMove)
+}
+
+func useIID(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseIID = v
+	log.Debugf("Set Use IID to %v", Settings.Search.UseIID)
+}
+
+func useLmr(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseLmr = v
+	log.Debugf("Set Late Move Reduction to %v", Settings.Search.UseLmr)
+}
+
+func useLmp(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseLmp = v
+	log.Debugf("Set Late Move Pruning to %v", Settings.Search.UseLmp)
+}
+
+func evalLazy(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Eval.UseLazyEval = v
+	log.Debugf("Set Lazy Eval to %v", Settings.Eval.UseLazyEval)
+}
+
+func evalMob(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Eval.UseMobility = v
+	log.Debugf("Set Eval Mobility to %v", Settings.Eval.UseMobility)
+}
+
+func evalAdv(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Eval.UseAdvancedPieceEval = v
+	log.Debugf("Set Adv Piece Eval to %v", Settings.Eval.UseAdvancedPieceEval)
+}
+

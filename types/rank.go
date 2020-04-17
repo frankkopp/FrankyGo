@@ -32,15 +32,16 @@ type Rank uint8
 // Rank represents a chess board rank 1-8
 //noinspection GoUnusedConst
 const (
-	Rank1    Rank = iota
-	Rank2    Rank = iota
-	Rank3    Rank = iota
-	Rank4    Rank = iota
-	Rank5    Rank = iota
-	Rank6    Rank = iota
-	Rank7    Rank = iota
-	Rank8    Rank = iota
-	RankNone Rank = iota
+	Rank1      Rank = iota
+	Rank2      Rank = iota
+	Rank3      Rank = iota
+	Rank4      Rank = iota
+	Rank5      Rank = iota
+	Rank6      Rank = iota
+	Rank7      Rank = iota
+	Rank8      Rank = iota
+	RankNone   Rank = iota
+	RankLength Rank = RankNone
 )
 
 // IsValid checks if f represents a valid file

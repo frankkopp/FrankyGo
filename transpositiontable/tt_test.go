@@ -28,18 +28,41 @@ package transpositiontable
 
 import (
 	"math/rand"
+	"os"
+	"path"
+	"runtime"
 	"testing"
 	"time"
 	"unsafe"
 
+	logging2 "github.com/op/go-logging"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/frankkopp/FrankyGo/config"
 	"github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
-var logTest = logging.GetLog()
+var logTest *logging2.Logger
+
+// make tests run in the projects root directory
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
+
+// Setup the tests
+func TestMain(m *testing.M) {
+	config.Setup()
+	logTest = logging.GetTestLog()
+	code := m.Run()
+	os.Exit(code)
+}
 
 func TestEntrySize(t *testing.T) {
 	e := TtEntry{
@@ -59,7 +82,7 @@ func TestNew(t *testing.T) {
 	tt := NewTtTable(2)
 	assert.Equal(t, uint64(131_072), tt.maxNumberOfEntries)
 	assert.Equal(t, 131_072, cap(tt.data))
-	log.Debug(tt.String())
+	logTest.Debug(tt.String())
 
 	tt = NewTtTable(64)
 	assert.Equal(t, uint64(4_194_304), tt.maxNumberOfEntries)
@@ -73,16 +96,17 @@ func TestNew(t *testing.T) {
 	assert.Equal(t, uint64(268_435_456), tt.maxNumberOfEntries)
 	assert.Equal(t, 268_435_456, cap(tt.data))
 
-	tt = NewTtTable(35_000)
-	assert.Equal(t, uint64(2_147_483_648), tt.maxNumberOfEntries)
-	assert.Equal(t, 2_147_483_648, cap(tt.data))
-	assert.Equal(t, 2_147_483_648, len(tt.data))
-	assert.Equal(t, 32_768*MB, tt.sizeInByte)
-	for i, _ := range tt.data {
-		tt.data[i].Key = position.Key(i)
-	}
-	assert.Equal(t, position.Key(0), tt.data[0].Key)
-	assert.Equal(t, position.Key(2_147_483_647), tt.data[2_147_483_647].Key)
+	// Too much for Travis
+	// tt = NewTtTable(35_000)
+	// assert.Equal(t, uint64(2_147_483_648), tt.maxNumberOfEntries)
+	// assert.Equal(t, 2_147_483_648, cap(tt.data))
+	// assert.Equal(t, 2_147_483_648, len(tt.data))
+	// assert.Equal(t, 32_768*MB, tt.sizeInByte)
+	// for i, _ := range tt.data {
+	// 	tt.data[i].Key = position.Key(i)
+	// }
+	// assert.Equal(t, position.Key(0), tt.data[0].Key)
+	// assert.Equal(t, position.Key(2_147_483_647), tt.data[2_147_483_647].Key)
 }
 
 func TestGetAndProbe(t *testing.T) {
@@ -164,7 +188,7 @@ func TestClear(t *testing.T) {
 
 func TestAge(t *testing.T) {
 	// setup
-	tt := NewTtTable(20_000)
+	tt := NewTtTable(5_000)
 
 	logTest.Debug("Filling tt")
 	startTime := time.Now()
@@ -177,7 +201,7 @@ func TestAge(t *testing.T) {
 	tt.numberOfEntries--
 	elapsed := time.Since(startTime)
 	logTest.Debug(out.Sprintf("TT of %d elements filled in %d ms\n", len(tt.data), elapsed.Milliseconds()))
-	log.Debug(tt.String())
+	logTest.Debug(tt.String())
 
 	// test
 	assert.EqualValues(t, 0, tt.GetEntry(0).Age)
@@ -265,15 +289,18 @@ func TestPut(t *testing.T) {
 	assert.EqualValues(t, false, e.MateThreat)
 }
 
-func TestPerformance(t *testing.T) {
+func TestTimingTTe(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	// setup
-
 	tt := NewTtTable(1_024)
-
 	move := CreateMove(SqE2, SqE4, Normal, PtNone)
 
 	const rounds = 5
-	const iterations uint64 = 25_000_000
+	const iterations uint64 = 50_000_000
 
 	for r := 1; r <= rounds; r++ {
 		out.Printf("Round %d\n", r)

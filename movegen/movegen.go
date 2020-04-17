@@ -35,14 +35,16 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/op/go-logging"
+
 	"github.com/frankkopp/FrankyGo/assert"
-	"github.com/frankkopp/FrankyGo/logging"
+	myLogging "github.com/frankkopp/FrankyGo/logging"
 	"github.com/frankkopp/FrankyGo/moveslice"
 	"github.com/frankkopp/FrankyGo/position"
 	. "github.com/frankkopp/FrankyGo/types"
 )
 
-var log = logging.GetLog()
+var log *logging.Logger
 
 const (
 	// to let the compiler eliminate debugging output completely
@@ -81,6 +83,9 @@ const (
 
 // NewMoveGen creates a new instance of a move generator
 func NewMoveGen() *Movegen {
+	if log == nil {
+		log = myLogging.GetLog()
+	}
 	tmpMg := &Movegen{
 		pseudoLegalMoves:   moveslice.NewMoveSlice(MaxMoves),
 		legalMoves:         moveslice.NewMoveSlice(MaxMoves),
@@ -325,19 +330,12 @@ func (mg *Movegen) HasLegalMove(position *position.Position) bool {
 	occupiedBb := position.OccupiedAll()
 
 	// pawn pushes - check step one to unoccupied squares
+	// don't have to test double steps as they would be redundant to single steps
+	// for the purpose of finding at least one legal move
 	tmpMoves = ShiftBitboard(myPawns, Direction(nextPlayer.MoveDirection())*North) &^ occupiedBb
-	// double pawn steps
-	tmpMoves2 := ShiftBitboard(tmpMoves&nextPlayer.PawnDoubleRank(), Direction(nextPlayer.MoveDirection())*North) &^ occupiedBb
 	for tmpMoves != 0 {
 		toSquare := tmpMoves.PopLsb()
 		fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection()) * North)
-		if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
-			return true
-		}
-	}
-	for tmpMoves2 != 0 {
-		toSquare := tmpMoves2.PopLsb()
-		fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection()) * North).To(Direction(nextPlayer.Flip().MoveDirection()) * North)
 		if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
 			return true
 		}
@@ -599,6 +597,16 @@ func (mg *Movegen) ValidateMove(p *position.Position, move Move) bool {
 		}
 	}
 	return false
+}
+
+// PvMove returns the current PV move
+func (mg *Movegen) PvMove() Move {
+	return mg.pvMove
+}
+
+// KillerMoves returns a pointer to the killer moves array
+func (mg *Movegen) KillerMoves() *[2]Move {
+	return &mg.killerMoves
 }
 
 // String returns a string representation of a MoveGen instance
@@ -923,7 +931,8 @@ func (mg *Movegen) generateKingMoves(position *position.Position, mode GenMode, 
 }
 
 // generates officers moves
-func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
+// DEBUG - kept for testing
+func (mg *Movegen) generateMovesOld(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
 	nextPlayer := position.NextPlayer()
 	gamePhase := position.GamePhase()
 	occupiedBb := position.OccupiedAll()
@@ -975,6 +984,60 @@ func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, ml *
 						value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
 						ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 					}
+				}
+			}
+		}
+	}
+}
+
+// generates officers moves using the attacks pre-computed with magic bitboards
+// Performance improvement to the previous loop based version:
+// Old version:
+// Test took 2.0049508s for 10.000.000 iterations
+// Test took 200 ns per iteration
+// Iterations per sec 4.987.653
+// This version:
+// Test took 1.516326s for 10.000.000 iterations
+// Test took 151 ns per iteration
+// Iterations per sec 6.594.887
+// Improvement: +32%
+func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
+	nextPlayer := position.NextPlayer()
+	gamePhase := position.GamePhase()
+	occupiedBb := position.OccupiedAll()
+
+	// loop through all piece types, get pseudo attacks for the piece and
+	// AND it with the opponents pieces.
+	// For sliding pieces check if there are other pieces in between the
+	// piece and the target square. If free this is a valid move (or
+	// capture)
+
+	for pt := Knight; pt <= Queen; pt++ {
+		pieces := position.PiecesBb(nextPlayer, pt)
+		piece := MakePiece(nextPlayer, pt)
+
+		for pieces != 0 {
+			fromSquare := pieces.PopLsb()
+
+			moves := GetAttacksBb(pt, fromSquare, occupiedBb)
+
+			// captures
+			if mode&GenCap != 0 {
+				captures := moves & position.OccupiedBb(nextPlayer.Flip())
+				for captures != 0 {
+					toSquare := captures.PopLsb()
+					value := position.GetPiece(toSquare).ValueOf() - position.GetPiece(fromSquare).ValueOf() + PosValue(piece, toSquare, gamePhase)
+					ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
+				}
+			}
+
+			// non captures
+			if mode&GenNonCap != 0 {
+				nonCaptures := moves &^ occupiedBb
+				for nonCaptures != 0 {
+					toSquare := nonCaptures.PopLsb()
+					value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
+					ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 				}
 			}
 		}

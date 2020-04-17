@@ -28,6 +28,8 @@ package search
 
 import (
 	"os"
+	"path"
+	"runtime"
 	"testing"
 	"time"
 
@@ -42,9 +44,18 @@ import (
 
 var logTest *logging2.Logger
 
+// make tests run in the projects root directory
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
+
 // Setup the tests
 func TestMain(m *testing.M) {
-	out.Println("Test Main Setup Tests ====================")
 	config.Setup()
 	logTest = logging.GetTestLog()
 	code := m.Run()
@@ -177,12 +188,13 @@ func TestStaleMatePosition(t *testing.T) {
 }
 
 func TestSearchDev(t *testing.T) {
+	t.SkipNow()
 	config.Settings.Search.UseBook = false
 	search := NewSearch()
-	p, _ := position.NewPositionFen("8/1P6/6k1/8/8/8/p1K5/8 w - -")
+	p := position.NewPosition("8/k1b5/P4p2/1Pp2p1p/K1P2P1P/8/3B4/8 w - -")
 	sl := NewSearchLimits()
 	sl.TimeControl = true
-	sl.MoveTime = 15 * time.Second
+	sl.MoveTime = 5 * time.Second
 	search.StartSearch(*p, *sl)
 	search.WaitWhileSearching()
 }
