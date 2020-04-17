@@ -101,33 +101,31 @@ Todo
 ## Usage
 Todo
 
-## Versions
-### v0.x (planned)
+## Roadmap
+### vx.x (planned)
 - TODO:
     - SEE
+    - Better Evaluation and testing
     - Pawn Structure Cache
-    - Better Evaluation
     - FP
     - Ext
-    - Other Prunings
     - MultiCut Pruning
        - https://hci.iwr.uni-heidelberg.de/system/files/private/downloads/1935772097/report_qingyang-cao_enhanced-forward-pruning.pdf
+    - Other Prunings
     - Aspiration
     - NullMove Threat Detection
+    - Continuously Performance/Profiling/Testing
+    - LMR and LMP - more testing needed
 
-### v0.7 (in progress)
-- TODO 
-    - Performance/Profiling/Testing
-    - LMR and LMP weaken engine - more testing needed
-
+## Versions
+### v0.7 (done)
 - DONE
+    - LMP and LMR 
     - Null Move
-    - Other Prunings
     - Use TestSuites, TreeSize and Arena to test features
-    - Remove MPP if not worth
-    - Better Evaluation
-    - Pawn Structure Cache
+    - Better Evaluation (not active in config yet - needs testing)
     - Performance/Profiling/Testing
+    - Removed MPP (Minor Promotion Pruning) - more harm than benefit
 
 ### v0.6 (done)
 - DONE

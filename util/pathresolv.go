@@ -34,6 +34,8 @@ import (
 	"path/filepath"
 )
 
+const debug = false
+
 // ResolveFile is resolving a path to a file and try to find the file
 // in a specific set of places and then will return an absolute path to
 // it.
@@ -51,8 +53,9 @@ func ResolveFile(file string) (string, error) {
 
 	file = filepath.Clean(file)
 
-	log.Println("Searching folder", file)
-
+	if debug {
+		log.Println("Searching folder", file)
+	}
 
 	// file is a absolute path
 	if filepath.IsAbs(file) {
@@ -66,7 +69,9 @@ func ResolveFile(file string) (string, error) {
 	dir, err := os.Getwd()
 	if err == nil {
 		if fileExists(filepath.Join(dir, file)) {
-			log.Println("Found relative to CWD")
+			if debug {
+				log.Println("Found relative to CWD")
+			}
 			return filepath.Clean(filepath.Join(dir, file)), nil
 		}
 	}
@@ -74,7 +79,9 @@ func ResolveFile(file string) (string, error) {
 	dir, err = os.Executable()
 	if err == nil {
 		if fileExists(filepath.Join(dir, file)) {
-			log.Println("Found relative to EXE")
+			if debug {
+				log.Println("Found relative to EXE")
+			}
 			return filepath.Clean(filepath.Join(dir, file)), nil
 		}
 	}
@@ -82,12 +89,16 @@ func ResolveFile(file string) (string, error) {
 	dir, err = os.UserHomeDir()
 	if err == nil {
 		if fileExists(filepath.Join(dir, file)) {
-			log.Println("Found relative to USER HOME")
+			if debug {
+				log.Println("Found relative to USER HOME")
+			}
 			return filepath.Clean(filepath.Join(dir, file)), nil
 		}
 	}
 
-	log.Println("File not found", file)
+	if debug {
+		log.Println("File not found", file)
+	}
 	return file, fileNotFoundErr
 }
 
@@ -109,7 +120,9 @@ func ResolveFolder(folder string) (string, error) {
 
 	folder = filepath.Clean(folder)
 
-	log.Println("Searching folder", folder)
+	if debug {
+		log.Println("Searching folder", folder)
+	}
 
 	// folder is a absolute path
 	if filepath.IsAbs(folder) {
@@ -123,7 +136,9 @@ func ResolveFolder(folder string) (string, error) {
 	dir, err := os.Getwd()
 	if err == nil {
 		if folderExists(filepath.Join(dir, folder)) {
-			log.Println("Found relative to CWD")
+			if debug {
+				log.Println("Found relative to CWD")
+			}
 			return filepath.Clean(filepath.Join(dir, folder)), nil
 		}
 	}
@@ -131,7 +146,9 @@ func ResolveFolder(folder string) (string, error) {
 	dir, err = os.Executable()
 	if err == nil {
 		if folderExists(filepath.Join(dir, folder)) {
-			log.Println("Found relative to EXE")
+			if debug {
+				log.Println("Found relative to EXE")
+			}
 			return filepath.Clean(filepath.Join(dir, folder)), nil
 		}
 	}
@@ -139,11 +156,15 @@ func ResolveFolder(folder string) (string, error) {
 	log.Println("Testing home")
 	dir, err = os.UserHomeDir()
 	if folderExists(filepath.Join(dir, folder)) {
-		log.Println("Found relative to USER HOME")
+		if debug {
+			log.Println("Found relative to USER HOME")
+		}
 		return filepath.Clean(filepath.Join(dir, folder)), nil
 	}
 
-	log.Println("Folder not found", folder)
+	if debug {
+		log.Println("Folder not found", folder)
+	}
 	return folder, folderNotFoundErr
 }
 
@@ -201,14 +222,18 @@ func fileExists(filename string) bool {
 		if os.IsNotExist(err) {
 			return false
 		} else {
-			log.Println("Error trying to find file", filename)
-			log.Println("Stat", info, "Err: ", err)
+			if debug {
+				log.Println("Error trying to find file", filename)
+				log.Println("Stat", info, "Err: ", err)
+			}
 			return false
 		}
 	}
 	if info == nil {
-		log.Println("Stat for file is NIL when trying to find file", filename)
-		log.Println("Stat", info, "Err: ", err)
+		if debug {
+			log.Println("Stat for file is NIL when trying to find file", filename)
+			log.Println("Stat", info, "Err: ", err)
+		}
 		return false
 	}
 	// log.Println("Info", info)
@@ -223,14 +248,18 @@ func folderExists(foldername string) bool {
 		if os.IsNotExist(err) {
 			return false
 		} else {
-			log.Println("Error trying to find folder", foldername)
-			log.Println("Stat", info, "Err: ", err)
+			if debug {
+				log.Println("Error trying to find folder", foldername)
+				log.Println("Stat", info, "Err: ", err)
+			}
 			return false
 		}
 	}
 	if info == nil {
-		log.Println("Stat for folder is NIL when trying to find folder", foldername)
-		log.Println("Stat", info, "Err: ", err)
+		if debug {
+			log.Println("Stat for folder is NIL when trying to find folder", foldername)
+			log.Println("Stat", info, "Err: ", err)
+		}
 		return false
 	}
 	// log.Println("Info", info)
