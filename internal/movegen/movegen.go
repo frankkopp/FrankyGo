@@ -37,7 +37,6 @@ import (
 
 	"github.com/op/go-logging"
 
-	"github.com/frankkopp/FrankyGo/internal/assert"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
 	"github.com/frankkopp/FrankyGo/internal/position"
@@ -45,11 +44,6 @@ import (
 )
 
 var log *logging.Logger
-
-const (
-	// to let the compiler eliminate debugging output completely
-	debug bool = false
-)
 
 // Movegen data structure. Create new move generator via
 //  movegen.NewMoveGen()
@@ -225,9 +219,6 @@ func (mg *Movegen) GetNextMove(position *position.Position, mode GenMode) Move {
 					return MoveNone
 				}
 			}
-		}
-		if assert.DEBUG {
-			assert.Assert(mg.onDemandMoves.Len() != 0, "OnDemandList should not be empty here")
 		}
 
 		// we have at least one move in the list and
@@ -436,9 +427,6 @@ var regexSanMove = regexp.MustCompile("([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O
 func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Move {
 	matches := regexSanMove.FindStringSubmatch(sanMove)
 	if matches == nil {
-		if debug {
-			log.Debugf("No SAN move pattern found %s", sanMove)
-		}
 		return MoveNone
 	}
 
@@ -448,10 +436,7 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 	disambRank := matches[3]
 	toSquare := matches[4]
 	promotion := matches[6]
-	checkSign := matches[7]
-	if debug {
-		log.Debugf("SAN pattern: Piece tType: %s File: %s Row: %s target: %s Promotion: %s CheckSign: %s\n", pieceType, disambFile, disambRank, toSquare, promotion, checkSign)
-	}
+	// checkSign := matches[7]
 
 	movesFound := 0
 	moveFromSAN := MoveNone
@@ -480,9 +465,6 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 				continue
 			}
 			if castlingString == toSquare {
-				if debug {
-					log.Debugf("Castling match: %s == %s", sanMove, castlingString)
-				}
 				moveFromSAN = genMove
 				movesFound++
 				continue
@@ -492,75 +474,28 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 		// normal moves
 		moveTarget := genMove.To().String()
 		if moveTarget == toSquare {
-			if debug {
-				log.Debugf("target square of legal move %s matches SAN move %s", genMove.StringUci(), sanMove)
-			}
 
 			// determine if piece types match - if not skip
 			legalPt := posPtr.GetPiece(genMove.From()).TypeOf()
 			legalPtChar := legalPt.Char()
-			if debug {
-				log.Debugf("Legal move %s piece type is %s", genMove.StringUci(), legalPtChar)
-			}
-			if len(pieceType) != 0 && legalPtChar == pieceType {
-				if debug {
-					log.Debugf("Legal move %s matches SAN move's %s piece type", genMove.StringUci(), sanMove)
-				}
-			} else if len(pieceType) == 0 && legalPt == Pawn {
-				if debug {
-					log.Debugf("Legal move %s matches SAN move's %s piece type (Pawn)", genMove.StringUci(), sanMove)
-				}
-			} else {
-				if debug {
-					log.Debugf("Legal move %s NO MATCH SAN move's %s piece type (Pawn)", genMove.StringUci(), sanMove)
-				}
+			if (len(pieceType) == 0 || legalPtChar != pieceType) &&
+				(len(pieceType) != 0 || legalPt != Pawn) {
 				continue
 			}
 
 			// Disambiguation File
-			if len(disambFile) != 0 {
-				if genMove.From().FileOf().String() == disambFile {
-					if debug {
-						log.Debugf("Legal move %s SAN move %s: file disambiguation match %s", genMove.StringUci(), sanMove, disambFile)
-					}
-				} else {
-					if debug {
-						log.Debugf("Legal move %s SAN move %s: file disambiguation MISmatch - skip", genMove.StringUci(), sanMove)
-					}
-					continue
-				}
+			if len(disambFile) != 0 && genMove.From().FileOf().String() != disambFile {
+				continue
 			}
 
 			// Disambiguation Rank
-			if len(disambRank) != 0 {
-				if genMove.From().RankOf().String() == disambRank {
-					if debug {
-						log.Debugf("Legal move %s SAN move %s: rank disambiguation match %s", genMove.StringUci(), sanMove, disambRank)
-					}
-				} else {
-					if debug {
-						log.Debugf("Legal move %s SAN move %s: rank disambiguation MISmatch - skip", genMove.StringUci(), sanMove)
-					}
-					continue
-				}
+			if len(disambRank) != 0 && genMove.From().RankOf().String() != disambRank {
+				continue
 			}
 
 			// promotion
-			if len(promotion) != 0 {
-				if genMove.PromotionType().Char() == promotion {
-					if debug {
-						log.Debugf("Legal move %s matches SAN move %s promotion %s", genMove.StringUci(), sanMove, promotion)
-					}
-				} else {
-					if debug {
-						log.Debugf("Legal move %s SAN move %s: promotion MISmatch - skip", genMove.StringUci(), sanMove)
-					}
-					continue
-				}
-			} else if len(promotion) == 0 && genMove.MoveType() == Promotion {
-				if debug {
-					log.Debugf("Legal move %s SAN move %s: promotion MISmatch - skip", genMove.StringUci(), sanMove)
-				}
+			if (len(promotion) != 0 && genMove.PromotionType().Char() != promotion) ||
+				(len(promotion) == 0 && genMove.MoveType() == Promotion) {
 				continue
 			}
 
@@ -576,9 +511,6 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 	} else if movesFound == 0 || !moveFromSAN.IsValid() {
 		log.Warningf("SAN move not valid! SAN move %s not found on position: %s", sanMove, posPtr.StringFen())
 	} else {
-		if debug {
-			log.Debugf("Found move %s", moveFromSAN.String())
-		}
 		return moveFromSAN
 	}
 	// no move found
@@ -645,10 +577,6 @@ func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode) {
 		case odPv:
 			// If a pvMove is set we return it first and filter it out before
 			// returning a move
-			if assert.DEBUG {
-				assert.Assert(!mg.pvMovePushed, "Stage PV should not have pvMovePushed set")
-			}
-
 			if mg.pvMove != MoveNone {
 				switch mode {
 				case GenAll:
@@ -725,11 +653,11 @@ func (mg *Movegen) pushKiller(m *moveslice.MoveSlice) {
 	// Otherwise move element to the front.
 	for i := 0; i < len(*m); i++ {
 		move := &(*m)[i]
-		if mg.killerMoves[0] == move.MoveOf() {
-			(*move).SetValue(Value(-4000))
-		}
 		if mg.killerMoves[1] == move.MoveOf() {
 			(*move).SetValue(Value(-4001))
+		}
+		if mg.killerMoves[0] == move.MoveOf() {
+			(*move).SetValue(Value(-4000))
 		}
 	}
 }
@@ -777,6 +705,7 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Rook, value+Rook.ValueOf()-Value(2000)))
 				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Bishop, value+Bishop.ValueOf()-Value(2000)))
 			}
+			// non promotion pawn captures
 			tmpCaptures &= ^nextPlayer.PromotionRankBb()
 			for tmpCaptures != 0 {
 				toSquare := tmpCaptures.PopLsb()
@@ -862,32 +791,16 @@ func (mg *Movegen) generateCastling(position *position.Position, mode GenMode, m
 		cr := position.CastlingRights()
 		if nextPlayer == White { // white
 			if cr.Has(CastlingWhiteOO) && Intermediate(SqE1, SqH1)&occupiedBB == 0 {
-				if assert.DEBUG {
-					assert.Assert(position.KingSquare(White) == SqE1, "MoveGen Castling: White King not on e1")
-					assert.Assert(position.GetPiece(SqH1) == WhiteRook, "MoveGen Castling: White Rook not on h1")
-				}
 				ml.PushBack(CreateMoveValue(SqE1, SqG1, Castling, PtNone, Value(-5000)))
 			}
 			if cr.Has(CastlingWhiteOOO) && Intermediate(SqE1, SqA1)&occupiedBB == 0 {
-				if assert.DEBUG {
-					assert.Assert(position.KingSquare(White) == SqE1, "MoveGen Castling: White King not on e1")
-					assert.Assert(position.GetPiece(SqA1) == WhiteRook, "MoveGen Castling: White Rook not on a1")
-				}
 				ml.PushBack(CreateMoveValue(SqE1, SqC1, Castling, PtNone, Value(-5000)))
 			}
 		} else { // black
 			if cr.Has(CastlingBlackOO) && Intermediate(SqE8, SqH8)&occupiedBB == 0 {
-				if assert.DEBUG {
-					assert.Assert(position.KingSquare(Black) == SqE8, "MoveGen Castling: Black King not on e8")
-					assert.Assert(position.GetPiece(SqH8) == BlackRook, "MoveGen Castling: Black Rook not on h8")
-				}
 				ml.PushBack(CreateMoveValue(SqE8, SqG8, Castling, PtNone, Value(-5000)))
 			}
 			if cr.Has(CastlingBlackOOO) && Intermediate(SqE8, SqA8)&occupiedBB == 0 {
-				if assert.DEBUG {
-					assert.Assert(position.KingSquare(Black) == SqE8, "MoveGen Castling: Black King not on e8")
-					assert.Assert(position.GetPiece(SqA8) == BlackRook, "MoveGen Castling: Black Rook not on a8")
-				}
 				ml.PushBack(CreateMoveValue(SqE8, SqC8, Castling, PtNone, Value(-5000)))
 			}
 		}
@@ -899,10 +812,6 @@ func (mg *Movegen) generateKingMoves(position *position.Position, mode GenMode, 
 	piece := MakePiece(nextPlayer, King)
 	gamePhase := position.GamePhase()
 	kingSquareBb := position.PiecesBb(nextPlayer, King)
-	if assert.DEBUG {
-		assert.Assert(kingSquareBb.PopCount() == 1,
-			"Chess always needs exactly one king. Found=%d ", kingSquareBb.PopCount())
-	}
 	fromSquare := kingSquareBb.PopLsb()
 
 	// pseudo attacks include all moves no matter if the king would be in check
@@ -926,6 +835,60 @@ func (mg *Movegen) generateKingMoves(position *position.Position, mode GenMode, 
 			toSquare := nonCaptures.PopLsb()
 			value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
 			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
+		}
+	}
+}
+
+// generates officers moves using the attacks pre-computed with magic bitboards
+// Performance improvement to the previous loop based version:
+// Old version:
+// Test took 2.0049508s for 10.000.000 iterations
+// Test took 200 ns per iteration
+// Iterations per sec 4.987.653
+// This version:
+// Test took 1.516326s for 10.000.000 iterations
+// Test took 151 ns per iteration
+// Iterations per sec 6.594.887
+// Improvement: +32%
+func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
+	nextPlayer := position.NextPlayer()
+	gamePhase := position.GamePhase()
+	occupiedBb := position.OccupiedAll()
+
+	// loop through all piece types, get pseudo attacks for the piece and
+	// AND it with the opponents pieces.
+	// For sliding pieces check if there are other pieces in between the
+	// piece and the target square. If free this is a valid move (or
+	// capture)
+
+	for pt := Knight; pt <= Queen; pt++ {
+		pieces := position.PiecesBb(nextPlayer, pt)
+		piece := MakePiece(nextPlayer, pt)
+
+		for pieces != 0 {
+			fromSquare := pieces.PopLsb()
+
+			moves := GetAttacksBb(pt, fromSquare, occupiedBb)
+
+			// captures
+			if mode&GenCap != 0 {
+				captures := moves & position.OccupiedBb(nextPlayer.Flip())
+				for captures != 0 {
+					toSquare := captures.PopLsb()
+					value := position.GetPiece(toSquare).ValueOf() - position.GetPiece(fromSquare).ValueOf() + PosValue(piece, toSquare, gamePhase)
+					ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
+				}
+			}
+
+			// non captures
+			if mode&GenNonCap != 0 {
+				nonCaptures := moves &^ occupiedBb
+				for nonCaptures != 0 {
+					toSquare := nonCaptures.PopLsb()
+					value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
+					ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
+				}
+			}
 		}
 	}
 }
@@ -984,60 +947,6 @@ func (mg *Movegen) generateMovesOld(position *position.Position, mode GenMode, m
 						value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
 						ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 					}
-				}
-			}
-		}
-	}
-}
-
-// generates officers moves using the attacks pre-computed with magic bitboards
-// Performance improvement to the previous loop based version:
-// Old version:
-// Test took 2.0049508s for 10.000.000 iterations
-// Test took 200 ns per iteration
-// Iterations per sec 4.987.653
-// This version:
-// Test took 1.516326s for 10.000.000 iterations
-// Test took 151 ns per iteration
-// Iterations per sec 6.594.887
-// Improvement: +32%
-func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, ml *moveslice.MoveSlice) {
-	nextPlayer := position.NextPlayer()
-	gamePhase := position.GamePhase()
-	occupiedBb := position.OccupiedAll()
-
-	// loop through all piece types, get pseudo attacks for the piece and
-	// AND it with the opponents pieces.
-	// For sliding pieces check if there are other pieces in between the
-	// piece and the target square. If free this is a valid move (or
-	// capture)
-
-	for pt := Knight; pt <= Queen; pt++ {
-		pieces := position.PiecesBb(nextPlayer, pt)
-		piece := MakePiece(nextPlayer, pt)
-
-		for pieces != 0 {
-			fromSquare := pieces.PopLsb()
-
-			moves := GetAttacksBb(pt, fromSquare, occupiedBb)
-
-			// captures
-			if mode&GenCap != 0 {
-				captures := moves & position.OccupiedBb(nextPlayer.Flip())
-				for captures != 0 {
-					toSquare := captures.PopLsb()
-					value := position.GetPiece(toSquare).ValueOf() - position.GetPiece(fromSquare).ValueOf() + PosValue(piece, toSquare, gamePhase)
-					ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
-				}
-			}
-
-			// non captures
-			if mode&GenNonCap != 0 {
-				nonCaptures := moves &^ occupiedBb
-				for nonCaptures != 0 {
-					toSquare := nonCaptures.PopLsb()
-					value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
-					ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 				}
 			}
 		}

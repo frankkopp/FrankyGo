@@ -57,7 +57,7 @@ func init() {
 			case j <= 3:
 				lmrR[i][j] = 1
 			default:
-				lmrR[i][j] = int(math.Round(((float64(i) * 0.7) * (float64(j) * 0.005)) + float64(1.0)))
+				lmrR[i][j] = int(math.Round(((float64(i) * 0.7) * (float64(j) * 0.005)) + 1.0))
 			}
 		}
 	}

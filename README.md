@@ -121,6 +121,9 @@ Todo
 ### v0.8 (in progress)
 - TODO
     - -
+    
+- DONE
+    - Restructuring of packages to better match Go best practices    
 
 ### v0.7 (done)
 - DONE
