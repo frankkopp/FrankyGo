@@ -50,6 +50,11 @@ func (f File) IsValid() bool {
 
 const fileLabels string = "abcdefgh"
 
+// Bb returns a Bitboard of the given file
+func (f File) Bb() Bitboard {
+	return fileBb[f]
+}
+
 // String returns a string letter for the file (e.g. a - h)
 // if f is not a valid file returns "-"
 func (f File) String() string {

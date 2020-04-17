@@ -1,1 +1,4 @@
 /~$*
+*.pprof
+*.cache
+*.log

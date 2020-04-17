@@ -30,15 +30,20 @@
 package config
 
 import (
+	"fmt"
 	"log"
+	"reflect"
+	"strings"
 
 	"github.com/BurntSushi/toml"
+
+	"github.com/frankkopp/FrankyGo/util"
 )
 
 // globally available config values
 var (
 	// ConfFile hold the path to the used config file (relative to working directory)
-	ConfFile = "../config/config.toml"
+	ConfFile = "./config/config.toml"
 
 	// LogLevel defines the general log level - can be overwritten by cmd line options or config file
 	LogLevel = 5
@@ -67,11 +72,13 @@ func Setup() {
 	if initialized {
 		return
 	}
-	// read configuration file
-	if _, err := toml.DecodeFile(ConfFile, &Settings); err != nil {
+
+	path, _ := util.ResolveFile(ConfFile)
+	if _, err := toml.DecodeFile(path, &Settings); err != nil {
 		log.Fatal("Could not open/read config file", err)
 		return
 	}
+
 	// setup log level - first check cmd line, then config file, finally leave defaults
 	setupLogLvl()
 	// setup search config after reading from configuration file if necessary
@@ -79,6 +86,25 @@ func Setup() {
 	// setup eval config after reading from configuration file if necessary
 	setupEval()
 	initialized = true
+}
+
+func (settings *conf) String() string {
+	var c strings.Builder
+	c.WriteString("Search Config:\n")
+	s := reflect.ValueOf(&settings.Search).Elem()
+	typeOfT := s.Type()
+	for i := 0; i < s.NumField(); i++ {
+		f := s.Field(i)
+		c.WriteString(fmt.Sprintf("%-2d: %-22s %-6s = %v\n", i, typeOfT.Field(i).Name, f.Type(), f.Interface()))
+	}
+	c.WriteString("\nEvaluation Config:\n")
+	s = reflect.ValueOf(&settings.Eval).Elem()
+	typeOfT = s.Type()
+	for i := 0; i < s.NumField(); i++ {
+		f := s.Field(i)
+		c.WriteString(fmt.Sprintf("%-2d: %-22s %-6s = %v\n", i, typeOfT.Field(i).Name, f.Type(), f.Interface()))
+	}
+	return c.String()
 }
 
 

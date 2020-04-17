@@ -27,8 +27,9 @@
 package util
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAbs(t *testing.T) {
@@ -46,18 +47,19 @@ func TestMinMax(t *testing.T) {
 }
 
 var tmp, result int64
-var i int64
+var index int64
 
 func BenchmarkMax64(b *testing.B) {
-	for i = -int64(b.N); i < int64(b.N); i++ {
-		tmp = Max64(i,i+2)
+	for index = -int64(b.N); index < int64(b.N); index++ {
+		tmp = Max64(index, index+2)
 	}
 	result = tmp
 }
 
 func BenchmarkMin64(b *testing.B) {
-	for i = -int64(b.N); i < int64(b.N); i++ {
-		tmp = Min64(i,i+2)
+	for index = -int64(b.N); index < int64(b.N); index++ {
+		tmp = Min64(index, index+2)
 	}
 	result = tmp
 }
+

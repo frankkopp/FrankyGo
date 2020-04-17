@@ -27,19 +27,40 @@
 package moveslice
 
 import (
-	"fmt"
-	"log"
 	"math/rand"
+	"os"
+	"path"
+	"runtime"
 	"sync"
 	"testing"
-	"time"
 
+	"github.com/op/go-logging"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 
+	"github.com/frankkopp/FrankyGo/config"
+	myLogging "github.com/frankkopp/FrankyGo/logging"
 	. "github.com/frankkopp/FrankyGo/types"
 )
+
+var logTest *logging.Logger
+
+// make tests run in the projects root directory
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
+
+// Setup the tests
+func TestMain(m *testing.M) {
+	config.Setup()
+	logTest = myLogging.GetTestLog()
+	code := m.Run()
+	os.Exit(code)
+}
 
 var (
 	e2e4 = CreateMoveValue(SqE2, SqE4, Normal, PtNone, 111)
@@ -51,14 +72,14 @@ var (
 
 func TestNew(t *testing.T) {
 	ma := NewMoveSlice(MaxMoves)
-	log.Printf("Len=%d", len(*ma))
-	log.Printf("Cap=%d", cap(*ma))
+	// logTest.Debugf("Len=%d", len(*ma))
+	// logTest.Debugf("Cap=%d", cap(*ma))
 	assert.Equal(t, 0, len(*ma))
 	assert.Equal(t, MaxMoves, cap(*ma))
 
 }
 
-func TestMoveArray_PushBack(t *testing.T) {
+func TestMoveArrayPushBack(t *testing.T) {
 	ma := NewMoveSlice(MaxMoves)
 	ma.PushBack(e2e4)
 	ma.PushBack(d7d5)
@@ -66,25 +87,25 @@ func TestMoveArray_PushBack(t *testing.T) {
 	ma.PushBack(d8d5)
 	ma.PushBack(b1c3)
 
-	log.Printf("Len=%d", len(*ma))
-	log.Printf("Cap=%d", cap(*ma))
+	// logTest.Debugf("Len=%d", len(*ma))
+	// logTest.Debugf("Cap=%d", cap(*ma))
 	assert.Equal(t, 5, len(*ma))
 	assert.Equal(t, MaxMoves, cap(*ma))
 
-	for i, v := range *ma {
-		fmt.Println(i, v)
-	}
+	// for i, v := range *ma {
+	// 	fmt.Println(i, v)
+	// }
 
 	for i := 0; i < 1_000_000; i++ {
 		ma.PushBack(e2e4)
 	}
-	log.Printf("Len=%d", len(*ma))
-	log.Printf("Cap=%d", cap(*ma))
+	// logTest.Debugf("Len=%d", len(*ma))
+	// logTest.Debugf("Cap=%d", cap(*ma))
 	assert.Equal(t, 1_000_005, len(*ma))
 	assert.Equal(t, 1_163_264, cap(*ma))
 }
 
-func TestMoveArray_PopBack(t *testing.T) {
+func TestMoveArrayPopBack(t *testing.T) {
 	ma := NewMoveSlice(MaxMoves)
 	assert.Panics(t, func(){ ma.PopBack() })
 
@@ -94,8 +115,8 @@ func TestMoveArray_PopBack(t *testing.T) {
 	ma.PushBack(d8d5)
 	ma.PushBack(b1c3)
 
-	log.Printf("Len=%d", len(*ma))
-	log.Printf("Cap=%d", cap(*ma))
+	// logTest.Debugf("Len=%d", len(*ma))
+	// logTest.Debugf("Cap=%d", cap(*ma))
 	assert.Equal(t, 5, len(*ma))
 	assert.Equal(t, MaxMoves, cap(*ma))
 
@@ -105,13 +126,13 @@ func TestMoveArray_PopBack(t *testing.T) {
 	assert.Equal(t, d8d5, m2)
 	assert.Equal(t, 3, len(*ma))
 
-	for i, v := range *ma {
-		fmt.Println(i, v)
-	}
+	// for i, v := range *ma {
+	// 	fmt.Println(i, v)
+	// }
 }
 
 
-func TestMoveArray_PushFront(t *testing.T) {
+func TestMoveArrayPushFront(t *testing.T) {
 	ma := NewMoveSlice(MaxMoves)
 	ma.PushFront(e2e4)
 	ma.PushFront(d7d5)
@@ -119,17 +140,17 @@ func TestMoveArray_PushFront(t *testing.T) {
 	ma.PushFront(d8d5)
 	ma.PushFront(b1c3)
 
-	log.Printf("Len=%d", len(*ma))
-	log.Printf("Cap=%d", cap(*ma))
+	// logTest.Debugf("Len=%d", len(*ma))
+	// logTest.Debugf("Cap=%d", cap(*ma))
 	assert.Equal(t, 5, len(*ma))
 	assert.Equal(t, MaxMoves, cap(*ma))
 
-	for i, v := range *ma {
-		fmt.Println(i, v)
-	}
+	// for i, v := range *ma {
+	// 	fmt.Println(i, v)
+	// }
 }
 
-func TestMoveArray_PopFront(t *testing.T) {
+func TestMoveArrayPopFront(t *testing.T) {
 	ma := NewMoveSlice(MaxMoves)
 	assert.Panics(t, func(){ ma.PopFront() })
 	ma.PushFront(e2e4)
@@ -137,8 +158,8 @@ func TestMoveArray_PopFront(t *testing.T) {
 	ma.PushFront(e4d5)
 	ma.PushFront(d8d5)
 	ma.PushFront(b1c3)
-	log.Printf("Len=%d", len(*ma))
-	log.Printf("Cap=%d", cap(*ma))
+	// logTest.Debugf("Len=%d", len(*ma))
+	// logTest.Debugf("Cap=%d", cap(*ma))
 	assert.Equal(t, 5, len(*ma))
 	assert.Equal(t, MaxMoves, cap(*ma))
 
@@ -148,20 +169,20 @@ func TestMoveArray_PopFront(t *testing.T) {
 	assert.Equal(t, d8d5, m2)
 	assert.Equal(t, 3, len(*ma))
 
-	for i, v := range *ma {
-		fmt.Println(i, v)
-	}
+	// for i, v := range *ma {
+	// 	fmt.Println(i, v)
+	// }
 }
 
-func TestMoveArray_Clear(t *testing.T) {
+func TestMoveArrayClear(t *testing.T) {
 	ma := NewMoveSlice(MaxMoves)
 	ma.PushBack(e2e4)
 	ma.PushBack(d7d5)
 	ma.PushBack(e4d5)
 	ma.PushBack(d8d5)
 	ma.PushBack(b1c3)
-	log.Printf("Len=%d", len(*ma))
-	log.Printf("Cap=%d", cap(*ma))
+	// logTest.Debugf("Len=%d", len(*ma))
+	// logTest.Debugf("Cap=%d", cap(*ma))
 	assert.Equal(t, 5, len(*ma))
 	assert.Equal(t, MaxMoves, cap(*ma))
 	ma.Clear()
@@ -169,15 +190,15 @@ func TestMoveArray_Clear(t *testing.T) {
 	assert.Equal(t, MaxMoves, cap(*ma))
 }
 
-func TestMoveArray_Access(t *testing.T) {
+func TestMoveArrayAccess(t *testing.T) {
 	ma := NewMoveSlice(MaxMoves)
 	ma.PushBack(e2e4)
 	ma.PushBack(d7d5)
 	ma.PushBack(e4d5)
 	ma.PushBack(d8d5)
 	ma.PushBack(b1c3)
-	log.Printf("Len=%d", len(*ma))
-	log.Printf("Cap=%d", cap(*ma))
+	// logTest.Debugf("Len=%d", len(*ma))
+	// logTest.Debugf("Cap=%d", cap(*ma))
 	assert.Equal(t, 5, len(*ma))
 	assert.Equal(t, MaxMoves, cap(*ma))
 
@@ -190,50 +211,49 @@ func TestMoveArray_Access(t *testing.T) {
 	assert.Equal(t, ma.At(0), ma.Front())
 }
 
-func TestMoveArray_String(t *testing.T) {
+func TestMoveArrayString(t *testing.T) {
 	ma := NewMoveSlice(MaxMoves)
 	ma.PushBack(e2e4)
 	ma.PushBack(d7d5)
 	ma.PushBack(e4d5)
 	ma.PushBack(d8d5)
 	ma.PushBack(b1c3)
-	log.Printf("Len=%d", len(*ma))
-	log.Printf("Cap=%d", cap(*ma))
+	// logTest.Debugf("Len=%d", len(*ma))
+	// logTest.Debugf("Cap=%d", cap(*ma))
 	assert.Equal(t, 5, len(*ma))
 	assert.Equal(t, MaxMoves, cap(*ma))
-	log.Printf("String() = %s", ma.String())
-	log.Printf("StringUci() = %s", ma.StringUci())
+	// logTest.Debugf("String() = %s", ma.String())
+	// logTest.Debugf("StringUci() = %s", ma.StringUci())
 	assert.Equal(t, "e2e4 d7d5 e4d5 d8d5 b1c3", ma.StringUci())
 }
 
-func TestMoveArray_Sort(t *testing.T) {
+func TestMoveArraySort(t *testing.T) {
 	ma := NewMoveSlice(MaxMoves)
 	ma.PushBack(e2e4)
 	ma.PushBack(d7d5)
 	ma.PushBack(e4d5)
 	ma.PushBack(d8d5)
 	ma.PushBack(b1c3)
-	log.Printf("Len=%d", len(*ma))
-	log.Printf("Cap=%d", cap(*ma))
+	// logTest.Debugf("Len=%d", len(*ma))
+	// logTest.Debugf("Cap=%d", cap(*ma))
 	assert.Equal(t, 5, len(*ma))
 	assert.Equal(t, MaxMoves, cap(*ma))
-	log.Printf("String() = %s", ma.String())
-	log.Printf("StringUci() = %s", ma.StringUci())
-	for i, v := range *ma {
-		fmt.Println(i, v)
-	}
-	fmt.Println("Sorted:")
-	ma.Sort()
-	log.Printf("String() = %s", ma.String())
-	log.Printf("StringUci() = %s", ma.StringUci())
-	for i, v := range *ma {
-		fmt.Println(i, v)
-	}
+	// logTest.Debugf("String() = %s", ma.String())
+	// logTest.Debugf("StringUci() = %s", ma.StringUci())
+	// for i, v := range *ma {
+	// 	fmt.Println(i, v)
+	// }
+	// fmt.Println("Sorted:")
+	// ma.Sort()
+	// logTest.Debugf("String() = %s", ma.String())
+	// logTest.Debugf("StringUci() = %s", ma.StringUci())
+	// for i, v := range *ma {
+	// 	fmt.Println(i, v)
+	// }
 }
 
 
-func TestMoveArray_SortRandom(t *testing.T) {
-	out := message.NewPrinter(language.German)
+func TestMoveArraySortRandom(t *testing.T) {
 
 	ma := NewMoveSlice(MaxMoves)
 	items := 10_000
@@ -244,10 +264,10 @@ func TestMoveArray_SortRandom(t *testing.T) {
 	}
 
 	// sort
-	start := time.Now()
+	// start := time.Now()
 	ma.Sort()
-	elapsed := time.Since(start)
-	out.Printf("%d ns\n", elapsed.Nanoseconds())
+	// elapsed := time.Since(start)
+	// out.Printf("%d ns\n", elapsed.Nanoseconds())
 
 	// check
 	tmp := ma.At(0)
@@ -259,7 +279,7 @@ func TestMoveArray_SortRandom(t *testing.T) {
 }
 
 
-func TestMoveArray_Filter(t *testing.T) {
+func TestMoveArrayFilter(t *testing.T) {
 	ma := NewMoveSlice(MaxMoves)
 	ma.PushBack(e2e4)
 	ma.PushBack(d7d5)
@@ -343,14 +363,14 @@ func TestForEach(t *testing.T) {
 	assert.Equal(t, Value(999), ma.At(100).ValueOf())
 	assert.Equal(t, Value(999), ma.Back().ValueOf())
 
-	fmt.Printf("counter %d\n", counter)
-	ma.ForEach(func(i int) {
-		fmt.Printf("%d: %s\n", i, ma.At(i).String())
-	})
+	// fmt.Printf("counter %d\n", counter)
+	// ma.ForEach(func(i int) {
+	// 	fmt.Printf("%d: %s\n", i, ma.At(i).String())
+	// })
 }
 
 
-func Test_GoLand_WithVeryLongName(t *testing.T) {
+func TestGoLandWithVeryLongName(t *testing.T) {
 	// fill array
 	noOfItems := 1_000
 	ma := NewMoveSlice(noOfItems)
@@ -358,9 +378,9 @@ func Test_GoLand_WithVeryLongName(t *testing.T) {
 		ma.PushBack(e2e4)
 	}
 
-	fmt.Printf("counter %d\n", noOfItems)
-	ma.ForEach(func (i int) {
-		fmt.Printf("%d: %s\n", i, ma.At(i).String())
-	})
+	// fmt.Printf("counter %d\n", noOfItems)
+	// ma.ForEach(func (i int) {
+	// 	fmt.Printf("%d: %s\n", i, ma.At(i).String())
+	// })
 }
 

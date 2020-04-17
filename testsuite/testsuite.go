@@ -53,6 +53,7 @@ import (
 	"github.com/frankkopp/FrankyGo/position"
 	"github.com/frankkopp/FrankyGo/search"
 	. "github.com/frankkopp/FrankyGo/types"
+	"github.com/frankkopp/FrankyGo/util"
 )
 
 var out = message.NewPrinter(language.German)
@@ -81,13 +82,13 @@ const (
 	Success   resultType = iota
 )
 
-// suiteResult data structure to collect sum of the results of tests
-type suiteResult struct {
-	counter          int
-	successCounter   int
-	failedCounter    int
-	skippedCounter   int
-	notTestedCounter int
+// SuiteResult data structure to collect sum of the results of tests
+type SuiteResult struct {
+	Counter          int
+	SuccessCounter   int
+	FailedCounter    int
+	SkippedCounter   int
+	NotTestedCounter int
 }
 
 // Test defines the data structure for a test after reading in the
@@ -105,14 +106,16 @@ type Test struct {
 	value       Value
 	rType       resultType
 	line        string
+	nps         uint64
 }
 
 // TestSuite is the data structure for the running a file of EPD tests.
 type TestSuite struct {
-	Tests    []*Test
-	Time     time.Duration
-	Depth    int
-	FilePath string
+	Tests      []*Test
+	Time       time.Duration
+	Depth      int
+	FilePath   string
+	LastResult *SuiteResult
 }
 
 // NewTestSuite creates an instance of a TestSuite and reads in the given file
@@ -135,9 +138,9 @@ func NewTestSuite(filePath string, searchTime time.Duration, depth int) (*TestSu
 
 	// create the TestSuite instance
 	newTestSuite := &TestSuite{
-		Tests: make([]*Test, 0, len(*lines)),
-		Time:  searchTime,
-		Depth: depth,
+		Tests:    make([]*Test, 0, len(*lines)),
+		Time:     searchTime,
+		Depth:    depth,
 		FilePath: filePath,
 	}
 
@@ -156,6 +159,11 @@ func NewTestSuite(filePath string, searchTime time.Duration, depth int) (*TestSu
 // RunTests runs tests on a successfully created instance of a TestSuite
 func (ts *TestSuite) RunTests() {
 
+	if len(ts.Tests) == 0 {
+		out.Printf("No tests to run\n")
+		return
+	}
+
 	startTime := time.Now()
 
 	// setup search
@@ -173,30 +181,37 @@ func (ts *TestSuite) RunTests() {
 	out.Printf("SearchTime: %d ms\n", ts.Time.Milliseconds())
 	out.Printf("MaxDepth:   %d\n", ts.Depth)
 	out.Printf("Date:       %s\n", time.Now().Local())
+	out.Printf("No of ests: %d\n", len(ts.Tests))
 	out.Println()
 
 	// execute all tests and store results in the
 	// test instance
-	for _, t := range ts.Tests {
-		out.Printf("Test %s -- Target Result %s\n", t.line, t.targetMoves.StringUci())
+	for i, t := range ts.Tests {
+		out.Printf("Test %d of %d\nTest: %s -- Target Result %s\n", i+1, len(ts.Tests), t.line, t.targetMoves.StringUci())
 		startTime2 := time.Now()
 		runSingleTest(s, sl, t)
 		elapsedTime := time.Since(startTime2)
-		out.Printf("Test finished in %d ms with result %s (%s)\n\n",
-			elapsedTime.Milliseconds(), t.rType.String(), t.actual.StringUci())
+		t.nps = util.Nps(s.NodesVisited(), s.LastSearchResult().SearchTime)
+		out.Printf("Test finished in %d ms with result %s (%s) - nps: %d\n\n",
+			elapsedTime.Milliseconds(), t.rType.String(), t.actual.StringUci(), t.nps)
 	}
 
 	// sum up result for report
-	tr := suiteResult{}
+	tr := &SuiteResult{}
 	for _, t := range ts.Tests {
-		tr.counter++
+		tr.Counter++
 		switch t.rType {
-		case NotTested: tr.notTestedCounter++
-		case Skipped: tr.skippedCounter++
-		case Failed: tr.failedCounter++
-		case Success: tr.successCounter++
+		case NotTested:
+			tr.NotTestedCounter++
+		case Skipped:
+			tr.SkippedCounter++
+		case Failed:
+			tr.FailedCounter++
+		case Success:
+			tr.SuccessCounter++
 		}
 	}
+	ts.LastResult = tr
 
 	elapsed := time.Since(startTime)
 
@@ -208,7 +223,7 @@ func (ts *TestSuite) RunTests() {
 	out.Printf("MaxDepth:   %d\n", ts.Depth)
 	out.Printf("Date:       %s\n", time.Now().Local())
 	out.Printf("====================================================================================================================================\n")
-	out.Printf(" %-4s | %-10s | %-8s | %-8s | %-15s | %s | %s\n"," Nr.", "Result", "Move", "Value", "Expected Result", "Fen", "Id");
+	out.Printf(" %-4s | %-10s | %-8s | %-8s | %-15s | %s | %s\n", " Nr.", "Result", "Move", "Value", "Expected Result", "Fen", "Id")
 	out.Printf("====================================================================================================================================\n")
 	for i, t := range ts.Tests {
 		if t.tType == DM {
@@ -220,12 +235,17 @@ func (ts *TestSuite) RunTests() {
 		}
 	}
 	out.Printf("====================================================================================================================================\n")
-	out.Printf("Successful: %-3d (%d %%)\n", tr.successCounter, 100 * tr.successCounter/ tr.counter)
-	out.Printf("Failed:     %-3d (%d %%)\n", tr.failedCounter, 100 * tr.failedCounter/ tr.counter)
-	out.Printf("Skipped:    %-3d (%d %%)\n", tr.skippedCounter, 100 * tr.skippedCounter/ tr.counter)
-	out.Printf("Not tested: %-3d (%d %%)\n", tr.notTestedCounter, 100 * tr.notTestedCounter/ tr.counter)
-	out.Printf("\n")
-	out.Printf("Test time: %d ms\n", elapsed.Milliseconds())
+	out.Printf("Summary:\n")
+	out.Printf("EPD File:   %s\n", ts.FilePath)
+	out.Printf("SearchTime: %d ms\n", ts.Time.Milliseconds())
+	out.Printf("MaxDepth:   %d\n", ts.Depth)
+	out.Printf("Date:       %s\n", time.Now().Local())
+	out.Printf("Successful: %-3d (%d %%)\n", tr.SuccessCounter, 100*tr.SuccessCounter/tr.Counter)
+	out.Printf("Failed:     %-3d (%d %%)\n", tr.FailedCounter, 100*tr.FailedCounter/tr.Counter)
+	out.Printf("Skipped:    %-3d (%d %%)\n", tr.SkippedCounter, 100*tr.SkippedCounter/tr.Counter)
+	out.Printf("Not tested: %-3d (%d %%)\n", tr.NotTestedCounter, 100*tr.NotTestedCounter/tr.Counter)
+	out.Printf("Test time: %s\n", elapsed)
+	out.Printf("Configuration: %s\n", config.Settings.String())
 }
 
 // determines which test type the test is and call the appropriate

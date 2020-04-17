@@ -35,7 +35,7 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
-	"github.com/frankkopp/FrankyGo/config"
+	. "github.com/frankkopp/FrankyGo/config"
 	"github.com/frankkopp/FrankyGo/moveslice"
 	"github.com/frankkopp/FrankyGo/position"
 	"github.com/frankkopp/FrankyGo/search"
@@ -103,51 +103,66 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().PvsResearches
+	ptrToSpecial = &s.Statistics().LmpCuts
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
 
 	// + Quiescence
-	config.Settings.Search.UseQuiescence = true
+	Settings.Search.UseQuiescence = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base+QS"))
 
 	// + QS Standpat
-	config.Settings.Search.UseQSStandpat = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "Standpat"))
+	Settings.Search.UseQSStandpat = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "Standpat"))
 
 	// + TT
-	config.Settings.Search.UseTT = true
+	Settings.Search.UseTT = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
 
 	// + TTMove
-	config.Settings.Search.UseTTMove = true
+	// config.Settings.Search.UseTTMove = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "TTMove"))
 
 	// + TTValue
-	config.Settings.Search.UseTTValue = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
+	Settings.Search.UseTTValue = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
 
 	// + QS TT
-	config.Settings.Search.UseQSTT = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "QSTT"))
+	Settings.Search.UseQSTT = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "QSTT"))
 
 	// + MDP
-	config.Settings.Search.UseMDP = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "MDP"))
+	Settings.Search.UseMDP = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "MDP"))
+
+	r.Tests = append(r.Tests, measure(s, sl, p, "BASE"))
 
 	// PVS
-	config.Settings.Search.UsePVS = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "PVS"))
+	Settings.Search.UsePVS = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "PVS"))
 
 	// PVS
-	config.Settings.Search.UseKiller = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "Killer"))
+	Settings.Search.UseKiller = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "Killer"))
 
-	// MPP
-	config.Settings.Search.UseMPP = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "MPP"))
+	Settings.Search.UseTTMove = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "TTMove"))
 
+	Settings.Search.UseIID = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "MoveSort"))
+
+	// Null Move
+	Settings.Search.UseNullMove = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "NMP"))
+
+	// Late Move Reduction
+	Settings.Search.UseLmr = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "LMR"))
+
+	// Late Move Pruning
+	Settings.Search.UseLmp = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "LMP"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -212,6 +227,9 @@ func SizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 	out.Println("----------------------------------------------------------------------------------------------------------------------------------------------")
 	out.Print("\n################## Totals/Avg results for each feature test ##################\n\n")
 
+	out.Printf("Date                   : %s\n", time.Now().Local())
+	out.Printf("SearchTime             : %s\n", movetime)
+	out.Printf("MaxDepth               : %d\n", depth)
 	out.Printf("Number of feature tests: %d\n", len(results[0].Tests))
 	out.Printf("Number of fens         : %d\n", len(testFens))
 	out.Printf("Total tests            : %d\n\n", len(results[0].Tests) * len(testFens))
@@ -264,17 +282,19 @@ func measure(s *search.Search, sl *search.Limits, p *position.Position, name str
 }
 
 func turnOffFeatures() {
-	config.Settings.Search.UseBook = false
-	config.Settings.Search.UsePonder = false
-	config.Settings.Search.UseQuiescence = false
-	config.Settings.Search.UseQSStandpat = false
-	config.Settings.Search.UseTT = false
-	config.Settings.Search.UseTTMove = false
-	config.Settings.Search.UseTTValue = false
-	config.Settings.Search.UseQSTT = false
-	config.Settings.Search.UseMDP = false
-	config.Settings.Search.UseMPP = false
-	config.Settings.Search.UsePVS = false
-	config.Settings.Search.UseKiller = false
-
+	Settings.Search.UseBook = false
+	Settings.Search.UsePonder = false
+	Settings.Search.UseQuiescence = false
+	Settings.Search.UseQSStandpat = false
+	Settings.Search.UseTT = false
+	Settings.Search.UseTTMove = false
+	Settings.Search.UseTTValue = false
+	Settings.Search.UseQSTT = false
+	Settings.Search.UseMDP = false
+	Settings.Search.UsePVS = false
+	Settings.Search.UseKiller = false
+	Settings.Search.UseNullMove = false
+	Settings.Search.UseIID = false
+	Settings.Search.UseLmr = false
+	Settings.Search.UseLmp = false
 }

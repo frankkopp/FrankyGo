@@ -29,17 +29,15 @@
 package util
 
 import (
+	"log"
 	"runtime"
 	"time"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
-
-	"github.com/frankkopp/FrankyGo/logging"
 )
 
 var out = message.NewPrinter(language.German)
-var log = logging.GetLog()
 
 // Abs - non branching Abs function for determine the absolute value of an int
 func Abs(n int) int {
@@ -109,10 +107,10 @@ func MemStat() string {
 // GcWithStats performs a forced garbage collection measuring
 // duration and pre- and post-memory statistics.
 func GcWithStats() {
-	log.Debugf("Mem stats: %s\n", MemStat())
+	log.Printf("Mem stats: %s\n", MemStat())
 	startGC := time.Now()
 	runtime.GC()
 	elapsed := time.Since(startGC)
-	log.Debugf("GC took  : %d ms\n", elapsed.Milliseconds())
-	log.Debugf("Mem stats: %s\n", MemStat())
+	log.Printf("GC took  : %d ms\n", elapsed.Milliseconds())
+	log.Printf("Mem stats: %s\n", MemStat())
 }

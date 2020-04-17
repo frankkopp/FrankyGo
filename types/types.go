@@ -29,11 +29,6 @@
 // Many of these would be perfect enum candidates but GO does not provide enums
 package types
 
-import (
-	"github.com/frankkopp/FrankyGo/logging"
-)
-
-var log = logging.GetLog()
 
 var initialized = false
 

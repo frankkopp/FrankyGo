@@ -25,3 +25,35 @@
  */
 
 package types
+
+import (
+	"os"
+	"path"
+	"runtime"
+	"testing"
+
+	logging2 "github.com/op/go-logging"
+
+	"github.com/frankkopp/FrankyGo/config"
+	"github.com/frankkopp/FrankyGo/logging"
+)
+
+var logTest *logging2.Logger
+
+// make tests run in the projects root directory
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
+
+// Setup the tests
+func TestMain(m *testing.M) {
+	config.Setup()
+	logTest = logging.GetTestLog()
+	code := m.Run()
+	os.Exit(code)
+}

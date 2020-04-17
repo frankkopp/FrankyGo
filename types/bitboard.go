@@ -31,7 +31,6 @@ import (
 	"math/bits"
 	"strings"
 
-	"github.com/frankkopp/FrankyGo/assert"
 	"github.com/frankkopp/FrankyGo/util"
 )
 
@@ -99,8 +98,6 @@ func ShiftBitboard(b Bitboard, d Direction) Bitboard {
 // GetMovesOnRank returns a Bb for all possible horizontal moves
 // on the rank of the square with the rank content (blocking pieces)
 // determined from the given pieces bitboard.
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func GetMovesOnRank(sq Square, content Bitboard) Bitboard {
 	// content = the pieces currently on the board and maybe blocking the moves
 	// no rotation necessary for ranks - their squares are already in a row
@@ -114,8 +111,6 @@ func GetMovesOnRank(sq Square, content Bitboard) Bitboard {
 // GetMovesOnFileRotated Bb for all possible horizontal moves on the
 // rank of the square with the rank content (blocking pieces) determined
 // from the given L90 rotated bitboard.
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func GetMovesOnFileRotated(sq Square, rotated Bitboard) Bitboard {
 	// shift to the lsb
 	contentIdx := rotated >> (int(sq.FileOf()) * 8)
@@ -128,8 +123,6 @@ func GetMovesOnFileRotated(sq Square, rotated Bitboard) Bitboard {
 // the square with the rank content (blocking pieces) determined from the
 // given bitboard (not rotated - use GetMovesOnFileRotated for already rotated
 // bitboards)
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func GetMovesOnFile(sq Square, content Bitboard) Bitboard {
 	// content = the pieces currently on the board and maybe blocking the moves
 	// rotate the content of the board to get all file squares in a row
@@ -139,8 +132,6 @@ func GetMovesOnFile(sq Square, content Bitboard) Bitboard {
 // GetMovesDiagUpRotated  Bb for all possible diagonal up moves of
 // the square with the content (blocking pieces) determined from the
 // given R45 rotated bitboard.
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func GetMovesDiagUpRotated(sq Square, rotated Bitboard) Bitboard {
 	// shift the correct row to the lsb
 	shifted := rotated >> shiftsDiagUp[sq]
@@ -154,8 +145,6 @@ func GetMovesDiagUpRotated(sq Square, rotated Bitboard) Bitboard {
 // GetMovesDiagUp Bb for all possible diagonal up moves of the square with
 // the content (blocking pieces) determined from the given non rotated
 // bitboard.
-// Initialize with InitBb() before use. In DEBUG mode (assert.DEBUG==true)
-// throws panic if initialized.
 func GetMovesDiagUp(sq Square, content Bitboard) Bitboard {
 	// content = the pieces currently on the board and maybe blocking the moves
 	// rotate the content of the board to get all diagonals in a row
@@ -275,6 +264,9 @@ func RankDistance(r1 Rank, r2 Rank) int {
 
 // SquareDistance returns the absolute distance in squares between two squares
 func SquareDistance(s1 Square, s2 Square) int {
+	if !s1.IsValid() || !s2.IsValid() || s1 == s2 {
+		return 0
+	}
 	return squareDistance[s1][s2]
 }
 
@@ -333,12 +325,31 @@ func RotateSquareL45(sq Square) Square {
 	return indexMapL45[sq]
 }
 
+// GetAttacksBb returns a bitboard representing all the squares attacked by a
+// piece of the given type pt (not pawn) placed on 's'.
+// For sliding pieces this uses the pre-computed Magic Bitboard Attack arrays.
+// For Knight and King this uses the pre-computed pseudo attacks.
+// From Stockfish
+func GetAttacksBb(pt PieceType, sq Square, occupied Bitboard) Bitboard {
+	if pt == Pawn {
+		msg := fmt.Sprint("GetAttackBb called with piece type Pawn is not supported")
+		panic(msg)
+	}
+	switch pt {
+	case Bishop:
+		return bishopMagics[sq].Attacks[bishopMagics[sq].index(occupied)]
+	case Rook:
+		return rookMagics[sq].Attacks[rookMagics[sq].index(occupied)]
+	case Queen:
+		return bishopMagics[sq].Attacks[bishopMagics[sq].index(occupied)] | rookMagics[sq].Attacks[rookMagics[sq].index(occupied)]
+	default:
+		return pseudoAttacks[pt][sq]
+	}
+}
+
 // GetPseudoAttacks returns a Bb of possible attacks of a piece
 // as if on an empty board
 func GetPseudoAttacks(pt PieceType, sq Square) Bitboard {
-	if assert.DEBUG {
-		assert.Assert(!(pt == PtNone || pt == Pawn || pt > Queen), "Invalid piece type for GetPseudoAttacks()")
-	}
 	return pseudoAttacks[pt][sq]
 }
 
@@ -492,6 +503,10 @@ const (
 	DiagDownC1 Bitboard = (DiagDownD1 >> 1) & FileHMask
 	DiagDownB1 Bitboard = (DiagDownC1 >> 1) & FileHMask
 	DiagDownA1 Bitboard = (DiagDownB1 >> 1) & FileHMask
+
+	CenterFiles   Bitboard = FileD_Bb | FileE_Bb
+	CenterRanks   Bitboard = Rank4_Bb | Rank5_Bb
+	CenterSquares Bitboard = CenterFiles & CenterRanks
 )
 
 // ////////////////////
@@ -656,6 +671,10 @@ var (
 	// Needs to be initialized with initBb()
 	rankBb [8]Bitboard
 
+	// Internal pre computed file bitboard array.
+	// Needs to be initialized with initBb()
+	fileBb [8]Bitboard
+
 	// Internal pre computed index for quick square distance lookup
 	squareDistance [SqLength][SqLength]int
 
@@ -683,6 +702,14 @@ var (
 
 	// Internal Bb for attacks for each piece for each square
 	pseudoAttacks [PtLength][SqLength]Bitboard
+
+	// magic bitboards - rook attacks
+	rookTable  []Bitboard
+	rookMagics [SqLength]Magic
+
+	// magic bitboards - bishop attacks
+	bishopTable  []Bitboard
+	bishopMagics [SqLength]Magic
 
 	// Internal pre computed bitboards
 	filesWestMask      [SqLength]Bitboard
@@ -712,7 +739,7 @@ var (
 	queenSideCastleMask [2]Bitboard
 
 	// array to store all possible CastlingRights for squares which impact castlings
-	castlingRights[SqLength] CastlingRights
+	castlingRights [SqLength]CastlingRights
 
 	// mask for all white  and black squares
 	squaresBb [2]Bitboard
@@ -728,7 +755,7 @@ var (
 // Pre computes various bitboards to avoid runtime calculation
 func initBb() {
 	squareBitboardsPreCompute()
-	rankBbPreCompute()
+	rankFileBbPreCompute()
 	castleMasksPreCompute()
 	squareDistancePreCompute()
 	movesRankPreCompute()
@@ -742,11 +769,29 @@ func initBb() {
 	maskPassedPawnsPreCompute()
 	squareColorsPreCompute()
 	centerDistancePreCompute()
+	initMagicBitboards()
 }
 
-func rankBbPreCompute() {
+// start calculating the magic bitboards
+// Taken from Stockfish and
+// from  https://www.chessprogramming.org/Magic_Bitboards
+func initMagicBitboards() {
+	rookDirections := [4]Direction{North, East, South, West}
+	bishopDirections := [4]Direction{Northeast, Southeast, Southwest, Northwest}
+
+	rookTable = make([]Bitboard, 0x19000, 0x19000)
+	bishopTable = make([]Bitboard, 0x1480, 0x1480)
+
+	initMagics(&rookTable, &rookMagics, &rookDirections)
+	initMagics(&bishopTable, &bishopMagics, &bishopDirections)
+}
+
+func rankFileBbPreCompute() {
 	for i := Rank1; i <= Rank8; i++ {
 		rankBb[i] = Rank1_Bb << (8 * i)
+	}
+	for i := FileA; i <= FileH; i++ {
+		fileBb[i] = FileA_Bb << i
 	}
 }
 
