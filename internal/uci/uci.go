@@ -41,12 +41,12 @@ import (
 	"strings"
 	"time"
 
-	logging2 "github.com/op/go-logging"
+	"github.com/op/go-logging"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
 	"github.com/frankkopp/FrankyGo/internal/config"
-	"github.com/frankkopp/FrankyGo/internal/logging"
+	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/internal/movegen"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
 	"github.com/frankkopp/FrankyGo/internal/position"
@@ -58,7 +58,7 @@ import (
 )
 
 var out = message.NewPrinter(language.German)
-var log = logging.GetLog()
+var log  *logging.Logger
 
 // UciHandler handles all communication with the chess ui via UCI
 // and controls options and search.
@@ -70,7 +70,7 @@ type UciHandler struct {
 	mySearch   *search.Search
 	myPosition *position.Position
 	myPerft    *movegen.Perft
-	uciLog     *logging2.Logger
+	uciLog     *logging.Logger
 }
 
 // ///////////////////////////////////////////////////////////
@@ -84,6 +84,9 @@ type UciHandler struct {
 // 		u.InIo = bufio.NewScanner(os.Stdin)
 //		u.OutIo = bufio.NewWriter(os.Stdout)
 func NewUciHandler() *UciHandler {
+	if log == nil {
+		log = myLogging.GetLog()
+	}
 	u := &UciHandler{
 		InIo:       bufio.NewScanner(os.Stdin),
 		OutIo:      bufio.NewWriter(os.Stdout),
@@ -565,18 +568,18 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 }
 
 // getUciLog returns an instance of a special Logger preconfigured for
-// logging all UCI protocol communication to os.Stdout or file
+// myLogging all UCI protocol communication to os.Stdout or file
 // Format is very simple "time UCI <uci command>"
-func getUciLog() *logging2.Logger {
+func getUciLog() *logging.Logger {
 	// create logger
-	uciLog := logging2.MustGetLogger("UCI ")
+	uciLog := logging.MustGetLogger("UCI ")
 
 	// Stdout backend
-	uciFormat := logging2.MustStringFormatter(`%{time:15:04:05.000} UCI %{message}`)
-	backend1 := logging2.NewLogBackend(os.Stdout, "", golog.Lmsgprefix)
-	backend1Formatter := logging2.NewBackendFormatter(backend1, uciFormat)
-	uciBackEnd1 := logging2.AddModuleLevel(backend1Formatter)
-	uciBackEnd1.SetLevel(logging2.DEBUG, "")
+	uciFormat := logging.MustStringFormatter(`%{time:15:04:05.000} UCI %{message}`)
+	backend1 := logging.NewLogBackend(os.Stdout, "", golog.Lmsgprefix)
+	backend1Formatter := logging.NewBackendFormatter(backend1, uciFormat)
+	uciBackEnd1 := logging.AddModuleLevel(backend1Formatter)
+	uciBackEnd1.SetLevel(logging.DEBUG, "")
 	uciLog.SetBackend(uciBackEnd1)
 
 	// File backend
@@ -597,10 +600,10 @@ func getUciLog() *logging2.Logger {
 		golog.Println("Logfile could not be created:", err)
 		return uciLog
 	}
-	backend2 := logging2.NewLogBackend(uciLogFile, "", golog.Lmsgprefix)
-	backend2Formatter := logging2.NewBackendFormatter(backend2, uciFormat)
-	uciBackEnd2 := logging2.AddModuleLevel(backend2Formatter)
-	uciBackEnd2.SetLevel(logging2.DEBUG, "")
+	backend2 := logging.NewLogBackend(uciLogFile, "", golog.Lmsgprefix)
+	backend2Formatter := logging.NewBackendFormatter(backend2, uciFormat)
+	uciBackEnd2 := logging.AddModuleLevel(backend2Formatter)
+	uciBackEnd2.SetLevel(logging.DEBUG, "")
 	// multi := logging2.SetBackend(uciBackEnd1, uciBackEnd2)
 	uciLog.SetBackend(uciBackEnd2)
 	uciLog.Infof("Log %s started at %s:", uciLogFile.Name(), time.Now().String())

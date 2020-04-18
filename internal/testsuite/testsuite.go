@@ -43,11 +43,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/op/go-logging"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
 	"github.com/frankkopp/FrankyGo/internal/config"
-	"github.com/frankkopp/FrankyGo/internal/logging"
+	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/internal/movegen"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
 	"github.com/frankkopp/FrankyGo/internal/position"
@@ -57,7 +58,7 @@ import (
 )
 
 var out = message.NewPrinter(language.German)
-var log = logging.GetLog()
+var log *logging.Logger
 
 // testType defines the data type for the implemented opcode for EPD tests
 // which are defined as constants below.
@@ -122,6 +123,10 @@ type TestSuite struct {
 // to create test cases which can be run with RunTests()
 func NewTestSuite(filePath string, searchTime time.Duration, depth int) (*TestSuite, error) {
 	out.Println("Preparing Test Suite", filePath)
+
+	if log == nil {
+		log = myLogging.GetLog()
+	}
 
 	// Configure logging
 	config.LogLevel = 2
