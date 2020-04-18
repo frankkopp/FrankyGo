@@ -57,6 +57,7 @@ func init() {
 // Setup the tests
 func TestMain(m *testing.M) {
 	config.Setup()
+	log = myLogging.GetLog()
 	logTest = myLogging.GetTestLog()
 	code := m.Run()
 	os.Exit(code)
