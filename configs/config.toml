@@ -49,9 +49,11 @@ LmrDepth = 3
 LmrMovesSearched = 3
 
 UseLmp = false
+UseSee = false
 
 UseExt = true
 UseCheckExt = true
+UseThreatExt = false
 
 [eval]
 UsePawnCache = false # not implemented yet

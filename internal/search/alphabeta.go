@@ -170,6 +170,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	bestNodeMove := MoveNone // used to store in the TT
 	ttMove := MoveNone
 	ttType := ALPHA
+	matethreat := false
 
 	// TT Lookup
 	// Results of searches are stored in the TT to be used to
@@ -263,15 +264,21 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			}
 
 			// counter for mate threats
-			// TODO: mate threat detection
 			if nValue > ValueCheckMateThreshold {
+				// although this player did not make a move the value still is
+				// a mate - very good! Just adjust the value to not return an
+				// unproven mate
 				s.statistics.NMPMateBeta++
+				nValue = ValueCheckMateThreshold
 			} else if nValue < ValueCheckMateThreshold {
+				// the player did not move a got mated ==> mate threat
 				s.statistics.NMPMateAlpha++
+				matethreat = true
 			}
 
-			// if the value is higher than beta even after making two
-			// moves it is not worth searching and it will be cut
+			// if the value is higher than beta even after not making
+			// a move it is not worth searching as it will very likely
+			// be above beta if we make a move
 			if nValue >= beta {
 				s.statistics.NullMoveCuts++
 				// Store TT
@@ -403,6 +410,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			// prepare newDepth
 			newDepth := depth - 1
 			lmrDepth := newDepth
+			extension := 0
 
 			// Here we try some search extensions. This has to be done
 			// very carefully as it usually is more effective to prune
@@ -415,8 +423,18 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				// qsearch.
 				if Settings.Search.UseCheckExt && position.HasCheck() {
 					s.statistics.CheckExtension++
-					newDepth++
+					extension = 1
 				}
+
+				// If we have found a mate threat during Null Move Search
+				// we extend normal search by one ply to try to find
+				// a way out.
+				if Settings.Search.UseThreatExt && matethreat {
+					s.statistics.ThreatExtension++
+					extension = 1
+				}
+
+				newDepth += extension
 			}
 
 			// ///////////////////////////////////////////////////////
@@ -424,6 +442,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			// LMP & LMR will only be done when the move is not
 			// interesting - no check, no capture, etc.
 			if !isPV &&
+				extension == 0 &&
 				move != ttMove &&
 				move != (*myMg.KillerMoves())[0] &&
 				move != (*myMg.KillerMoves())[1] &&

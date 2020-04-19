@@ -107,7 +107,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// define which special data pointer to collect
 	ptrToSpecial = &s.Statistics().NMPMateAlpha
-	ptrToSpecial2 = &s.Statistics().NMPMateBeta
+	ptrToSpecial2 = &s.Statistics().ThreatExtension
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
@@ -171,7 +171,10 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// Extensions
 	Settings.Search.UseExt = true
 	Settings.Search.UseCheckExt = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "EXT"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "CHECK"))
+
+	Settings.Search.UseThreatExt = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "THREAT"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -312,6 +315,8 @@ func turnOffFeatures() {
 	Settings.Search.UseIID = false
 	Settings.Search.UseLmr = false
 	Settings.Search.UseLmp = false
+	Settings.Search.UseSEE = false
 	Settings.Search.UseExt = false
 	Settings.Search.UseCheckExt = false
+	Settings.Search.UseThreatExt = false
 }

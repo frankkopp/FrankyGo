@@ -31,17 +31,21 @@ Go implementation of a UCI compatible chess engine.
     * Internal Iterative Deepening
     * Late Move Reductions (needs further tuning)
     * Late Move Pruning (needs further tuning)
+    * Check extension (needs further tuning/testing)
+    * Mate threat extension (needs further tuning/testing)
+    * 
     * TODO: SEE for quiescence, Futility Pruning, Aspiration Windows, Multi-cut Pruning, History Pruning 
 * Transposition Table
-* Opening Book from PGN files and persistent cache
+* Opening Book from PGN, SAN and Simple move list files and persistent cache
 * Evaluation
-    * Still very simple: Material, positional piece values
+    * Very simple yet: Material, positional piece values
     * Implemented but not yet tested/activated: Attacks, Mobility, Piece specific evaluations
     * TODO: pawn evaluations and pawn hash table  
 * Tests:   
     * Test framework to run EPD test suites
-    * Test to determine search tree size with for features
-* General: logging, command lines options, configuration files, search and eval parameters in config files
+    * Test to determine search tree size for features
+* General: 
+    * logging, command lines options, configuration files, search and eval parameters in config files
 
 * Open topics: 
     * Parallel search
@@ -96,33 +100,59 @@ than for example C++ where I still find the compile-process unnecessary complica
 definition, etc.) or Java where I can't have user defined primitive types.
 
 ## Installation
-Todo
+Windows build: 
+
+go build -o FrankyGo.exe github.com/frankkopp/FrankyGo/cmd/FrankyGo
+
+Run FrankyGo.exe
+
+Unix/Mac build: 
+
+go build -o FrankyGo github.com/frankkopp/FrankyGo/cmd/FrankyGo
+
+Run FrankyGo
 
 ## Usage
-Todo
+Typically, a UCI engine will be used with a UCI compatible chess interface like Arena, xboard, Fritz, etc.
+Just configure a new engine in the UCI interface pointing to the executable of FrankyGo. If necessary use 
+command line options to find config file, logs folder and opening books folder.    
+
+To run FrankyGo needs to find its config file:
+
+Default place to look for it is ../configs/config.toml
+
+Use command line option "-config" to change location
+
+Also helpful:
+* logs files are stored in folder "../logs" or folder defined by cmd line option "-logpath"
+* opening books are searched in folder "../assets/book" or folder defined in cmd line option "-bookpath"
+
+Use --help for more command line options
 
 ## Roadmap
 ### vx.x (planned)
 - TODO:
-    - SEE
     - Better Evaluation and testing
     - Pawn Structure Cache
-    - FP
-    - Ext
     - MultiCut Pruning
        - https://hci.iwr.uni-heidelberg.de/system/files/private/downloads/1935772097/report_qingyang-cao_enhanced-forward-pruning.pdf
     - Other Prunings
     - Aspiration
-    - NullMove Threat Detection
     - Continuously Performance/Profiling/Testing
     - LMR and LMP - more testing needed
+    - Check extension - more testing needed
+    - Mate threat extension - more testing needed
 
 ## Versions
 ### v0.8 (in progress)
 - TODO
-    - -
+    - SEE
+    - FP
     
 - DONE
+    - Search extensions:
+        - Check extension
+        - Mate threat extension
     - Restructuring of packages to better match Go best practices    
 
 ### v0.7 (done)
