@@ -31,7 +31,7 @@ import (
 	. "github.com/frankkopp/FrankyGo/internal/types"
 )
 
-func (s *Search) see(p *position.Position, move Move) Value {
+func see(p *position.Position, move Move) Value {
 
 	// enpassant moves are ignored in a sense that it will be winning
 	// capture and therefore should lead to no cut-offs when using see()
@@ -41,7 +41,7 @@ func (s *Search) see(p *position.Position, move Move) Value {
 
 	// prepare short array to store the captures - max 32 pieces
 	// TODO: avoid allocation
-	gain := make([]Value, 0, 32)
+	gain := make([]Value, 32, 32)
 
 	ply := 0
 	toSquare := move.To()
@@ -94,7 +94,7 @@ func (s *Search) see(p *position.Position, move Move) Value {
 		fromSquare = getLeastValuablePiece(p, remainingAttacks, nextPlayer)
 		movedPiece = p.GetPiece(fromSquare)
 
-		if fromSquare != SqNone { // while
+		if fromSquare == SqNone { // while
 			break
 		}
 	}
