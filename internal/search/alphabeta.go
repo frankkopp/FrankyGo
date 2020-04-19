@@ -854,8 +854,9 @@ func (s *Search) goodCapture(p *position.Position, move Move) bool {
 		// If the defender is "behind" the attacker this will not be recognized
 		// here This is not too bad as it only adds a move to qsearch which we
 		// could otherwise ignore
-		!p.IsAttacked(move.To(), p.NextPlayer().Flip())
-	// Check SEE score of higher value pieces to low value pieces
+		!p.IsAttacked(move.To(), p.NextPlayer().Flip()) ||
+		// Check SEE score of higher value pieces to low value pieces
+		(Settings.Search.UseSEE && s.see(p, move) > 0)
 	// || (SearchConfig::USE_QS_SEE && (Attacks::see(position, move) > 0));
 }
 
