@@ -133,7 +133,6 @@ func (mg *Movegen) GeneratePseudoLegalMoves(position *position.Position, mode Ge
 
 // GenerateLegalMoves generates legal moves for the next player.
 // Uses GeneratePseudoLegalMoves and filters out illegal moves.
-//
 func (mg *Movegen) GenerateLegalMoves(position *position.Position, mode GenMode) *moveslice.MoveSlice {
 	mg.legalMoves.Clear()
 	mg.GeneratePseudoLegalMoves(position, mode)
@@ -156,6 +155,8 @@ func (mg *Movegen) GenerateLegalMoves(position *position.Position, mode GenMode)
 // To reuse this on the sames position a call to ResetOnDemand() is necessary. This
 // is not necessary when a different position is called as this func will reset it self
 // in this case.
+//
+// TODO: check evasions could be probably more efficient than generating all moves
 func (mg *Movegen) GetNextMove(position *position.Position, mode GenMode) Move {
 
 	// if the position changes during iteration the iteration
@@ -224,13 +225,14 @@ func (mg *Movegen) GetNextMove(position *position.Position, mode GenMode) Move {
 		// we have at least one move in the list and
 		// it is not the pvMove. Increase the takeIndex
 		// and return the move
+		// (remove internal sort value)
 		move := (*mg.onDemandMoves)[mg.takeIndex].MoveOf()
 		mg.takeIndex++
 		if mg.takeIndex >= mg.onDemandMoves.Len() {
 			mg.takeIndex = 0
 			mg.onDemandMoves.Clear()
 		}
-		return move // remove internal sort value
+		return move
 	}
 
 	// no more moves to be generated

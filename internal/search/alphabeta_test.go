@@ -37,6 +37,7 @@ import (
 	"github.com/frankkopp/FrankyGo/internal/position"
 	. "github.com/frankkopp/FrankyGo/internal/types"
 	"github.com/frankkopp/FrankyGo/internal/util"
+	"github.com/frankkopp/FrankyGo/test/testdata"
 )
 
 func Test_savePV(t *testing.T) {
@@ -68,43 +69,50 @@ func TestMate(t *testing.T) {
 }
 
 func TestTimingTTSize(t *testing.T) {
-	t.SkipNow()
-
-	results := []string{}
-
-	for ttSize := 1; ttSize < 10_000; ttSize = ttSize * 2 {
-
-		out.Println("TT Size", ttSize)
-
-		// defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
-		// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
-		config.LogLevel = 2
-		config.SearchLogLevel = 2
-		config.Settings.Search.UseBook = false
-		config.Settings.Search.TTSize = ttSize
-
-		s := NewSearch()
-		p := position.NewPosition()
-		sl := NewSearchLimits()
-		// sl.Depth = 8
-		sl.TimeControl = true
-		sl.MoveTime = 10 * time.Second
-		s.StartSearch(*p, *sl)
-		s.WaitWhileSearching()
-		nps := util.Nps(s.nodesVisited, s.lastSearchResult.SearchTime)
-		results = append(results, out.Sprintf("tt size: %-6d time: %-12s nodes: %-12d depth: %2d/%-2d nps: %-12d stats: %s tt: %s",
-			ttSize, s.lastSearchResult.SearchTime, s.nodesVisited, s.lastSearchResult.SearchDepth, s.lastSearchResult.ExtraDepth,
-			nps, s.statistics.String(), s.tt.String()))
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
 	}
 
-	out.Println()
-	for _, r := range results {
-		out.Println(r)
+	config.LogLevel = 2
+	config.SearchLogLevel = 2
+	config.Settings.Search.UseBook = false
+
+	for _, fen := range testdata.Fens[0:10] {
+		out.Println(fen)
+		var results []string
+		for ttSize := 1; ttSize < 10_000; ttSize = ttSize * 2 {
+			out.Println("TT Size", ttSize)
+			// defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
+			// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
+			config.Settings.Search.TTSize = ttSize
+			s := NewSearch()
+			// p := position.NewPosition()
+			p := position.NewPosition(fen)
+			sl := NewSearchLimits()
+			sl.Depth = 8
+			// sl.TimeControl = true
+			sl.MoveTime = 10 * time.Second
+			s.StartSearch(*p, *sl)
+			s.WaitWhileSearching()
+			nps := util.Nps(s.nodesVisited, s.lastSearchResult.SearchTime)
+			results = append(results, out.Sprintf("tt size: %-6d time: %-12s nodes: %-12d depth: %2d/%-2d nps: %-12d stats: %s tt: %s",
+				ttSize, s.lastSearchResult.SearchTime, s.nodesVisited, s.lastSearchResult.SearchDepth, s.lastSearchResult.ExtraDepth,
+				nps, s.statistics.String(), s.tt.String()))
+		}
+		for _, r := range results {
+			out.Println(r)
+		}
+		out.Println()
 	}
 }
 
+// v0.8.0 18.4.2020
+// NPS :  2.691.461
+// -LMP
 func TestTiming(t *testing.T) {
-	t.SkipNow()
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 	config.Settings.Search.UseBook = false

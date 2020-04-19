@@ -103,7 +103,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().LmpCuts
+	ptrToSpecial = &s.Statistics().CheckExtension
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
@@ -161,8 +161,12 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	r.Tests = append(r.Tests, measure(s, sl, p, "LMR"))
 
 	// Late Move Pruning
-	Settings.Search.UseLmp = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "LMP"))
+	// Settings.Search.UseLmp = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "LMP"))
+
+	// Extensions
+	Settings.Search.UseExt = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "EXT"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -297,4 +301,5 @@ func turnOffFeatures() {
 	Settings.Search.UseIID = false
 	Settings.Search.UseLmr = false
 	Settings.Search.UseLmp = false
+	Settings.Search.UseExt = false
 }

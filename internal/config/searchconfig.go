@@ -61,7 +61,10 @@ type searchConfiguration struct {
 	LmrDepth         int
 	LmrMovesSearched int
 
-	UseLmp           bool
+	UseLmp bool
+
+	UseExt      bool
+	UseCheckExt bool
 }
 
 // sets defaults which might be overwritten by config file
@@ -92,6 +95,8 @@ func init() {
 	Settings.Search.LmrDepth = 3
 	Settings.Search.LmrMovesSearched = 3
 	Settings.Search.UseLmp = false
+	Settings.Search.UseExt = true
+	Settings.Search.UseCheckExt = true
 
 }
 

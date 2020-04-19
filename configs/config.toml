@@ -50,6 +50,9 @@ LmrMovesSearched = 3
 
 UseLmp = false
 
+UseExt = true
+UseCheckExt = true
+
 [eval]
 UsePawnCache = false # not implemented yet
 PawnCacheSize = 64  # not implemented yet

@@ -37,6 +37,9 @@ import (
 
 // Statistics are extra data and stats not essential for a functioning search
 type Statistics struct {
+	CheckExtension uint64
+	CheckInQS      uint64
+
 	LmpCuts       uint64
 	LmrResearches uint64
 	LmrReductions uint64

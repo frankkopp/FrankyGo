@@ -55,7 +55,7 @@ var out = message.NewPrinter(language.German)
 // Search represents the data structure for a chess engine search
 //  Create new instance with NewSearch()
 type Search struct {
-	log *logging.Logger
+	log  *logging.Logger
 	slog *logging.Logger
 
 	uciHandlerPtr uciInterface.UciDriver
@@ -130,7 +130,7 @@ func (s *Search) NewGame() {
 	}
 }
 
-// StartSearch starts the search with on the given position with
+// StartSearch starts the search on the given position with
 // the given search limits. Search can be stopped with StopSearch().
 // Search status can be checked with IsSearching()
 // This takes a copy of the position and the search limits
@@ -281,13 +281,15 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 
 	// setup and report search limits
 	s.setupSearchLimits(position, sl)
+
+	// when not pondering and search is time controlled start timer
 	if s.searchLimits.TimeControl && !s.searchLimits.Ponder {
 		s.startTimer()
 	}
 
 	// check for opening book move when we have a time controlled game
 	bookMove := MoveNone
-	if s.book != nil && config.Settings.Search.UseBook && sl.TimeControl && len(s.searchLimits.Moves) == 0 {
+	if s.book != nil && config.Settings.Search.UseBook && sl.TimeControl {
 		bookEntry, found := s.book.GetEntry(position.ZobristKey())
 		if found && len(bookEntry.Moves) > 0 {
 			// choose move - random for now
@@ -330,10 +332,11 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 		s.hadBookMove = true
 	}
 
-	// If we arrive here and the search is not stopped it means that the search
-	// was finished before it has been stopped by stopSearchFlag or ponderhit,
+	// If we arrive here during Ponder of Infinite mode and the search is not
+	// stopped it means that the search was finished before it has been stopped
+	// by stopSearchFlag or ponderhit,
 	// We wait here until search has completed.
-	if !s.stopFlag && (s.searchLimits.Ponder || s.searchLimits.Infinite) {
+	if (s.searchLimits.Ponder || s.searchLimits.Infinite) && !s.stopFlag {
 		s.log.Debug("Search finished before stopped or ponderhit! Waiting for stop/ponderhit to send result")
 		// relaxed busy wait
 		for !s.stopFlag && (s.searchLimits.Ponder || s.searchLimits.Infinite) {
@@ -373,15 +376,17 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 // It works as follows: the program starts with a one ply search,
 // then increments the search depth and does another search. This
 // process is repeated until the time allocated for the search is
-// exhausted. In case of an unfinished search, the program always
-// has the option to fall back to the move selected in the last
-// iteration of the search. Yet if we make sure that this move is
-// searched first in the next iteration, then overwriting the new
-// move with the old one becomes unnecessary. This way, also the
-// results from the partial search can be accepted
-// IDEA though in case of a severe drop of the score it is wise
-//  to allocate some more time, as the first alternative is often
-//  a bad capture, delaying the loss instead of preventing it
+// exhausted. In case of an unfinished search, the current best
+// move is returned by the search. The current best move is
+// guaranteed to by at least as good as the best move from the
+// last finished iteration as we sorted the root moves before
+// the start of the new iteration and started with this best
+// move. This way, also the results from the partial search
+// can be accepted
+//
+//  IDEA in case of a severe drop of the score it is wise
+//   to allocate some more time, as the first alternative is often
+//   a bad capture, delaying the loss instead of preventing it
 func (s *Search) iterativeDeepening(position *position.Position) *Result {
 
 	// prepare search result
@@ -418,7 +423,8 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 	}
 
 	// add some extra time for the move after the last book move
-	// hasBook move will be true after the last book move found and arriving at this point.
+	// hadBookMove move will be true at his point if we ever had
+	// a book move.
 	if s.hadBookMove && s.searchLimits.TimeControl && s.searchLimits.MoveTime == 0 {
 		s.log.Debugf(out.Sprintf("First non-book move to search. Adding extra time: Before: %d ms After: %s ms",
 			s.timeLimit.Milliseconds(), 2*s.timeLimit.Milliseconds()))
@@ -432,8 +438,8 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 		maxDepth = s.searchLimits.Depth
 	}
 
-	// In preparation for aspiration window search
-	// not needed yet max window search
+	// Max window search in preparation for aspiration window search
+	// not needed yet
 	alpha := ValueMin
 	beta := ValueMax
 
@@ -451,23 +457,26 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 			s.statistics.CurrentExtraSearchDepth = s.statistics.CurrentIterationDepth
 		}
 
-		// call alpha beta root
+		// ###########################################
+		// Start actual alpha beta search
 		s.rootSearch(position, iterationDepth, alpha, beta)
+		// ###########################################
 
-		// sort root moves based on value for the next iteration
+		// check if we need to stop
+		// doing this after the first iteration ensures that
+		// we have done at least one complete search and have
+		// a pv (best) move
 		if !s.stopConditions() {
+			// sort root moves for the next iteration
 			s.rootMoves.Sort()
 			s.statistics.CurrentBestRootMove = s.pv[0].At(0)
 			s.statistics.CurrentBestRootMoveValue = s.pv[0].At(0).ValueOf()
 			// update UCI GUI
 			s.sendIterationEndInfoToUci()
 		} else {
-			// check if we need to stop
-			// doing this here ensures that we at least do the 1st level search
 			break
 		}
 	}
-
 	// ### END OF Iterative Deepening
 	// ###########################################
 
@@ -488,6 +497,8 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 	if s.pv[0].Len() > 1 {
 		result.PonderMove = s.pv[0].At(1).MoveOf()
 	} else {
+		// we do not have a ponder move in the pv list
+		// so let's check the TT
 		if config.Settings.Search.UseTT {
 			position.DoMove(result.BestMove)
 			ttEntry := s.tt.Probe(position.ZobristKey())
@@ -616,7 +627,7 @@ func (s *Search) setupTimeControl(p *position.Position, sl *Limits) time.Duratio
 		}
 		// estimate time per move
 		timeLimit := time.Duration(timeLeft.Nanoseconds() / movesLeft)
-		// account for code runtime
+		// account for runtime of our code
 		if timeLimit.Milliseconds() < 100 {
 			// limits for very short available time reduced by another 20%
 			timeLimit = time.Duration(int64(0.8 * float64(timeLimit.Nanoseconds())))
@@ -651,8 +662,8 @@ func (s *Search) startTimer() {
 	go func() {
 		timerStart := time.Now()
 		s.log.Debugf("Timer started with time limit of %s", s.timeLimit)
-		// relaxed busy wait
 		// as timeLimit changes due to extra times we can't set a fixed timeout
+		// so we do a relaxed busy wait
 		for time.Since(timerStart) < s.timeLimit+s.extraTime && !s.stopFlag {
 			time.Sleep(5 * time.Millisecond)
 		}

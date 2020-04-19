@@ -57,12 +57,12 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 	}
 
 	// In root search we search all moves and store the value
-	// into the  root moves themselves for sorting in the
+	// into the root moves themselves for sorting in the
 	// next iteration
 	// best move is stored in pv[0][0]
 	// best value is stored in pv[0][0].value
 	// The next iteration begins with the best move of the last
-	// iteration so we can be sure pv[0][0] sill be set with the
+	// iteration so we can be sure pv[0][0] will be set with the
 	// last best move from the previous iteration independent of
 	// the value. Any better move found is really better and will
 	// replace pv[0][0] and also will be sorted first in the
@@ -90,7 +90,7 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 		} else {
 			// ///////////////////////////////////////////////////////////////////
 			// PVS
-			// Initial PVS move are search without PVS uses full search window.
+			// First move in a node is an assumed PV and searched with full search window
 			if !Settings.Search.UsePVS || i == 0 {
 				value = -s.search(position, depth-1, 1, -beta, -alpha, true, true)
 			} else {
@@ -313,15 +313,14 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 
 	// reset search
 	// !important to do this after IID!
-	// or IID need to do this itself
 	myMg := s.mg[ply]
 	myMg.ResetOnDemand()
 	s.pv[ply].Clear()
 
 	// PV Move Sort
 	// When we received a best move for the position from the
-	// TT we set it as PV move in the movegen so it will be
-	// searched first.
+	// TT or IID we set it as PV move in the movegen so it will
+	// be searched first.
 	if Settings.Search.UseTTMove {
 		if ttMove != MoveNone {
 			s.statistics.TTMoveUsed++
@@ -337,9 +336,10 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 
 	// ///////////////////////////////////////////////////////
 	// MOVE LOOP
-	for move := myMg.GetNextMove(position, movegen.GenAll); move != MoveNone; move = myMg.GetNextMove(position, movegen.GenAll) {
+	for move := myMg.GetNextMove(position, movegen.GenAll);
+		move != MoveNone; move = myMg.GetNextMove(position, movegen.GenAll) {
 
-		if true { // DEBUG
+		if false { // DEBUG
 			err := false
 			msg := ""
 			switch {
@@ -372,9 +372,6 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			}
 		} // DEBUG
 
-		newDepth := depth - 1
-		lmrDepth := newDepth
-
 		// ///////////////////////////////////////////////////////
 		// DO MOVE
 		position.DoMove(move)
@@ -390,61 +387,81 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 		s.statistics.CurrentVariation.PushBack(move)
 		s.sendSearchUpdateToUci()
 
-		// ///////////////////////////////////////////////////////
-		// LMR & LMP
-		// LMP & LMR will only be done when the move is not
-		// interesting - no check, no capture, etc.
-		if !isPV &&
-			move != ttMove &&
-			move != (*myMg.KillerMoves())[0] &&
-			move != (*myMg.KillerMoves())[1] &&
-			move.MoveType() != Promotion &&
-			!position.WasCapturingMove() &&
-			!position.HasCheck() {
-
-			// LMP - Late Move Pruning
-			// aka Move Count Based Pruning
-			// TODO dangerous needs testing
-			if Settings.Search.UseLmp {
-				if movesSearched >= LmpMovesSearched(depth) {
-					s.statistics.LmpCuts++
-					s.statistics.CurrentVariation.PopBack()
-					position.UndoMove()
-					continue
-				}
-			}
-
-			// LMR
-			// Late Move Reduction assumes that later moves a rarely
-			// good (> alpha) and therefore the search is reduced in
-			// depth. This is in effect a soft transition into
-			// quiescence search as we usually try the pv move and
-			// capturing moves first. In quiescence only capturing
-			// moves are searched anyway.
-			// newDepth is the "standard" new depth (depth - 1)
-			// lmrDepth is set to the same value and only reduced
-			// if conditions apply.
-			// TODO: Test different config values
-			if Settings.Search.UseLmr {
-				// compute reduction from depth and move searched
-				if depth >= Settings.Search.LmrDepth &&
-					movesSearched >= Settings.Search.LmrMovesSearched {
-					lmrDepth -= LmrReduction(depth, movesSearched)
-					s.statistics.LmrReductions++
-				}
-				// make sure not to become negative
-				if lmrDepth < 0 {
-					lmrDepth = 0
-				}
-			}
-		}
-		// ///////////////////////////////////////////////////////
-
 		// check repetition and 50 moves
 		if s.checkDrawRepAnd50(position, 2) {
 			value = ValueDraw
+
 		} else {
-			// ///////////////////////////////////////////////////////////////////
+			// prepare newDepth
+			newDepth := depth - 1
+			lmrDepth := newDepth
+
+			// Here we try some search extensions. This has to be done
+			// very carefully as it usually is more effective to prune
+			// than to extend.
+			if Settings.Search.UseExt {
+				// The check extensions is a bit redundant as our QS search
+				// searches all moves anyway when in check. But with this
+				// extension we hope to profit from using the prunings
+				// of the normal search which are not available in the
+				// qsearch.
+				if Settings.Search.UseCheckExt && position.HasCheck() {
+					s.statistics.CheckExtension++
+					newDepth++
+				}
+			}
+
+			// ///////////////////////////////////////////////////////
+			// LMR & LMP
+			// LMP & LMR will only be done when the move is not
+			// interesting - no check, no capture, etc.
+			if !isPV &&
+				move != ttMove &&
+				move != (*myMg.KillerMoves())[0] &&
+				move != (*myMg.KillerMoves())[1] &&
+				move.MoveType() != Promotion &&
+				!position.WasCapturingMove() &&
+				!position.HasCheck() {
+
+				// LMP - Late Move Pruning
+				// aka Move Count Based Pruning
+				// TODO dangerous needs testing
+				if Settings.Search.UseLmp {
+					if movesSearched >= LmpMovesSearched(depth) {
+						s.statistics.LmpCuts++
+						s.statistics.CurrentVariation.PopBack()
+						position.UndoMove()
+						continue
+					}
+				}
+
+				// LMR
+				// Late Move Reduction assumes that later moves a rarely
+				// exceeding alpha and therefore the search is reduced in
+				// depth. This is in effect a soft transition into
+				// quiescence search as we usually try the pv move and
+				// capturing moves first. In quiescence only capturing
+				// moves are searched anyway.
+				// newDepth is the "standard" new depth (depth - 1)
+				// lmrDepth is set to newDepth and only reduced
+				// if conditions apply.
+				// TODO: Test different config values
+				if Settings.Search.UseLmr {
+					// compute reduction from depth and move searched
+					if depth >= Settings.Search.LmrDepth &&
+						movesSearched >= Settings.Search.LmrMovesSearched {
+						lmrDepth -= LmrReduction(depth, movesSearched)
+						s.statistics.LmrReductions++
+					}
+					// make sure not to become negative
+					if lmrDepth < 0 {
+						lmrDepth = 0
+					}
+				}
+			}
+			// ///////////////////////////////////////////////////////
+
+			// ///////////////////////////////////////////////////////
 			// PVS
 			// First move in Node will be search with the full window. Due to move
 			// ordering we assume this is the PV. Every other move is searched with
@@ -474,7 +491,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 					}
 				}
 			}
-			// ///////////////////////////////////////////////////////////////////
+			// ///////////////////////////////////////////////////////
 		}
 
 		movesSearched++
@@ -674,6 +691,7 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 	// this is in fact a search extension for checks
 	var mode movegen.GenMode
 	if hasCheck {
+		s.statistics.CheckInQS++
 		mode = movegen.GenAll
 	} else {
 		mode = movegen.GenCap
