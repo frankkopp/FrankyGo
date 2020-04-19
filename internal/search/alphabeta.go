@@ -262,6 +262,14 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				return ValueNA
 			}
 
+			// counter for mate threats
+			// TODO: mate threat detection
+			if nValue > ValueCheckMateThreshold {
+				s.statistics.NMPMateBeta++
+			} else if nValue < ValueCheckMateThreshold {
+				s.statistics.NMPMateAlpha++
+			}
+
 			// if the value is higher than beta even after making two
 			// moves it is not worth searching and it will be cut
 			if nValue >= beta {

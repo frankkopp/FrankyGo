@@ -50,16 +50,17 @@ var out = message.NewPrinter(language.German)
 // A single test is one fen with one set of feature executing
 // one search according to the settings (depth odr time)
 type singleTest struct {
-	Name    string
-	Nodes   uint64
-	Nps     uint64
-	Depth   int
-	Extra   int
-	Time    time.Duration
-	Special uint64
-	Move    types.Move
-	Value   types.Value
-	Pv      moveslice.MoveSlice
+	Name     string
+	Nodes    uint64
+	Nps      uint64
+	Depth    int
+	Extra    int
+	Time     time.Duration
+	Special  uint64
+	Special2 uint64
+	Move     types.Move
+	Value    types.Value
+	Pv       moveslice.MoveSlice
 }
 
 // result is representing a series of single tests for a single position (FEN)
@@ -78,9 +79,11 @@ type testSums struct {
 	SumExtra   int
 	SumTime    time.Duration
 	Special    uint64
+	Special2   uint64
 }
 
 var ptrToSpecial *uint64
+var ptrToSpecial2 *uint64
 
 // featureTest is called for each set of features for all configured test positions (fens).
 // a feature test creates a result instance and stores all single tests into it.
@@ -103,7 +106,8 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().CheckExtension
+	ptrToSpecial = &s.Statistics().NMPMateAlpha
+	ptrToSpecial2 = &s.Statistics().NMPMateBeta
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
@@ -166,6 +170,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// Extensions
 	Settings.Search.UseExt = true
+	Settings.Search.UseCheckExt = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "EXT"))
 
 	// TESTS
@@ -201,8 +206,8 @@ func SizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 	// Print result
 	out.Printf("\n################## Results for depth %d ##########################\n\n", depth)
 
-	out.Printf("%-15s | %-6s | %-8s | %-15s | %-12s | %-10s | %-7s | %-12s | %s | %s\n",
-		"Test Name", "Move", "value", "Nodes", "Nps", "Time", "Depth", "Special", "PV", "fen")
+	out.Printf("%-15s | %-6s | %-8s | %-15s | %-12s | %-10s | %-7s | %-12s | %-12s |%s | %s\n",
+		"Test Name", "Move", "value", "Nodes", "Nps", "Time", "Depth", "Special", "Special2", "PV", "fen")
 	out.Println("----------------------------------------------------------------------------------------------------------------------------------------------")
 
 	sums := make(map[string]testSums, len(results))
@@ -220,11 +225,12 @@ func SizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 				SumExtra:   sums[test.Name].SumExtra + test.Extra,
 				SumTime:    sums[test.Name].SumTime + test.Time,
 				Special:    sums[test.Name].Special + test.Special,
+				Special2:   sums[test.Name].Special2 + test.Special2,
 			}
 			// print single test result
-			out.Printf("%-15s | %-6s | %-8s | %-15d | %-12d | %-10d | %3d/%-3d | %-12d | %s | %s\n",
+			out.Printf("%-15s | %-6s | %-8s | %-15d | %-12d | %-10d | %3d/%-3d | %-12d | %-12d |%s | %s\n",
 				test.Name, test.Move.StringUci(), test.Value.String(), test.Nodes, test.Nps,
-				test.Time.Milliseconds(), test.Depth, test.Extra, test.Special, test.Pv.StringUci(), r.Fen)
+				test.Time.Milliseconds(), test.Depth, test.Extra, test.Special, test.Special2, test.Pv.StringUci(), r.Fen)
 		}
 		out.Println()
 	}
@@ -236,21 +242,22 @@ func SizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 	out.Printf("MaxDepth               : %d\n", depth)
 	out.Printf("Number of feature tests: %d\n", len(results[0].Tests))
 	out.Printf("Number of fens         : %d\n", len(testFens))
-	out.Printf("Total tests            : %d\n\n", len(results[0].Tests) * len(testFens))
+	out.Printf("Total tests            : %d\n\n", len(results[0].Tests)*len(testFens))
 
 	// print Totals
 	// obs: GO does not order map entries. To get an order when iterating one must iterate over a
 	// parallel data structure (e.g. array of map keys) which can be sorted.
 	for _, test := range results[0].Tests {
 		sum := sums[test.Name]
-		out.Printf("Test: %-12s  Nodes: %-14d  Nps: %-14d  Time: %-10d Depth: %3d/%-3d Special: %-16d\n",
+		out.Printf("Test: %-12s  Nodes: %-14d  Nps: %-14d  Time: %-10d Depth: %3d/%-3d Special: %-14d Special2: %-14d\n",
 			test.Name,
 			sum.SumNodes/sum.SumCounter,
 			sum.SumNps/sum.SumCounter,
 			uint64(sum.SumTime.Milliseconds())/sum.SumCounter,
 			uint64(sum.SumDepth)/sum.SumCounter,
 			uint64(sum.SumExtra)/sum.SumCounter,
-			sum.Special/sum.SumCounter)
+			sum.Special/sum.SumCounter,
+			sum.Special2/sum.SumCounter)
 	}
 	out.Println()
 }
@@ -266,20 +273,24 @@ func measure(s *search.Search, sl *search.Limits, p *position.Position, name str
 	s.WaitWhileSearching()
 
 	test := singleTest{
-		Name:    name,
-		Nodes:   s.NodesVisited(),
-		Nps:     util.Nps(s.NodesVisited(), s.LastSearchResult().SearchTime),
-		Time:    s.LastSearchResult().SearchTime,
-		Depth:   s.LastSearchResult().SearchDepth,
-		Extra:   s.LastSearchResult().ExtraDepth,
-		Special: 0,
-		Move:    s.LastSearchResult().BestMove,
-		Value:   s.LastSearchResult().BestValue,
-		Pv:      s.LastSearchResult().Pv,
+		Name:     name,
+		Nodes:    s.NodesVisited(),
+		Nps:      util.Nps(s.NodesVisited(), s.LastSearchResult().SearchTime),
+		Time:     s.LastSearchResult().SearchTime,
+		Depth:    s.LastSearchResult().SearchDepth,
+		Extra:    s.LastSearchResult().ExtraDepth,
+		Special:  0,
+		Special2: 0,
+		Move:     s.LastSearchResult().BestMove,
+		Value:    s.LastSearchResult().BestValue,
+		Pv:       s.LastSearchResult().Pv,
 	}
 
 	if ptrToSpecial != nil {
 		test.Special = *ptrToSpecial
+	}
+	if ptrToSpecial2 != nil {
+		test.Special2 = *ptrToSpecial2
 	}
 
 	return test
@@ -302,4 +313,5 @@ func turnOffFeatures() {
 	Settings.Search.UseLmr = false
 	Settings.Search.UseLmp = false
 	Settings.Search.UseExt = false
+	Settings.Search.UseCheckExt = false
 }
