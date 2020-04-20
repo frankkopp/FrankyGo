@@ -63,5 +63,5 @@ func TestSearchTreeSize(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	SizeTest(8, 0*time.Second, 0, 10)
+	SizeTest(0, 10*time.Second, 0, 15)
 }

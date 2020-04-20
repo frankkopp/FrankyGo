@@ -55,7 +55,7 @@ func main() {
 	logLvl := flag.String("loglvl", "", "standard log level\n(critical|error|warning|notice|info|debug)")
 	searchlogLvl := flag.String("searchloglvl", "", "search log level\n(critical|error|warning|notice|info|debug)")
 	logPath := flag.String("logpath", "../logs", "path where to write log files to")
-	bookPath := flag.String("bookpath", "../books", "path to opening book files")
+	bookPath := flag.String("bookpath", "../assets/books", "path to opening book files")
 	bookFile := flag.String("bookfile", "", "opening book file\nprovide path if file is not in same directory as executable\nPlease also provide bookFormat otherwise this will be ignored")
 	bookFormat := flag.String("bookFormat", "", "format of opening book\n(Simple|San|Pgn)")
 	testSuite := flag.String("testsuite", "", "path to file containing EPD tests")

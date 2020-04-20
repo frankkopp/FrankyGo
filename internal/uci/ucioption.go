@@ -54,9 +54,11 @@ func init() {
 		"Use_Mdp":      {NameID: "Use_Mdp", HandlerFunc: useMdp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseMDP), CurrentValue: strconv.FormatBool(Settings.Search.UseMDP)},
 		"Use_Lmr":      {NameID: "Use_Lmr", HandlerFunc: useLmr, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseLmr), CurrentValue: strconv.FormatBool(Settings.Search.UseLmr)},
 		"Use_Lmp":      {NameID: "Use_Lmp", HandlerFunc: useLmp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseLmp), CurrentValue: strconv.FormatBool(Settings.Search.UseLmp)},
+		"Use_SEE":      {NameID: "Use_SEE", HandlerFunc: useSee, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseSEE), CurrentValue: strconv.FormatBool(Settings.Search.UseSEE)},
 
 		"Use_Ext":      {NameID: "Use_Ext", HandlerFunc: useExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseExt), CurrentValue: strconv.FormatBool(Settings.Search.UseExt)},
 		"Use_CheckExt": {NameID: "Use_CheckExt", HandlerFunc: useCheckExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseCheckExt), CurrentValue: strconv.FormatBool(Settings.Search.UseCheckExt)},
+		"Use_ThreatExt": {NameID: "Use_ThreatExt", HandlerFunc: useThreatExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseThreatExt), CurrentValue: strconv.FormatBool(Settings.Search.UseThreatExt)},
 
 		"Eval_Lazy":     {NameID: "Eval_Lazy", HandlerFunc: evalLazy, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseLazyEval), CurrentValue: strconv.FormatBool(Settings.Eval.UseLazyEval)},
 		"Eval_Mobility": {NameID: "Eval_Mobility", HandlerFunc: evalMob, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseMobility), CurrentValue: strconv.FormatBool(Settings.Eval.UseMobility)},
@@ -84,6 +86,7 @@ func init() {
 
 		"Use_Ext",
 		"Use_CheckExt",
+		"Use_ThreatExt",
 
 		"Eval_Mobility",
 		"Eval_AdvPiece",
@@ -275,42 +278,54 @@ func useIID(u *UciHandler, o *uciOption) {
 func useLmr(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseLmr = v
-	log.Debugf("Set Late Move Reduction to %v", Settings.Search.UseLmr)
+	log.Debugf("Set use Late Move Reduction to %v", Settings.Search.UseLmr)
 }
 
 func useLmp(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseLmp = v
-	log.Debugf("Set Late Move Pruning to %v", Settings.Search.UseLmp)
+	log.Debugf("Set use Late Move Pruning to %v", Settings.Search.UseLmp)
+}
+
+func useSee(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseSEE = v
+	log.Debugf("Set use SEE to %v", Settings.Search.UseSEE)
 }
 
 func useExt(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseExt = v
-	log.Debugf("Set Extensions to %v", Settings.Search.UseExt)
+	log.Debugf("Set use Extensions to %v", Settings.Search.UseExt)
 }
 
 func useCheckExt(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseCheckExt = v
-	log.Debugf("Set Check Extension to %v", Settings.Search.UseCheckExt)
+	log.Debugf("Set use Check Extension to %v", Settings.Search.UseCheckExt)
+}
+
+func useThreatExt(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseThreatExt = v
+	log.Debugf("Set use Threat Extension to %v", Settings.Search.UseThreatExt)
 }
 
 func evalLazy(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Eval.UseLazyEval = v
-	log.Debugf("Set Lazy Eval to %v", Settings.Eval.UseLazyEval)
+	log.Debugf("Set use Lazy Eval to %v", Settings.Eval.UseLazyEval)
 }
 
 func evalMob(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Eval.UseMobility = v
-	log.Debugf("Set Eval Mobility to %v", Settings.Eval.UseMobility)
+	log.Debugf("Set use Eval Mobility to %v", Settings.Eval.UseMobility)
 }
 
 func evalAdv(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Eval.UseAdvancedPieceEval = v
-	log.Debugf("Set Adv Piece Eval to %v", Settings.Eval.UseAdvancedPieceEval)
+	log.Debugf("Set use Adv Piece Eval to %v", Settings.Eval.UseAdvancedPieceEval)
 }
 

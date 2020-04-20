@@ -422,4 +422,46 @@ var Fens = []string{
 	"3b1k2/8/6p1/p6p/1p2PPP1/1B3K2/P7/8 w - -",
 	"8/8/2B2P2/p1b1P1kp/1p2K3/8/P7/8 w - -",
 	"4B3/5K2/4PP2/p5k1/1p1b4/7p/P7/8 w - -",
+
+	// Mates
+	// 3
+	// No392
+	// Mate 3
+	"4r1b1/1p4B1/pN2pR2/RB2k3/1P2N2p/2p3b1/n2P1p1r/5K1n w - -",
+	"b7/p1BR2pK/B1p5/pNk3p1/Pp4Pp/1P3n2/4R2r/7n w - -",
+	"6K1/n1P2N1p/6pr/b1pp3b/n2Bp1k1/1R2R1Pp/3p1P2/2qN1B2 w - -",
+	"8/2P1P1P1/3PkP2/8/4K3/8/8/8 w - -",
+	// Mate 4
+	"r4rk1/pppqbp1p/3pp1p1/8/4P3/1P1P3R/PBP2PPP/R2Q2K1 w - -",
+	"r4qrk/ppp1b1pp/3p1p2/4pPPQ/4P2P/3PB3/PPP5/1K4RR w - -",
+	"r3r3/p1p2p1k/3p2pp/2p5/2P2n2/2N2B2/PPR1PP1q/3RQK2 b - -",
+	"3r4/1p1r4/1Pp5/3p4/p2R4/K1NN4/1P6/kqBB3R w - -",
+	"n7/3p1p2/NpkNp1p1/1p2P3/3Q4/6B1/b7/4K3 w - -",
+	"1b1R2B1/p1n1p3/p3P2K/N1k5/2N2P2/5P2/2PP4/R7 w - -",
+	"K6Q/1p6/pPq4P/P2p2P1/4pP1N/7k/n5R1/1n2BB2 w - -",
+	// Mate 5
+	"1r4k1/1b2K1pp/7b/2pp3P/6NB/2Q2pp1/4p3/5r2 w - -",
+	"r2r4/1p1R3p/5pk1/b1B1Pp2/p4P2/P7/1P5P/1K1R4 w - -",
+	"5rk1/pp4p1/8/3N3p/2P4P/1P4K1/P2r1n2/R3R3 b - -",
+	"6b1/4Kpk1/5r2/8/3B2P1/7R/8/8 w - -",
+	"8/8/8/p7/8/8/R6p/2K2Rbk w - -",
+	"b7/8/7B/7p/8/2p3r1/2P1P1pp/4K1kq w - -",
+	"5R2/6r1/3P4/1BBk4/8/3N4/8/K7 w - -",
+	"1r1r2k1/p4ppp/1qp5/4Pb2/3b1P2/1PP2N2/P2BQ1PP/2KR3R w - -",
+	// Mate 6
+	"4k3/8/4K3/8/4N3/4B3/3P1P2/8 w - -",
+	// takes too long
+	"3rn1kr/1bqn1ppp/p7/2bpP1P1/1p1N1Q2/1P3B2/PBP1NR1P/3R2K1 w - -",
+	"8/4p2p/nn6/2p2N2/8/8/4NK2/7k w - -",
+	"6r1/p1qp1p1k/4nBpb/4P3/n3B2Q/3P2N1/PPP4N/1K2R3 w - -",
+	"6k1/p4ppp/5n2/1Pppr3/5b2/1BPP1P1q/1P3P1P/R2Q1NK1 w - -",
+	"8/8/8/4N3/2R5/4k3/8/5K2 w - -",
+	"r5k1/1ppnqp2/2b1p3/3p4/3PnP1N/1P1BP2Q/P7/4K2R w K -",
+	"2kr3r/Qpp1n1p1/2b2pp1/4b3/8/6N1/PP3P2/R1B2RK1 w - -",
+	"r1br4/1p2npkp/3Bpbp1/pqp5/2N1R3/1P1P1QP1/1PP2PBP/R5K1 w - -",
+	"K7/3p4/2p4Q/2ppp3/2pkn1R1/2p1p3/4P3/8 w - -",
+	"rn3rk1/pbppq1pp/1p2pb2/4N2Q/3PN3/3B4/PPP2PPP/R3K2R w KQ -",
+	"3r1rk1/1p3pnp/p3pBp1/1qPpP3/1P1P2R1/P2Q3R/6PP/6K1 w - -",
+	"k7/P7/P7/P7/P7/P7/P7/R3K3 w Q -",
+	"1b4k1/r4p2/5Pp1/8/8/8/8/2Q4K w - -",
 }
