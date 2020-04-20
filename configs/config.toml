@@ -26,8 +26,10 @@ UseEvalTT = false
 
 # general search
 Ponder = true
+
 UseQuiescence = true
 UseQSStandpat = true
+UseSee = false
 
 UsePVS = true
 UseKiller = true
@@ -49,7 +51,7 @@ LmrDepth = 3
 LmrMovesSearched = 3
 
 UseLmp = false
-UseSee = false
+
 
 UseExt = true
 UseCheckExt = true

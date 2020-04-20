@@ -28,9 +28,11 @@ package search
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/frankkopp/FrankyGo/internal/config"
 	"github.com/frankkopp/FrankyGo/internal/movegen"
 	"github.com/frankkopp/FrankyGo/internal/position"
 	. "github.com/frankkopp/FrankyGo/internal/types"
@@ -161,40 +163,65 @@ func TestLeastValuablePiece(t *testing.T) {
 func TestSee(t *testing.T) {
 	p := position.NewPosition("1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - -")
 	move := movegen.NewMoveGen().GetMoveFromUci(p, "d3e5")
-
 	seeScore := see(p, move)
 	logTest.Debug("See score:", seeScore)
 	assert.EqualValues(t, -220, seeScore)
 
-	//  Value    seeScore = attacks.see(position, move);
-	//  LOG__DEBUG(Logger::get().TEST_LOG, "See score = {}", seeScore);
-	//  EXPECT_EQ(-220, seeScore);
-	//
-	//  // 1k1r4/1pp4p/p7/4p3/8/P5P1/1PP4P/2K1R3 w - - ; Rxe5?
-	//  position = Position("1k1r4/1pp4p/p7/4p3/8/P5P1/1PP4P/2K1R3 w - -");
-	//  move     = Misc::getMoveFromUCI(position, "e1e5");
-	//  seeScore = attacks.see(position, move);
-	//  LOG__DEBUG(Logger::get().TEST_LOG, "See score = {}", seeScore);
-	//  EXPECT_EQ(100, seeScore);
-	//
-	//  // 5q1k/8/8/8/RRQ2nrr/8/8/K7 w - - 0 1
-	//  position = Position("5q1k/8/8/8/RRQ2nrr/8/8/K7 w - -");
-	//  move     = Misc::getMoveFromUCI(position, "c4f4");
-	//  seeScore = attacks.see(position, move);
-	//  LOG__DEBUG(Logger::get().TEST_LOG, "See score = {}", seeScore);
-	//  EXPECT_EQ(-580, seeScore);
-	//
-	//  // k6q/3n1n2/3b4/4p3/3P1P2/3N1N2/8/K7 w - -
-	//  position = Position("k6q/3n1n2/3b4/4p3/3P1P2/3N1N2/8/K7 w - -");
-	//  move     = Misc::getMoveFromUCI(position, "d3e5");
-	//  seeScore = attacks.see(position, move);
-	//  LOG__DEBUG(Logger::get().TEST_LOG, "See score = {}", seeScore);
-	//  EXPECT_EQ(100, seeScore);
-	//
-	//  // r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R2R1K1 b kq e3 0 1
-	//  position = Position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R2R1K1 b kq e3 0 1 ");
-	//  move     = Misc::getMoveFromUCI(position, "a2b1Q");
-	//  seeScore = attacks.see(position, move);
-	//  LOG__DEBUG(Logger::get().TEST_LOG, "See score = {}", seeScore);
-	//  EXPECT_EQ(500, seeScore);
+	p = position.NewPosition("1k1r4/1pp4p/p7/4p3/8/P5P1/1PP4P/2K1R3 w - -")
+	move = movegen.NewMoveGen().GetMoveFromUci(p, "e1e5")
+	seeScore = see(p, move)
+	logTest.Debug("See score:", seeScore)
+	assert.EqualValues(t, 100, seeScore)
+
+	p = position.NewPosition("5q1k/8/8/8/RRQ2nrr/8/8/K7 w - -")
+	move = movegen.NewMoveGen().GetMoveFromUci(p, "c4f4")
+	seeScore = see(p, move)
+	logTest.Debug("See score:", seeScore)
+	assert.EqualValues(t, -580, seeScore)
+
+	p = position.NewPosition("k6q/3n1n2/3b4/4p3/3P1P2/3N1N2/8/K7 w - -")
+	move = movegen.NewMoveGen().GetMoveFromUci(p, "d3e5")
+	seeScore = see(p, move)
+	logTest.Debug("See score:", seeScore)
+	assert.EqualValues(t, 100, seeScore)
+
+	p = position.NewPosition("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R2R1K1 b kq e3")
+	move = movegen.NewMoveGen().GetMoveFromUci(p, "a2b1Q")
+	seeScore = see(p, move)
+	logTest.Debug("See score:", seeScore)
+	assert.EqualValues(t, 500, seeScore)
+}
+
+func TestTimingSee(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
+	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
+	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
+
+	config.Settings.Search.UseBook = false
+	config.Settings.Search.UseSEE = true
+
+	p := position.NewPosition("k6q/3n1n2/3b4/4p3/3P1P2/3N1N2/8/K7 w - -")
+	move := movegen.NewMoveGen().GetMoveFromUci(p, "d3e5")
+
+	const rounds = 5
+	const iterations uint64 = 10_000_000
+
+	seeScore := ValueNA
+	for r := 1; r <= rounds; r++ {
+		out.Printf("Round %d\n", r)
+		start := time.Now()
+		for i := uint64(0); i < iterations; i++ {
+			seeScore = see(p, move)
+		}
+		elapsed := time.Since(start)
+		out.Printf("Test took %s for %d iterations\n", elapsed, iterations)
+		out.Printf("Test took %d ns per iteration\n", elapsed.Nanoseconds()/int64(iterations))
+		out.Printf("Iterations per sec %d\n", int64(iterations*1e9)/elapsed.Nanoseconds())
+	}
+	logTest.Debug("See score:", seeScore)
+	assert.EqualValues(t, 100, seeScore)
+
 }

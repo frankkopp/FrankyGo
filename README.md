@@ -6,7 +6,7 @@ Go implementation of a UCI compatible chess engine.
 [![Go Report Card](https://goreportcard.com/badge/github.com/frankkopp/FrankyGo)](https://goreportcard.com/report/github.com/frankkopp/FrankyGo)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/frankkopp/WorkerPool/blob/master/LICENSE)
 
-## Features 
+## Features (v0.8.0)
 * UCI protocol (to use the engine in Arena, xboard, Fritz or other chess user interfaces)
     * UCI Options
     * UCI Search Modes
@@ -32,9 +32,9 @@ Go implementation of a UCI compatible chess engine.
     * Late Move Reductions (needs further tuning)
     * Late Move Pruning (needs further tuning)
     * Check extension (needs further tuning/testing)
-    * Mate threat extension (needs further tuning/testing)
-    * 
-    * TODO: SEE for quiescence, Futility Pruning, Aspiration Windows, Multi-cut Pruning, History Pruning 
+    * Mate threat extension (deactivated - needs further tuning/testing - currently weakens play)
+    * SEE for deciding on good qsearch moves
+    * TODO: Futility Pruning, Aspiration Windows, Multi-cut Pruning, History Pruning 
 * Transposition Table
 * Opening Book from PGN, SAN and Simple move list files and persistent cache
 * Evaluation

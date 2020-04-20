@@ -164,17 +164,20 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseLmr = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "LMR"))
 
+	Settings.Search.UseSEE = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "SEE"))
+
 	// Late Move Pruning
 	// Settings.Search.UseLmp = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "LMP"))
 
 	// Extensions
-	Settings.Search.UseExt = true
-	Settings.Search.UseCheckExt = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "CHECK"))
-
-	Settings.Search.UseThreatExt = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "THREAT"))
+	// Settings.Search.UseExt = true
+	// Settings.Search.UseCheckExt = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "CHECK"))
+	//
+	// Settings.Search.UseThreatExt = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "THREAT"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////

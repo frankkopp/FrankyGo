@@ -170,6 +170,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 	bestNodeMove := MoveNone // used to store in the TT
 	ttMove := MoveNone
 	ttType := ALPHA
+	hasCheck := position.HasCheck()
 	matethreat := false
 
 	// TT Lookup
@@ -235,7 +236,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			!isPV &&
 			depth >= Settings.Search.NmpDepth &&
 			position.MaterialNonPawn(position.NextPlayer()) > 0 &&
-			!position.HasCheck() {
+			!hasCheck {
 			// possible other criteria: eval > beta
 
 			// determine depth reduction
@@ -448,7 +449,9 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				move != (*myMg.KillerMoves())[1] &&
 				move.MoveType() != Promotion &&
 				!position.WasCapturingMove() &&
-				!position.HasCheck() {
+				!hasCheck && // pre move
+				!position.HasCheck() && // post move
+				!matethreat { // from pre move null move check
 
 				// LMP - Late Move Pruning
 				// aka Move Count Based Pruning
@@ -845,19 +848,21 @@ func (s *Search) evaluate(position *position.Position, ply int) Value {
 // to only look at good captures. Might be improved with SEE in the
 // future
 func (s *Search) goodCapture(p *position.Position, move Move) bool {
-	// Lower value piece captures higher value piece
-	// With a margin to also look at Bishop x Knight
-	return p.GetPiece(move.From()).ValueOf()+50 < p.GetPiece(move.To()).ValueOf() ||
-		// all recaptures should be looked at
-		(p.LastMove() != MoveNone && p.LastMove().To() == move.To() && p.LastCapturedPiece() != PieceNone) ||
-		// undefended pieces captures are good
-		// If the defender is "behind" the attacker this will not be recognized
-		// here This is not too bad as it only adds a move to qsearch which we
-		// could otherwise ignore
-		!p.IsAttacked(move.To(), p.NextPlayer().Flip()) ||
+	if Settings.Search.UseSEE {
 		// Check SEE score of higher value pieces to low value pieces
-		(Settings.Search.UseSEE && see(p, move) > 0)
-	// || (SearchConfig::USE_QS_SEE && (Attacks::see(position, move) > 0));
+		return see(p, move) > 0
+	} else {
+		// Lower value piece captures higher value piece
+		// With a margin to also look at Bishop x Knight
+		return p.GetPiece(move.From()).ValueOf()+50 < p.GetPiece(move.To()).ValueOf() ||
+			// all recaptures should be looked at
+			(p.LastMove() != MoveNone && p.LastMove().To() == move.To() && p.LastCapturedPiece() != PieceNone) ||
+			// undefended pieces captures are good
+			// If the defender is "behind" the attacker this will not be recognized
+			// here This is not too bad as it only adds a move to qsearch which we
+			// could otherwise ignore
+			!p.IsAttacked(move.To(), p.NextPlayer().Flip())
+	}
 }
 
 // savePV adds the given move as first move to a cleared dest and the appends

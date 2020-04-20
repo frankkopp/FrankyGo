@@ -56,13 +56,14 @@ func see(p *position.Position, move Move) Value {
 	// get all attacks to the square as a bitboard
 	remainingAttacks := AttacksTo(p, toSquare, White) | AttacksTo(p, toSquare, Black)
 
-	//  LOG__TRACE(Logger::get().SEARCH_LOG, "Determine gain for {} {}", position.printFen(), printMove(move));
+	// log := myLogging.GetLog()
+	// log.Debugf("Determine gain for %s %s", p.StringFen(), move.StringUci())
 
 	// initial value of the first capture
 	capturedValue := p.GetPiece(toSquare).ValueOf()
 	gain[ply] = capturedValue
 
-	//  LOG__TRACE(Logger::get().SEARCH_LOG, "gain[{}] = {} | {}", ply, printValue(gain[ply]), printMove(move));
+	// log.Debugf("gain[%d] = %s | %s", ply, gain[ply].String(), move.StringUci());
 
 	// loop through all remaining attacks/captures
 	for {
@@ -75,8 +76,6 @@ func see(p *position.Position, move Move) Value {
 		} else {
 			gain[ply] = movedPiece.ValueOf() - gain[ply-1]
 		}
-
-		//    LOG__TRACE(Logger::get().SEARCH_LOG, "gain[{}] = {} | {}", ply, printValue(gain[ply]), printMove(createMove(fromSquare, toSquare)));
 
 		// pruning if defended - will not change final see score
 		if max(-gain[ply-1], gain[ply]) < 0 {
@@ -92,11 +91,14 @@ func see(p *position.Position, move Move) Value {
 
 		// determine next capture
 		fromSquare = getLeastValuablePiece(p, remainingAttacks, nextPlayer)
-		movedPiece = p.GetPiece(fromSquare)
 
-		if fromSquare == SqNone { // while
+		// break if no more attackers
+		if fromSquare == SqNone {
 			break
 		}
+
+		// log.Debugf("gain[%d] = %s | %s%s", ply, gain[ply].String(), fromSquare.String(), toSquare.String())
+		movedPiece = p.GetPiece(fromSquare)
 	}
 
 	ply--
