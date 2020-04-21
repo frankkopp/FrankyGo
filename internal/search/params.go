@@ -34,17 +34,17 @@ import (
 // static or pre-computed parameters. Mostly for params too complex to be
 // part of the search configuration
 
-// lmrR is a lookup table for late move reductions in the dimensions
+// lmr is a lookup table for late move reductions in the dimensions
 // depth and moves searched
-var lmrR [32][64]int
+var lmr [32][64]int
 
 // LmrReduction returns the search depth reduction for LMR
 // depended on depth and moves searched
 func LmrReduction(depth int, movesSearched int) int {
 	if depth >= 32 || movesSearched >= 64 {
-		return lmrR[31][63]
+		return lmr[31][63]
 	}
-	return lmrR[depth][movesSearched]
+	return lmr[depth][movesSearched]
 }
 
 // prepare the pre-computed values
@@ -53,11 +53,11 @@ func init() {
 		for j := 0; j < 64; j++ {
 			switch {
 			case i <= 3:
-				lmrR[i][j] = 1
+				lmr[i][j] = 1
 			case j <= 3:
-				lmrR[i][j] = 1
+				lmr[i][j] = 1
 			default:
-				lmrR[i][j] = int(math.Round(((float64(i) * 0.7) * (float64(j) * 0.005)) + 1.0))
+				lmr[i][j] = int(math.Round(((float64(i) * 0.7) * (float64(j) * 0.005)) + 1.0))
 			}
 		}
 	}
@@ -67,7 +67,7 @@ func init() {
 func printLmr() {
 	for i := 3; i < 32; i++ {
 		for j := 3; j < 64; j++ {
-			out.Printf("%2d ", lmrR[i][j])
+			out.Printf("%2d ", lmr[i][j])
 		}
 		out.Println()
 	}
@@ -76,10 +76,10 @@ func printLmr() {
 var lmp [16]int
 
 func init() {
-	for i := 0; i < 16; i++ {
+	for i := 1; i < 16; i++ {
 		// from Crafty
-		lmp[i] = 3 + int(math.Pow(float64(i) + 0.5, 1.9))
-		// out.Printf("%2d ", lmp[i])
+		lmp[i] = 6 + int(math.Pow(float64(i)+0.5, 1.3))
+		out.Printf("%2d ", lmp[i])
 	}
 }
 

@@ -97,7 +97,7 @@ func init() {
 	Settings.Search.LmrDepth = 3
 	Settings.Search.LmrMovesSearched = 3
 	Settings.Search.UseLmp = false
-	Settings.Search.UseSEE = false
+	Settings.Search.UseSEE = true
 	Settings.Search.UseExt = true
 	Settings.Search.UseCheckExt = true
 	Settings.Search.UseThreatExt = false

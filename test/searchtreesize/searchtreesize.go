@@ -106,8 +106,8 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().NMPMateAlpha
-	ptrToSpecial2 = &s.Statistics().ThreatExtension
+	ptrToSpecial = &s.Statistics().LmpCuts
+	ptrToSpecial2 = &s.Statistics().LeafPositionsEvaluated
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
@@ -153,8 +153,13 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseTTMove = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "TTMove"))
 
+	// IID
 	Settings.Search.UseIID = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "MoveSort"))
+
+	// SEE for qsearch
+	Settings.Search.UseSEE = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "SEE"))
 
 	// Null Move
 	Settings.Search.UseNullMove = true
@@ -164,12 +169,9 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseLmr = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "LMR"))
 
-	Settings.Search.UseSEE = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "SEE"))
-
 	// Late Move Pruning
-	// Settings.Search.UseLmp = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "LMP"))
+	Settings.Search.UseLmp = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "LMP"))
 
 	// Extensions
 	// Settings.Search.UseExt = true

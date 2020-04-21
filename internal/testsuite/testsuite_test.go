@@ -129,7 +129,7 @@ func TestNewTestSuite(t *testing.T) {
 // Test time: 26.101 ms
 func TestRunTestSuiteTest(t *testing.T) {
 	config.Settings.Search.UseLmp = true
-	ts, _ := NewTestSuite("test/testdata/testsets/franky_tests.epd", 2*time.Second, 0)
+	ts, _ := NewTestSuite("test/testdata/testsets/franky_tests.epd", 3*time.Second, 0)
 	ts.RunTests()
 	// assert.GreaterOrEqual(t, ts.LastResult.SuccessCounter, 12)
 }
@@ -223,11 +223,35 @@ func TestMateTests(t *testing.T) {
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
 // Test time: 16m47.1436222s
+
+// +LMP
+// Summary:
+// EPD File:   test/testdata/testsets/wac.epd
+// SearchTime: 5.000 ms
+// MaxDepth:   0
+// Date:    2020-04-21 12:21:06.2003336 +0200 CEST
+// Successful: 182 (90 %)
+// Failed:    19  (9 %)
+// Skipped:    0   (0 %)
+// Not tested: 0   (0 %)
+// Test time: 16m47.7678427s
+
+// -LMP
+// Summary:
+// EPD File:   test/testdata/testsets/wac.epd
+// SearchTime: 5.000 ms
+// MaxDepth:   0
+// Date:    2020-04-21 12:38:51.1514884 +0200 CEST
+// Successful: 183 (91 %)
+// Failed:    18  (8 %)
+// Skipped:    0   (0 %)
+// Not tested: 0   (0 %)
+// Test time: 16m47.683437s
 func TestWACTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UseLmp = true
+	config.Settings.Search.UseLmp = false
 	ts, _ := NewTestSuite("test/testdata/testsets/wac.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
@@ -242,31 +266,81 @@ func TestWACTests(t *testing.T) {
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
 // Test time: 28m47.8638566s
+
+// +LMP
+// Summary:
+// EPD File:   test/testdata/testsets/crafty_test.epd
+// SearchTime: 5.000 ms
+// MaxDepth:   0
+// Date:    2020-04-21 13:18:53.7538355 +0200 CEST
+// Successful: 161 (46 %)
+// Failed:    184 (53 %)
+// Skipped:    0   (0 %)
+// Not tested: 0   (0 %)
+// Test time: 28m49.5454036s
+
+// -LMP
+// Summary:
+// EPD File:   test/testdata/testsets/crafty_test.epd
+// SearchTime: 5.000 ms
+// MaxDepth:   0
+// Date:    2020-04-21 13:50:39.9248157 +0200 CEST
+// Successful: 162 (46 %)
+// Failed:    183 (53 %)
+// Skipped:    0   (0 %)
+// Not tested: 0   (0 %)
+// Test time: 28m49.573198s
 func TestCraftyTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UseLmp = true
+	config.Settings.Search.UseLmp = false
 	ts, _ := NewTestSuite("test/testdata/testsets/crafty_test.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
 
-// Summary: LMR + LMP
-// EPD File:   testsets/ecm98.epd
+// +LMP
+// Summary:
+// EPD File:   test/testdata/testsets/ecm98.epd
 // SearchTime: 5.000 ms
 // MaxDepth:   0
-// Date:       2020-04-15 00:21:43.5869803 +0200 CEST
-// Successful: 347 (45 %)
-// Failed:     422 (54 %)
+// Date:    2020-04-21 14:55:50.4623455 +0200 CEST
+// Successful: 407 (52 %)
+// Failed:    362 (47 %)
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
-// Test time: 1h4m17.0858004s
+// Test time: 1h4m15.062196s
+
+// -LMP
+// Summary:
+// EPD File:   test/testdata/testsets/ecm98.epd
+// SearchTime: 5.000 ms
+// MaxDepth:   0
+// Date:    2020-04-21 16:12:54.0061574 +0200 CEST
+// Successful: 393 (51 %)
+// Failed:    376 (48 %)
+// Skipped:    0   (0 %)
+// Not tested: 0   (0 %)
+// Test time: 1h4m23.2395533s
+
+// -SEE
+// Summary:
+// EPD File:   test/testdata/testsets/ecm98.epd
+// SearchTime: 5.000 ms
+// MaxDepth:   0
+// Date:    2020-04-21 18:51:01.1937159 +0200 CEST
+// Successful: 396 (51 %)
+// Failed:    373 (48 %)
+// Skipped:    0   (0 %)
+// Not tested: 0   (0 %)
+// Test time: 1h4m15.4524479s
 func TestECMTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UseLmr = true
-	config.Settings.Search.UseLmp = true
+	config.Settings.Search.UseLmr = false
+	config.Settings.Search.UseLmp = false
+	config.Settings.Search.UseSEE = false
 	ts, _ := NewTestSuite("test/testdata/testsets/ecm98.epd", 5*time.Second, 0)
 	ts.RunTests()
 }

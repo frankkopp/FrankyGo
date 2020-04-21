@@ -29,7 +29,7 @@ Ponder = true
 
 UseQuiescence = true
 UseQSStandpat = true
-UseSee = false
+UseSee = true
 
 UsePVS = true
 UseKiller = true
@@ -51,7 +51,6 @@ LmrDepth = 3
 LmrMovesSearched = 3
 
 UseLmp = false
-
 
 UseExt = true
 UseCheckExt = true

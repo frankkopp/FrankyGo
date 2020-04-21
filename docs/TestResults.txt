@@ -27,9 +27,10 @@ lmrR[i][j] = int(math.Round(((float64(i) * 0.7) * (float64(j) * 0.005)) + float6
 00 FrankyGo Config 1 - Stockfish Weak       : 27,0/35 26-7-2 (01111111=1100101111110111101111110=)  77%  +210
 
 MateThreat and hasCheck as cond for LMR (w/o Ext) (testing on pc)
-
-
-
+-----------------00 FrankyGo Config 1-----------------
+00 FrankyGo Config 1 - 00 FrankyGo Config 2 : 24,5/50 14-15-21 (1==10====000111===1=0==0=100011===0==1==101100=100)  49%    -7
+00 FrankyGo Config 1 - 20 Franky-1.0        : 23,5/50 19-22-9 (0101==10000110101010=11=1==010=00010=11110011000=0)  47%   -21
+00 FrankyGo Config 1 - Stockfish Weak       : 34,0/50 31-13-6 (=011=11111111101=0101110110101=10001=110=111010111)  68%  +131
 
 EXT for HasCheck (PV only)
 -----------------00 FrankyGo Config 1-----------------
@@ -39,17 +40,34 @@ EXT for HasCheck (PV only)
 
 EXT for HasCheck (All moves)
 -----------------00 FrankyGo Config 1-----------------
-00 FrankyGo Config 1 - 00 FrankyGo Config 2 : 22,0/40 15-11-14 (00001=01=111===01110001====11=0=0=1=1=11)  55%   +35
-00 FrankyGo Config 1 - 20 Franky-1.0        : 27,0/40 26-12-2 (11111=101011101011001=101110011010111101)  68%  +131
-00 FrankyGo Config 1 - Stockfish Weak       : 29,5/40 26-7-7 (0=1111111011==01010=0111111110111==11=11)  74%  +182
+00 FrankyGo Config 1 - 00 FrankyGo Config 2 : 22,0/40 15-11-14 55%   +35
+00 FrankyGo Config 1 - 20 Franky-1.0        : 27,0/40 26-12-2  68%  +131
+00 FrankyGo Config 1 - Stockfish Weak       : 29,5/40 26-7-7   74%  +182
 
 EXT for  MateThreat (All moves)
 -----------------00 FrankyGo Config 1-----------------
-00 FrankyGo Config 1 - 00 FrankyGo Config 2 : 7,5/35 2-22-11 (000000==010000001=0000=0==00====00=?)  21%  -230
-00 FrankyGo Config 1 - 20 Franky-1.0        : 2,5/35 1-31-3 (01000000000000000=0000000=00000000= )   7%  -449
-00 FrankyGo Config 1 - Stockfish Weak       : 19,0/35 17-14-4 (0=001101101=1001011101011110=01=010 )  54%   +28
-
-
-
+00 FrankyGo Config 1 - 00 FrankyGo Config 2 : 7,5/35 2-22-11   21%  -230
+00 FrankyGo Config 1 - 20 Franky-1.0        : 2,5/35 1-31-3    7%  -449
+00 FrankyGo Config 1 - Stockfish Weak       : 19,0/35 17-14-4  54%   +28
 
 SEE (testing on macpc)
+-----------------00 FrankyGo Config 1-----------------
+00 FrankyGo Config 1 - 00 FrankyGo Config 2 : 27,5/50 17-12-21  55%   +35
+00 FrankyGo Config 1 - 01 Franky-1.0        : 26,0/50 24-22-4   52%   +14
+00 FrankyGo Config 1 - Stockfish Weak       : 41,5/50 40-7-3    83%  +275
+
+lmp[i] = 4 + int(math.Pow(float64(i) + 1, 1.5)) (pc)
++All others
+-----------------00 FrankyGo Config 1-----------------
+00 FrankyGo Config 1 - 00 FrankyGo Config 2 : 17,5/40 10-15-15 44%  -42
+00 FrankyGo Config 1 - 20 Franky-1.0        : 16,5/40 13-20-7 41%   -63
+00 FrankyGo Config 1 - Stockfish Weak       : 24,5/40 23-14-3 61%   +78
+
+lmp[i] = 6 + int(math.Pow(float64(i) + 0.5, 1.3)) (macpc)
+-----------------00 FrankyGo Config 1-----------------
+00 FrankyGo Config 1 - 00 FrankyGo Config 2 : 25,0/50 16-16-18 50%    ±0
+00 FrankyGo Config 1 - 01 Franky-1.0        : 27,0/50 24-20-6  54%   +28
+00 FrankyGo Config 1 - Stockfish Weak       : 38,5/50 37-10-3  77%  +210
+
+
+
