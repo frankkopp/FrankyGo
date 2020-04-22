@@ -354,6 +354,153 @@ func TestPosition_WasLegalMove(t *testing.T) {
 	assert.False(t, position.IsLegalMove(CreateMove(SqE8, SqC8, Castling, PtNone)))
 }
 
+func TestPositionGivesCheck(t *testing.T) {
+
+	// DIRECT CHECKS
+
+	// Pawns
+	p := NewPosition("4r3/1pn3k1/4p1b1/p1Pp1P1r/3P2NR/1P3B2/3K2P1/4R3 w - -")
+	move := CreateMove(SqF5, SqF6, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	p = NewPosition("5k2/4pp2/1N2n1p1/r3P2p/P5PP/2rR1K2/P7/3R4 b - -")
+	move = CreateMove(SqH5, SqG4, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	// promotion
+	p = NewPosition("1k3r2/1p1bP3/2p2p1Q/Ppb5/4Rp1P/2q2N1P/5PB1/6K1 w - -")
+	move = CreateMove(SqE7, SqF8, Promotion, Queen)
+	assert.True(t, p.GivesCheck(move))
+
+	p = NewPosition("1r3r2/1p1bP2k/2p2n2/p1Pp4/P2N1PpP/1R2p3/1P2P1BP/3R2K1 w - -")
+	move = CreateMove(SqE7, SqF8, Promotion, Knight)
+	assert.True(t, p.GivesCheck(move))
+
+	// Knights
+	p = NewPosition("5k2/4pp2/1N2n1p1/r3P2p/P5PP/2rR1K2/P7/3R4 w - -")
+	move = CreateMove(SqB6, SqD7, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	p = NewPosition("5k2/4pp2/1N2n1p1/r3P2p/P5PP/2rR1K2/P7/3R4 b - -")
+	move = CreateMove(SqE6, SqD4, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	// Rooks
+	p = NewPosition("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P3K3/3R4 w - -")
+	move = CreateMove(SqD3, SqD8, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	p = NewPosition("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P3K3/3R4 b - -")
+	move = CreateMove(SqC3, SqC2, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	// blocked opponent piece - no check
+	p = NewPosition("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P2RK3/8 b - -")
+	move = CreateMove(SqC3, SqC2, Normal, PtNone)
+	assert.False(t, p.GivesCheck(move))
+
+	// blocked own piece - no check
+	p = NewPosition("5k2/4pp2/1N2n1pp/r3P3/P5PP/2rR4/P2nK3/3R4 b - -")
+	move = CreateMove(SqC3, SqC2, Normal, PtNone)
+	assert.False(t, p.GivesCheck(move))
+
+	// Bishop
+	p = NewPosition("6k1/3q2b1/p1rrnpp1/P3p3/2B1P3/1p1R3Q/1P4PP/1B1R3K w - -")
+	move = CreateMove(SqC4, SqE6, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	// Queen
+	p = NewPosition("5k2/4pp2/1N2n1pp/r3P3/P5PP/2qR4/P3K3/3R4 b - -")
+	move = CreateMove(SqC3, SqC2, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	p = NewPosition("6k1/3q2b1/p1rrnpp1/P3p3/2B1P3/1p1R3Q/1P4PP/1B1R3K w - -")
+	move = CreateMove(SqH3, SqE6, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	p = NewPosition("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -")
+	move = CreateMove(SqE7, SqE3, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	// no check
+	p = NewPosition("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -")
+	move = CreateMove(SqE7, SqE4, Normal, PtNone)
+	assert.False(t, p.GivesCheck(move))
+
+	// Castling checks
+	p = NewPosition("r4k1r/8/8/8/8/8/8/R3K2R w KQ -")
+	move = CreateMove(SqE1, SqG1, Castling, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	p = NewPosition("r2k3r/8/8/8/8/8/8/R3K2R w KQ -")
+	move = CreateMove(SqE1, SqC1, Castling, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	p = NewPosition("r3k2r/8/8/8/8/8/8/R4K1R b kq -")
+	move = CreateMove(SqE8, SqG8, Castling, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	p = NewPosition("r3k2r/8/8/8/8/8/8/R2K3R b kq -")
+	move = CreateMove(SqE8, SqC8, Castling, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	p = NewPosition("r6r/8/8/8/8/8/8/2k1K2R w K -")
+	move = CreateMove(SqE1, SqG1, Castling, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	// en passant checks
+	p = NewPosition("8/3r1pk1/p1R2p2/1p5p/r2Pp3/PRP3P1/4KP1P/8 b - d3")
+	move = CreateMove(SqE4, SqD3, EnPassant, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	// REVEALED CHECKS
+	p = NewPosition("6k1/8/3P1bp1/2BNp3/8/1Q3P1q/7r/1K2R3 w - -")
+	move = CreateMove(SqD5, SqE7, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	p = NewPosition("6k1/8/3P1bp1/2BNp3/8/1Q3P1q/7r/1K2R3 w - -")
+	move = CreateMove(SqD5, SqC7, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	p = NewPosition("1Q1N2k1/8/3P1bp1/2B1p3/8/5P1q/7r/1K2R3 w - -")
+	move = CreateMove(SqD8, SqE6, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	p = NewPosition("1R1N2k1/8/3P1bp1/2B1p3/8/5P1q/7r/1K2R3 w - -")
+	move = CreateMove(SqD8, SqE6, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	// revealed by en passant capture
+	p = NewPosition("8/b2r1pk1/p1R2p2/1p5p/r2Pp3/PRP3P1/5K1P/8 b - d3")
+	move = CreateMove(SqE4, SqD3, EnPassant, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	// Misc
+	p = NewPosition("2r1r3/pb1n1kpn/1p1qp3/6p1/2PP4/8/P2Q1PPP/3R1RK1 w - -")
+	move = CreateMove(SqF2, SqF4, Normal, PtNone)
+	assert.False(t, p.GivesCheck(move))
+
+	p = NewPosition("2r1r1k1/pb3pp1/1p1qpn2/4n1p1/2PP4/6KP/P2Q1PP1/3RR3 b - -")
+	move = CreateMove(SqE5, SqD3, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	p = NewPosition("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q1NNQQ2/1p6/qk3KB1 b - -")
+	move = CreateMove(SqB1, SqC2, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	p = NewPosition("8/8/8/8/8/5K2/R7/7k w - -")
+	move = CreateMove(SqA2, SqH2, Normal, PtNone)
+	assert.True(t, p.GivesCheck(move))
+
+	p = NewPosition("r1bqkb1r/ppp1pppp/2n2n2/1B1P4/8/8/PPPP1PPP/RNBQK1NR w KQkq -")
+	move = CreateMove(SqD5, SqC6, Normal, PtNone)
+	assert.False(t, p.GivesCheck(move))
+
+	p = NewPosition("rnbq1bnr/pppkpppp/8/3p4/3P4/3Q4/PPP1PPPP/RNB1KBNR w KQ -")
+	move = CreateMove(SqD3, SqH7, Normal, PtNone)
+	assert.False(t, p.GivesCheck(move))
+}
+
 func TestPosition_CheckRepetitions(t *testing.T) {
 	// test 1
 	position := NewPosition()

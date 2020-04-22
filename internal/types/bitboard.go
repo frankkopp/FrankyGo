@@ -1004,7 +1004,7 @@ func pseudoAttacksPreCompute() {
 		for _, pt := range []PieceType{King, Pawn, Knight} {
 			for s := SqA1; s <= SqH8; s++ {
 				for i := 0; i < len(steps[pt]); i++ {
-					to := Square(int(s) + c.MoveDirection()*int(steps[pt][i]))
+					to := Square(int(s) + c.Direction()*int(steps[pt][i]))
 					if to.IsValid() && squareDistance[s][to] < 3 { // no wrap around board edges
 						if pt == Pawn {
 							pawnAttacks[c][s] |= sqBb[to]

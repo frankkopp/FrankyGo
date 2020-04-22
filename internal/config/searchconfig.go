@@ -34,9 +34,11 @@ type searchConfiguration struct {
 	BookFile   string
 	BookFormat string
 
-	UsePonder     bool
+	UsePonder bool
+
 	UseQuiescence bool
 	UseQSStandpat bool
+	UseSEE        bool
 
 	UsePVS       bool
 	UseKiller    bool
@@ -57,16 +59,15 @@ type searchConfiguration struct {
 	NmpDepth     int
 	NmpReduction int
 
-	UseLmr           bool
-	LmrDepth         int
-	LmrMovesSearched int
-
-	UseLmp bool
-	UseSEE bool
-
 	UseExt       bool
 	UseCheckExt  bool
 	UseThreatExt bool
+
+	UseFP            bool
+	UseLmp           bool
+	UseLmr           bool
+	LmrDepth         int
+	LmrMovesSearched int
 }
 
 // sets defaults which might be overwritten by config file
@@ -75,32 +76,41 @@ func init() {
 	Settings.Search.BookPath = "./assets/books"
 	Settings.Search.BookPath = "book.txt"
 	Settings.Search.BookFormat = "Simple"
+
 	Settings.Search.UsePonder = true
+
 	Settings.Search.UseQuiescence = true
 	Settings.Search.UseQSStandpat = true
+	Settings.Search.UseSEE = true
+
 	Settings.Search.UsePVS = true
 	Settings.Search.UseKiller = true
+	Settings.Search.UseIID = true
+	Settings.Search.IIDDepth = 6
+	Settings.Search.IIDReduction = 2
+
 	Settings.Search.UseTT = true
 	Settings.Search.TTSize = 128
 	Settings.Search.UseTTMove = true
 	Settings.Search.UseTTValue = true
 	Settings.Search.UseQSTT = true
 	Settings.Search.UseEvalTT = false
+
 	Settings.Search.UseMDP = true
+
 	Settings.Search.UseNullMove = true
 	Settings.Search.NmpDepth = 3
 	Settings.Search.NmpReduction = 2
-	Settings.Search.UseIID = true
-	Settings.Search.IIDDepth = 6
-	Settings.Search.IIDReduction = 2
-	Settings.Search.UseLmr = true
-	Settings.Search.LmrDepth = 3
-	Settings.Search.LmrMovesSearched = 3
-	Settings.Search.UseLmp = false
-	Settings.Search.UseSEE = true
+
 	Settings.Search.UseExt = true
 	Settings.Search.UseCheckExt = true
 	Settings.Search.UseThreatExt = false
+
+	Settings.Search.UseFP = false
+	Settings.Search.UseLmp = true
+	Settings.Search.UseLmr = true
+	Settings.Search.LmrDepth = 3
+	Settings.Search.LmrMovesSearched = 3
 
 }
 

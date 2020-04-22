@@ -216,9 +216,9 @@ func (e *Evaluator) evaluate() Value {
 // finalEval returns the value which is calculated always from the view of
 // white from the view of the next player of the position
 func (e *Evaluator) finalEval(value Value) Value {
-	// we can use the MoveDirection factor to avoid an if statement
-	// MoveDirection returns positive 1 for White and negative 1 (-1) for Black
-	return value * Value(e.position.NextPlayer().MoveDirection())
+	// we can use the Direction factor to avoid an if statement
+	// Direction returns positive 1 for White and negative 1 (-1) for Black
+	return value * Value(e.position.NextPlayer().Direction())
 }
 
 func (e *Evaluator) evalKing(c Color) *Score {
@@ -317,7 +317,7 @@ func (e *Evaluator) rookEval(sq Square, us Color) {
 
 func (e *Evaluator) bishopEval(us Color, them Color, sq Square) {
 	// behind a pawn
-	down := Direction(them.MoveDirection()) * North
+	down := them.MoveDirection()
 	if ShiftBitboard(e.position.PiecesBb(us, Pawn), down)&sq.Bb() > 0 {
 		tmpScore.MidGameValue += Settings.Eval.MinorBehindPawnBonus
 		// s.EndGameValue += 0
@@ -355,7 +355,7 @@ func (e *Evaluator) bishopEval(us Color, them Color, sq Square) {
 
 func (e *Evaluator) knightEval(us Color, them Color, sq Square) {
 	// Knight behind pawn
-	down := Direction(them.MoveDirection()) * North
+	down := them.MoveDirection()
 	if ShiftBitboard(e.position.PiecesBb(us, Pawn), down)&sq.Bb() > 0 {
 		tmpScore.MidGameValue += Settings.Eval.MinorBehindPawnBonus
 		// s.EndGameValue += 0

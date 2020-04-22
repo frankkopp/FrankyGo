@@ -61,11 +61,19 @@ func (c Color) String() string {
 }
 
 // Color direction factor
-var moveDirection = [2]int{1,-1}
+var moveDirectionFactor = [2]int{1, -1}
 
-// MoveDirection returns positive 1 for White and negative 1 (-1) for Black
-func (c Color) MoveDirection() int {
-	return moveDirection[c]
+// Direction returns positive 1 for White and negative 1 (-1) for Black
+func (c Color) Direction() int {
+	return moveDirectionFactor[c]
+}
+
+// Color pawn move direction
+var pawnDir = [2]Direction{North, South}
+
+// MoveDirection returns the direction of a pawn move for the color
+func (c Color) MoveDirection() Direction {
+	return pawnDir[c]
 }
 
 var promRankBb = [2]Bitboard{Rank8_Bb, Rank1_Bb}

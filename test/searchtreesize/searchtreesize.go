@@ -106,8 +106,8 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().LmpCuts
-	ptrToSpecial2 = &s.Statistics().LeafPositionsEvaluated
+	ptrToSpecial = &s.Statistics().FpPrunings
+	ptrToSpecial2 = &s.Statistics().LmpCuts
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
@@ -167,11 +167,13 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// Late Move Reduction
 	Settings.Search.UseLmr = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "LMR"))
-
 	// Late Move Pruning
 	Settings.Search.UseLmp = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "LMP"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "LMR & MP"))
+
+	// Futility
+	Settings.Search.UseFP = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "FP"))
 
 	// Extensions
 	// Settings.Search.UseExt = true
@@ -309,19 +311,20 @@ func turnOffFeatures() {
 	Settings.Search.UsePonder = false
 	Settings.Search.UseQuiescence = false
 	Settings.Search.UseQSStandpat = false
+	Settings.Search.UseSEE = false
 	Settings.Search.UseTT = false
 	Settings.Search.UseTTMove = false
 	Settings.Search.UseTTValue = false
 	Settings.Search.UseQSTT = false
-	Settings.Search.UseMDP = false
+	Settings.Search.UseIID = false
 	Settings.Search.UsePVS = false
 	Settings.Search.UseKiller = false
+	Settings.Search.UseMDP = false
 	Settings.Search.UseNullMove = false
-	Settings.Search.UseIID = false
-	Settings.Search.UseLmr = false
-	Settings.Search.UseLmp = false
-	Settings.Search.UseSEE = false
 	Settings.Search.UseExt = false
 	Settings.Search.UseCheckExt = false
 	Settings.Search.UseThreatExt = false
+	Settings.Search.UseFP = false
+	Settings.Search.UseLmr = false
+	Settings.Search.UseLmp = false
 }

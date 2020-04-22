@@ -388,6 +388,116 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			}
 		} // DEBUG
 
+		// prepare newDepth
+		newDepth := depth - 1
+		lmrDepth := newDepth
+		extension := 0
+
+		// DEBUG
+		givesCheck := position.GivesCheck(move)
+
+		// Here we try some search extensions. This has to be done
+		// very carefully as it usually is more effective to prune
+		// than to extend.
+		if Settings.Search.UseExt {
+			// The check extensions is a bit redundant as our QS search
+			// searches all moves anyway when in check. But with this
+			// extension we hope to profit from using the prunings
+			// of the normal search which are not available in the
+			// qsearch.
+			if Settings.Search.UseCheckExt && givesCheck {
+				s.statistics.CheckExtension++
+				extension = 1
+			}
+
+			// If we have found a mate threat during Null Move Search
+			// we extend normal search by one ply to try to find
+			// a way out.
+			if Settings.Search.UseThreatExt && matethreat {
+				s.statistics.ThreatExtension++
+				extension = 1
+			}
+
+			newDepth += extension
+		}
+
+		// ///////////////////////////////////////////////////////
+		// Forward Pruning
+		// FP will only be done when the move is not
+		// interesting - no check, no capture, etc.
+		if !isPV &&
+			extension == 0 &&
+			move != ttMove &&
+			move != (*myMg.KillerMoves())[0] &&
+			move != (*myMg.KillerMoves())[1] &&
+			move.MoveType() != Promotion &&
+			!position.IsCapturingMove(move) &&
+			!hasCheck && // pre move
+			!givesCheck && // post move
+			!matethreat { // from pre move null move check
+
+			// to check in futility pruning what material delta we have
+			materialEval := position.Material(position.NextPlayer()) - position.Material(position.NextPlayer().Flip())
+			moveGain := position.GetPiece(move.To()).ValueOf()
+
+			// Futility Pruning
+			// Using an array of margin values for each depth
+			// we try to prune moves if they seem not worth
+			// searching any further. They are so far below
+			// alpha that we can assume a beta cutoff in the
+			// next iteration anyway.
+			// This is a typical forward pruning technique
+			// which might lead to errors.
+			// Limited Razoring / Extended FP are covered by this.
+			// TODO: needs testing and tuning
+			// TODO: Crafty excepts move were passed pawns are far ahead.
+			if Settings.Search.UseFP && depth < 7 {
+				futilityMargin := fp[depth]
+				if materialEval+moveGain+futilityMargin <= alpha {
+					if materialEval+moveGain > bestNodeValue {
+						bestNodeValue = materialEval + moveGain
+					}
+					s.statistics.FpPrunings++
+					continue
+				}
+			}
+
+			// LMP - Late Move Pruning
+			// aka Move Count Based Pruning
+			// TODO dangerous needs testing
+			if Settings.Search.UseLmp {
+				if movesSearched >= LmpMovesSearched(depth) {
+					s.statistics.LmpCuts++
+					continue
+				}
+			}
+
+			// LMR
+			// Late Move Reduction assumes that later moves a rarely
+			// exceeding alpha and therefore the search is reduced in
+			// depth. This is in effect a soft transition into
+			// quiescence search as we usually try the pv move and
+			// capturing moves first. In quiescence only capturing
+			// moves are searched anyway.
+			// newDepth is the "standard" new depth (depth - 1)
+			// lmrDepth is set to newDepth and only reduced
+			// if conditions apply.
+			// TODO: Test different config values
+			if Settings.Search.UseLmr {
+				// compute reduction from depth and move searched
+				if depth >= Settings.Search.LmrDepth &&
+					movesSearched >= Settings.Search.LmrMovesSearched {
+					lmrDepth -= LmrReduction(depth, movesSearched)
+					s.statistics.LmrReductions++
+				}
+				// make sure not to become negative
+				if lmrDepth < 0 {
+					lmrDepth = 0
+				}
+			}
+		}
+		// ///////////////////////////////////////////////////////
+
 		// ///////////////////////////////////////////////////////
 		// DO MOVE
 		position.DoMove(move)
@@ -397,6 +507,12 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			position.UndoMove()
 			continue
 		}
+
+		// DEBUG
+		if position.HasCheck() != givesCheck {
+			panic("FAULT GivesCheck()")
+		}
+		// DEBUG
 
 		// we only count legal moves
 		s.nodesVisited++
@@ -408,88 +524,6 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 			value = ValueDraw
 
 		} else {
-			// prepare newDepth
-			newDepth := depth - 1
-			lmrDepth := newDepth
-			extension := 0
-
-			// Here we try some search extensions. This has to be done
-			// very carefully as it usually is more effective to prune
-			// than to extend.
-			if Settings.Search.UseExt {
-				// The check extensions is a bit redundant as our QS search
-				// searches all moves anyway when in check. But with this
-				// extension we hope to profit from using the prunings
-				// of the normal search which are not available in the
-				// qsearch.
-				if Settings.Search.UseCheckExt && position.HasCheck() {
-					s.statistics.CheckExtension++
-					extension = 1
-				}
-
-				// If we have found a mate threat during Null Move Search
-				// we extend normal search by one ply to try to find
-				// a way out.
-				if Settings.Search.UseThreatExt && matethreat {
-					s.statistics.ThreatExtension++
-					extension = 1
-				}
-
-				newDepth += extension
-			}
-
-			// ///////////////////////////////////////////////////////
-			// LMR & LMP
-			// LMP & LMR will only be done when the move is not
-			// interesting - no check, no capture, etc.
-			if !isPV &&
-				extension == 0 &&
-				move != ttMove &&
-				move != (*myMg.KillerMoves())[0] &&
-				move != (*myMg.KillerMoves())[1] &&
-				move.MoveType() != Promotion &&
-				!position.WasCapturingMove() &&
-				!hasCheck && // pre move
-				!position.HasCheck() && // post move
-				!matethreat { // from pre move null move check
-
-				// LMP - Late Move Pruning
-				// aka Move Count Based Pruning
-				// TODO dangerous needs testing
-				if Settings.Search.UseLmp {
-					if movesSearched >= LmpMovesSearched(depth) {
-						s.statistics.LmpCuts++
-						s.statistics.CurrentVariation.PopBack()
-						position.UndoMove()
-						continue
-					}
-				}
-
-				// LMR
-				// Late Move Reduction assumes that later moves a rarely
-				// exceeding alpha and therefore the search is reduced in
-				// depth. This is in effect a soft transition into
-				// quiescence search as we usually try the pv move and
-				// capturing moves first. In quiescence only capturing
-				// moves are searched anyway.
-				// newDepth is the "standard" new depth (depth - 1)
-				// lmrDepth is set to newDepth and only reduced
-				// if conditions apply.
-				// TODO: Test different config values
-				if Settings.Search.UseLmr {
-					// compute reduction from depth and move searched
-					if depth >= Settings.Search.LmrDepth &&
-						movesSearched >= Settings.Search.LmrMovesSearched {
-						lmrDepth -= LmrReduction(depth, movesSearched)
-						s.statistics.LmrReductions++
-					}
-					// make sure not to become negative
-					if lmrDepth < 0 {
-						lmrDepth = 0
-					}
-				}
-			}
-			// ///////////////////////////////////////////////////////
 
 			// ///////////////////////////////////////////////////////
 			// PVS

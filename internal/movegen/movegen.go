@@ -301,20 +301,20 @@ func (mg *Movegen) HasLegalMove(position *position.Position) bool {
 
 	// PAWN
 	// normal pawn captures to the west (includes promotions)
-	tmpMoves = ShiftBitboard(myPawns, Direction(nextPlayer.MoveDirection())*North+West) & opponentBb
+	tmpMoves = ShiftBitboard(myPawns, nextPlayer.MoveDirection()+West) & opponentBb
 	for tmpMoves != 0 {
 		toSquare := tmpMoves.PopLsb()
-		fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection())*North + East)
+		fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection() + East)
 		if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
 			return true
 		}
 	}
 
 	// normal pawn captures to the east - promotions first
-	tmpMoves = ShiftBitboard(myPawns, Direction(nextPlayer.MoveDirection())*North+East) & opponentBb
+	tmpMoves = ShiftBitboard(myPawns, nextPlayer.MoveDirection()+East) & opponentBb
 	for tmpMoves != 0 {
 		toSquare := tmpMoves.PopLsb()
-		fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection())*North + West)
+		fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection() + West)
 		if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
 			return true
 		}
@@ -325,10 +325,10 @@ func (mg *Movegen) HasLegalMove(position *position.Position) bool {
 	// pawn pushes - check step one to unoccupied squares
 	// don't have to test double steps as they would be redundant to single steps
 	// for the purpose of finding at least one legal move
-	tmpMoves = ShiftBitboard(myPawns, Direction(nextPlayer.MoveDirection())*North) &^ occupiedBb
+	tmpMoves = ShiftBitboard(myPawns, nextPlayer.MoveDirection()) &^ occupiedBb
 	for tmpMoves != 0 {
 		toSquare := tmpMoves.PopLsb()
-		fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection()) * North)
+		fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection())
 		if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
 			return true
 		}
@@ -361,18 +361,18 @@ func (mg *Movegen) HasLegalMove(position *position.Position) bool {
 	enPassantSquare := position.GetEnPassantSquare()
 	if enPassantSquare != SqNone {
 		// left
-		tmpMoves = ShiftBitboard(enPassantSquare.Bb(), Direction(nextPlayer.Flip().MoveDirection())*North+West) & myPawns
+		tmpMoves = ShiftBitboard(enPassantSquare.Bb(), nextPlayer.Flip().MoveDirection()+West) & myPawns
 		if tmpMoves != 0 {
 			fromSquare := tmpMoves.PopLsb()
-			if position.IsLegalMove(CreateMove(fromSquare, fromSquare.To(Direction(nextPlayer.MoveDirection())*North+East), EnPassant, PtNone)) {
+			if position.IsLegalMove(CreateMove(fromSquare, fromSquare.To(nextPlayer.MoveDirection()+East), EnPassant, PtNone)) {
 				return true
 			}
 		}
 		// right
-		tmpMoves = ShiftBitboard(enPassantSquare.Bb(), Direction(nextPlayer.Flip().MoveDirection())*North+East) & myPawns
+		tmpMoves = ShiftBitboard(enPassantSquare.Bb(), nextPlayer.Flip().MoveDirection()+East) & myPawns
 		if tmpMoves != 0 {
 			fromSquare := tmpMoves.PopLsb()
-			if position.IsLegalMove(CreateMove(fromSquare, fromSquare.To(Direction(nextPlayer.MoveDirection())*North+West), EnPassant, PtNone)) {
+			if position.IsLegalMove(CreateMove(fromSquare, fromSquare.To(nextPlayer.MoveDirection()+West), EnPassant, PtNone)) {
 				return true
 			}
 		}
@@ -690,12 +690,12 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 
 		for _, dir := range []Direction{West, East} {
 			// normal pawn captures - promotions first
-			tmpCaptures = ShiftBitboard(myPawns, Direction(nextPlayer.MoveDirection())*North+dir) & oppPieces
+			tmpCaptures = ShiftBitboard(myPawns, nextPlayer.MoveDirection()+dir) & oppPieces
 			promCaptures = tmpCaptures & nextPlayer.PromotionRankBb()
 			// promotion captures
 			for promCaptures != 0 {
 				toSquare := promCaptures.PopLsb()
-				fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection())*North - dir)
+				fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection() - dir)
 				// value is the delta of values from the two pieces involved plus the positional value
 				value := position.GetPiece(toSquare).ValueOf() - position.GetPiece(fromSquare).ValueOf() +
 					PosValue(piece, toSquare, gamePhase)
@@ -711,7 +711,7 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 			tmpCaptures &= ^nextPlayer.PromotionRankBb()
 			for tmpCaptures != 0 {
 				toSquare := tmpCaptures.PopLsb()
-				fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection())*North - dir)
+				fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection() - dir)
 				// value is the delta of values from the two pieces involved plus the positional value
 				value := position.GetPiece(toSquare).ValueOf() - position.GetPiece(fromSquare).ValueOf() +
 					PosValue(piece, toSquare, gamePhase)
@@ -724,10 +724,10 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 		if enPassantSquare != SqNone {
 			for _, dir := range []Direction{West, East} {
 				tmpCaptures = ShiftBitboard(enPassantSquare.Bb(),
-					Direction(nextPlayer.Flip().MoveDirection())*North+dir) & myPawns
+					nextPlayer.Flip().MoveDirection()+dir) & myPawns
 				if tmpCaptures != 0 {
 					fromSquare := tmpCaptures.PopLsb()
-					toSquare := fromSquare.To(Direction(nextPlayer.MoveDirection())*North - dir)
+					toSquare := fromSquare.To(nextPlayer.MoveDirection() - dir)
 					// value is the positional value of the piece at this game phase
 					value := PosValue(piece, toSquare, gamePhase)
 					ml.PushBack(CreateMoveValue(fromSquare, toSquare, EnPassant, PtNone, value))
@@ -744,15 +744,15 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 		//  Loop over pawns remaining on unoccupied squares and add moves.
 
 		// pawns - check step one to unoccupied squares
-		tmpMoves := ShiftBitboard(myPawns, Direction(nextPlayer.MoveDirection())*North) & ^position.OccupiedAll()
+		tmpMoves := ShiftBitboard(myPawns, nextPlayer.MoveDirection()) & ^position.OccupiedAll()
 		// pawns double - check step two to unoccupied squares
-		tmpMovesDouble := ShiftBitboard(tmpMoves&nextPlayer.PawnDoubleRank(), Direction(nextPlayer.MoveDirection())*North) & ^position.OccupiedAll()
+		tmpMovesDouble := ShiftBitboard(tmpMoves&nextPlayer.PawnDoubleRank(), nextPlayer.MoveDirection()) & ^position.OccupiedAll()
 
 		// single pawn steps - promotions first
 		promMoves := tmpMoves & nextPlayer.PromotionRankBb()
 		for promMoves != 0 {
 			toSquare := promMoves.PopLsb()
-			fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection()) * North)
+			fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection())
 			// value for non captures is lowered by 10k
 			value := Value(-10_000)
 			// add the possible promotion moves to the move list and also add value of the promoted piece type
@@ -766,8 +766,8 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 		// double pawn steps
 		for tmpMovesDouble != 0 {
 			toSquare := tmpMovesDouble.PopLsb()
-			fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection()) * North).
-				To(Direction(nextPlayer.Flip().MoveDirection()) * North)
+			fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection()).
+				To(nextPlayer.Flip().MoveDirection())
 			value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
 			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 		}
@@ -775,7 +775,7 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 		tmpMoves &= ^nextPlayer.PromotionRankBb()
 		for tmpMoves != 0 {
 			toSquare := tmpMoves.PopLsb()
-			fromSquare := toSquare.To(Direction(nextPlayer.Flip().MoveDirection()) * North)
+			fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection())
 			value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
 			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 		}

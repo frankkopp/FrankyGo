@@ -299,48 +299,21 @@ func TestCraftyTests(t *testing.T) {
 	ts.RunTests()
 }
 
-// +LMP
+// All but FP
 // Summary:
 // EPD File:   test/testdata/testsets/ecm98.epd
 // SearchTime: 5.000 ms
 // MaxDepth:   0
-// Date:    2020-04-21 14:55:50.4623455 +0200 CEST
-// Successful: 407 (52 %)
-// Failed:    362 (47 %)
+// Date:       2020-04-22 20:38:43.7638852 +0200 CEST
+// Successful: 460 (59 %)
+// Failed:     309 (40 %)
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
-// Test time: 1h4m15.062196s
-
-// -LMP
-// Summary:
-// EPD File:   test/testdata/testsets/ecm98.epd
-// SearchTime: 5.000 ms
-// MaxDepth:   0
-// Date:    2020-04-21 16:12:54.0061574 +0200 CEST
-// Successful: 393 (51 %)
-// Failed:    376 (48 %)
-// Skipped:    0   (0 %)
-// Not tested: 0   (0 %)
-// Test time: 1h4m23.2395533s
-
-// -SEE
-// Summary:
-// EPD File:   test/testdata/testsets/ecm98.epd
-// SearchTime: 5.000 ms
-// MaxDepth:   0
-// Date:    2020-04-21 18:51:01.1937159 +0200 CEST
-// Successful: 396 (51 %)
-// Failed:    373 (48 %)
-// Skipped:    0   (0 %)
-// Not tested: 0   (0 %)
-// Test time: 1h4m15.4524479s
+// Test time: 1h4m14.3847089s
 func TestECMTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UseLmr = false
-	config.Settings.Search.UseLmp = false
-	config.Settings.Search.UseSEE = false
 	ts, _ := NewTestSuite("test/testdata/testsets/ecm98.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
