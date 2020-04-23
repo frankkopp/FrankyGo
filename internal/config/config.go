@@ -88,6 +88,8 @@ func Setup() {
 	initialized = true
 }
 
+// String() prints out the current configuration settings and values.
+// This uses reflection to read variables and their values.
 func (settings *conf) String() string {
 	var c strings.Builder
 	c.WriteString("Search Config:\n")

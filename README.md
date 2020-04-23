@@ -18,6 +18,7 @@ Go implementation of a UCI compatible chess engine.
     * mode: all, capture only, non capture
     * move sorting for estimated value of move, pv move and killer moves
     * ~50Million move per sec on my i7-7700
+    * TODO: evasion only move generation when in check
 * Perft tests
     * ~4+Million nps 
 * Search as PVS AlphaBeta search
@@ -34,7 +35,9 @@ Go implementation of a UCI compatible chess engine.
     * Check extension (needs further tuning/testing)
     * Mate threat extension (deactivated - needs further tuning/testing - currently weakens play)
     * SEE for deciding on good qsearch moves
-    * TODO: Futility Pruning, Aspiration Windows, Multi-cut Pruning, History Pruning 
+    * Reverse Futility Pruning (Static Null Move)
+    * Futility Pruning
+    * TODO: Aspiration Windows, Multi-cut Pruning, History Pruning 
 * Transposition Table
 * Opening Book from PGN, SAN and Simple move list files and persistent cache
 * Evaluation

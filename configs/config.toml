@@ -27,34 +27,36 @@ UseEvalTT = false
 # general search
 Ponder = true
 
+# Quiescence search
 UseQuiescence = true
 UseQSStandpat = true
 UseSee = true
 
+# move sorting
 UsePVS = true
 UseKiller = true
-
 UseIID = true
 IIDDepth = 6
 IIDReduction = 2
 
-# prunings
+# prunings pre-move
 UseMDP = true
-
+UseRFP = false
 UseNullMove = true
-
 NmpDepth = 3
 NmpReduction = 2
 
-UseLmr = true
-LmrDepth = 3
-LmrMovesSearched = 3
-
-UseLmp = false
-
+# extensions
 UseExt = true
 UseCheckExt = true
 UseThreatExt = false
+
+# pruning post-move
+UseFP = false
+UseLmp = true
+UseLmr = true
+LmrDepth = 3
+LmrMovesSearched = 3
 
 [eval]
 UsePawnCache = false # not implemented yet

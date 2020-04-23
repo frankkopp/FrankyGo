@@ -99,11 +99,14 @@ type Position struct {
 	// piece bitboards
 	piecesBb [ColorLength][PtLength]Bitboard
 	// occupied bitboards with rotations
-	occupiedBb    [ColorLength]Bitboard
-	occupiedBbR90 [ColorLength]Bitboard
-	occupiedBbL90 [ColorLength]Bitboard
-	occupiedBbR45 [ColorLength]Bitboard
-	occupiedBbL45 [ColorLength]Bitboard
+	occupiedBb [ColorLength]Bitboard
+
+	// not used any more as we use the magic bitboards any more
+	// occupiedBbR90 [ColorLength]Bitboard
+	// occupiedBbL90 [ColorLength]Bitboard
+	// occupiedBbR45 [ColorLength]Bitboard
+	// occupiedBbL45 [ColorLength]Bitboard
+
 	// history information for undo and repetition detection
 	historyCounter int
 	history        [maxHistory]historyState
@@ -188,7 +191,7 @@ func (p *Position) DoMove(m Move) {
 	toSq := m.To()
 	targetPc := p.board[toSq]
 
-	if true { // DEBUG
+	if false { // DEBUG
 		switch {
 		case !m.IsValid():
 			msg := fmt.Sprintf("Position DoMove: Invalid move %s", m.String())
@@ -281,7 +284,7 @@ func (p *Position) UndoMove() {
 	case EnPassant:
 		// ignore Zobrist Key as it will be restored via history
 		p.movePiece(move.To(), move.From())
-		p.putPiece(MakePiece(p.nextPlayer.Flip(), Pawn), move.To().To(Direction(p.nextPlayer.Flip().MoveDirection())*North))
+		p.putPiece(MakePiece(p.nextPlayer.Flip(), Pawn), move.To().To(p.nextPlayer.Flip().MoveDirection()))
 	case Castling:
 		// ignore Zobrist Key as it will be restored via history
 		// castling rights are restored via history
@@ -373,28 +376,31 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 		return true
 	}
 
-	// New code - using GetAttacksBb from Magics - slower see tests
 	// we do check a reverse attack with a queen to see if we can hit any other sliders. If yes
 	// they also could hit us which means the square is attacked.
-	// if	(GetAttacksBb(Queen, sq, p.OccupiedAll())&(p.piecesBb[by][Rook]|p.piecesBb[by][Bishop]|p.piecesBb[by][Queen]) > 0) {
+	// This is a bit slower as the previous code but it let's us avoid rotated bitboards
+	// in put/remove
+	if GetAttacksBb(Bishop, sq, p.OccupiedAll())&p.piecesBb[by][Bishop] > 0 ||
+		GetAttacksBb(Rook, sq, p.OccupiedAll())&p.piecesBb[by][Rook] > 0 ||
+		GetAttacksBb(Queen, sq, p.OccupiedAll())&p.piecesBb[by][Queen] > 0 {
+		return true
+	}
+
+	// // sliding rooks and queens
+	// if (GetPseudoAttacks(Rook, sq)&p.piecesBb[by][Rook] != 0 || (GetPseudoAttacks(Rook, sq)&p.piecesBb[by][Queen] != 0)) &&
+	// 	(((GetMovesOnRank(sq, p.OccupiedAll()) |
+	// 		GetMovesOnFileRotated(sq, p.occupiedBbL90[White]|p.occupiedBbL90[Black])) &
+	// 		(p.piecesBb[by][Rook] | p.piecesBb[by][Queen])) != 0) {
 	// 	return true
 	// }
-
-	// sliding rooks and queens
-	if (GetPseudoAttacks(Rook, sq)&p.piecesBb[by][Rook] != 0 || (GetPseudoAttacks(Rook, sq)&p.piecesBb[by][Queen] != 0)) &&
-		(((GetMovesOnRank(sq, p.OccupiedAll()) |
-			GetMovesOnFileRotated(sq, p.occupiedBbL90[White]|p.occupiedBbL90[Black])) &
-			(p.piecesBb[by][Rook] | p.piecesBb[by][Queen])) != 0) {
-		return true
-	}
-
-	// sliding bishop and queens
-	if (GetPseudoAttacks(Bishop, sq)&p.piecesBb[by][Bishop] != 0 || (GetPseudoAttacks(Bishop, sq)&p.piecesBb[by][Queen] != 0)) &&
-		(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[White]|p.occupiedBbR45[Black]) |
-			GetMovesDiagDownRotated(sq, p.occupiedBbL45[White]|p.occupiedBbL45[Black])) &
-			(p.piecesBb[by][Bishop] | p.piecesBb[by][Queen])) != 0) {
-		return true
-	}
+	//
+	// // sliding bishop and queens
+	// if (GetPseudoAttacks(Bishop, sq)&p.piecesBb[by][Bishop] != 0 || (GetPseudoAttacks(Bishop, sq)&p.piecesBb[by][Queen] != 0)) &&
+	// 	(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[White]|p.occupiedBbR45[Black]) |
+	// 		GetMovesDiagDownRotated(sq, p.occupiedBbL45[White]|p.occupiedBbL45[Black])) &
+	// 		(p.piecesBb[by][Bishop] | p.piecesBb[by][Queen])) != 0) {
+	// 	return true
+	// }
 
 	// check en passant
 	if p.enPassantSquare != SqNone {
@@ -639,6 +645,89 @@ func (p *Position) HasInsufficientMaterial() bool {
 	return false
 }
 
+// GivesCheck determines if the given move will give check to the opponent
+// of p.NextPlayer() and returns true if so.
+func (p *Position) GivesCheck(move Move) bool {
+
+	us := p.nextPlayer
+	them := us.Flip()
+
+	// opponents king square
+	kingSq := p.kingSquare[them]
+
+	// move details
+	fromSq := move.From()
+	toSq := move.To()
+	fromPc := p.board[fromSq]
+	fromPt := fromPc.TypeOf()
+	epTargetSq := SqNone
+	moveType := move.MoveType()
+
+	switch moveType {
+	case Promotion:
+		// promotion moves - use new piece type
+		fromPt = move.PromotionType()
+	case Castling:
+		// set the target square to the rook square and
+		// piece type to ROOK. King can't give check
+		// also no revealed check possible in castling
+		fromPt = Rook
+		switch toSq {
+		case SqG1: // white king side castle
+			toSq = SqF1
+		case SqC1: // white queen side castle
+			toSq = SqD1
+		case SqG8: // black king side castle
+			toSq = SqF8
+		case SqC8: // black queen side castle
+			toSq = SqD8
+		}
+	case EnPassant:
+		// set en passant capture square
+		epTargetSq = toSq.To(them.MoveDirection())
+	}
+
+	// get all pieces to check occupied intermediate squares
+	boardAfterMove := p.OccupiedAll()
+
+	// adapt board by moving the piece on the bitboard
+	boardAfterMove.PopSquare(fromSq)
+	boardAfterMove.PushSquare(toSq)
+	if moveType == EnPassant {
+		boardAfterMove.PopSquare(epTargetSq)
+	}
+
+	// Find direct checks
+	switch fromPt {
+	case Pawn:
+		if GetPawnAttacks(us, toSq).Has(kingSq) {
+			return true
+		}
+	case King:
+	// ignore - can't give check
+	default:
+		if GetAttacksBb(fromPt, toSq, boardAfterMove).Has(kingSq) {
+			return true
+		}
+	}
+
+	// revealed checks
+	// we only need to check for rook, bishop and queens
+	// knight and pawn attacks can't be revealed
+	// exception is en passant where the captured piece can reveal check
+	switch {
+	case GetAttacksBb(Bishop, kingSq, boardAfterMove)&p.piecesBb[us][Bishop] > 0:
+		return true
+	case GetAttacksBb(Rook, kingSq, boardAfterMove)&p.piecesBb[us][Rook] > 0:
+		return true
+	case GetAttacksBb(Queen, kingSq, boardAfterMove)&p.piecesBb[us][Queen] > 0:
+		return true
+	}
+
+	// we did not find a check
+	return false
+}
+
 // String returns a string representing the board instance. This
 // includes the fen, a board matrix, game phase, material and pos values.
 func (p *Position) String() string {
@@ -699,7 +788,7 @@ func (p *Position) doNormalMove(fromSq Square, toSq Square, targetPc Piece, from
 		p.halfMoveClock = 0                    // reset half move clock because of pawn move
 		if SquareDistance(fromSq, toSq) == 2 { // pawn double - set en passant
 			// set new en passant target field - always one "behind" the toSquare
-			p.enPassantSquare = toSq.To(Direction(myColor.Flip().MoveDirection()) * North)
+			p.enPassantSquare = toSq.To(myColor.Flip().MoveDirection())
 			p.zobristKey ^= zobristBase.enPassantFile[p.enPassantSquare.FileOf()] // in
 		}
 	} else {
@@ -773,7 +862,7 @@ func (p *Position) doCastlingMove(fromPc Piece, myColor Color, toSq Square, from
 }
 
 func (p *Position) doEnPassantMove(toSq Square, myColor Color, fromPc Piece, fromSq Square) {
-	capSq := toSq.To(Direction(myColor.Flip().MoveDirection()) * North)
+	capSq := toSq.To(myColor.Flip().MoveDirection())
 	if assert.DEBUG {
 		assert.Assert(fromPc == MakePiece(myColor, Pawn), "Position DoMove: Move type en passant but from piece not pawn")
 		assert.Assert(p.enPassantSquare != SqNone, "Position DoMove: EnPassant move type without en passant")
@@ -830,10 +919,13 @@ func (p *Position) putPiece(piece Piece, square Square) {
 	// update bitboards
 	p.piecesBb[color][pieceType].PushSquare(square)
 	p.occupiedBb[color].PushSquare(square)
-	p.occupiedBbR90[color].PushSquare(RotateSquareR90(square))
-	p.occupiedBbL90[color].PushSquare(RotateSquareL90(square))
-	p.occupiedBbR45[color].PushSquare(RotateSquareR45(square))
-	p.occupiedBbL45[color].PushSquare(RotateSquareL45(square))
+
+	// not used any more as we use the magic bitboards any more
+	// p.occupiedBbR90[color].PushSquare(RotateSquareR90(square))
+	// p.occupiedBbL90[color].PushSquare(RotateSquareL90(square))
+	// p.occupiedBbR45[color].PushSquare(RotateSquareR45(square))
+	// p.occupiedBbL45[color].PushSquare(RotateSquareL45(square))
+
 	// zobrist
 	p.zobristKey ^= zobristBase.pieces[piece][square]
 	// game phase
@@ -867,10 +959,13 @@ func (p *Position) removePiece(square Square) Piece {
 	// update bitboards
 	p.piecesBb[color][pieceType].PopSquare(square)
 	p.occupiedBb[color].PopSquare(square)
-	p.occupiedBbR90[color].PopSquare(RotateSquareR90(square))
-	p.occupiedBbL90[color].PopSquare(RotateSquareL90(square))
-	p.occupiedBbR45[color].PopSquare(RotateSquareR45(square))
-	p.occupiedBbL45[color].PopSquare(RotateSquareL45(square))
+
+	// not used any more as we use the magic bitboards any more
+	// p.occupiedBbR90[color].PopSquare(RotateSquareR90(square))
+	// p.occupiedBbL90[color].PopSquare(RotateSquareL90(square))
+	// p.occupiedBbR45[color].PopSquare(RotateSquareR45(square))
+	// p.occupiedBbL45[color].PopSquare(RotateSquareL45(square))
+
 	// zobrist
 	p.zobristKey ^= zobristBase.pieces[removed][square]
 	// game phase

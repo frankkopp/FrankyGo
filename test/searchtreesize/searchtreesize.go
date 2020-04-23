@@ -106,8 +106,8 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().LmpCuts
-	ptrToSpecial2 = &s.Statistics().LeafPositionsEvaluated
+	ptrToSpecial = &s.Statistics().RfpPrunings
+	ptrToSpecial2 = &s.Statistics().FpPrunings
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
@@ -124,10 +124,6 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseTT = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
 
-	// + TTMove
-	// config.Settings.Search.UseTTMove = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "TTMove"))
-
 	// + TTValue
 	Settings.Search.UseTTValue = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
@@ -139,8 +135,6 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// + MDP
 	Settings.Search.UseMDP = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "MDP"))
-
-	r.Tests = append(r.Tests, measure(s, sl, p, "BASE"))
 
 	// PVS
 	Settings.Search.UsePVS = true
@@ -155,31 +149,37 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// IID
 	Settings.Search.UseIID = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "MoveSort"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "BASE"))
 
 	// SEE for qsearch
 	Settings.Search.UseSEE = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "SEE"))
 
+	// Reverse Futility
+	Settings.Search.UseRFP = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "RFP"))
+
 	// Null Move
 	Settings.Search.UseNullMove = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "NMP"))
 
-	// Late Move Reduction
-	Settings.Search.UseLmr = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "LMR"))
-
-	// Late Move Pruning
-	Settings.Search.UseLmp = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "LMP"))
-
 	// Extensions
-	// Settings.Search.UseExt = true
-	// Settings.Search.UseCheckExt = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "CHECK"))
-	//
+	Settings.Search.UseExt = true
+	Settings.Search.UseCheckExt = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "CHECK"))
+
 	// Settings.Search.UseThreatExt = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "THREAT"))
+
+	// Futility
+	Settings.Search.UseFP = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "FP"))
+
+	// Late Move Reduction
+	Settings.Search.UseLmr = true
+	// Late Move Pruning
+	Settings.Search.UseLmp = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "LMR & LMP"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -309,19 +309,21 @@ func turnOffFeatures() {
 	Settings.Search.UsePonder = false
 	Settings.Search.UseQuiescence = false
 	Settings.Search.UseQSStandpat = false
+	Settings.Search.UseSEE = false
 	Settings.Search.UseTT = false
 	Settings.Search.UseTTMove = false
 	Settings.Search.UseTTValue = false
 	Settings.Search.UseQSTT = false
-	Settings.Search.UseMDP = false
+	Settings.Search.UseIID = false
 	Settings.Search.UsePVS = false
 	Settings.Search.UseKiller = false
+	Settings.Search.UseMDP = false
 	Settings.Search.UseNullMove = false
-	Settings.Search.UseIID = false
-	Settings.Search.UseLmr = false
-	Settings.Search.UseLmp = false
-	Settings.Search.UseSEE = false
 	Settings.Search.UseExt = false
 	Settings.Search.UseCheckExt = false
 	Settings.Search.UseThreatExt = false
+	Settings.Search.UseRFP = false
+	Settings.Search.UseFP = false
+	Settings.Search.UseLmr = false
+	Settings.Search.UseLmp = false
 }

@@ -37,6 +37,9 @@ import (
 
 // Statistics are extra data and stats not essential for a functioning search
 type Statistics struct {
+	RfpPrunings uint64
+	FpPrunings  uint64
+
 	ThreatExtension uint64
 	NMPMateAlpha    uint64
 	NMPMateBeta     uint64
@@ -135,7 +138,7 @@ func (s *Statistics) String() string {
 //  uint64_t iidSearches = 0;
 //  uint64_t lrReductions = 0;
 //  uint64_t efpPrunings = 0;
-//  uint64_t fpPrunings = 0;
+//  uint64_t FpPrunings = 0;
 //  uint64_t qfpPrunings = 0;
 //  uint64_t lmpPrunings = 0;
 //  uint64_t lmrReductions = 0;
