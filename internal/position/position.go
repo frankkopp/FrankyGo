@@ -100,10 +100,13 @@ type Position struct {
 	piecesBb [ColorLength][PtLength]Bitboard
 	// occupied bitboards with rotations
 	occupiedBb [ColorLength]Bitboard
+
+	// not used any more as we use the magic bitboards any more
 	// occupiedBbR90 [ColorLength]Bitboard
 	// occupiedBbL90 [ColorLength]Bitboard
 	// occupiedBbR45 [ColorLength]Bitboard
 	// occupiedBbL45 [ColorLength]Bitboard
+
 	// history information for undo and repetition detection
 	historyCounter int
 	history        [maxHistory]historyState
@@ -373,10 +376,10 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 		return true
 	}
 
-	// New code - using GetAttacksBb from Magics - slower see tests
 	// we do check a reverse attack with a queen to see if we can hit any other sliders. If yes
 	// they also could hit us which means the square is attacked.
-	// TODO: Look at this again
+	// This is a bit slower as the previous code but it let's us avoid rotated bitboards
+	// in put/remove
 	if GetAttacksBb(Bishop, sq, p.OccupiedAll())&p.piecesBb[by][Bishop] > 0 ||
 		GetAttacksBb(Rook, sq, p.OccupiedAll())&p.piecesBb[by][Rook] > 0 ||
 		GetAttacksBb(Queen, sq, p.OccupiedAll())&p.piecesBb[by][Queen] > 0 {
@@ -916,10 +919,13 @@ func (p *Position) putPiece(piece Piece, square Square) {
 	// update bitboards
 	p.piecesBb[color][pieceType].PushSquare(square)
 	p.occupiedBb[color].PushSquare(square)
+
+	// not used any more as we use the magic bitboards any more
 	// p.occupiedBbR90[color].PushSquare(RotateSquareR90(square))
 	// p.occupiedBbL90[color].PushSquare(RotateSquareL90(square))
 	// p.occupiedBbR45[color].PushSquare(RotateSquareR45(square))
 	// p.occupiedBbL45[color].PushSquare(RotateSquareL45(square))
+
 	// zobrist
 	p.zobristKey ^= zobristBase.pieces[piece][square]
 	// game phase
@@ -953,10 +959,13 @@ func (p *Position) removePiece(square Square) Piece {
 	// update bitboards
 	p.piecesBb[color][pieceType].PopSquare(square)
 	p.occupiedBb[color].PopSquare(square)
+
+	// not used any more as we use the magic bitboards any more
 	// p.occupiedBbR90[color].PopSquare(RotateSquareR90(square))
 	// p.occupiedBbL90[color].PopSquare(RotateSquareL90(square))
 	// p.occupiedBbR45[color].PopSquare(RotateSquareR45(square))
 	// p.occupiedBbL45[color].PopSquare(RotateSquareL45(square))
+
 	// zobrist
 	p.zobristKey ^= zobristBase.pieces[removed][square]
 	// game phase

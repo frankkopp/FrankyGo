@@ -229,7 +229,6 @@ func TestBitboardLsbMsb(t *testing.T) {
 
 func TestBitboardPopLsb(t *testing.T) {
 
-
 	tests := []struct {
 		bbIn   Bitboard
 		bbOut  Bitboard

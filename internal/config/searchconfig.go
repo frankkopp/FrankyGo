@@ -29,23 +29,28 @@ package config
 // searchConfiguration is a data structure to hold the configuration of an
 // instance of a search.
 type searchConfiguration struct {
+	// Opening book
 	UseBook    bool
 	BookPath   string
 	BookFile   string
 	BookFormat string
 
+	// Ponder
 	UsePonder bool
 
+	// Quiescence search
 	UseQuiescence bool
 	UseQSStandpat bool
 	UseSEE        bool
 
+	// Move ordering
 	UsePVS       bool
 	UseKiller    bool
 	UseIID       bool
 	IIDDepth     int
 	IIDReduction int
 
+	// Transposition Table
 	UseTT      bool
 	TTSize     int
 	UseTTMove  bool
@@ -53,16 +58,19 @@ type searchConfiguration struct {
 	UseQSTT    bool
 	UseEvalTT  bool
 
+	// Prunings pre move gen
 	UseMDP       bool
 	UseRFP       bool
 	UseNullMove  bool
 	NmpDepth     int
 	NmpReduction int
 
+	// extensions of search depth
 	UseExt       bool
 	UseCheckExt  bool
 	UseThreatExt bool
 
+	// prunings after move generation but before making move
 	UseFP            bool
 	UseLmp           bool
 	UseLmr           bool

@@ -155,31 +155,31 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseSEE = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "SEE"))
 
+	// Reverse Futility
+	Settings.Search.UseRFP = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "RFP"))
+
 	// Null Move
 	Settings.Search.UseNullMove = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "NMP"))
+
+	// Extensions
+	Settings.Search.UseExt = true
+	Settings.Search.UseCheckExt = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "CHECK"))
+
+	// Settings.Search.UseThreatExt = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "THREAT"))
+
+	// Futility
+	Settings.Search.UseFP = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "FP"))
 
 	// Late Move Reduction
 	Settings.Search.UseLmr = true
 	// Late Move Pruning
 	Settings.Search.UseLmp = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "LMR & LMP"))
-
-	// Futility
-	Settings.Search.UseFP = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "FP"))
-
-	// Reverse Futility
-	Settings.Search.UseRFP = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "RFP"))
-
-	// Extensions
-	// Settings.Search.UseExt = true
-	// Settings.Search.UseCheckExt = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "CHECK"))
-	//
-	// Settings.Search.UseThreatExt = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "THREAT"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////

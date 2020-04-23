@@ -98,6 +98,9 @@ func ShiftBitboard(b Bitboard, d Direction) Bitboard {
 // GetMovesOnRank returns a Bb for all possible horizontal moves
 // on the rank of the square with the rank content (blocking pieces)
 // determined from the given pieces bitboard.
+//
+// Deprecated
+// use GetAttacksBb(pt PieceType, sq Square, occupied Bitboard)
 func GetMovesOnRank(sq Square, content Bitboard) Bitboard {
 	// content = the pieces currently on the board and maybe blocking the moves
 	// no rotation necessary for ranks - their squares are already in a row
@@ -111,6 +114,9 @@ func GetMovesOnRank(sq Square, content Bitboard) Bitboard {
 // GetMovesOnFileRotated Bb for all possible horizontal moves on the
 // rank of the square with the rank content (blocking pieces) determined
 // from the given L90 rotated bitboard.
+//
+// Deprecated
+// use GetAttacksBb(pt PieceType, sq Square, occupied Bitboard)
 func GetMovesOnFileRotated(sq Square, rotated Bitboard) Bitboard {
 	// shift to the lsb
 	contentIdx := rotated >> (int(sq.FileOf()) * 8)
@@ -123,6 +129,9 @@ func GetMovesOnFileRotated(sq Square, rotated Bitboard) Bitboard {
 // the square with the rank content (blocking pieces) determined from the
 // given bitboard (not rotated - use GetMovesOnFileRotated for already rotated
 // bitboards)
+//
+// Deprecated
+// use GetAttacksBb(pt PieceType, sq Square, occupied Bitboard)
 func GetMovesOnFile(sq Square, content Bitboard) Bitboard {
 	// content = the pieces currently on the board and maybe blocking the moves
 	// rotate the content of the board to get all file squares in a row
@@ -132,6 +141,9 @@ func GetMovesOnFile(sq Square, content Bitboard) Bitboard {
 // GetMovesDiagUpRotated  Bb for all possible diagonal up moves of
 // the square with the content (blocking pieces) determined from the
 // given R45 rotated bitboard.
+//
+// Deprecated
+// use GetAttacksBb(pt PieceType, sq Square, occupied Bitboard)
 func GetMovesDiagUpRotated(sq Square, rotated Bitboard) Bitboard {
 	// shift the correct row to the lsb
 	shifted := rotated >> shiftsDiagUp[sq]
@@ -145,6 +157,9 @@ func GetMovesDiagUpRotated(sq Square, rotated Bitboard) Bitboard {
 // GetMovesDiagUp Bb for all possible diagonal up moves of the square with
 // the content (blocking pieces) determined from the given non rotated
 // bitboard.
+//
+// Deprecated
+// use GetAttacksBb(pt PieceType, sq Square, occupied Bitboard)
 func GetMovesDiagUp(sq Square, content Bitboard) Bitboard {
 	// content = the pieces currently on the board and maybe blocking the moves
 	// rotate the content of the board to get all diagonals in a row
@@ -154,6 +169,9 @@ func GetMovesDiagUp(sq Square, content Bitboard) Bitboard {
 // GetMovesDiagDownRotated Bb for all possible diagonal up moves of the square with
 // the content (blocking pieces) determined from the given L45 rotated
 // bitboard.
+//
+// Deprecated
+// use GetAttacksBb(pt PieceType, sq Square, occupied Bitboard)
 func GetMovesDiagDownRotated(sq Square, rotated Bitboard) Bitboard {
 	// shift the correct row to the lsb
 	shifted := rotated >> shiftsDiagDown[sq]
@@ -167,6 +185,9 @@ func GetMovesDiagDownRotated(sq Square, rotated Bitboard) Bitboard {
 // GetMovesDiagDown Bb for all possible diagonal up moves of the square with
 // the content (blocking pieces) determined from the given non rotated
 // bitboard.
+//
+// Deprecated
+// use GetAttacksBb(pt PieceType, sq Square, occupied Bitboard)
 func GetMovesDiagDown(square Square, content Bitboard) Bitboard {
 	// content = the pieces currently on the board and maybe blocking the moves
 	// rotate the content of the board to get all diagonals in a row
