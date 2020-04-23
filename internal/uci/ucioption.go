@@ -55,13 +55,15 @@ func init() {
 		"Use_IID":    {NameID: "Use_IID", HandlerFunc: useIID, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseIID), CurrentValue: strconv.FormatBool(Settings.Search.UseIID)},
 		"Use_Killer": {NameID: "Use_Killer", HandlerFunc: useKiller, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseKiller), CurrentValue: strconv.FormatBool(Settings.Search.UseKiller)},
 
+		"Use_Rfp":      {NameID: "Use_Rfp", HandlerFunc: useRfp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseRFP), CurrentValue: strconv.FormatBool(Settings.Search.UseRFP)},
 		"Use_NullMove": {NameID: "Use_NullMove", HandlerFunc: useNullMove, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseNullMove), CurrentValue: strconv.FormatBool(Settings.Search.UseNullMove)},
 		"Use_Mdp":      {NameID: "Use_Mdp", HandlerFunc: useMdp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseMDP), CurrentValue: strconv.FormatBool(Settings.Search.UseMDP)},
+		"Use_Fp":       {NameID: "Use_Fp", HandlerFunc: useFp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseFP), CurrentValue: strconv.FormatBool(Settings.Search.UseFP)},
 		"Use_Lmr":      {NameID: "Use_Lmr", HandlerFunc: useLmr, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseLmr), CurrentValue: strconv.FormatBool(Settings.Search.UseLmr)},
 		"Use_Lmp":      {NameID: "Use_Lmp", HandlerFunc: useLmp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseLmp), CurrentValue: strconv.FormatBool(Settings.Search.UseLmp)},
 
-		"Use_Ext":      {NameID: "Use_Ext", HandlerFunc: useExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseExt), CurrentValue: strconv.FormatBool(Settings.Search.UseExt)},
-		"Use_CheckExt": {NameID: "Use_CheckExt", HandlerFunc: useCheckExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseCheckExt), CurrentValue: strconv.FormatBool(Settings.Search.UseCheckExt)},
+		"Use_Ext":       {NameID: "Use_Ext", HandlerFunc: useExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseExt), CurrentValue: strconv.FormatBool(Settings.Search.UseExt)},
+		"Use_CheckExt":  {NameID: "Use_CheckExt", HandlerFunc: useCheckExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseCheckExt), CurrentValue: strconv.FormatBool(Settings.Search.UseCheckExt)},
 		"Use_ThreatExt": {NameID: "Use_ThreatExt", HandlerFunc: useThreatExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseThreatExt), CurrentValue: strconv.FormatBool(Settings.Search.UseThreatExt)},
 
 		"Eval_Lazy":     {NameID: "Eval_Lazy", HandlerFunc: evalLazy, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseLazyEval), CurrentValue: strconv.FormatBool(Settings.Eval.UseLazyEval)},
@@ -85,7 +87,9 @@ func init() {
 		"Use_Killer",
 
 		"Use_Mdp",
+		"Use_Rfp",
 		"Use_NullMove",
+		"Use_Fp",
 		"Use_Lmr",
 		"Use_Lmp",
 
@@ -314,6 +318,18 @@ func useThreatExt(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseThreatExt = v
 	log.Debugf("Set use Threat Extension to %v", Settings.Search.UseThreatExt)
+}
+
+func useRfp(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseRFP = v
+	log.Debugf("Set use Reverse Futility Pruning (RFP) to %v", Settings.Search.UseRFP)
+}
+
+func useFp(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseFP = v
+	log.Debugf("Set use Futility Pruning (FP) to %v", Settings.Search.UseFP)
 }
 
 func evalLazy(u *UciHandler, o *uciOption) {

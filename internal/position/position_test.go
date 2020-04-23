@@ -721,52 +721,54 @@ func TestTimingIsAttacked(t *testing.T) {
 	}
 }
 
-func BenchmarkIsAttackedVariations(b *testing.B) {
-
-	p, _ := NewPositionFen("r5k1/p1qb1p1p/1p3np1/2b2p2/2B5/2P3N1/PP2QPPP/R3N1K1 b - -")
-	// p = NewPosition()
-
-	f1 := func() {
-		for sq := SqA1; sq <= SqH8; sq++ {
-			res = GetAttacksBb(Queen, sq, p.OccupiedAll())&(p.piecesBb[White][Rook]|p.piecesBb[White][Bishop]|p.piecesBb[White][Queen]) > 0
-			res = GetAttacksBb(Queen, sq, p.OccupiedAll())&(p.piecesBb[Black][Rook]|p.piecesBb[Black][Bishop]|p.piecesBb[Black][Queen]) > 0
-		}
-	}
-
-	f2 := func() {
-		for sq := SqA1; sq <= SqH8; sq++ {
-			res = (GetPseudoAttacks(Rook, sq)&p.piecesBb[White][Rook] != 0 || (GetPseudoAttacks(Rook, sq)&p.piecesBb[White][Queen] != 0)) &&
-				(((GetMovesOnRank(sq, p.OccupiedAll()) |
-					GetMovesOnFileRotated(sq, p.occupiedBbL90[White]|p.occupiedBbL90[Black])) &
-					(p.piecesBb[White][Rook] | p.piecesBb[White][Queen])) != 0) &&
-				(GetPseudoAttacks(Bishop, sq)&p.piecesBb[White][Bishop] != 0 || (GetPseudoAttacks(Bishop, sq)&p.piecesBb[White][Queen] != 0)) &&
-				(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[White]|p.occupiedBbR45[Black]) |
-					GetMovesDiagDownRotated(sq, p.occupiedBbL45[White]|p.occupiedBbL45[Black])) &
-					(p.piecesBb[White][Bishop] | p.piecesBb[White][Queen])) != 0)
-
-			res = (GetPseudoAttacks(Rook, sq)&p.piecesBb[Black][Rook] != 0 || (GetPseudoAttacks(Rook, sq)&p.piecesBb[Black][Queen] != 0)) &&
-				(((GetMovesOnRank(sq, p.OccupiedAll()) |
-					GetMovesOnFileRotated(sq, p.occupiedBbL90[Black]|p.occupiedBbL90[Black])) &
-					(p.piecesBb[Black][Rook] | p.piecesBb[Black][Queen])) != 0) &&
-				(GetPseudoAttacks(Bishop, sq)&p.piecesBb[Black][Bishop] != 0 || (GetPseudoAttacks(Bishop, sq)&p.piecesBb[Black][Queen] != 0)) &&
-				(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[Black]|p.occupiedBbR45[Black]) |
-					GetMovesDiagDownRotated(sq, p.occupiedBbL45[Black]|p.occupiedBbL45[Black])) &
-					(p.piecesBb[Black][Bishop] | p.piecesBb[Black][Queen])) != 0)
-		}
-	}
-
-	benchmarks := []struct {
-		name string
-		f    func()
-	}{
-		{"Magic", f1},
-		{"NonMagic", f2},
-	}
-	for _, bm := range benchmarks {
-		b.Run(bm.name, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				bm.f()
-			}
-		})
-	}
-}
+//
+// func BenchmarkIsAttackedVariations(b *testing.B) {
+//
+// 	p, _ := NewPositionFen("r5k1/p1qb1p1p/1p3np1/2b2p2/2B5/2P3N1/PP2QPPP/R3N1K1 b - -")
+// 	// p = NewPosition()
+//
+// 	f1 := func() {
+// 		for sq := SqA1; sq <= SqH8; sq++ {
+// 			res = GetAttacksBb(Bishop, sq, p.OccupiedAll()) & p.piecesBb[White][Bishop] > 0 ||
+// 				GetAttacksBb(Rook, sq, p.OccupiedAll()) & p.piecesBb[White][Rook] > 0 ||
+// 				GetAttacksBb(Queen, sq, p.OccupiedAll()) & p.piecesBb[White][Queen] > 0
+// 		}
+// 	}
+//
+// 	f2 := func() {
+// 		// for sq := SqA1; sq <= SqH8; sq++ {
+// 		// 	res = (GetPseudoAttacks(Rook, sq)&p.piecesBb[White][Rook] != 0 || (GetPseudoAttacks(Rook, sq)&p.piecesBb[White][Queen] != 0)) &&
+// 		// 		(((GetMovesOnRank(sq, p.OccupiedAll()) |
+// 		// 			GetMovesOnFileRotated(sq, p.occupiedBbL90[White]|p.occupiedBbL90[Black])) &
+// 		// 			(p.piecesBb[White][Rook] | p.piecesBb[White][Queen])) != 0) &&
+// 		// 		(GetPseudoAttacks(Bishop, sq)&p.piecesBb[White][Bishop] != 0 || (GetPseudoAttacks(Bishop, sq)&p.piecesBb[White][Queen] != 0)) &&
+// 		// 		(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[White]|p.occupiedBbR45[Black]) |
+// 		// 			GetMovesDiagDownRotated(sq, p.occupiedBbL45[White]|p.occupiedBbL45[Black])) &
+// 		// 			(p.piecesBb[White][Bishop] | p.piecesBb[White][Queen])) != 0)
+// 		//
+// 		// 	res = (GetPseudoAttacks(Rook, sq)&p.piecesBb[Black][Rook] != 0 || (GetPseudoAttacks(Rook, sq)&p.piecesBb[Black][Queen] != 0)) &&
+// 		// 		(((GetMovesOnRank(sq, p.OccupiedAll()) |
+// 		// 			GetMovesOnFileRotated(sq, p.occupiedBbL90[Black]|p.occupiedBbL90[Black])) &
+// 		// 			(p.piecesBb[Black][Rook] | p.piecesBb[Black][Queen])) != 0) &&
+// 		// 		(GetPseudoAttacks(Bishop, sq)&p.piecesBb[Black][Bishop] != 0 || (GetPseudoAttacks(Bishop, sq)&p.piecesBb[Black][Queen] != 0)) &&
+// 		// 		(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[Black]|p.occupiedBbR45[Black]) |
+// 		// 			GetMovesDiagDownRotated(sq, p.occupiedBbL45[Black]|p.occupiedBbL45[Black])) &
+// 		// 			(p.piecesBb[Black][Bishop] | p.piecesBb[Black][Queen])) != 0)
+// 		// }
+// 	}
+//
+// 	benchmarks := []struct {
+// 		name string
+// 		f    func()
+// 	}{
+// 		{"Magic", f1},
+// 		{"NonMagic", f2},
+// 	}
+// 	for _, bm := range benchmarks {
+// 		b.Run(bm.name, func(b *testing.B) {
+// 			for i := 0; i < b.N; i++ {
+// 				bm.f()
+// 			}
+// 		})
+// 	}
+// }

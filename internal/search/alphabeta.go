@@ -221,6 +221,24 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 		}
 	}
 
+	// Reverse Futility Pruning, (RFP, Static Null Move Pruning)
+	// https://www.chessprogramming.org/Reverse_Futility_Pruning
+	// Anticipate likely alpha low in the next ply by a beta cut
+	// off before making and evaluating the move
+	if Settings.Search.UseRFP &&
+		doNull &&
+		depth <= 3 &&
+		!isPV &&
+		!hasCheck {
+		// get an evaluation for the position
+		staticEval := s.evaluate(position, ply)
+		margin := rfp[depth]
+		if staticEval-margin >= beta {
+			s.statistics.RfpPrunings++
+			return staticEval - margin // fail-hard: beta / fail-soft: staticEval - evalMargin;
+		}
+	}
+
 	// NULL MOVE PRUNING
 	// https://www.chessprogramming.org/Null_Move_Pruning
 	// Under the assumption the in most chess position it would be better
@@ -393,7 +411,6 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 		lmrDepth := newDepth
 		extension := 0
 
-		// DEBUG
 		givesCheck := position.GivesCheck(move)
 
 		// Here we try some search extensions. This has to be done

@@ -102,69 +102,88 @@ func TestNewTestSuite(t *testing.T) {
 	assert.EqualValues(t, 13, len(ts.Tests))
 }
 
-// Test the testsuite itself
-// Results for Test Suite testsets/franky_tests.epd
-// ====================================================================================================================================
-//  Nr. | rType      | Move     | value    | Expected rType  | fen | ID
-// ====================================================================================================================================
-// 13   | Success    | d3e3     | mate 4   | dm 4               | 8/8/8/8/8/3K4/R7/5k2 w - - | FRANKY-1 #1
-// 13   | Success    | d3e3     | mate 4   | bm d3e3            | 8/8/8/8/8/3K4/R7/5k2 w - - | FRANKY-1 #2
-// 13   | Success    | e4d3     | mate 5   | dm 5               | 8/8/8/8/4K3/8/R7/4k3 w - - | FRANKY-1 #3
-// 13   | Success    | a7a8Q    | cp 963   | bm a7a8Q           | 6k1/P7/8/8/8/8/8/3K4 w - - | FRANKY-1 #4
-// 13   | Success    | a4a5     | cp 961   | bm a4a5            | 5k2/8/8/8/P7/3p4/3K4/8 w - - | FRANKY-1 #5
-// 13   | Success    | e5f3     | cp 801   | bm e5f3            | 7k/8/3p4/4N3/8/5p2/P7/1K2N3 w - - | FRANKY-1 #6
-// 13   | Success    | h3f2     | cp 447   | bm h3f2 d3f2       | 2b4k/8/8/8/8/3N3N/P4p2/1K6 w - - | FRANKY-1 #7
-// 13   | Success    | c3d4     | cp 18    | bm c3d4            | 8/3r1pk1/p1R2p2/1p5p/r2p4/PRP1K1P1/5P1P/8 w - - | Franky-1 #8
-// 13   | Success    | e4d3     | cp 143   | bm e4d3            | 8/3r1pk1/p1R2p2/1p5p/r2Pp3/PRP3P1/4KP1P/8 b - d3 | FRANKY-1 #9
-// 13   | Success    | e1g1     | cp -205  | bm e1g1            | r1bqk2r/pp3ppp/2pb4/3pp3/4n1n1/P4N2/1PPPBPPP/RNBQK2R w KQkq - | Franky-1 #10
-// 13   | Success    | f3h1     | cp 280   | bm f3h1            | 8/2r1kpp1/1p6/pB1Pp1P1/Pbp1P3/2N2b1P/1PPK1P2/7R b - - | FRANKY-1 #11
-// 13   | Success    | f1e2     | mate 3   | dm 3               | 4r1b1/1p4B1/pN2pR2/RB2k3/1P2N2p/2p3b1/n2P1p1r/5K1n w - - |
-// 13   | Success    | d6f8     | cp 653   | bm d6f8 d4f5 g4f4  | 3r3k/1r3p1p/p1pB1p2/8/p1qNP1Q1/P6P/1P4P1/3R3K w - - | WAC.294
-// ====================================================================================================================================
+// Summary:
+// EPD File:   test/testdata/testsets/franky_tests.epd
+// SearchTime: 3.000 ms
+// MaxDepth:   0
+// Date:       2020-04-22 23:33:11.4600101 +0200 CEST
 // Successful: 13  (100 %)
 // Failed:     0   (0 %)
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
-//
-// Test time: 26.101 ms
+// Test time: 39.1836873s
+// Configuration: Search Config:
+// 0 : UseBook                bool   = false
+// 1 : BookPath               string = ./assets/books
+// 2 : BookFile               string = book.txt
+// 3 : BookFormat             string = Simple
+// 4 : UsePonder              bool   = true
+// 5 : UseQuiescence          bool   = true
+// 6 : UseQSStandpat          bool   = true
+// 7 : UseSEE                 bool   = true
+// 8 : UsePVS                 bool   = true
+// 9 : UseKiller              bool   = true
+// 10: UseIID                 bool   = true
+// 11: IIDDepth               int    = 6
+// 12: IIDReduction           int    = 2
+// 13: UseTT                  bool   = true
+// 14: TTSize                 int    = 256
+// 15: UseTTMove              bool   = true
+// 16: UseTTValue             bool   = true
+// 17: UseQSTT                bool   = true
+// 18: UseEvalTT              bool   = false
+// 19: UseMDP                 bool   = true
+// 20: UseRFP                 bool   = true
+// 21: UseNullMove            bool   = true
+// 22: NmpDepth               int    = 3
+// 23: NmpReduction           int    = 2
+// 24: UseExt                 bool   = true
+// 25: UseCheckExt            bool   = true
+// 26: UseThreatExt           bool   = false
+// 27: UseFP                  bool   = true
+// 28: UseLmp                 bool   = true
+// 29: UseLmr                 bool   = true
+// 30: LmrDepth               int    = 3
+// 31: LmrMovesSearched       int    = 3
 func TestRunTestSuiteTest(t *testing.T) {
-	config.Settings.Search.UseLmp = true
+	config.Settings.Search.UseRFP = true
+	config.Settings.Search.UseFP = true
 	ts, _ := NewTestSuite("test/testdata/testsets/franky_tests.epd", 3*time.Second, 0)
 	ts.RunTests()
 	// assert.GreaterOrEqual(t, ts.LastResult.SuccessCounter, 12)
 }
 
-func TestBlunderTests(t *testing.T) {
-	ts, _ := NewTestSuite("test/testdata/testsets/franky_blunders.epd", 2*time.Second, 0)
-	ts.RunTests()
-}
-
 // Results for Test Suite
 // ------------------------------------------------------------------------------------------------------------------------------------
-// EPD File:   testsets/nullMoveZugZwangTest.epd
+// EPD File:   test/testdata/testsets/nullMoveZugZwangTest.epd
 // SearchTime: 5.000 ms
 // MaxDepth:   0
-// Date:       2020-04-06 08:46:11.3034315 +0200 CEST
+// Date:       2020-04-22 23:34:42.3348595 +0200 CEST
 // ====================================================================================================================================
 //  Nr. | Result     | Move     | Value    | Expected Result |Fen | Id
 // ====================================================================================================================================
-// 1    | Success    | e1f1     | cp -215  | bm e1f1 | 8/8/p1p5/1p5p/1P5p/8/PPP2K1p/4R1rk w - - | zugzwang.001
-// 2    | Success    | g5h6     | cp 371   | bm g5h6 | 1q1k4/2Rr4/8/2Q3K1/8/8/8/8 w - - | zugzwang.002
+// 1    | Success    | e1f1     | cp -205  | bm e1f1 | 8/8/p1p5/1p5p/1P5p/8/PPP2K1p/4R1rk w - - | zugzwang.001
+// 2    | Success    | g5h6     | cp 387   | bm g5h6 | 1q1k4/2Rr4/8/2Q3K1/8/8/8/8 w - - | zugzwang.002
 // 3    | Failed     | f7e7     | cp 22    | bm g4g5 | 7k/5K2/5P1p/3p4/6P1/3p4/8/8 w - - | zugzwang.003
-// 4    | Failed     | g7h6     | cp 5     | bm h3h4 | 8/6B1/p5p1/Pp4kp/1P5r/5P1Q/4q1PK/8 w - - | zugzwang.004
-// 5    | Failed     | d6d8     | cp -32   | bm f4d5 | 8/8/1p1r1k2/p1pPN1p1/P3KnP1/1P6/8/3R4 b - - | zugzwang.005
+// 4    | Failed     | g7h6     | cp 15    | bm h3h4 | 8/6B1/p5p1/Pp4kp/1P5r/5P1Q/4q1PK/8 w - - | zugzwang.004
+// 5    | Failed     | d6d8     | cp -42   | bm f4d5 | 8/8/1p1r1k2/p1pPN1p1/P3KnP1/1P6/8/3R4 b - - | zugzwang.005
 // ====================================================================================================================================
+// Summary:
+// EPD File:   test/testdata/testsets/nullMoveZugZwangTest.epd
+// SearchTime: 5.000 ms
+// MaxDepth:   0
+// Date:       2020-04-22 23:34:42.3348595 +0200 CEST
 // Successful: 2   (40 %)
 // Failed:     3   (60 %)
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
-//
-// Test time: 25.0314359s
+// Test time: 25.040373s
 func TestZugzwangTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UseLmp = true
+	config.Settings.Search.UseRFP = true
+	config.Settings.Search.UseFP = true
 	ts, _ := NewTestSuite("test/testdata/testsets/nullMoveZugZwangTest.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
@@ -208,7 +227,8 @@ func TestMateTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UseLmp = true
+	config.Settings.Search.UseRFP = true
+	config.Settings.Search.UseFP = true
 	ts, _ := NewTestSuite("test/testdata/testsets/mate_test_suite.epd", 15*time.Second, 0)
 	ts.RunTests()
 }
@@ -247,11 +267,24 @@ func TestMateTests(t *testing.T) {
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
 // Test time: 16m47.683437s
+//
+// RFP/FP
+// Summary:
+// EPD File:   test/testdata/testsets/wac.epd
+// SearchTime: 5.000 ms
+// MaxDepth:   0
+// Date:       2020-04-23 00:10:20.008491 +0200 CEST
+// Successful: 183 (91 %)
+// Failed:     18  (8 %)
+// Skipped:    0   (0 %)
+// Not tested: 0   (0 %)
+// Test time: 16m47.799935s
 func TestWACTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UseLmp = false
+	config.Settings.Search.UseRFP = true
+	config.Settings.Search.UseFP = true
 	ts, _ := NewTestSuite("test/testdata/testsets/wac.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
@@ -290,11 +323,23 @@ func TestWACTests(t *testing.T) {
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
 // Test time: 28m49.573198s
+// +RFP/FP
+// Summary:
+// EPD File:   test/testdata/testsets/crafty_test.epd
+// SearchTime: 5.000 ms
+// MaxDepth:   0
+// Date:       2020-04-23 00:52:50.9071605 +0200 CEST
+// Successful: 159 (46 %)
+// Failed:     186 (53 %)
+// Skipped:    0   (0 %)
+// Not tested: 0   (0 %)
+// Test time: 28m49.5538059s
 func TestCraftyTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UseLmp = false
+	config.Settings.Search.UseRFP = true
+	config.Settings.Search.UseFP = true
 	ts, _ := NewTestSuite("test/testdata/testsets/crafty_test.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
@@ -314,6 +359,8 @@ func TestECMTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
+	config.Settings.Search.UseRFP = true
+	config.Settings.Search.UseFP = true
 	ts, _ := NewTestSuite("test/testdata/testsets/ecm98.epd", 5*time.Second, 0)
 	ts.RunTests()
 }

@@ -99,11 +99,11 @@ type Position struct {
 	// piece bitboards
 	piecesBb [ColorLength][PtLength]Bitboard
 	// occupied bitboards with rotations
-	occupiedBb    [ColorLength]Bitboard
-	occupiedBbR90 [ColorLength]Bitboard
-	occupiedBbL90 [ColorLength]Bitboard
-	occupiedBbR45 [ColorLength]Bitboard
-	occupiedBbL45 [ColorLength]Bitboard
+	occupiedBb [ColorLength]Bitboard
+	// occupiedBbR90 [ColorLength]Bitboard
+	// occupiedBbL90 [ColorLength]Bitboard
+	// occupiedBbR45 [ColorLength]Bitboard
+	// occupiedBbL45 [ColorLength]Bitboard
 	// history information for undo and repetition detection
 	historyCounter int
 	history        [maxHistory]historyState
@@ -188,7 +188,7 @@ func (p *Position) DoMove(m Move) {
 	toSq := m.To()
 	targetPc := p.board[toSq]
 
-	if true { // DEBUG
+	if false { // DEBUG
 		switch {
 		case !m.IsValid():
 			msg := fmt.Sprintf("Position DoMove: Invalid move %s", m.String())
@@ -376,25 +376,28 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 	// New code - using GetAttacksBb from Magics - slower see tests
 	// we do check a reverse attack with a queen to see if we can hit any other sliders. If yes
 	// they also could hit us which means the square is attacked.
-	// if	(GetAttacksBb(Queen, sq, p.OccupiedAll())&(p.piecesBb[by][Rook]|p.piecesBb[by][Bishop]|p.piecesBb[by][Queen]) > 0) {
+	// TODO: Look at this again
+	if GetAttacksBb(Bishop, sq, p.OccupiedAll())&p.piecesBb[by][Bishop] > 0 ||
+		GetAttacksBb(Rook, sq, p.OccupiedAll())&p.piecesBb[by][Rook] > 0 ||
+		GetAttacksBb(Queen, sq, p.OccupiedAll())&p.piecesBb[by][Queen] > 0 {
+		return true
+	}
+
+	// // sliding rooks and queens
+	// if (GetPseudoAttacks(Rook, sq)&p.piecesBb[by][Rook] != 0 || (GetPseudoAttacks(Rook, sq)&p.piecesBb[by][Queen] != 0)) &&
+	// 	(((GetMovesOnRank(sq, p.OccupiedAll()) |
+	// 		GetMovesOnFileRotated(sq, p.occupiedBbL90[White]|p.occupiedBbL90[Black])) &
+	// 		(p.piecesBb[by][Rook] | p.piecesBb[by][Queen])) != 0) {
 	// 	return true
 	// }
-
-	// sliding rooks and queens
-	if (GetPseudoAttacks(Rook, sq)&p.piecesBb[by][Rook] != 0 || (GetPseudoAttacks(Rook, sq)&p.piecesBb[by][Queen] != 0)) &&
-		(((GetMovesOnRank(sq, p.OccupiedAll()) |
-			GetMovesOnFileRotated(sq, p.occupiedBbL90[White]|p.occupiedBbL90[Black])) &
-			(p.piecesBb[by][Rook] | p.piecesBb[by][Queen])) != 0) {
-		return true
-	}
-
-	// sliding bishop and queens
-	if (GetPseudoAttacks(Bishop, sq)&p.piecesBb[by][Bishop] != 0 || (GetPseudoAttacks(Bishop, sq)&p.piecesBb[by][Queen] != 0)) &&
-		(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[White]|p.occupiedBbR45[Black]) |
-			GetMovesDiagDownRotated(sq, p.occupiedBbL45[White]|p.occupiedBbL45[Black])) &
-			(p.piecesBb[by][Bishop] | p.piecesBb[by][Queen])) != 0) {
-		return true
-	}
+	//
+	// // sliding bishop and queens
+	// if (GetPseudoAttacks(Bishop, sq)&p.piecesBb[by][Bishop] != 0 || (GetPseudoAttacks(Bishop, sq)&p.piecesBb[by][Queen] != 0)) &&
+	// 	(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[White]|p.occupiedBbR45[Black]) |
+	// 		GetMovesDiagDownRotated(sq, p.occupiedBbL45[White]|p.occupiedBbL45[Black])) &
+	// 		(p.piecesBb[by][Bishop] | p.piecesBb[by][Queen])) != 0) {
+	// 	return true
+	// }
 
 	// check en passant
 	if p.enPassantSquare != SqNone {
@@ -913,10 +916,10 @@ func (p *Position) putPiece(piece Piece, square Square) {
 	// update bitboards
 	p.piecesBb[color][pieceType].PushSquare(square)
 	p.occupiedBb[color].PushSquare(square)
-	p.occupiedBbR90[color].PushSquare(RotateSquareR90(square))
-	p.occupiedBbL90[color].PushSquare(RotateSquareL90(square))
-	p.occupiedBbR45[color].PushSquare(RotateSquareR45(square))
-	p.occupiedBbL45[color].PushSquare(RotateSquareL45(square))
+	// p.occupiedBbR90[color].PushSquare(RotateSquareR90(square))
+	// p.occupiedBbL90[color].PushSquare(RotateSquareL90(square))
+	// p.occupiedBbR45[color].PushSquare(RotateSquareR45(square))
+	// p.occupiedBbL45[color].PushSquare(RotateSquareL45(square))
 	// zobrist
 	p.zobristKey ^= zobristBase.pieces[piece][square]
 	// game phase
@@ -950,10 +953,10 @@ func (p *Position) removePiece(square Square) Piece {
 	// update bitboards
 	p.piecesBb[color][pieceType].PopSquare(square)
 	p.occupiedBb[color].PopSquare(square)
-	p.occupiedBbR90[color].PopSquare(RotateSquareR90(square))
-	p.occupiedBbL90[color].PopSquare(RotateSquareL90(square))
-	p.occupiedBbR45[color].PopSquare(RotateSquareR45(square))
-	p.occupiedBbL45[color].PopSquare(RotateSquareL45(square))
+	// p.occupiedBbR90[color].PopSquare(RotateSquareR90(square))
+	// p.occupiedBbL90[color].PopSquare(RotateSquareL90(square))
+	// p.occupiedBbR45[color].PopSquare(RotateSquareR45(square))
+	// p.occupiedBbL45[color].PopSquare(RotateSquareL45(square))
 	// zobrist
 	p.zobristKey ^= zobristBase.pieces[removed][square]
 	// game phase

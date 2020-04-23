@@ -41,7 +41,7 @@ IIDReduction = 2
 
 # prunings pre-move
 UseMDP = true
-
+UseRFP = false
 UseNullMove = true
 NmpDepth = 3
 NmpReduction = 2

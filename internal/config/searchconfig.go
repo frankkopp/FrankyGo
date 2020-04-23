@@ -53,9 +53,9 @@ type searchConfiguration struct {
 	UseQSTT    bool
 	UseEvalTT  bool
 
-	UseMDP      bool
-	UseNullMove bool
-
+	UseMDP       bool
+	UseRFP       bool
+	UseNullMove  bool
 	NmpDepth     int
 	NmpReduction int
 
@@ -97,7 +97,7 @@ func init() {
 	Settings.Search.UseEvalTT = false
 
 	Settings.Search.UseMDP = true
-
+	Settings.Search.UseRFP = false
 	Settings.Search.UseNullMove = true
 	Settings.Search.NmpDepth = 3
 	Settings.Search.NmpReduction = 2

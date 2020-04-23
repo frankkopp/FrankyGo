@@ -106,8 +106,8 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().FpPrunings
-	ptrToSpecial2 = &s.Statistics().LmpCuts
+	ptrToSpecial = &s.Statistics().RfpPrunings
+	ptrToSpecial2 = &s.Statistics().FpPrunings
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
@@ -124,10 +124,6 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseTT = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
 
-	// + TTMove
-	// config.Settings.Search.UseTTMove = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "TTMove"))
-
 	// + TTValue
 	Settings.Search.UseTTValue = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
@@ -139,8 +135,6 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// + MDP
 	Settings.Search.UseMDP = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "MDP"))
-
-	r.Tests = append(r.Tests, measure(s, sl, p, "BASE"))
 
 	// PVS
 	Settings.Search.UsePVS = true
@@ -155,7 +149,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// IID
 	Settings.Search.UseIID = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "MoveSort"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "BASE"))
 
 	// SEE for qsearch
 	Settings.Search.UseSEE = true
@@ -169,11 +163,15 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseLmr = true
 	// Late Move Pruning
 	Settings.Search.UseLmp = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "LMR & MP"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "LMR & LMP"))
 
 	// Futility
 	Settings.Search.UseFP = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "FP"))
+
+	// Reverse Futility
+	Settings.Search.UseRFP = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "RFP"))
 
 	// Extensions
 	// Settings.Search.UseExt = true
@@ -324,6 +322,7 @@ func turnOffFeatures() {
 	Settings.Search.UseExt = false
 	Settings.Search.UseCheckExt = false
 	Settings.Search.UseThreatExt = false
+	Settings.Search.UseRFP = false
 	Settings.Search.UseFP = false
 	Settings.Search.UseLmr = false
 	Settings.Search.UseLmp = false

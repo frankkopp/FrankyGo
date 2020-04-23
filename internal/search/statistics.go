@@ -37,7 +37,8 @@ import (
 
 // Statistics are extra data and stats not essential for a functioning search
 type Statistics struct {
-	FpPrunings uint64
+	RfpPrunings uint64
+	FpPrunings  uint64
 
 	ThreatExtension uint64
 	NMPMateAlpha    uint64
