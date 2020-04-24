@@ -3,10 +3,12 @@ module github.com/frankkopp/FrankyGo
 go 1.14
 
 require (
+	fyne.io/fyne v1.2.4 // indirect
 	github.com/BurntSushi/toml v0.3.1
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/frankkopp/workerpool v0.0.0-20200414170015-71e6e5268995 // indirect
 	github.com/golang/protobuf v1.4.0 // indirect
+	github.com/mibk/dupl v1.0.0 // indirect
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/pkg/profile v1.4.0
 	github.com/stretchr/testify v1.5.1

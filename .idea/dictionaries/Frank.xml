@@ -18,6 +18,7 @@
       <w>enpassant</w>
       <w>evals</w>
       <w>fenb</w>
+      <w>fide</w>
       <w>foldername</w>
       <w>frankkopp</w>
       <w>hashful</w>
@@ -77,6 +78,7 @@
       <w>vnone</w>
       <w>winc</w>
       <w>wtime</w>
+      <w>xboard</w>
       <w>zobrist</w>
       <w>zwang</w>
     </words>
