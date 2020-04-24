@@ -41,7 +41,6 @@ func see(p *position.Position, move Move) Value {
 	}
 
 	// prepare short array to store the captures - max 32 pieces
-	// TODO: avoid allocation
 	gain := make([]Value, 32, 32)
 
 	ply := 0

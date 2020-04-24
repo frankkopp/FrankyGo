@@ -38,10 +38,24 @@ import (
 // Perft tests from https://www.chessprogramming.org/Perft_Results
 // ///////////////////////////////////////////////////////////////
 
+// Performing PERFT Test for Depth 6
+// -----------------------------------------
+// Time         : 24.895 ms
+// NPS          : 4.782.381 nps (from 4.486.000 without evasions)
+// Results:
+//   Nodes     : 119.060.324
+//   Captures  : 2.812.008
+//   EnPassant : 5.248
+//   Checks    : 809.099
+//   CheckMates: 10.828
+//   Castles   : 0
+//   Promotions: 0
+// -----------------------------------------
+// Finished PERFT Test for Depth 6
 //noinspection GoImportUsedAsName
 func TestStandardPerft(t *testing.T) {
 
-	maxDepth := 5
+	maxDepth := 6
 	var perft Perft
 	assert := assert.New(t)
 
@@ -72,8 +86,8 @@ func TestStandardPerft(t *testing.T) {
 
 // Performing PERFT Test for Depth 6
 // -----------------------------------------
-// Time         : 28.532 ms
-// NPS          :   - go test -coverprofile=coverage.txt -covermode=atomic172.724 nps
+// Time         : 24.368 ms
+// NPS          : 4.885.745 nps
 // Results:
 //   Nodes     : 119.060.324
 //   Captures  : 2.812.008
@@ -87,7 +101,7 @@ func TestStandardPerft(t *testing.T) {
 //noinspection GoImportUsedAsName
 func TestStandardPerftOd(t *testing.T) {
 
-	maxDepth := 5
+	maxDepth := 6
 	var perft Perft
 	assert := assert.New(t)
 

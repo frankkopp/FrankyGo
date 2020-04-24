@@ -36,7 +36,6 @@ import (
 	"github.com/op/go-logging"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/frankkopp/FrankyGo/internal/attacks"
 	"github.com/frankkopp/FrankyGo/internal/config"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
@@ -74,15 +73,15 @@ func TestMovegenGeneratePawnMoves(t *testing.T) {
 	pos, _ := position.NewPositionFen("1kr3nr/pp1pP1P1/2p1p3/3P1p2/1n1bP3/2P5/PP3PPP/RNBQKBNR w KQ -")
 	moves := moveslice.MoveSlice{}
 
-	mg.generatePawnMoves(pos, GenCap, &moves)
+	mg.generatePawnMoves(pos, GenCap, false, BbZero, &moves)
 	assert.Equal(t, 9, moves.Len())
 
 	moves.Clear()
-	mg.generatePawnMoves(pos, GenNonCap, &moves)
+	mg.generatePawnMoves(pos, GenNonCap, false, BbZero, &moves)
 	assert.Equal(t, 16, moves.Len())
 
 	moves.Clear()
-	mg.generatePawnMoves(pos, GenAll, &moves)
+	mg.generatePawnMoves(pos, GenAll, false, BbZero, &moves)
 	assert.Equal(t, 25, moves.Len())
 
 	// moves.Sort()
@@ -115,13 +114,13 @@ func TestMovegenGenerateKingMoves(t *testing.T) {
 	moves := moveslice.MoveSlice{}
 
 	pos, _ := position.NewPositionFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -")
-	mg.generateKingMoves(pos, GenAll, &moves)
+	mg.generateKingMoves(pos, GenAll, false, BbZero, &moves)
 	assert.Equal(t, 3, moves.Len())
 	assert.Equal(t, "e1d2 e1d1 e1f1", moves.StringUci())
 	moves.Clear()
 
 	pos, _ = position.NewPositionFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R b KQkq -")
-	mg.generateKingMoves(pos, GenAll, &moves)
+	mg.generateKingMoves(pos, GenAll, false, BbZero, &moves)
 	assert.Equal(t, 3, moves.Len())
 	assert.Equal(t, "e8d7 e8d8 e8f8", moves.StringUci())
 }
@@ -131,20 +130,20 @@ func TestMovegenGenerateMoves(t *testing.T) {
 	moves := moveslice.MoveSlice{}
 
 	pos, _ := position.NewPositionFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -")
-	mg.generateMoves(pos, GenCap, &moves)
+	mg.generateMoves(pos, GenCap, false, BbZero, &moves)
 	assert.Equal(t, 7, moves.Len())
 	assert.Equal(t, "f3d2 f3e5 d7e5 d7b6 d7f6 b5c6 e2d2", moves.StringUci())
 	moves.Clear()
 
 	pos, _ = position.NewPositionFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R b KQkq -")
-	mg.generateMoves(pos, GenNonCap, &moves)
+	mg.generateMoves(pos, GenNonCap, false, BbZero, &moves)
 	assert.Equal(t, 28, moves.Len())
 	assert.Equal(t, "d2b1 d2f1 d2b3 d2c4 c6d4 c6a5 c6b8 c6d8 f6g4 f6d5 f6h5 f6g8 b4a3 b4a5 b4c5 b4d6 b7a6 "+
 		"b7c8 a8b8 a8c8 a8d8 h8f8 h8g8 e7c5 e7d6 e7e6 e7d8 e7f8", moves.StringUci())
 	moves.Clear()
 
 	pos, _ = position.NewPositionFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R b KQkq -")
-	mg.generateMoves(pos, GenAll, &moves)
+	mg.generateMoves(pos, GenAll, false, BbZero, &moves)
 	assert.Equal(t, 34, moves.Len())
 	assert.Equal(t, "d2f3 d2e4 d2b1 d2f1 d2b3 d2c4 c6d4 c6a5 c6b8 c6d8 f6e4 f6d7 f6g4 f6d5 f6h5 f6g8 b4c3 "+
 		"b4a3 b4a5 b4c5 b4d6 b7a6 b7c8 a8b8 a8c8 a8d8 h8f8 h8g8 e7d7 e7c5 e7d6 e7e6 e7d8 e7f8", moves.StringUci())
@@ -157,7 +156,7 @@ func TestOnDemand(t *testing.T) {
 	pos := position.NewPosition()
 
 	var moves = moveslice.NewMoveSlice(100)
-	for move := mg.GetNextMove(pos, GenAll); move != MoveNone; move = mg.GetNextMove(pos, GenAll) {
+	for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
 		moves.PushBack(move)
 	}
 	assert.Equal(t, 20, moves.Len())
@@ -166,18 +165,18 @@ func TestOnDemand(t *testing.T) {
 	moves.Clear()
 
 	pos, _ = position.NewPositionFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -")
-	for move := mg.GetNextMove(pos, GenAll); move != MoveNone; move = mg.GetNextMove(pos, GenAll) {
+	for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
 		moves.PushBack(move)
 	}
 	assert.Equal(t, 40, moves.Len())
-	assert.Equal(t, "c3b4 d7f6 f3d2 b5c6 d7e5 f3e5 d7b6 e2d2 e1d2 d3d4 h2h3 a2a3 c3c4 h2h4 g2g4 a2a4 " +
-		"g2g3 b2b3 e1g1 e1c1 f3d4 d7c5 h1f1 a1d1 a1c1 b5c4 f3g5 e2e3 e2d1 b5a6 b5a4 e2f1 h1g1 a1b1 f3g1 d7f8 " +
+	assert.Equal(t, "c3b4 d7f6 f3d2 b5c6 d7e5 f3e5 d7b6 e2d2 e1d2 d3d4 h2h3 a2a3 c3c4 h2h4 g2g4 a2a4 "+
+		"g2g3 b2b3 e1g1 e1c1 f3d4 d7c5 h1f1 a1d1 a1c1 b5c4 f3g5 e2e3 e2d1 b5a6 b5a4 e2f1 h1g1 a1b1 f3g1 d7f8 "+
 		"f3h4 d7b8 e1f1 e1d1", moves.StringUci())
 	moves.Clear()
 
 	// 86
 	pos, _ = position.NewPositionFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
-	for move := mg.GetNextMove(pos, GenAll); move != MoveNone; move = mg.GetNextMove(pos, GenAll) {
+	for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
 		moves.PushBack(move)
 	}
 	assert.Equal(t, 86, moves.Len())
@@ -185,7 +184,7 @@ func TestOnDemand(t *testing.T) {
 
 	// 218
 	pos, _ = position.NewPositionFen("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - -")
-	for move := mg.GetNextMove(pos, GenAll); move != MoveNone; move = mg.GetNextMove(pos, GenAll) {
+	for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
 		moves.PushBack(move)
 	}
 	assert.Equal(t, 218, moves.Len())
@@ -198,7 +197,7 @@ func TestMovegenGeneratePseudoLegalMoves(t *testing.T) {
 	mg := NewMoveGen()
 
 	pos := position.NewPosition()
-	moves := mg.GeneratePseudoLegalMoves(pos, GenAll)
+	moves := mg.GeneratePseudoLegalMoves(pos, GenAll, false)
 	assert.Equal(t, 20, len(*moves))
 	assert.Equal(t, "e2e4 d2d4 g1f3 b1c3 h2h3 a2a3 h2h4 g2g4 f2f4 e2e3 d2d3 c2c4 b2b4 a2a4 g2g3 b2b3 f2f3 "+
 		"c2c3 g1h3 b1a3", moves.StringUci())
@@ -209,10 +208,10 @@ func TestMovegenGeneratePseudoLegalMoves(t *testing.T) {
 	moves.Clear()
 
 	pos, _ = position.NewPositionFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -")
-	moves = mg.GeneratePseudoLegalMoves(pos, GenAll)
+	moves = mg.GeneratePseudoLegalMoves(pos, GenAll, false)
 	assert.Equal(t, 40, len(*moves))
-	assert.Equal(t, "c3b4 d7f6 f3d2 b5c6 d7e5 f3e5 d7b6 e2d2 e1d2 e1g1 e1c1 d3d4 f3d4 d7c5 h1f1 a1d1 " +
-		"a1c1 b5c4 f3g5 h2h3 e2e3 a2a3 c3c4 h2h4 g2g4 a2a4 e1f1 g2g3 e2d1 b2b3 b5a6 b5a4 e2f1 h1g1 a1b1 e1d1 " +
+	assert.Equal(t, "c3b4 d7f6 f3d2 b5c6 d7e5 f3e5 d7b6 e2d2 e1d2 e1g1 e1c1 d3d4 f3d4 d7c5 h1f1 a1d1 "+
+		"a1c1 b5c4 f3g5 h2h3 e2e3 a2a3 c3c4 h2h4 g2g4 a2a4 e1f1 g2g3 e2d1 b2b3 b5a6 b5a4 e2f1 h1g1 a1b1 e1d1 "+
 		"f3g1 d7f8 f3h4 d7b8", moves.StringUci())
 	// l = mg.pseudoLegalMoves.Len()
 	// for i := 0; i < l; i++ {
@@ -222,13 +221,13 @@ func TestMovegenGeneratePseudoLegalMoves(t *testing.T) {
 
 	// 86 moves
 	pos, _ = position.NewPositionFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
-	moves = mg.GeneratePseudoLegalMoves(pos, GenAll)
+	moves = mg.GeneratePseudoLegalMoves(pos, GenAll, false)
 	assert.Equal(t, 86, len(*moves))
 	moves.Clear()
 
 	// 218 moves
 	pos, _ = position.NewPositionFen("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - -")
-	moves = mg.GeneratePseudoLegalMoves(pos, GenAll)
+	moves = mg.GeneratePseudoLegalMoves(pos, GenAll, false)
 	assert.Equal(t, 218, len(*moves))
 	moves.Clear()
 }
@@ -387,14 +386,14 @@ func TestOnDemandKillerPv(t *testing.T) {
 	mg.StoreKiller(mg.GetMoveFromUci(pos, "g6h4"))
 	mg.StoreKiller(mg.GetMoveFromUci(pos, "b7b6"))
 	mg.SetPvMove(mg.GetMoveFromUci(pos, "a2b1Q")) // changes c2b1Q a2b1Q to a2b1Q c2b1Q
-	for move := mg.GetNextMove(pos, GenAll); move != MoveNone; move = mg.GetNextMove(pos, GenAll) {
+	for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
 		moves.PushBack(move)
 	}
 	assert.Equal(t, 86, moves.Len())
-	assert.Equal(t, "a2b1Q c2b1Q c2b1N a2b1N f4g3 f4e3 c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 d7e5 g6e5 b2e5" +
-		" e6e5 c6e4 c4e4 b7b6 c2c1Q a2a1Q c2c1N a2a1N h7h6 h7h5 b7b5 f4f3 c2c1R a2a1R c2c1B a2a1B e8g8 e8c8 g6h4" +
-		" h8f8 a8d8 a8c8 d7b8 d7b6 g6e7 e6f7 e6e7 a8a7 a8a6 a8a5 a8a4 d7f8 d7f6 d7c5 g6f8 e6g8 e6f6 e6d6 e6f5" +
-		" e6d5 e6g4 e6h3 c6d6 c6b6 c6a6 c6d5 c6c5 c6b5 c6a4 c4a6 c4d5 c4c5 c4b5 c4b4 c4a4 c4b3 c4e2 c4f1 b2d4" +
+	assert.Equal(t, "a2b1Q c2b1Q c2b1N a2b1N f4g3 f4e3 c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 d7e5 g6e5 b2e5"+
+		" e6e5 c6e4 c4e4 b7b6 c2c1Q a2a1Q c2c1N a2a1N h7h6 h7h5 b7b5 f4f3 c2c1R a2a1R c2c1B a2a1B e8g8 e8c8 g6h4"+
+		" h8f8 a8d8 a8c8 d7b8 d7b6 g6e7 e6f7 e6e7 a8a7 a8a6 a8a5 a8a4 d7f8 d7f6 d7c5 g6f8 e6g8 e6f6 e6d6 e6f5"+
+		" e6d5 e6g4 e6h3 c6d6 c6b6 c6a6 c6d5 c6c5 c6b5 c6a4 c4a6 c4d5 c4c5 c4b5 c4b4 c4a4 c4b3 c4e2 c4f1 b2d4"+
 		" b2c3 b2c1 b2a1 c4d4 c4d3 c4c3 h8g8 a8b8 e8f8 e8d8 e8f7 e8e7", moves.StringUci())
 	// c2b1Q >a2b1Q< c2b1N a2b1N f4g3 f4e3 c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 d7e5 g6e5 b2e5 e6e5 c6e4
 	// c4e4 c2c1Q a2a1Q c2c1N a2a1N h7h6 h7h5 b7b5 >b7b6< f4f3 c2c1R a2a1R c2c1B a2a1B e8g8 e8c8 h8f8
@@ -408,12 +407,12 @@ func TestOnDemandKillerPv(t *testing.T) {
 	mg.StoreKiller(mg.GetMoveFromUci(pos, "d2g5"))
 	mg.StoreKiller(mg.GetMoveFromUci(pos, "b2b3"))
 	mg.SetPvMove(mg.GetMoveFromUci(pos, "e2a6"))
-	for move := mg.GetNextMove(pos, GenAll); move != MoveNone; move = mg.GetNextMove(pos, GenAll) {
+	for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
 		moves.PushBack(move)
 	}
 	assert.Equal(t, 48, moves.Len())
-	assert.Equal(t, "e2a6 d5e6 g2h3 e5f7 e5d7 e5g6 f3f6 f3h3 b2b3 d5d6 a2a3 g2g4 a2a4 g2g3 e1g1 e1c1 d2g5" +
-		" e5c4 e5d3 h1f1 a1d1 a1c1 e5c6 e2c4 e2d3 d2f4 d2e3 f3f4 f3e3 f3d3 c3b5 e2b5 f3f5 e5g4 f3g4 f3g3 f3h5 e2d1" +
+	assert.Equal(t, "e2a6 d5e6 g2h3 e5f7 e5d7 e5g6 f3f6 f3h3 b2b3 d5d6 a2a3 g2g4 a2a4 g2g3 e1g1 e1c1 d2g5"+
+		" e5c4 e5d3 h1f1 a1d1 a1c1 e5c6 e2c4 e2d3 d2f4 d2e3 f3f4 f3e3 f3d3 c3b5 e2b5 f3f5 e5g4 f3g4 f3g3 f3h5 e2d1"+
 		" d2h6 h1g1 a1b1 c3b1 c3a4 c3d1 e2f1 d2c1 e1f1 e1d1", moves.StringUci())
 	// d5e6 g2h3 >e2a6< e5f7 e5d7 e5g6 f3f6 f3h3 d5d6 a2a3 g2g4 a2a4 g2g3 b2b3 >e1g1< e1c1 e5c4 e5d3 h1f1
 	// a1d1 a1c1 e5c6 e2c4 e2d3 d2f4 d2e3 f3f4 f3e3 f3d3 c3b5 e2b5 >d2g5< f3f5 e5g4 f3g4 f3g3 f3h5 e2d1
@@ -432,12 +431,12 @@ func TestPseudoLegalPVKiller(t *testing.T) {
 	mg.SetPvMove(mg.GetMoveFromUci(pos, "a2b1Q")) // changes c2b1Q a2b1Q to a2b1Q c2b1Q
 	mg.StoreKiller(mg.GetMoveFromUci(pos, "g6h4"))
 	mg.StoreKiller(mg.GetMoveFromUci(pos, "b7b6"))
-	moves = mg.GeneratePseudoLegalMoves(pos, GenAll)
+	moves = mg.GeneratePseudoLegalMoves(pos, GenAll, false)
 	assert.Equal(t, 86, moves.Len())
-	assert.Equal(t, "a2b1Q c2b1Q c2b1N a2b1N f4g3 b2a3 f4e3 a8a3 d7e5 g6e5 b2e5 e6e5 c6e4 c4e4 c2b1R" +
-		" a2b1R c2b1B a2b1B b7b6 g6h4 e8g8 e8c8 c2c1Q a2a1Q c2c1N a2a1N e8f8 h8f8 a8d8 a8c8 d7b8 e8d8 d7b6" +
-		" g6e7 e6f7 e6e7 a8a7 a8a6 a8a5 a8a4 h7h6 d7f8 d7f6 d7c5 g6f8 e6g8 e6f6 e6d6 e6f5 e6d5 e6g4 e6h3" +
-		" c6d6 c6b6 c6a6 c6d5 c6c5 c6b5 c6a4 c4a6 c4d5 c4c5 c4b5 c4b4 c4a4 c4b3 c4e2 c4f1 b2d4 b2c3 b2c1" +
+	assert.Equal(t, "a2b1Q c2b1Q c2b1N a2b1N f4g3 b2a3 f4e3 a8a3 d7e5 g6e5 b2e5 e6e5 c6e4 c4e4 c2b1R"+
+		" a2b1R c2b1B a2b1B b7b6 g6h4 e8g8 e8c8 c2c1Q a2a1Q c2c1N a2a1N e8f8 h8f8 a8d8 a8c8 d7b8 e8d8 d7b6"+
+		" g6e7 e6f7 e6e7 a8a7 a8a6 a8a5 a8a4 h7h6 d7f8 d7f6 d7c5 g6f8 e6g8 e6f6 e6d6 e6f5 e6d5 e6g4 e6h3"+
+		" c6d6 c6b6 c6a6 c6d5 c6c5 c6b5 c6a4 c4a6 c4d5 c4c5 c4b5 c4b4 c4a4 c4b3 c4e2 c4f1 b2d4 b2c3 b2c1"+
 		" b2a1 c4d4 c4d3 c4c3 h7h5 b7b5 h8g8 a8b8 e8f7 e8e7 f4f3 c2c1R a2a1R c2c1B a2a1B", moves.StringUci())
 	// c2b1Q a2b1Q c2b1N a2b1N f4g3 b2a3 f4e3 a8a3 d7e5 g6e5 b2e5 e6e5 c6e4 c4e4 c2b1R a2b1R c2b1B
 	// a2b1B e8g8 e8c8 c2c1Q a2a1Q c2c1N a2a1N e8f8 h8f8 a8d8 a8c8 e8d8 d7b6 g6e7 e6f7 e6e7 a8a7 a8a6
@@ -451,7 +450,7 @@ func TestPseudoLegalPVKiller(t *testing.T) {
 	mg.SetPvMove(mg.GetMoveFromUci(pos, "e2a6"))
 	mg.StoreKiller(mg.GetMoveFromUci(pos, "d2g5"))
 	mg.StoreKiller(mg.GetMoveFromUci(pos, "b2b3"))
-	moves = mg.GeneratePseudoLegalMoves(pos, GenAll)
+	moves = mg.GeneratePseudoLegalMoves(pos, GenAll, false)
 	assert.Equal(t, 48, moves.Len())
 	assert.Equal(t, "e2a6 d5e6 g2h3 e5f7 e5d7 e5g6 f3f6 f3h3 b2b3 d2g5 e1g1 e1c1 e5c4 e5d3 h1f1 a1d1"+
 		" a1c1 e5c6 e2c4 e2d3 d2f4 d2e3 d5d6 f3f4 f3e3 f3d3 c3b5 e2b5 a2a3 f3f5 e5g4 f3g4 f3g3 g2g4 a2a4 e1f1"+
@@ -465,66 +464,53 @@ func TestPseudoLegalPVKiller(t *testing.T) {
 
 func TestEvasion(t *testing.T) {
 	mg := NewMoveGen()
+	var p *position.Position
+	var pseudoLegalMoves, evasionMoves, legalMoves *moveslice.MoveSlice
 
-	p := position.NewPosition("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq -")
-	pseudoLegalMoves := mg.GeneratePseudoLegalMoves(p, GenAll)
-	legalMoves := *mg.GenerateLegalMoves(p, GenAll)
-	out.Println("PseudoLegal:", pseudoLegalMoves.Len())
-	out.Println("Legal:", legalMoves.Len(), legalMoves.StringUci())
-	atcks := attacks.AttacksTo(p, p.KingSquare(Black), White)
-	out.Printf("Attacks: %d\n%s", atcks.PopCount(), atcks.StringBoard())
-	evasionMoves := mg.GenerateEvationMoves(p)
-	evasionMoves.Sort()
-	out.Println("Evasion:", evasionMoves.Len(), evasionMoves.StringUci())
-	assert.True(t, legalMoves.Equals(evasionMoves))
+	p = position.NewPosition("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq -")
+	pseudoLegalMoves = mg.GeneratePseudoLegalMoves(p, GenAll, false).Clone()
+	evasionMoves = mg.GeneratePseudoLegalMoves(p, GenAll, true).Clone()
+	legalMoves = mg.GenerateLegalMoves(p, GenAll).Clone()
+	out.Printf("PseudoLegal: %3d %s\n", pseudoLegalMoves.Len(), pseudoLegalMoves.StringUci())
+	out.Printf("Evasion    : %3d %s\n", evasionMoves.Len(), evasionMoves.StringUci())
+	out.Printf("Legal      : %3d %s\n", legalMoves.Len(), legalMoves.StringUci())
+	out.Println()
 
 	p = position.NewPosition("5k2/8/8/8/8/8/6p1/3K1R2 b - -")
-	pseudoLegalMoves = mg.GeneratePseudoLegalMoves(p, GenAll)
-	legalMoves = *mg.GenerateLegalMoves(p, GenAll)
-	out.Println("PseudoLegal:", pseudoLegalMoves.Len())
-	out.Println("Legal:", legalMoves.Len(), legalMoves.StringUci())
-	atcks = attacks.AttacksTo(p, p.KingSquare(Black), White)
-	out.Printf("Attacks: %d\n%s", atcks.PopCount(), atcks.StringBoard())
-	evasionMoves = mg.GenerateEvationMoves(p)
-	evasionMoves.Sort()
-	out.Println("Evasion:", evasionMoves.Len(), evasionMoves.StringUci())
-	assert.True(t, legalMoves.Equals(evasionMoves))
+	pseudoLegalMoves = mg.GeneratePseudoLegalMoves(p, GenAll, false).Clone()
+	evasionMoves = mg.GeneratePseudoLegalMoves(p, GenAll, true).Clone()
+	legalMoves = mg.GenerateLegalMoves(p, GenAll).Clone()
+	out.Printf("PseudoLegal: %3d %s\n", pseudoLegalMoves.Len(), pseudoLegalMoves.StringUci())
+	out.Printf("Evasion    : %3d %s\n", evasionMoves.Len(), evasionMoves.StringUci())
+	out.Printf("Legal      : %3d %s\n", legalMoves.Len(), legalMoves.StringUci())
+	out.Println()
 
 	p = position.NewPosition("5k2/8/8/8/8/6p1/5R2/3K4 b - -")
-	pseudoLegalMoves = mg.GeneratePseudoLegalMoves(p, GenAll)
-	legalMoves = *mg.GenerateLegalMoves(p, GenAll)
-	out.Println("PseudoLegal:", pseudoLegalMoves.Len())
-	out.Println("Legal:", legalMoves.Len(), legalMoves.StringUci())
-	atcks = attacks.AttacksTo(p, p.KingSquare(Black), White)
-	out.Printf("Attacks: %d\n%s", atcks.PopCount(), atcks.StringBoard())
-	evasionMoves = mg.GenerateEvationMoves(p)
-	evasionMoves.Sort()
-	out.Println("Evasion:", evasionMoves.Len(), evasionMoves.StringUci())
-	assert.True(t, legalMoves.Equals(evasionMoves))
+	pseudoLegalMoves = mg.GeneratePseudoLegalMoves(p, GenAll, false).Clone()
+	evasionMoves = mg.GeneratePseudoLegalMoves(p, GenAll, true).Clone()
+	legalMoves = mg.GenerateLegalMoves(p, GenAll).Clone()
+	out.Printf("PseudoLegal: %3d %s\n", pseudoLegalMoves.Len(), pseudoLegalMoves.StringUci())
+	out.Printf("Evasion    : %3d %s\n", evasionMoves.Len(), evasionMoves.StringUci())
+	out.Printf("Legal      : %3d %s\n", legalMoves.Len(), legalMoves.StringUci())
+	out.Println()
 
 	p = position.NewPosition("8/8/8/3k4/4Pp2/8/8/3K4 b - e3")
-	pseudoLegalMoves = mg.GeneratePseudoLegalMoves(p, GenAll)
-	legalMoves = *mg.GenerateLegalMoves(p, GenAll)
-	out.Println("PseudoLegal:", pseudoLegalMoves.Len())
-	out.Println("Legal:", legalMoves.Len(), legalMoves.StringUci())
-	atcks = attacks.AttacksTo(p, p.KingSquare(Black), White)
-	out.Printf("Attacks: %d\n%s", atcks.PopCount(), atcks.StringBoard())
-	evasionMoves = mg.GenerateEvationMoves(p)
-	evasionMoves.Sort()
-	out.Println("Evasion:", evasionMoves.Len(), evasionMoves.StringUci())
-	assert.True(t, legalMoves.Equals(evasionMoves))
+	pseudoLegalMoves = mg.GeneratePseudoLegalMoves(p, GenAll, false).Clone()
+	evasionMoves = mg.GeneratePseudoLegalMoves(p, GenAll, true).Clone()
+	legalMoves = mg.GenerateLegalMoves(p, GenAll).Clone()
+	out.Printf("PseudoLegal: %3d %s\n", pseudoLegalMoves.Len(), pseudoLegalMoves.StringUci())
+	out.Printf("Evasion    : %3d %s\n", evasionMoves.Len(), evasionMoves.StringUci())
+	out.Printf("Legal      : %3d %s\n", legalMoves.Len(), legalMoves.StringUci())
+	out.Println()
 
 	p = position.NewPosition("8/8/8/3k2n1/8/8/6B1/3K4 b - -")
-	pseudoLegalMoves = mg.GeneratePseudoLegalMoves(p, GenAll)
-	legalMoves = *mg.GenerateLegalMoves(p, GenAll)
-	out.Println("PseudoLegal:", pseudoLegalMoves.Len())
-	out.Println("Legal:", legalMoves.Len(), legalMoves.StringUci())
-	atcks = attacks.AttacksTo(p, p.KingSquare(Black), White)
-	out.Printf("Attacks: %d\n%s", atcks.PopCount(), atcks.StringBoard())
-	evasionMoves = mg.GenerateEvationMoves(p)
-	evasionMoves.Sort()
-	out.Println("Evasion:", evasionMoves.Len(), evasionMoves.StringUci())
-	assert.True(t, legalMoves.Equals(evasionMoves))
+	pseudoLegalMoves = mg.GeneratePseudoLegalMoves(p, GenAll, false).Clone()
+	evasionMoves = mg.GeneratePseudoLegalMoves(p, GenAll, true).Clone()
+	legalMoves = mg.GenerateLegalMoves(p, GenAll).Clone()
+	out.Printf("PseudoLegal: %3d %s\n", pseudoLegalMoves.Len(), pseudoLegalMoves.StringUci())
+	out.Printf("Evasion    : %3d %s\n", evasionMoves.Len(), evasionMoves.StringUci())
+	out.Printf("Legal      : %3d %s\n", legalMoves.Len(), legalMoves.StringUci())
+	out.Println()
 }
 
 func TestTimingPseudoMoveGen(t *testing.T) {
@@ -539,14 +525,14 @@ func TestTimingPseudoMoveGen(t *testing.T) {
 	mg := NewMoveGen()
 	// kiwi pete
 	pos := position.NewPosition("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ")
-	moves := mg.GeneratePseudoLegalMoves(pos, GenAll)
+	moves := mg.GeneratePseudoLegalMoves(pos, GenAll, false)
 
 	for r := 1; r <= rounds; r++ {
 		out.Printf("Round %d\n", r)
 		start := time.Now()
 		for i := uint64(0); i < iterations; i++ {
 			moves.Clear()
-			moves = mg.GeneratePseudoLegalMoves(pos, GenAll)
+			moves = mg.GeneratePseudoLegalMoves(pos, GenAll, false)
 		}
 		elapsed := time.Since(start)
 		out.Printf("GeneratePseudoLegalMoves took %d ns for %d iterations\n", elapsed.Nanoseconds(), iterations)
@@ -577,7 +563,7 @@ func TestTimingOnDemandMoveGen(t *testing.T) {
 		for i := uint64(0); i < iterations; i++ {
 			generated = 0
 			mg.ResetOnDemand()
-			for move := mg.GetNextMove(pos, GenAll); move != MoveNone; move = mg.GetNextMove(pos, GenAll) {
+			for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
 				generated++
 			}
 		}
@@ -595,7 +581,6 @@ func TestTimingOnDemandMoveGen(t *testing.T) {
 // New: 86.000.000 moves generated in 2.213 ns: 38.851.528 mps
 // New: 86.000.000 moves generated in 1.729 ns: 49.719.892 mps
 func TestTimingOnDemandRealMoveGen(t *testing.T) {
-
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
@@ -619,7 +604,7 @@ func TestTimingOnDemandRealMoveGen(t *testing.T) {
 			mg.StoreKiller(k1)
 			mg.StoreKiller(k2)
 			mg.SetPvMove(pv)
-			for move := mg.GetNextMove(pos, GenAll); move != MoveNone; move = mg.GetNextMove(pos, GenAll) {
+			for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
 				generated++
 			}
 		}
@@ -631,36 +616,6 @@ func TestTimingOnDemandRealMoveGen(t *testing.T) {
 			elapsed.Nanoseconds()/int64(iterations),
 			(generated*uint64(1_000_000_000))/uint64(elapsed.Nanoseconds()))
 	}
-}
-
-func TestTimingGenerateMovesOld(t *testing.T) {
-	// defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
-	// go tool pprof -http :8080 ./main ./prof.null/cpu.pprof
-
-	if testing.Short() {
-		t.Skip("skipping test in short mode.")
-	}
-
-	mg := NewMoveGen()
-	p := position.NewPosition("r1b1k2r/pppp1ppp/2n2n2/1Bb1p2q/4P3/2NP1N2/1PP2PPP/R1BQK2R w KQkq -")
-	result := Value(0)
-
-	const rounds = 5
-	const iterations uint64 = 10_000_000
-
-	for r := 1; r <= rounds; r++ {
-		out.Printf("Round %d\n", r)
-		start := time.Now()
-		for i := uint64(0); i < iterations; i++ {
-			mg.pseudoLegalMoves.Clear()
-			mg.generateMovesOld(p, GenAll, mg.pseudoLegalMoves)
-		}
-		elapsed := time.Since(start)
-		out.Printf("Test took %s for %d iterations\n", elapsed, iterations)
-		out.Printf("Test took %d ns per iteration\n", elapsed.Nanoseconds()/int64(iterations))
-		out.Printf("Iterations per sec %d\n", int64(iterations*1e9)/elapsed.Nanoseconds())
-	}
-	_ = result
 }
 
 func TestTimingGenerateMovesNew(t *testing.T) {
@@ -683,7 +638,7 @@ func TestTimingGenerateMovesNew(t *testing.T) {
 		start := time.Now()
 		for i := uint64(0); i < iterations; i++ {
 			mg.pseudoLegalMoves.Clear()
-			mg.generateMoves(p, GenAll, mg.pseudoLegalMoves)
+			mg.generateMoves(p, GenAll, false, BbZero, mg.pseudoLegalMoves)
 		}
 		elapsed := time.Since(start)
 		out.Printf("Test took %s for %d iterations\n", elapsed, iterations)

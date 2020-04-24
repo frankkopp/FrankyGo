@@ -190,10 +190,10 @@ func TestZugzwangTests(t *testing.T) {
 
 // Results for Test Suite
 // ------------------------------------------------------------------------------------------------------------------------------------
-// EPD File:   testsets/mate_test_suite.epd
+// EPD File:   test/testdata/testsets/mate_test_suite.epd
 // SearchTime: 15.000 ms
 // MaxDepth:   0
-// Date:       2020-04-06 08:55:41.515094 +0200 CEST
+// Date:       2020-04-24 15:23:03.556285 +0200 CEST
 // ====================================================================================================================================
 //  Nr. | Result     | Move     | Value    | Expected Result | Fen| Id
 // ====================================================================================================================================
@@ -204,25 +204,86 @@ func TestZugzwangTests(t *testing.T) {
 // 5    | Success    | d1h5     | mate 4   | dm 4               | r4rk1/pppqbp1p/3pp1p1/8/4P3/1P1P3R/PBP2PPP/R2Q2K1 w - - |
 // 6    | Success    | h5h7     | mate 4   | dm 4               | r4qrk/ppp1b1pp/3p1p2/4pPPQ/4P2P/3PB3/PPP5/1K4RR w - - |
 // 7    | Success    | e8e3     | mate 4   | dm 4               | r3r3/p1p2p1k/3p2pp/2p5/2P2n2/2N2B2/PPR1PP1q/3RQK2 b - - |
-// 8    | Success    | d4h4     | mate 4   | dm 4               | 3r4/1p1r4/1Pp5/3p4/p2R4/K1NN4/1P6/kqBB3R w - - |
+// 8    | Failed     | d4a4     | mate 5   | dm 4               | 3r4/1p1r4/1Pp5/3p4/p2R4/K1NN4/1P6/kqBB3R w - - |
 // 9    | Success    | d4g1     | mate 4   | dm 4               | n7/3p1p2/NpkNp1p1/1p2P3/3Q4/6B1/b7/4K3 w - - |
-// 10   | Success    | d8c8     | mate 4   | dm 4               | 1b1R2B1/p1n1p3/p3P2K/N1k5/2N2P2/5P2/2PP4/R7 w - - |
+// 10   | Failed     | d8c8     | mate 5   | dm 4               | 1b1R2B1/p1n1p3/p3P2K/N1k5/2N2P2/5P2/2PP4/R7 w - - |
 // 11   | Success    | f1a6     | mate 4   | dm 4               | K6Q/1p6/pPq4P/P2p2P1/4pP1N/7k/n5R1/1n2BB2 w - - |
 // 12   | Success    | g4h6     | mate 5   | dm 5               | 1r4k1/1b2K1pp/7b/2pp3P/6NB/2Q2pp1/4p3/5r2 w - - |
 // 13   | Success    | d1g1     | mate 5   | dm 5               | r2r4/1p1R3p/5pk1/b1B1Pp2/p4P2/P7/1P5P/1K1R4 w - - |
 // 14   | Success    | f2h1     | mate 5   | dm 5               | 5rk1/pp4p1/8/3N3p/2P4P/1P4K1/P2r1n2/R3R3 b - - |
 // 15   | Success    | h3h6     | mate 5   | dm 5               | 6b1/4Kpk1/5r2/8/3B2P1/7R/8/8 w - - |
-// 16   | Success    | a2f2     | mate 5   | dm 5               | 8/8/8/p7/8/8/R6p/2K2Rbk w - - |
+// 16   | Failed     | a2f2     | mate 6   | dm 5               | 8/8/8/p7/8/8/R6p/2K2Rbk w - - |
 // 17   | Success    | h6c1     | mate 5   | dm 5               | b7/8/7B/7p/8/2p3r1/2P1P1pp/4K1kq w - - |
 // 18   | Success    | f8e8     | mate 5   | dm 5               | 5R2/6r1/3P4/1BBk4/8/3N4/8/K7 w - - |
-// 19   | Failed     | c3d4     | cp 458   | dm 5               | 1r1r2k1/p4ppp/1qp5/4Pb2/3b1P2/1PP2N2/P2BQ1PP/2KR3R w - - |
+// 19   | Failed     | c3d4     | cp 476   | dm 5               | 1r1r2k1/p4ppp/1qp5/4Pb2/3b1P2/1PP2N2/P2BQ1PP/2KR3R w - - |
 // 20   | Success    | e3c5     | mate 6   | dm 6               | 4k3/8/4K3/8/4N3/4B3/3P1P2/8 w - - |
 // ====================================================================================================================================
-// Successful: 19  (95 %)
-// Failed:     1   (5 %)
+// Summary:
+// EPD File:   test/testdata/testsets/mate_test_suite.epd
+// SearchTime: 15.000 ms
+// MaxDepth:   0
+// Date:       2020-04-24 15:23:03.556285 +0200 CEST
+// Successful: 16  (80 %)
+// Failed:     4   (20 %)
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
-// Test time: 5m0.1596541s
+// Test time: 5m0.3997113s
+// Configuration: Search Config:
+// 0 : UseBook                bool   = false
+// 1 : BookPath               string = ./assets/books
+// 2 : BookFile               string = book.txt
+// 3 : BookFormat             string = Simple
+// 4 : UsePonder              bool   = true
+// 5 : UseQuiescence          bool   = true
+// 6 : UseQSStandpat          bool   = true
+// 7 : UseSEE                 bool   = true
+// 8 : UsePVS                 bool   = true
+// 9 : UseKiller              bool   = true
+// 10: UseIID                 bool   = true
+// 11: IIDDepth               int    = 6
+// 12: IIDReduction           int    = 2
+// 13: UseTT                  bool   = true
+// 14: TTSize                 int    = 256
+// 15: UseTTMove              bool   = true
+// 16: UseTTValue             bool   = true
+// 17: UseQSTT                bool   = true
+// 18: UseEvalTT              bool   = false
+// 19: UseMDP                 bool   = true
+// 20: UseRFP                 bool   = true
+// 21: UseNullMove            bool   = true
+// 22: NmpDepth               int    = 3
+// 23: NmpReduction           int    = 2
+// 24: UseExt                 bool   = true
+// 25: UseCheckExt            bool   = true
+// 26: UseThreatExt           bool   = false
+// 27: UseFP                  bool   = true
+// 28: UseLmp                 bool   = true
+// 29: UseLmr                 bool   = true
+// 30: LmrDepth               int    = 3
+// 31: LmrMovesSearched       int    = 3
+//
+// Evaluation Config:
+// 0 : UsePawnCache           bool   = false
+// 1 : PawnCacheSize          int    = 64
+// 2 : UseLazyEval            bool   = true
+// 3 : LazyEvalThreshold      int    = 700
+// 4 : Tempo                  int    = 30
+// 5 : UseAttacksInEval       bool   = false
+// 6 : UseMobility            bool   = false
+// 7 : MobilityBonus          int    = 5
+// 8 : UseAdvancedPieceEval   bool   = false
+// 9 : BishopPairBonus        int    = 20
+// 10: MinorBehindPawnBonus   int    = 15
+// 11: BishopPawnMalus        int    = 5
+// 12: BishopCenterAimBonus   int    = 20
+// 13: BishopBlockedMalus     int    = 40
+// 14: RookOnQueenFileBonus   int    = 6
+// 15: RookOnOpenFileBonus    int    = 25
+// 16: RookTrappedMalus       int    = 40
+// 17: KingRingAttacksBonus   int    = 10
+// 18: UseKingEval            bool   = false
+// 19: KingDangerMalus        int    = 50
+// 20: KingDefenderBonus      int    = 10
 func TestMateTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
