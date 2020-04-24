@@ -36,6 +36,7 @@ import (
 	"github.com/op/go-logging"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/frankkopp/FrankyGo/internal/attacks"
 	"github.com/frankkopp/FrankyGo/internal/config"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
@@ -452,14 +453,78 @@ func TestPseudoLegalPVKiller(t *testing.T) {
 	mg.StoreKiller(mg.GetMoveFromUci(pos, "b2b3"))
 	moves = mg.GeneratePseudoLegalMoves(pos, GenAll)
 	assert.Equal(t, 48, moves.Len())
-	assert.Equal(t, "e2a6 d5e6 g2h3 e5f7 e5d7 e5g6 f3f6 f3h3 b2b3 d2g5 e1g1 e1c1 e5c4 e5d3 h1f1 a1d1" +
-		" a1c1 e5c6 e2c4 e2d3 d2f4 d2e3 d5d6 f3f4 f3e3 f3d3 c3b5 e2b5 a2a3 f3f5 e5g4 f3g4 f3g3 g2g4 a2a4 e1f1" +
+	assert.Equal(t, "e2a6 d5e6 g2h3 e5f7 e5d7 e5g6 f3f6 f3h3 b2b3 d2g5 e1g1 e1c1 e5c4 e5d3 h1f1 a1d1"+
+		" a1c1 e5c6 e2c4 e2d3 d2f4 d2e3 d5d6 f3f4 f3e3 f3d3 c3b5 e2b5 a2a3 f3f5 e5g4 f3g4 f3g3 g2g4 a2a4 e1f1"+
 		" f3h5 g2g3 e2d1 d2h6 h1g1 a1b1 e1d1 c3b1 c3a4 c3d1 e2f1 d2c1", moves.StringUci())
 	// d5e6 g2h3 e2a6 e5f7 e5d7 e5g6f3f6 f3h3 e1g1 e1c1 e5c4 e5d3 h1f1 a1d1 a1c1 e5c6 e2c4 e2d3 d2f4 d2e3
 	// d5d6 f3f4f3e3 f3d3 c3b5 e2b5 d2g5 a2a3 f3f5 e5g4 f3g4 f3g3 g2g4 a2a4 e1f1 f3h5 g2g3 b2b3e2d1 d2h6
 	// h1g1 a1b1 e1d1 c3a4 c3d1 c3b1 e2f1 d2c1
 	moves.Clear()
 
+}
+
+func TestEvasion(t *testing.T) {
+	mg := NewMoveGen()
+
+	p := position.NewPosition("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq -")
+	pseudoLegalMoves := mg.GeneratePseudoLegalMoves(p, GenAll)
+	legalMoves := *mg.GenerateLegalMoves(p, GenAll)
+	out.Println("PseudoLegal:", pseudoLegalMoves.Len())
+	out.Println("Legal:", legalMoves.Len(), legalMoves.StringUci())
+	atcks := attacks.AttacksTo(p, p.KingSquare(Black), White)
+	out.Printf("Attacks: %d\n%s", atcks.PopCount(), atcks.StringBoard())
+	evasionMoves := mg.GenerateEvationMoves(p)
+	evasionMoves.Sort()
+	out.Println("Evasion:", evasionMoves.Len(), evasionMoves.StringUci())
+	assert.True(t, legalMoves.Equals(evasionMoves))
+
+	p = position.NewPosition("5k2/8/8/8/8/8/6p1/3K1R2 b - -")
+	pseudoLegalMoves = mg.GeneratePseudoLegalMoves(p, GenAll)
+	legalMoves = *mg.GenerateLegalMoves(p, GenAll)
+	out.Println("PseudoLegal:", pseudoLegalMoves.Len())
+	out.Println("Legal:", legalMoves.Len(), legalMoves.StringUci())
+	atcks = attacks.AttacksTo(p, p.KingSquare(Black), White)
+	out.Printf("Attacks: %d\n%s", atcks.PopCount(), atcks.StringBoard())
+	evasionMoves = mg.GenerateEvationMoves(p)
+	evasionMoves.Sort()
+	out.Println("Evasion:", evasionMoves.Len(), evasionMoves.StringUci())
+	assert.True(t, legalMoves.Equals(evasionMoves))
+
+	p = position.NewPosition("5k2/8/8/8/8/6p1/5R2/3K4 b - -")
+	pseudoLegalMoves = mg.GeneratePseudoLegalMoves(p, GenAll)
+	legalMoves = *mg.GenerateLegalMoves(p, GenAll)
+	out.Println("PseudoLegal:", pseudoLegalMoves.Len())
+	out.Println("Legal:", legalMoves.Len(), legalMoves.StringUci())
+	atcks = attacks.AttacksTo(p, p.KingSquare(Black), White)
+	out.Printf("Attacks: %d\n%s", atcks.PopCount(), atcks.StringBoard())
+	evasionMoves = mg.GenerateEvationMoves(p)
+	evasionMoves.Sort()
+	out.Println("Evasion:", evasionMoves.Len(), evasionMoves.StringUci())
+	assert.True(t, legalMoves.Equals(evasionMoves))
+
+	p = position.NewPosition("8/8/8/3k4/4Pp2/8/8/3K4 b - e3")
+	pseudoLegalMoves = mg.GeneratePseudoLegalMoves(p, GenAll)
+	legalMoves = *mg.GenerateLegalMoves(p, GenAll)
+	out.Println("PseudoLegal:", pseudoLegalMoves.Len())
+	out.Println("Legal:", legalMoves.Len(), legalMoves.StringUci())
+	atcks = attacks.AttacksTo(p, p.KingSquare(Black), White)
+	out.Printf("Attacks: %d\n%s", atcks.PopCount(), atcks.StringBoard())
+	evasionMoves = mg.GenerateEvationMoves(p)
+	evasionMoves.Sort()
+	out.Println("Evasion:", evasionMoves.Len(), evasionMoves.StringUci())
+	assert.True(t, legalMoves.Equals(evasionMoves))
+
+	p = position.NewPosition("8/8/8/3k2n1/8/8/6B1/3K4 b - -")
+	pseudoLegalMoves = mg.GeneratePseudoLegalMoves(p, GenAll)
+	legalMoves = *mg.GenerateLegalMoves(p, GenAll)
+	out.Println("PseudoLegal:", pseudoLegalMoves.Len())
+	out.Println("Legal:", legalMoves.Len(), legalMoves.StringUci())
+	atcks = attacks.AttacksTo(p, p.KingSquare(Black), White)
+	out.Printf("Attacks: %d\n%s", atcks.PopCount(), atcks.StringBoard())
+	evasionMoves = mg.GenerateEvationMoves(p)
+	evasionMoves.Sort()
+	out.Println("Evasion:", evasionMoves.Len(), evasionMoves.StringUci())
+	assert.True(t, legalMoves.Equals(evasionMoves))
 }
 
 func TestTimingPseudoMoveGen(t *testing.T) {

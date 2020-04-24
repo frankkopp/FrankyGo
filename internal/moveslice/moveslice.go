@@ -168,6 +168,20 @@ func (ms *MoveSlice) FilterCopy(dest *MoveSlice, f func(index int) bool) {
 	}
 }
 
+// Equals returns true if all elements of the MoveSlice equals
+// the elements of the other MoveSlice
+func (ms *MoveSlice) Equals(other *MoveSlice) bool {
+	if ms.Len() != other.Len() {
+		return false
+	}
+	for i, m := range *ms {
+		if m != (*other)[i] {
+			return false
+		}
+	}
+	return true
+}
+
 // ForEach simple range loop calling the given function on each element
 // in stored order
 func (ms *MoveSlice) ForEach(f func(index int)) {
@@ -247,3 +261,4 @@ func (ms *MoveSlice) StringUci() string {
 	}
 	return os.String()
 }
+

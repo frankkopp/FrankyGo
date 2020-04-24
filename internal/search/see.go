@@ -27,6 +27,7 @@
 package search
 
 import (
+	"github.com/frankkopp/FrankyGo/internal/attacks"
 	"github.com/frankkopp/FrankyGo/internal/position"
 	. "github.com/frankkopp/FrankyGo/internal/types"
 )
@@ -54,7 +55,7 @@ func see(p *position.Position, move Move) Value {
 	occupiedBitboard := p.OccupiedAll()
 
 	// get all attacks to the square as a bitboard
-	remainingAttacks := AttacksTo(p, toSquare, White) | AttacksTo(p, toSquare, Black)
+	remainingAttacks := attacks.AttacksTo(p, toSquare, White) | attacks.AttacksTo(p, toSquare, Black)
 
 	// log := myLogging.GetLog()
 	// log.Debugf("Determine gain for %s %s", p.StringFen(), move.StringUci())
@@ -86,8 +87,8 @@ func see(p *position.Position, move Move) Value {
 		occupiedBitboard.PopSquare(fromSquare) // reset bit in temporary occupancy (for x-Rays)
 
 		// reevaluate attacks to reveal attacks after removing the moving piece
-		remainingAttacks |= revealedAttacks(p, toSquare, occupiedBitboard, White) |
-			revealedAttacks(p, toSquare, occupiedBitboard, Black)
+		remainingAttacks |= attacks.RevealedAttacks(p, toSquare, occupiedBitboard, White) |
+			attacks.RevealedAttacks(p, toSquare, occupiedBitboard, Black)
 
 		// determine next capture
 		fromSquare = getLeastValuablePiece(p, remainingAttacks, nextPlayer)
@@ -108,30 +109,6 @@ func see(p *position.Position, move Move) Value {
 	}
 
 	return gain[0]
-}
-
-// AttacksTo determine all attacks for SEE. EnPassant is not included as this is not
-// relevant for SEE as the move preceding enpassant is always non capturing.
-func AttacksTo(p *position.Position, square Square, color Color) Bitboard {
-	occupiedAll := p.OccupiedAll()
-	return (GetPawnAttacks(color.Flip(), square) & p.PiecesBb(color, Pawn)) |
-		// Knight
-		(GetAttacksBb(Knight, square, occupiedAll) & p.PiecesBb(color, Knight)) |
-		// King
-		(GetAttacksBb(King, square, occupiedAll) & p.PiecesBb(color, King)) |
-		// Sliding rooks and queens
-		(GetAttacksBb(Rook, square, occupiedAll) & (p.PiecesBb(color, Rook) | p.PiecesBb(color, Queen))) |
-		// Sliding bishops and queens
-		(GetAttacksBb(Bishop, square, occupiedAll) & (p.PiecesBb(color, Bishop) | p.PiecesBb(color, Queen)))
-}
-
-// Returns sliding attacks after a piece has been removed to reveal new attacks.
-// It is only necessary to look at slider pieces as only their attacks can be revealed
-func revealedAttacks(p *position.Position, square Square, occupied Bitboard, color Color) Bitboard {
-	// Sliding rooks and queens
-	return (GetAttacksBb(Rook, square, occupied) & (p.PiecesBb(color, Rook) | p.PiecesBb(color, Queen)) & occupied) |
-		// Sliding bishops and queens
-		(GetAttacksBb(Bishop, square, occupied) & (p.PiecesBb(color, Bishop) | p.PiecesBb(color, Queen)) & occupied)
 }
 
 // Returns a square with the least valuable attacker. When several of same

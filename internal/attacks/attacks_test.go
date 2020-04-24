@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package evaluator
+package attacks
 
 import (
 	"testing"

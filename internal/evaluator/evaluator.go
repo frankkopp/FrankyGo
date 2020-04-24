@@ -35,6 +35,7 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
+	attacks2 "github.com/frankkopp/FrankyGo/internal/attacks"
 	. "github.com/frankkopp/FrankyGo/internal/config"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/internal/position"
@@ -62,7 +63,7 @@ type Evaluator struct {
 
 	score Score
 
-	attacks *Attacks
+	attacks *attacks2.Attacks
 }
 
 // to avoid object creation and memory allocation
@@ -84,7 +85,7 @@ func init() {
 func NewEvaluator() *Evaluator {
 	return &Evaluator{
 		log:     myLogging.GetLog(),
-		attacks: NewAttacks(),
+		attacks: attacks2.NewAttacks(),
 	}
 }
 

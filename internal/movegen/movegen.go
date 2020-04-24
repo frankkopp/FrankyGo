@@ -37,6 +37,7 @@ import (
 
 	"github.com/op/go-logging"
 
+	"github.com/frankkopp/FrankyGo/internal/attacks"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
 	"github.com/frankkopp/FrankyGo/internal/position"
@@ -92,6 +93,93 @@ func NewMoveGen() *Movegen {
 		takeIndex:          0,
 	}
 	return tmpMg
+}
+
+func (mg *Movegen) GenerateEvationMoves(p *position.Position) *moveslice.MoveSlice {
+	// DEBUG - ASSERT
+	if !p.HasCheck() {
+		log.Errorf("GenerateEvationMoves called without check")
+		return nil
+	}
+
+	us := p.NextPlayer()
+	them := us.Flip()
+	kingSquare := p.KingSquare(us)
+	king := p.GetPiece(kingSquare)
+	occupiedAll := p.OccupiedAll()
+
+	atcks := attacks.AttacksTo(p, kingSquare, them)
+	popCount := atcks.PopCount()
+
+	mg.legalMoves.Clear()
+
+	if popCount == 1 {
+		attackerSquare := atcks.Lsb()
+		attackerPt := p.GetPiece(attackerSquare).TypeOf()
+		log.Debugf("One piece gives check on %s", attackerSquare.String())
+
+		// generate king moves to un-checked squares
+		var attackerAttacks Bitboard
+		if attackerPt != Pawn {
+			attackerAttacks = GetAttacksBb(attackerPt, attackerSquare, occupiedAll)
+		} else {
+			attackerAttacks = GetPawnAttacks(them, attackerSquare)
+		}
+		kingMoves := GetAttacksBb(King, kingSquare, occupiedAll) &^ attackerAttacks
+		for kingMoves != 0 {
+			toSquare := kingMoves.PopLsb()
+			if attacks.AttacksTo(p, toSquare, them).PopCount() == 0 {
+				value := p.GetPiece(toSquare).ValueOf() - p.GetPiece(kingSquare).ValueOf() + PosValue(king, toSquare, p.GamePhase())
+				mg.legalMoves.PushBack(CreateMoveValue(kingSquare, toSquare, Normal, PtNone, value))
+			}
+		}
+
+		// checker captures
+		attackerCaptures := attacks.AttacksTo(p, attackerSquare, us)
+		for attackerCaptures != 0 {
+			fromSquare := attackerCaptures.PopLsb()
+			pt := p.GetPiece(fromSquare).TypeOf()
+			if pt == Pawn {
+				if us.PromotionRankBb().Has(attackerSquare) {
+					// value is the delta of values from the two pieces involved
+					value := p.GetPiece(attackerSquare).ValueOf() - p.GetPiece(fromSquare).ValueOf()
+					// add the possible promotion moves to the move list and also add value of the promoted piece type
+					mg.legalMoves.PushBack(CreateMoveValue(fromSquare, attackerSquare, Promotion, Queen, value+Queen.ValueOf()))
+					mg.legalMoves.PushBack(CreateMoveValue(fromSquare, attackerSquare, Promotion, Knight, value+Knight.ValueOf()))
+					// rook and bishops are usually redundant to queen promotion (except in stale mate situations)
+					// therefore we give them lower sort order
+					mg.legalMoves.PushBack(CreateMoveValue(fromSquare, attackerSquare, Promotion, Rook, value+Rook.ValueOf()-Value(2000)))
+					mg.legalMoves.PushBack(CreateMoveValue(fromSquare, attackerSquare, Promotion, Bishop, value+Bishop.ValueOf()-Value(2000)))
+				} else {
+					value := p.GetPiece(attackerSquare).ValueOf() - p.GetPiece(fromSquare).ValueOf() + PosValue(p.GetPiece(fromSquare), attackerSquare, p.GamePhase())
+					mg.legalMoves.PushBack(CreateMoveValue(fromSquare, attackerSquare, Normal, PtNone, value))
+				}
+			} else if pt != King {
+				value := p.GetPiece(attackerSquare).ValueOf() - p.GetPiece(fromSquare).ValueOf() + PosValue(king, attackerSquare, p.GamePhase())
+				mg.legalMoves.PushBack(CreateMoveValue(fromSquare, attackerSquare, Normal, PtNone, value))
+			}
+		}
+
+		// special case en passant capture
+		enPassantSquare := p.GetEnPassantSquare()
+		if enPassantSquare != SqNone {
+			myPawnAttacks := GetPawnAttacks(them, enPassantSquare) & p.PiecesBb(us, Pawn)
+			for myPawnAttacks != 0 {
+				fromSquare := myPawnAttacks.PopLsb()
+				value := PosValue(p.GetPiece(fromSquare), enPassantSquare, p.GamePhase())
+				mg.legalMoves.PushBack(CreateMoveValue(fromSquare, enPassantSquare, EnPassant, PtNone, value))
+			}
+		}
+
+		// if slider generate blocking moves
+		inBetween := Intermediate(attackerSquare, kingSquare)
+		out.Println("Inbetween:\n", inBetween.StringBoard())
+
+	} else {
+		log.Debugf("%d piece gives check", popCount)
+	}
+
+	return mg.legalMoves
 }
 
 // GeneratePseudoLegalMoves generates pseudo moves for the next player. Does not check if
