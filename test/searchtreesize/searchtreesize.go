@@ -170,8 +170,8 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseCheckExt = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "CHECK"))
 
-	Settings.Search.UseThreatExt = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "THREAT"))
+	// Settings.Search.UseThreatExt = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "THREAT"))
 
 	// Futility
 	Settings.Search.UseFP = true

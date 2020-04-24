@@ -141,14 +141,14 @@ Use --help for more command line options
     - Other Prunings
     - Aspiration
     - Continuously Performance/Profiling/Testing
-    - LMR and LMP - more testing needed
-    - Check extension - more testing needed
-    - Mate threat extension - more testing needed
+    - Tuning and Testing of all search features and parameters
+### v0.7.0 (planned)
+- TODO:
+    - History Heuristics
+    - 
 
 ## Versions
 ### v0.8.0 (in progress)
-- TODO
-    
 - DONE
     - SEE
     - Move generation considering check evasion
@@ -156,7 +156,7 @@ Use --help for more command line options
     - Futility Pruning
     - Search extensions:
         - Check extension
-        - Mate threat extension
+        - Mate threat extension (not active - search tree gets too big)
     - Restructuring of packages to better match Go best practices    
 
 ### v0.7 (done)

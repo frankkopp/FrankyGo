@@ -34,8 +34,8 @@ import (
 const (
 	Major  = 0
 	Minor  = 8
-	Status = "dev"
-	Date   = "17.4.2020"
+	Status = "rc"
+	Date   = "25.4.2020"
 )
 
 // Version returns the version of the application as a string
