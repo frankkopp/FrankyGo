@@ -6,7 +6,7 @@ Go implementation of a UCI compatible chess engine.
 [![Go Report Card](https://goreportcard.com/badge/github.com/frankkopp/FrankyGo)](https://goreportcard.com/report/github.com/frankkopp/FrankyGo)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/frankkopp/WorkerPool/blob/master/LICENSE)
 
-## Features (v0.8.0)
+## Features (v0.9.0)
 * UCI protocol (to use the engine in Arena, xboard, Fritz or other chess user interfaces)
     * UCI Options
     * UCI Search Modes
@@ -143,12 +143,12 @@ Use --help for more command line options
     - Aspiration
     - Continuously Performance/Profiling/Testing
     - Tuning and Testing of all search features and parameters
-### v0.9.0 (planned)
-- TODO:
-    - History Heuristics
-    - 
 
 ## Versions
+### v0.9.0 (in progress)
+- TODO:
+    - History Heuristics 
+
 ### v0.8.0 (done)
 - DONE
     - SEE

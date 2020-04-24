@@ -33,8 +33,8 @@ import (
 // Version information as constants
 const (
 	Major  = 0
-	Minor  = 8
-	Status = "rel"
+	Minor  = 9
+	Status = "dev"
 	Date   = "25.4.2020"
 )
 
