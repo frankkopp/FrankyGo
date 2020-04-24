@@ -24,15 +24,19 @@
  * SOFTWARE.
  */
 
-package evaluator
+package attacks
 
 import (
 	"github.com/op/go-logging"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/internal/position"
 	. "github.com/frankkopp/FrankyGo/internal/types"
 )
+
+var out = message.NewPrinter(language.German)
 
 // Attacks is a data structure to store all attacks and defends of a position.
 type Attacks struct {
@@ -150,4 +154,47 @@ func (a *Attacks) pawnAttacks(p *position.Position) {
 	a.Pawns[Black] = ShiftBitboard(p.PiecesBb(Black, Pawn), Northwest) | ShiftBitboard(p.PiecesBb(Black, Pawn), Northeast)
 	a.PawnsDouble[White] = ShiftBitboard(p.PiecesBb(White, Pawn), Northwest) & ShiftBitboard(p.PiecesBb(White, Pawn), Northeast)
 	a.PawnsDouble[Black] = ShiftBitboard(p.PiecesBb(Black, Pawn), Northwest) & ShiftBitboard(p.PiecesBb(Black, Pawn), Northeast)
+}
+
+// AttacksTo determines all attacks to the given square for the given color.
+func AttacksTo(p *position.Position, square Square, color Color) Bitboard {
+
+	// prepare en passant attacks
+	epAttacks := BbZero
+	enPassantSquare := p.GetEnPassantSquare()
+	if enPassantSquare != SqNone && enPassantSquare == square {
+		pawnSquare := enPassantSquare.To(color.Flip().MoveDirection())
+		epAttacker := pawnSquare.NeighbourFilesMask() & pawnSquare.RankOf().Bb() & p.PiecesBb(color, Pawn)
+		if epAttacker != BbZero {
+			epAttacks |= pawnSquare.Bb()
+		}
+	}
+
+	occupiedAll := p.OccupiedAll()
+
+	// this uses a reverse approach - it uses the target square as from square
+	// to generate attacks for each type and then intersects the result with
+	// the piece bitboard.
+
+	//      Pawns
+	return (GetPawnAttacks(color.Flip(), square) & p.PiecesBb(color, Pawn)) |
+		// Knight
+		(GetAttacksBb(Knight, square, occupiedAll) & p.PiecesBb(color, Knight)) |
+		// King
+		(GetAttacksBb(King, square, occupiedAll) & p.PiecesBb(color, King)) |
+		// Sliding rooks and queens
+		(GetAttacksBb(Rook, square, occupiedAll) & (p.PiecesBb(color, Rook) | p.PiecesBb(color, Queen))) |
+		// Sliding bishops and queens
+		(GetAttacksBb(Bishop, square, occupiedAll) & (p.PiecesBb(color, Bishop) | p.PiecesBb(color, Queen))) |
+		// consider en passant attacks
+		epAttacks
+}
+
+// RevealedAttacks returns sliding attacks after a piece has been removed to reveal new attacks.
+// It is only necessary to look at slider pieces as only their attacks can be revealed
+func RevealedAttacks(p *position.Position, square Square, occupied Bitboard, color Color) Bitboard {
+	// Sliding rooks and queens
+	return (GetAttacksBb(Rook, square, occupied) & (p.PiecesBb(color, Rook) | p.PiecesBb(color, Queen)) & occupied) |
+		// Sliding bishops and queens
+		(GetAttacksBb(Bishop, square, occupied) & (p.PiecesBb(color, Bishop) | p.PiecesBb(color, Queen)) & occupied)
 }

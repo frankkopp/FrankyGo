@@ -95,7 +95,7 @@ func (ms *MoveSlice) PopFront() Move {
 	if len(*ms) <= 0 {
 		panic("MoveSlice: PopFront() called on empty slice")
 	}
-		frontMove := (*ms)[0]
+	frontMove := (*ms)[0]
 	*ms = (*ms)[1:]
 	return frontMove
 }
@@ -168,6 +168,28 @@ func (ms *MoveSlice) FilterCopy(dest *MoveSlice, f func(index int) bool) {
 	}
 }
 
+// Clone copies the MoveSlice into a newly create MoveSlice
+// doing a deep copy.
+func (ms *MoveSlice) Clone() *MoveSlice {
+	dest := make([]Move, ms.Len(), ms.Cap())
+	copy(dest, *ms)
+	return (*MoveSlice)(&dest)
+}
+
+// Equals returns true if all elements of the MoveSlice equals
+// the elements of the other MoveSlice
+func (ms *MoveSlice) Equals(other *MoveSlice) bool {
+	if ms.Len() != other.Len() {
+		return false
+	}
+	for i, m := range *ms {
+		if m != (*other)[i] {
+			return false
+		}
+	}
+	return true
+}
+
 // ForEach simple range loop calling the given function on each element
 // in stored order
 func (ms *MoveSlice) ForEach(f func(index int)) {
@@ -199,6 +221,7 @@ func (ms *MoveSlice) ForEachParallel(f func(index int)) {
 // This is useful when repeatedly reusing the slice at high frequency to avoid
 // GC during reuse.
 func (ms *MoveSlice) Clear() {
+	// *ms = nil
 	*ms = (*ms)[:0]
 }
 
@@ -242,7 +265,7 @@ func (ms *MoveSlice) StringUci() string {
 		if i > 0 {
 			os.WriteString(" ")
 		}
-		m := ms.At(i)
+		m := (*ms)[i]
 		os.WriteString(m.StringUci())
 	}
 	return os.String()

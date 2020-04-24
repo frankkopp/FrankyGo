@@ -370,8 +370,8 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 
 	// ///////////////////////////////////////////////////////
 	// MOVE LOOP
-	for move := myMg.GetNextMove(position, movegen.GenAll);
-		move != MoveNone; move = myMg.GetNextMove(position, movegen.GenAll) {
+	for move := myMg.GetNextMove(position, movegen.GenAll, hasCheck);
+		move != MoveNone; move = myMg.GetNextMove(position, movegen.GenAll, hasCheck) {
 
 		if false { // DEBUG
 			err := false
@@ -400,7 +400,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				s.log.Criticalf("MoveGen PV          : %s\n", myMg.PvMove())
 				s.log.Criticalf("MoveGen K1          : %s\n", myMg.KillerMoves()[0])
 				s.log.Criticalf("MoveGen K2          : %s\n", myMg.KillerMoves()[1])
-				s.log.Criticalf("MoveGen Moves       : %s\n", myMg.GeneratePseudoLegalMoves(position, movegen.GenAll).StringUci())
+				s.log.Criticalf("MoveGen Moves       : %s\n", myMg.GeneratePseudoLegalMoves(position, movegen.GenAll, false).StringUci())
 				s.log.Criticalf(msg)
 				panic(msg)
 			}
@@ -780,7 +780,8 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 
 	// ///////////////////////////////////////////////////////
 	// MOVE LOOP
-	for move := myMg.GetNextMove(position, mode); move != MoveNone; move = myMg.GetNextMove(position, mode) {
+	for move := myMg.GetNextMove(position, mode, hasCheck);
+		move != MoveNone; move = myMg.GetNextMove(position, mode, hasCheck) {
 
 		// reduce number of moves searched in quiescence
 		// by looking at good captures only

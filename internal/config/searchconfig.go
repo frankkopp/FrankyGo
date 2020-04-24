@@ -105,7 +105,7 @@ func init() {
 	Settings.Search.UseEvalTT = false
 
 	Settings.Search.UseMDP = true
-	Settings.Search.UseRFP = false
+	Settings.Search.UseRFP = true
 	Settings.Search.UseNullMove = true
 	Settings.Search.NmpDepth = 3
 	Settings.Search.NmpReduction = 2
@@ -114,7 +114,7 @@ func init() {
 	Settings.Search.UseCheckExt = true
 	Settings.Search.UseThreatExt = false
 
-	Settings.Search.UseFP = false
+	Settings.Search.UseFP = true
 	Settings.Search.UseLmp = true
 	Settings.Search.UseLmr = true
 	Settings.Search.LmrDepth = 3

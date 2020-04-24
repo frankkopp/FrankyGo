@@ -589,9 +589,9 @@ func TestPosition_CheckInsufficientMaterial(t *testing.T) {
 
 }
 
-// DoMove/UndoMove took 3.065.041.200 ns for 10.000.000 iterations with 5 do/undo pairs
-// DoMove/UndoMove took 61 ns per do/undo pair
-// Positions per sec 16.312.994 pps
+// DoMove/UndoMove took 2.387.592.600 ns for 10.000.000 iterations with 5 do/undo pairs
+// DoMove/UndoMove took 47 ns per do/undo pair
+// Positions per sec 20.941.596 pps
 //
 //noinspection GoUnhandledErrorResult
 func TestTimingDoUndo(t *testing.T) {
@@ -721,7 +721,6 @@ func TestTimingIsAttacked(t *testing.T) {
 	}
 }
 
-//
 // func BenchmarkIsAttackedVariations(b *testing.B) {
 //
 // 	p, _ := NewPositionFen("r5k1/p1qb1p1p/1p3np1/2b2p2/2B5/2P3N1/PP2QPPP/R3N1K1 b - -")
