@@ -66,9 +66,10 @@ type searchConfiguration struct {
 	NmpReduction int
 
 	// extensions of search depth
-	UseExt       bool
-	UseCheckExt  bool
-	UseThreatExt bool
+	UseExt         bool
+	UseExtAddDepth bool
+	UseCheckExt    bool
+	UseThreatExt   bool
 
 	// prunings after move generation but before making move
 	UseFP            bool
@@ -111,6 +112,7 @@ func init() {
 	Settings.Search.NmpReduction = 2
 
 	Settings.Search.UseExt = true
+	Settings.Search.UseExtAddDepth = true
 	Settings.Search.UseCheckExt = true
 	Settings.Search.UseThreatExt = false
 

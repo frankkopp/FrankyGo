@@ -370,8 +370,7 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 
 	// ///////////////////////////////////////////////////////
 	// MOVE LOOP
-	for move := myMg.GetNextMove(position, movegen.GenAll, hasCheck);
-		move != MoveNone; move = myMg.GetNextMove(position, movegen.GenAll, hasCheck) {
+	for move := myMg.GetNextMove(position, movegen.GenAll, hasCheck); move != MoveNone; move = myMg.GetNextMove(position, movegen.GenAll, hasCheck) {
 
 		if false { // DEBUG
 			err := false
@@ -435,7 +434,11 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 				extension = 1
 			}
 
-			newDepth += extension
+			// With this turned off we still can use extension to
+			// at least avoid reductions for these moves.
+			if Settings.Search.UseExtAddDepth {
+				newDepth += extension
+			}
 		}
 
 		// ///////////////////////////////////////////////////////
@@ -780,8 +783,7 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 
 	// ///////////////////////////////////////////////////////
 	// MOVE LOOP
-	for move := myMg.GetNextMove(position, mode, hasCheck);
-		move != MoveNone; move = myMg.GetNextMove(position, mode, hasCheck) {
+	for move := myMg.GetNextMove(position, mode, hasCheck); move != MoveNone; move = myMg.GetNextMove(position, mode, hasCheck) {
 
 		// reduce number of moves searched in quiescence
 		// by looking at good captures only

@@ -48,6 +48,7 @@ NmpReduction = 2
 
 # extensions
 UseExt = true
+UseExtAddDepth = true
 UseCheckExt = true
 UseThreatExt = false
 

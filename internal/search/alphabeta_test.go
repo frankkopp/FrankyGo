@@ -109,7 +109,6 @@ func TestTimingTTSize(t *testing.T) {
 
 // v0.8.0 24.4.2020
 // NPS :  2.677.839 (evasion move gen)
-// Startpos -LMP - Ext
 func TestTiming(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")

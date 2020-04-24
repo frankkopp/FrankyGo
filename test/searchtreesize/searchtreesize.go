@@ -165,11 +165,13 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// Extensions
 	Settings.Search.UseExt = true
+	Settings.Search.UseExtAddDepth = true
+
 	Settings.Search.UseCheckExt = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "CHECK"))
 
-	// Settings.Search.UseThreatExt = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "THREAT"))
+	Settings.Search.UseThreatExt = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "THREAT"))
 
 	// Futility
 	Settings.Search.UseFP = true
@@ -180,6 +182,9 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// Late Move Pruning
 	Settings.Search.UseLmp = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "LMR & LMP"))
+
+	Settings.Search.UseExtAddDepth = false
+	r.Tests = append(r.Tests, measure(s, sl, p, "NOADD"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -320,6 +325,7 @@ func turnOffFeatures() {
 	Settings.Search.UseMDP = false
 	Settings.Search.UseNullMove = false
 	Settings.Search.UseExt = false
+	Settings.Search.UseExtAddDepth = false
 	Settings.Search.UseCheckExt = false
 	Settings.Search.UseThreatExt = false
 	Settings.Search.UseRFP = false

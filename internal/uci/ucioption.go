@@ -62,9 +62,10 @@ func init() {
 		"Use_Lmr":      {NameID: "Use_Lmr", HandlerFunc: useLmr, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseLmr), CurrentValue: strconv.FormatBool(Settings.Search.UseLmr)},
 		"Use_Lmp":      {NameID: "Use_Lmp", HandlerFunc: useLmp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseLmp), CurrentValue: strconv.FormatBool(Settings.Search.UseLmp)},
 
-		"Use_Ext":       {NameID: "Use_Ext", HandlerFunc: useExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseExt), CurrentValue: strconv.FormatBool(Settings.Search.UseExt)},
-		"Use_CheckExt":  {NameID: "Use_CheckExt", HandlerFunc: useCheckExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseCheckExt), CurrentValue: strconv.FormatBool(Settings.Search.UseCheckExt)},
-		"Use_ThreatExt": {NameID: "Use_ThreatExt", HandlerFunc: useThreatExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseThreatExt), CurrentValue: strconv.FormatBool(Settings.Search.UseThreatExt)},
+		"Use_Ext":         {NameID: "Use_Ext", HandlerFunc: useExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseExt), CurrentValue: strconv.FormatBool(Settings.Search.UseExt)},
+		"Use_ExtAddDepth": {NameID: "Use_ExtAddDepth", HandlerFunc: useExtAddDepth, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseExtAddDepth), CurrentValue: strconv.FormatBool(Settings.Search.UseExtAddDepth)},
+		"Use_CheckExt":    {NameID: "Use_CheckExt", HandlerFunc: useCheckExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseCheckExt), CurrentValue: strconv.FormatBool(Settings.Search.UseCheckExt)},
+		"Use_ThreatExt":   {NameID: "Use_ThreatExt", HandlerFunc: useThreatExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseThreatExt), CurrentValue: strconv.FormatBool(Settings.Search.UseThreatExt)},
 
 		"Eval_Lazy":     {NameID: "Eval_Lazy", HandlerFunc: evalLazy, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseLazyEval), CurrentValue: strconv.FormatBool(Settings.Eval.UseLazyEval)},
 		"Eval_Mobility": {NameID: "Eval_Mobility", HandlerFunc: evalMob, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseMobility), CurrentValue: strconv.FormatBool(Settings.Eval.UseMobility)},
@@ -94,6 +95,7 @@ func init() {
 		"Use_Lmp",
 
 		"Use_Ext",
+		"Use_ExtAddDepth",
 		"Use_CheckExt",
 		"Use_ThreatExt",
 
@@ -308,6 +310,12 @@ func useExt(u *UciHandler, o *uciOption) {
 	log.Debugf("Set use Extensions to %v", Settings.Search.UseExt)
 }
 
+func useExtAddDepth(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseExtAddDepth = v
+	log.Debugf("Set use Extensions Add to Depth to %v", Settings.Search.UseExtAddDepth)
+}
+
 func useCheckExt(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseCheckExt = v
@@ -349,4 +357,3 @@ func evalAdv(u *UciHandler, o *uciOption) {
 	Settings.Eval.UseAdvancedPieceEval = v
 	log.Debugf("Set use Adv Piece Eval to %v", Settings.Eval.UseAdvancedPieceEval)
 }
-
