@@ -63,7 +63,7 @@ func TestMate(t *testing.T) {
 	s := NewSearch()
 	p, _ := position.NewPositionFen("8/8/8/8/8/3K4/R7/5k2 w - -")
 	sl := NewSearchLimits()
-	sl.Depth = 8
+	sl.Depth = 9
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
 	assert.EqualValues(t, 9993, s.lastSearchResult.BestValue)
