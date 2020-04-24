@@ -41,7 +41,7 @@ IIDReduction = 2
 
 # prunings pre-move
 UseMDP = true
-UseRFP = false
+UseRFP = true
 UseNullMove = true
 NmpDepth = 3
 NmpReduction = 2
@@ -52,7 +52,7 @@ UseCheckExt = true
 UseThreatExt = false
 
 # pruning post-move
-UseFP = false
+UseFP = true
 UseLmp = true
 UseLmr = true
 LmrDepth = 3

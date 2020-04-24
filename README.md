@@ -15,10 +15,9 @@ Go implementation of a UCI compatible chess engine.
 * Bitboards, Magic Bitboards, pre-computed bitboards and data 
 * Move Generation using bitboards 
     * all moves or on demand in phases 
-    * mode: all, capture only, non capture
+    * mode: all, capture only, non capture, check evasions
     * move sorting for estimated value of move, pv move and killer moves
     * ~50Million move per sec on my i7-7700
-    * TODO: evasion only move generation when in check
 * Perft tests
     * ~4+Million nps 
 * Search as PVS AlphaBeta search
@@ -147,12 +146,14 @@ Use --help for more command line options
     - Mate threat extension - more testing needed
 
 ## Versions
-### v0.8 (in progress)
+### v0.8.0 (in progress)
 - TODO
-    - SEE
-    - FP
     
 - DONE
+    - SEE
+    - Move generation considering check evasion
+    - Reverse Futility Pruning
+    - Futility Pruning
     - Search extensions:
         - Check extension
         - Mate threat extension

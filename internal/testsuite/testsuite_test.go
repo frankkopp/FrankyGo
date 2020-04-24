@@ -351,50 +351,15 @@ func TestWACTests(t *testing.T) {
 }
 
 // Summary:
-// EPD File:   testsets/crafty_test.epd
-// SearchTime: 5.000 ms
-// MaxDepth:   0
-// Date:       2020-04-09 17:59:55.9396432 +0200 CEST
-// Successful: 159 (46 %)
-// Failed:     186 (53 %)
-// Skipped:    0   (0 %)
-// Not tested: 0   (0 %)
-// Test time: 28m47.8638566s
-
-// +LMP
-// Summary:
 // EPD File:   test/testdata/testsets/crafty_test.epd
 // SearchTime: 5.000 ms
 // MaxDepth:   0
-// Date:    2020-04-21 13:18:53.7538355 +0200 CEST
-// Successful: 161 (46 %)
-// Failed:    184 (53 %)
+// Date:       2020-04-24 18:09:23.5572576 +0200 CEST
+// Successful: 169 (48 %)
+// Failed:     176 (51 %)
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
-// Test time: 28m49.5454036s
-
-// -LMP
-// Summary:
-// EPD File:   test/testdata/testsets/crafty_test.epd
-// SearchTime: 5.000 ms
-// MaxDepth:   0
-// Date:    2020-04-21 13:50:39.9248157 +0200 CEST
-// Successful: 162 (46 %)
-// Failed:    183 (53 %)
-// Skipped:    0   (0 %)
-// Not tested: 0   (0 %)
-// Test time: 28m49.573198s
-// +RFP/FP
-// Summary:
-// EPD File:   test/testdata/testsets/crafty_test.epd
-// SearchTime: 5.000 ms
-// MaxDepth:   0
-// Date:       2020-04-23 00:52:50.9071605 +0200 CEST
-// Successful: 159 (46 %)
-// Failed:     186 (53 %)
-// Skipped:    0   (0 %)
-// Not tested: 0   (0 %)
-// Test time: 28m49.5538059s
+// Test time: 28m49.734886s
 func TestCraftyTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
