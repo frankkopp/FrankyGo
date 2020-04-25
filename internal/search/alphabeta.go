@@ -620,7 +620,8 @@ func (s *Search) search(position *position.Position, depth int, ply int, alpha V
 					if movesSearched == 1 {
 						s.statistics.BetaCuts1st++
 					}
-					if Settings.Search.UseKiller {
+					// store move which caused a beta cut off in this ply
+					if Settings.Search.UseKiller && !p.IsCapturingMove(move) {
 						myMg.StoreKiller(move)
 					}
 					ttType = BETA
