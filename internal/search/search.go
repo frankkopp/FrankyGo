@@ -39,6 +39,7 @@ import (
 
 	"github.com/frankkopp/FrankyGo/internal/config"
 	"github.com/frankkopp/FrankyGo/internal/evaluator"
+	"github.com/frankkopp/FrankyGo/internal/history"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/internal/movegen"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
@@ -65,6 +66,9 @@ type Search struct {
 	book *openingbook.Book
 	tt   *transpositiontable.TtTable
 	eval *evaluator.Evaluator
+
+	// history heuristics
+	history *history.History
 
 	// previous search
 	lastSearchResult *Result
@@ -102,6 +106,7 @@ func NewSearch() *Search {
 		book:              nil,
 		tt:                nil,
 		eval:              evaluator.NewEvaluator(),
+		history:           history.NewHistory(),
 		lastSearchResult:  nil,
 		stopFlag:          false,
 		startTime:         time.Time{},
@@ -127,6 +132,7 @@ func (s *Search) NewGame() {
 	s.StopSearch()
 	if s.tt != nil {
 		s.tt.Clear()
+		s.history = history.NewHistory()
 	}
 }
 

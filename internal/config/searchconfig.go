@@ -44,11 +44,13 @@ type searchConfiguration struct {
 	UseSEE        bool
 
 	// Move ordering
-	UsePVS       bool
-	UseKiller    bool
-	UseIID       bool
-	IIDDepth     int
-	IIDReduction int
+	UsePVS            bool
+	UseIID            bool
+	UseKiller         bool
+	UseHistoryCounter bool
+	UseCounterMoves   bool
+	IIDDepth          int
+	IIDReduction      int
 
 	// Transposition Table
 	UseTT      bool
@@ -93,8 +95,10 @@ func init() {
 	Settings.Search.UseSEE = true
 
 	Settings.Search.UsePVS = true
-	Settings.Search.UseKiller = true
 	Settings.Search.UseIID = true
+	Settings.Search.UseKiller = true
+	Settings.Search.UseHistoryCounter = false
+	Settings.Search.UseCounterMoves = false
 	Settings.Search.IIDDepth = 6
 	Settings.Search.IIDReduction = 2
 

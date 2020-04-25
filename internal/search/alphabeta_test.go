@@ -116,8 +116,8 @@ func TestTiming(t *testing.T) {
 	defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 	config.Settings.Search.UseBook = false
-	config.Settings.Search.UseRFP = true
-	config.Settings.Search.UseFP = true
+	config.Settings.Search.UseHistoryCounter = true
+	config.Settings.Search.UseCounterMoves = true
 	s := NewSearch()
 	// "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
 	// rnbqkbnr/ppppp1pp/5p2/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq d3 0 2
