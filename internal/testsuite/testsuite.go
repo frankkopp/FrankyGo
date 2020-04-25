@@ -257,7 +257,7 @@ func (ts *TestSuite) RunTests() {
 // test function
 func runSingleTest(s *search.Search, sl *search.Limits, t *Test) {
 	// reset search and search limits
-	s.ClearHash()
+	s.NewGame()
 	sl.Mate = 0
 	// create position
 	p, _ := position.NewPositionFen(t.fen)

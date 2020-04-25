@@ -281,6 +281,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.timeLimit = 0
 	s.extraTime = 0
 	s.nodesVisited = 0
+	// s.history = history.NewHistory()
 	s.statistics = Statistics{}
 	s.lastUciUpdateTime = s.startTime
 	s.initialize()
@@ -319,7 +320,11 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.mg = make([]*movegen.Movegen, 0, MaxDepth+1)
 	s.pv = make([]*moveslice.MoveSlice, 0, MaxDepth+1)
 	for i := 0; i <= MaxDepth; i++ {
-		s.mg = append(s.mg, movegen.NewMoveGen())
+		newMoveGen := movegen.NewMoveGen()
+		if config.Settings.Search.UseHistoryCounter || config.Settings.Search.UseCounterMoves {
+			newMoveGen.SetHistoryData(s.history)
+		}
+		s.mg = append(s.mg, newMoveGen)
 		s.pv = append(s.pv, moveslice.NewMoveSlice(MaxDepth+1))
 	}
 

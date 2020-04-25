@@ -38,6 +38,7 @@ import (
 	"github.com/op/go-logging"
 
 	"github.com/frankkopp/FrankyGo/internal/attacks"
+	"github.com/frankkopp/FrankyGo/internal/history"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
 	"github.com/frankkopp/FrankyGo/internal/position"
@@ -60,6 +61,7 @@ type Movegen struct {
 	pvMove                 Move
 	currentODStage         int8
 	pvMovePushed           bool
+	historyData            *history.History
 }
 
 // //////////////////////////////////////////////////////
@@ -82,7 +84,7 @@ func NewMoveGen() *Movegen {
 	if log == nil {
 		log = myLogging.GetLog()
 	}
-	tmpMg := &Movegen{
+	var tmpMg = &Movegen{
 		pseudoLegalMoves:       moveslice.NewMoveSlice(MaxMoves),
 		legalMoves:             moveslice.NewMoveSlice(MaxMoves),
 		onDemandMoves:          moveslice.NewMoveSlice(MaxMoves),
@@ -93,6 +95,7 @@ func NewMoveGen() *Movegen {
 		pvMove:                 MoveNone,
 		currentODStage:         odNew,
 		pvMovePushed:           false,
+		historyData:            nil,
 	}
 	return tmpMg
 }
@@ -134,17 +137,7 @@ func (mg *Movegen) GeneratePseudoLegalMoves(p *position.Position, mode GenMode, 
 	}
 
 	// PV and Killer handling
-	mg.pseudoLegalMoves.ForEach(func(i int) {
-		at := mg.pseudoLegalMoves.At(i)
-		switch {
-		case at.MoveOf() == mg.pvMove:
-			mg.pseudoLegalMoves.Set(i, at.SetValue(ValueMax))
-		case at.MoveOf() == mg.killerMoves[0]:
-			mg.pseudoLegalMoves.Set(i, at.SetValue(-4000))
-		case at.MoveOf() == mg.killerMoves[1]:
-			mg.pseudoLegalMoves.Set(i, at.SetValue(-4001))
-		}
-	})
+	mg.updateSortValues(p, mg.pseudoLegalMoves)
 
 	// sort moves
 	mg.pseudoLegalMoves.Sort()
@@ -583,6 +576,12 @@ func (mg *Movegen) KillerMoves() *[2]Move {
 	return &mg.killerMoves
 }
 
+// SetHistoryData provides a pointer to the search's history data
+// for the move generator so it can optimoze sorting.
+func (mg *Movegen) SetHistoryData(historyData *history.History) {
+	mg.historyData = historyData
+}
+
 // String returns a string representation of a MoveGen instance
 func (mg *Movegen) String() string {
 	return fmt.Sprintf("MoveGen: { OnDemand Stage: { %d }, PV Move: %s Killer Move 1: %s Killer Move 2: %s }",
@@ -660,22 +659,21 @@ func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode, evas
 			}
 		case od5: // non capture
 			mg.generatePawnMoves(p, GenNonCap, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
-			mg.pushKiller(mg.onDemandMoves)
+			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = od6
-			if evasion { // no castlings when in check
-				mg.currentODStage = od7
-			}
 		case od6:
-			mg.generateCastling(p, GenNonCap, mg.onDemandMoves)
-			mg.pushKiller(mg.onDemandMoves)
+			if !evasion { // no castlings when in check
+				mg.generateCastling(p, GenNonCap, mg.onDemandMoves)
+				mg.updateSortValues(p, mg.onDemandMoves)
+			}
 			mg.currentODStage = od7
 		case od7:
 			mg.generateMoves(p, GenNonCap, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
-			mg.pushKiller(mg.onDemandMoves)
+			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = od8
 		case od8:
 			mg.generateKingMoves(p, GenNonCap, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
-			mg.pushKiller(mg.onDemandMoves)
+			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = odEnd
 		case odEnd:
 			break
@@ -687,22 +685,49 @@ func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode, evas
 	} // while onDemandMoves.empty()
 }
 
-func (mg *Movegen) pushKiller(m *moveslice.MoveSlice) {
-	// Killer may only be returned if they actually are valid moves
-	// in this position which we can't know as Killers are stored
-	// for the whole ply. Obviously checking if the killer move is valid
-	// is expensive (part of a whole move generation) so we only re-sort
-	// them to the top once they are actually generated
+// Move order heuristics based on history data.
+func (mg *Movegen) updateSortValues(p *position.Position, moveList *moveslice.MoveSlice) {
+	us := p.NextPlayer()
+	for i := 0; i < len(*moveList); i++ {
+		move := &(*moveList)[i]
+		switch {
+		case move.MoveOf() == mg.pvMove: // PV move
+			(*move).SetValue(ValueMax)
+		case move.MoveOf() == mg.killerMoves[1]: // Killer 2
+			(*move).SetValue(-4001)
+		case move.MoveOf() == mg.killerMoves[0]: // Killer 1
+			(*move).SetValue(-4000)
+		case mg.historyData != nil: // historical search data
 
-	// Find the move in the list. If move not found ignore killer.
-	// Otherwise move element to the front.
-	for i := 0; i < len(*m); i++ {
-		move := &(*m)[i]
-		if mg.killerMoves[1] == move.MoveOf() {
-			(*move).SetValue(Value(-4001))
-		}
-		if mg.killerMoves[0] == move.MoveOf() {
-			(*move).SetValue(Value(-4000))
+			// History Count
+			// Moves that cause a beta cut in the search get an increasing value
+			// which favors many repetitions and deep searches.
+			// We use the history count to improve the sort value of a move
+			// If and how much a sort value has to be improved for a move is
+			// difficult to predict - this needs testing and experimentation.
+			// The current way is a hard cut for values <1000 and then 1 point
+			// per 1000 count points.
+			// It is also yet unclear if the history count table should be
+			// reused for several consecutive searches or just for one search.
+			// TODO: Testing
+			count := mg.historyData.HistoryCount[us][move.From()][move.To()]
+			value := Value(count / 1000)
+
+			// Counter Move History
+			// When we have a counter move which caused a beta cut off before we
+			// bump up its sort value
+			// TODO: Testing
+			if mg.historyData.CounterMoves[p.LastMove().From()][p.LastMove().To()] == move.MoveOf() {
+				value += 500
+				// out.Printf("CounterMove: %s%s = %s \n", p.LastMove().From(), p.LastMove().To(), move.StringUci())
+			}
+
+			// update move sort value
+			if value > 0 { // only touch the value if it would be improved
+				preValue := move.ValueOf()
+				(*move).SetValue(preValue + value)
+				// out.Printf("HistoryCount: %s = %d / %d ==> %d \n", move.StringUci(), count, preValue, preValue+value)
+			}
 		}
 	}
 }

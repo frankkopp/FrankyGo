@@ -37,6 +37,9 @@ import (
 
 // Statistics are extra data and stats not essential for a functioning search
 type Statistics struct {
+	BetaCuts    uint64
+	BetaCuts1st uint64
+
 	RfpPrunings uint64
 	FpPrunings  uint64
 
@@ -61,8 +64,6 @@ type Statistics struct {
 	TTCuts     uint64
 	TTNoCuts   uint64
 
-	BetaCuts    uint64
-	BetaCuts1st uint64
 	IIDmoves    uint64
 	IIDsearches uint64
 

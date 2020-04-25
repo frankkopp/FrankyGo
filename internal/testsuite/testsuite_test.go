@@ -340,12 +340,24 @@ func TestMateTests(t *testing.T) {
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
 // Test time: 16m47.799935s
+//
+// HistoryCount
+// Summary:
+// EPD File:   test/testdata/testsets/wac.epd
+// SearchTime: 5.000 ms
+// MaxDepth:   0
+// Date:       2020-04-25 18:38:18.093394 +0200 CEST
+// Successful: 187 (93 %)
+// Failed:     14  (6 %)
+// Skipped:    0   (0 %)
+// Not tested: 0   (0 %)
+// Test time: 16m47.9795186s
 func TestWACTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UseRFP = true
-	config.Settings.Search.UseFP = true
+	config.Settings.Search.UseHistoryCounter = true
+	config.Settings.Search.UseCounterMoves = true
 	ts, _ := NewTestSuite("test/testdata/testsets/wac.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
@@ -364,8 +376,8 @@ func TestCraftyTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UseRFP = true
-	config.Settings.Search.UseFP = true
+	config.Settings.Search.UseHistoryCounter = true
+	config.Settings.Search.UseCounterMoves = true
 	ts, _ := NewTestSuite("test/testdata/testsets/crafty_test.epd", 5*time.Second, 0)
 	ts.RunTests()
 }

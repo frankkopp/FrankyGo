@@ -166,6 +166,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	}
 
 	// prepare node search
+	us := p.NextPlayer()
 	bestNodeValue := ValueNA
 	bestNodeMove := MoveNone // used to store in the TT
 	ttMove := MoveNone
@@ -253,7 +254,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		if doNull &&
 			!isPV &&
 			depth >= Settings.Search.NmpDepth &&
-			p.MaterialNonPawn(p.NextPlayer()) > 0 &&
+			p.MaterialNonPawn(us) > 0 &&
 			!hasCheck {
 			// possible other criteria: eval > beta
 
@@ -372,6 +373,9 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	// MOVE LOOP
 	for move := myMg.GetNextMove(p, movegen.GenAll, hasCheck); move != MoveNone; move = myMg.GetNextMove(p, movegen.GenAll, hasCheck) {
 
+		from := move.From()
+		to := move.To()
+
 		if false { // DEBUG
 			err := false
 			msg := ""
@@ -379,13 +383,13 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			case !move.IsValid():
 				msg = fmt.Sprintf("Position DoMove: Invalid move %s", move.String())
 				err = true
-			case p.GetPiece(move.From()) == PieceNone:
-				msg = fmt.Sprintf("Position DoMove: No piece on %s for move %s", p.GetPiece(move.From()).String(), move.StringUci())
+			case p.GetPiece(from) == PieceNone:
+				msg = fmt.Sprintf("Position DoMove: No piece on %s for move %s", p.GetPiece(from).String(), move.StringUci())
 				err = true
-			case p.GetPiece(move.From()).ColorOf() != p.NextPlayer():
-				msg = fmt.Sprintf("Position DoMove: Piece to move does not belong to next player %s", p.GetPiece(move.From()).String())
+			case p.GetPiece(from).ColorOf() != us:
+				msg = fmt.Sprintf("Position DoMove: Piece to move does not belong to next player %s", p.GetPiece(from).String())
 				err = true
-			case p.GetPiece(move.To()).TypeOf() == King:
+			case p.GetPiece(to).TypeOf() == King:
 				msg = fmt.Sprintf("Position DoMove: King cannot be captured!")
 				err = true
 			}
@@ -457,8 +461,8 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			!matethreat { // from pre move null move check
 
 			// to check in futility pruning what material delta we have
-			materialEval := p.Material(p.NextPlayer()) - p.Material(p.NextPlayer().Flip())
-			moveGain := p.GetPiece(move.To()).ValueOf()
+			materialEval := p.Material(us) - p.Material(us.Flip())
+			moveGain := p.GetPiece(to).ValueOf()
 
 			// Futility Pruning
 			// Using an array of margin values for each depth
@@ -527,12 +531,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			p.UndoMove()
 			continue
 		}
-
-		// DEBUG
-		if p.HasCheck() != givesCheck {
-			panic("FAULT GivesCheck()")
-		}
-		// DEBUG
 
 		// we only count legal moves
 		s.nodesVisited++
@@ -615,8 +613,9 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 				// We will safe the move as a killer to be able to search it
 				// earlier in another node of the ply.
 				if value >= beta {
+					// Count beta cuts
 					s.statistics.BetaCuts++
-					// s.log.Debugf("Beta Cuts on %d th move\n", movesSearched)
+					// Count beta cuts on first move
 					if movesSearched == 1 {
 						s.statistics.BetaCuts1st++
 					}
@@ -625,8 +624,10 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 						myMg.StoreKiller(move)
 					}
 					// counter for moves which caused a beta cut off
+					// we use 1 << depth as an increment to favor deeper searches
+					// a more repetitions
 					if Settings.Search.UseHistoryCounter {
-						s.history.HistoryCount[p.NextPlayer()][move.From()][move.To()] += 1 << depth
+						s.history.HistoryCount[us][from][to] += 1 << depth
 					}
 					// store a successful counter move to the previous opponent move
 					if Settings.Search.UseCounterMoves {
@@ -644,8 +645,15 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 				ttType = EXACT
 			}
 		}
+		// no beta cutoff - decrease historyCounter for the move
+		// we decrease it by only half the increase amount
+		if Settings.Search.UseHistoryCounter {
+			s.history.HistoryCount[us][from][to] -= 1 << (depth-1)
+			if s.history.HistoryCount[us][from][to] < 0 {
+				s.history.HistoryCount[us][from][to] = 0
+			}
+		}
 	}
-
 	// MOVE LOOP
 	// ///////////////////////////////////////////////////////
 

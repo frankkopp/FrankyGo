@@ -106,8 +106,8 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().RfpPrunings
-	ptrToSpecial2 = &s.Statistics().FpPrunings
+	ptrToSpecial = &s.Statistics().BetaCuts
+	ptrToSpecial2 = &s.Statistics().BetaCuts1st
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
@@ -149,42 +149,45 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// IID
 	Settings.Search.UseIID = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "BASE"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "BASE"))
 
 	// SEE for qsearch
 	Settings.Search.UseSEE = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "SEE"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "SEE"))
 
 	// Reverse Futility
 	Settings.Search.UseRFP = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "RFP"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "RFP"))
 
 	// Null Move
 	Settings.Search.UseNullMove = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "NMP"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "NMP"))
 
 	// Extensions
 	Settings.Search.UseExt = true
 	Settings.Search.UseExtAddDepth = true
 
 	Settings.Search.UseCheckExt = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "CHECK"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "CHECK"))
 
 	// Settings.Search.UseThreatExt = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "THREAT"))
 
 	// Futility
 	Settings.Search.UseFP = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "FP"))
+	// r.Tests = append(r.Tests, measure(s, sl, p, "FP"))
 
 	// Late Move Reduction
 	Settings.Search.UseLmr = true
 	// Late Move Pruning
 	Settings.Search.UseLmp = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "LMR & LMP"))
 
-	Settings.Search.UseExtAddDepth = false
-	r.Tests = append(r.Tests, measure(s, sl, p, "NOADD"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
+	Settings.Search.UseHistoryCounter = true
+	Settings.Search.UseCounterMoves = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "HISTORY"))
+
+
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -281,7 +284,7 @@ func measure(s *search.Search, sl *search.Limits, p *position.Position, name str
 	out.Printf("\nTesting  %s ###############################\n", name)
 	out.Printf("Position %s \n", p.StringFen())
 
-	s.ClearHash()
+	s.NewGame()
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
 
@@ -322,6 +325,8 @@ func turnOffFeatures() {
 	Settings.Search.UseIID = false
 	Settings.Search.UsePVS = false
 	Settings.Search.UseKiller = false
+	Settings.Search.UseHistoryCounter = false
+	Settings.Search.UseCounterMoves = false
 	Settings.Search.UseMDP = false
 	Settings.Search.UseNullMove = false
 	Settings.Search.UseExt = false
