@@ -44,6 +44,8 @@ const (
 	Northwest Direction = North + West
 )
 
+var Directions = [8]Direction{ North, East, South, West, Northeast, Southeast, Southwest, Northwest }
+
 // String returns a string representation of a Direction (e.g. N, E, ...,NW,...)
 func (d Direction) String() string {
 	switch d {

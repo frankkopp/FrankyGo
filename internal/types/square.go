@@ -153,8 +153,42 @@ func SquareOf(f File, r Rank) Square {
 }
 
 // To returns the square on the chess board in the given direction
-// TODO: should maybe be pre-computed
 func (sq Square) To(d Direction) Square {
+	// Precomputed
+	// order:  North, East, South, West, Northeast, Southeast, Southwest, Northwest
+	switch d {
+	case North:
+		return sqTo[sq][0]
+	case East:
+		return sqTo[sq][1]
+	case South:
+		return sqTo[sq][2]
+	case West:
+		return sqTo[sq][3]
+	case Northeast:
+		return sqTo[sq][4]
+	case Southeast:
+		return sqTo[sq][5]
+	case Southwest:
+		return sqTo[sq][6]
+	case Northwest:
+		return sqTo[sq][7]
+	default:
+		panic(fmt.Sprintf("Invalid direction %d", d))
+	}
+}
+
+var sqTo [SqLength][8]Square
+
+func init() {
+	for sq := SqA1; sq < SqNone; sq++ {
+		for i, dir := range Directions {
+			sqTo[sq][i] = sq.toPreCompute(dir)
+		}
+	}
+}
+
+func (sq Square) toPreCompute(d Direction) Square {
 	// overflow To south or north are easily detected <0 ot >63
 	// east and west need check
 	switch d {
