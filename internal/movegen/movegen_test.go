@@ -73,11 +73,11 @@ func TestMovegenGeneratePawnMoves(t *testing.T) {
 	pos, _ := position.NewPositionFen("1kr3nr/pp1pP1P1/2p1p3/3P1p2/1n1bP3/2P5/PP3PPP/RNBQKBNR w KQ -")
 	moves := moveslice.MoveSlice{}
 
-	mg.generatePawnMoves(pos, GenCap, false, BbZero, &moves)
+	mg.generatePawnMoves(pos, GenNonQuiet, false, BbZero, &moves)
 	assert.Equal(t, 9, moves.Len())
 
 	moves.Clear()
-	mg.generatePawnMoves(pos, GenNonCap, false, BbZero, &moves)
+	mg.generatePawnMoves(pos, GenQuiet, false, BbZero, &moves)
 	assert.Equal(t, 16, moves.Len())
 
 	moves.Clear()
@@ -130,13 +130,13 @@ func TestMovegenGenerateMoves(t *testing.T) {
 	moves := moveslice.MoveSlice{}
 
 	pos, _ := position.NewPositionFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -")
-	mg.generateMoves(pos, GenCap, false, BbZero, &moves)
+	mg.generateMoves(pos, GenNonQuiet, false, BbZero, &moves)
 	assert.Equal(t, 7, moves.Len())
 	assert.Equal(t, "f3d2 f3e5 d7e5 d7b6 d7f6 b5c6 e2d2", moves.StringUci())
 	moves.Clear()
 
 	pos, _ = position.NewPositionFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R b KQkq -")
-	mg.generateMoves(pos, GenNonCap, false, BbZero, &moves)
+	mg.generateMoves(pos, GenQuiet, false, BbZero, &moves)
 	assert.Equal(t, 28, moves.Len())
 	assert.Equal(t, "d2b1 d2f1 d2b3 d2c4 c6d4 c6a5 c6b8 c6d8 f6g4 f6d5 f6h5 f6g8 b4a3 b4a5 b4c5 b4d6 b7a6 "+
 		"b7c8 a8b8 a8c8 a8d8 h8f8 h8g8 e7c5 e7d6 e7e6 e7d8 e7f8", moves.StringUci())
@@ -520,51 +520,6 @@ func TestEvasion(t *testing.T) {
 	out.Printf("Evasion    : %3d %s\n", evasionMoves.Len(), evasionMoves.StringUci())
 	out.Printf("Legal      : %3d %s\n", legalMoves.Len(), legalMoves.StringUci())
 	out.Println()
-}
-
-func TestHistoryCounter(t *testing.T) {
-
-	mg := NewMoveGen()
-	var moves = moveslice.NewMoveSlice(100)
-
-	// 86
-	pos, _ := position.NewPositionFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
-	mg.StoreKiller(mg.GetMoveFromUci(pos, "g6h4"))
-	mg.StoreKiller(mg.GetMoveFromUci(pos, "b7b6"))
-	mg.SetPvMove(mg.GetMoveFromUci(pos, "a2b1Q")) // changes c2b1Q a2b1Q to a2b1Q c2b1Q
-	for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
-		moves.PushBack(move)
-	}
-	assert.Equal(t, 86, moves.Len())
-	assert.Equal(t, "a2b1Q c2b1Q c2b1N a2b1N f4g3 f4e3 c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 d7e5 g6e5 b2e5"+
-		" e6e5 c6e4 c4e4 b7b6 c2c1Q a2a1Q c2c1N a2a1N h7h6 h7h5 b7b5 f4f3 c2c1R a2a1R c2c1B a2a1B e8g8 e8c8 g6h4"+
-		" h8f8 a8d8 a8c8 d7b8 d7b6 g6e7 e6f7 e6e7 a8a7 a8a6 a8a5 a8a4 d7f8 d7f6 d7c5 g6f8 e6g8 e6f6 e6d6 e6f5"+
-		" e6d5 e6g4 e6h3 c6d6 c6b6 c6a6 c6d5 c6c5 c6b5 c6a4 c4a6 c4d5 c4c5 c4b5 c4b4 c4a4 c4b3 c4e2 c4f1 b2d4"+
-		" b2c3 b2c1 b2a1 c4d4 c4d3 c4c3 h8g8 a8b8 e8f8 e8d8 e8f7 e8e7", moves.StringUci())
-	// c2b1Q >a2b1Q< c2b1N a2b1N f4g3 f4e3 c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 d7e5 g6e5 b2e5 e6e5 c6e4
-	// c4e4 c2c1Q a2a1Q c2c1N a2a1N h7h6 h7h5 b7b5 >b7b6< f4f3 c2c1R a2a1R c2c1B a2a1B e8g8 e8c8 h8f8
-	// a8d8 a8c8 d7b6 g6e7 e6f7 e6e7 a8a7 a8a6 a8a5 a8a4 d7f8 d7f6 d7c5 g6f8 e6g8 e6f6 e6d6 e6f5
-	// e6d5 e6g4 e6h3 c6d6 c6b6 c6a6 c6d5 c6c5 c6b5 c6a4 c4a6 c4d5 c4c5 c4b5 c4b4 c4a4 c4b3 c4e2
-	// c4f1 b2d4 b2c3 b2c1 b2a1 d7b8 >g6h4< c4d4 c4d3 c4c3 h8g8 a8b8 e8f8 e8d8 e8f7 e8e7
-	moves.Clear()
-
-	// 48 kiwipete
-	pos, _ = position.NewPositionFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ")
-	mg.StoreKiller(mg.GetMoveFromUci(pos, "d2g5"))
-	mg.StoreKiller(mg.GetMoveFromUci(pos, "b2b3"))
-	mg.SetPvMove(mg.GetMoveFromUci(pos, "e2a6"))
-	for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
-		moves.PushBack(move)
-	}
-	assert.Equal(t, 48, moves.Len())
-	assert.Equal(t, "e2a6 d5e6 g2h3 e5f7 e5d7 e5g6 f3f6 f3h3 b2b3 d5d6 a2a3 g2g4 a2a4 g2g3 e1g1 e1c1 d2g5"+
-		" e5c4 e5d3 h1f1 a1d1 a1c1 e5c6 e2c4 e2d3 d2f4 d2e3 f3f4 f3e3 f3d3 c3b5 e2b5 f3f5 e5g4 f3g4 f3g3 f3h5 e2d1"+
-		" d2h6 h1g1 a1b1 c3b1 c3a4 c3d1 e2f1 d2c1 e1f1 e1d1", moves.StringUci())
-	// d5e6 g2h3 >e2a6< e5f7 e5d7 e5g6 f3f6 f3h3 d5d6 a2a3 g2g4 a2a4 g2g3 b2b3 >e1g1< e1c1 e5c4 e5d3 h1f1
-	// a1d1 a1c1 e5c6 e2c4 e2d3 d2f4 d2e3 f3f4 f3e3 f3d3 c3b5 e2b5 >d2g5< f3f5 e5g4 f3g4 f3g3 f3h5 e2d1
-	// d2h6 h1g1 a1b1 c3a4 c3d1 c3b1 e2f1 d2c1 e1f1 e1d1
-	moves.Clear()
-
 }
 
 func TestTimingPseudoMoveGen(t *testing.T) {

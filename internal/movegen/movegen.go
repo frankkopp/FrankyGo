@@ -73,10 +73,10 @@ type GenMode int
 
 // GenMode generation modes for on demand move generation
 const (
-	GenZero   GenMode = 0b00
-	GenCap    GenMode = 0b01
-	GenNonCap GenMode = 0b10
-	GenAll    GenMode = 0b11
+	GenZero     GenMode = 0b00
+	GenNonQuiet GenMode = 0b01
+	GenQuiet    GenMode = 0b10
+	GenAll      GenMode = 0b11
 )
 
 // NewMoveGen creates a new instance of a move generator
@@ -84,7 +84,7 @@ func NewMoveGen() *Movegen {
 	if log == nil {
 		log = myLogging.GetLog()
 	}
-	var tmpMg = &Movegen{
+	tmpMg := &Movegen{
 		pseudoLegalMoves:       moveslice.NewMoveSlice(MaxMoves),
 		legalMoves:             moveslice.NewMoveSlice(MaxMoves),
 		onDemandMoves:          moveslice.NewMoveSlice(MaxMoves),
@@ -121,19 +121,19 @@ func (mg *Movegen) GeneratePseudoLegalMoves(p *position.Position, mode GenMode, 
 		mg.onDemandEvasionTargets = mg.getEvasionTargets(p)
 	}
 
-	if mode&GenCap != 0 {
-		mg.generatePawnMoves(p, GenCap, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
+	if mode&GenNonQuiet != 0 {
+		mg.generatePawnMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
 		// castling never captures
-		mg.generateKingMoves(p, GenCap, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
-		mg.generateMoves(p, GenCap, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
+		mg.generateKingMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
+		mg.generateMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
 	}
-	if mode&GenNonCap != 0 {
-		mg.generatePawnMoves(p, GenNonCap, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
+	if mode&GenQuiet != 0 {
+		mg.generatePawnMoves(p, GenQuiet, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
 		if !evasion { // no castling when in check
-			mg.generateCastling(p, GenNonCap, mg.pseudoLegalMoves)
+			mg.generateCastling(p, GenQuiet, mg.pseudoLegalMoves)
 		}
-		mg.generateKingMoves(p, GenNonCap, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
-		mg.generateMoves(p, GenNonCap, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
+		mg.generateKingMoves(p, GenQuiet, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
+		mg.generateMoves(p, GenQuiet, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
 	}
 
 	// PV and Killer handling
@@ -623,12 +623,12 @@ func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode, evas
 				case GenAll:
 					mg.pvMovePushed = true
 					mg.onDemandMoves.PushBack(mg.pvMove)
-				case GenCap:
+				case GenNonQuiet:
 					if p.IsCapturingMove(mg.pvMove) {
 						mg.pvMovePushed = true
 						mg.onDemandMoves.PushBack(mg.pvMove)
 					}
-				case GenNonCap:
+				case GenQuiet:
 					if !p.IsCapturingMove(mg.pvMove) {
 						mg.pvMovePushed = true
 						mg.onDemandMoves.PushBack(mg.pvMove)
@@ -637,42 +637,42 @@ func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode, evas
 			}
 			// decide which state we should continue with
 			// captures or non captures or both
-			if mode&GenCap != 0 {
+			if mode&GenNonQuiet != 0 {
 				mg.currentODStage = od1
 			} else {
 				mg.currentODStage = od4
 			}
 		case od1: // capture
-			mg.generatePawnMoves(p, GenCap, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.generatePawnMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
 			mg.currentODStage = od2
 		case od2:
-			mg.generateMoves(p, GenCap, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.generateMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
 			mg.currentODStage = od3
 		case od3:
-			mg.generateKingMoves(p, GenCap, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.generateKingMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
 			mg.currentODStage = od4
 		case od4:
-			if mode&GenNonCap != 0 {
+			if mode&GenQuiet != 0 {
 				mg.currentODStage = od5
 			} else {
 				mg.currentODStage = odEnd
 			}
 		case od5: // non capture
-			mg.generatePawnMoves(p, GenNonCap, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.generatePawnMoves(p, GenQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
 			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = od6
 		case od6:
 			if !evasion { // no castlings when in check
-				mg.generateCastling(p, GenNonCap, mg.onDemandMoves)
+				mg.generateCastling(p, GenQuiet, mg.onDemandMoves)
 				mg.updateSortValues(p, mg.onDemandMoves)
 			}
 			mg.currentODStage = od7
 		case od7:
-			mg.generateMoves(p, GenNonCap, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.generateMoves(p, GenQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
 			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = od8
 		case od8:
-			mg.generateKingMoves(p, GenNonCap, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.generateKingMoves(p, GenQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
 			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = odEnd
 		case odEnd:
@@ -765,7 +765,7 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 	piece := MakePiece(nextPlayer, Pawn)
 
 	// captures
-	if mode&GenCap != 0 {
+	if mode&GenNonQuiet != 0 {
 
 		// This algorithm shifts the own pawn bitboard in the direction of pawn captures
 		// and ANDs it with the opponents pieces. With this we get all possible captures
@@ -837,7 +837,7 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 	}
 
 	// non captures
-	if mode&GenNonCap != 0 {
+	if mode&GenQuiet != 0 {
 
 		//  Move my pawns forward one step and keep all on not occupied squares
 		//  Move pawns now on rank 3 (rank 6) another square forward to check for pawn doubles.
@@ -898,7 +898,7 @@ func (mg *Movegen) generateCastling(position *position.Position, mode GenMode, m
 	// castling - pseudo castling - we will not check if we are in check after the move
 	// or if we have passed an attacked square with the king or if the king has been in check
 
-	if mode&GenNonCap != 0 && position.CastlingRights() != CastlingNone {
+	if mode&GenQuiet != 0 && position.CastlingRights() != CastlingNone {
 		cr := position.CastlingRights()
 		if nextPlayer == White { // white
 			if cr.Has(CastlingWhiteOO) && Intermediate(SqE1, SqH1)&occupiedBB == 0 {
@@ -930,7 +930,7 @@ func (mg *Movegen) generateKingMoves(p *position.Position, mode GenMode, evasion
 	pseudoMoves := GetPseudoAttacks(King, fromSquare)
 
 	// captures
-	if mode&GenCap != 0 {
+	if mode&GenNonQuiet != 0 {
 		captures := pseudoMoves & p.OccupiedBb(them)
 		for captures != 0 {
 			toSquare := captures.PopLsb()
@@ -944,7 +944,7 @@ func (mg *Movegen) generateKingMoves(p *position.Position, mode GenMode, evasion
 	}
 
 	// non captures
-	if mode&GenNonCap != 0 {
+	if mode&GenQuiet != 0 {
 		nonCaptures := pseudoMoves &^ p.OccupiedAll()
 		for nonCaptures != 0 {
 			toSquare := nonCaptures.PopLsb()
@@ -993,7 +993,7 @@ func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, evas
 			moves := GetAttacksBb(pt, fromSquare, occupiedBb)
 
 			// captures
-			if mode&GenCap != 0 {
+			if mode&GenNonQuiet != 0 {
 				captures := moves & position.OccupiedBb(nextPlayer.Flip())
 				if evasion {
 					captures &= evasionTargets
@@ -1006,7 +1006,7 @@ func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, evas
 			}
 
 			// non captures
-			if mode&GenNonCap != 0 {
+			if mode&GenQuiet != 0 {
 				nonCaptures := moves &^ occupiedBb
 				if evasion {
 					nonCaptures &= evasionTargets

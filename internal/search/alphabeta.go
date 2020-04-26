@@ -798,7 +798,7 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 		s.statistics.CheckInQS++
 		mode = movegen.GenAll
 	} else {
-		mode = movegen.GenCap
+		mode = movegen.GenNonQuiet
 	}
 
 	// ///////////////////////////////////////////////////////
