@@ -365,7 +365,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 		s.statistics.CurrentSearchDepth, s.statistics.CurrentExtraSearchDepth, s.nodesVisited,
 		util.Nps(s.nodesVisited, searchResult.SearchTime)))
 	s.log.Infof("Search stats: %s", s.statistics.String())
-	s.log.Debugf("History stats: %s", s.history.String())
+	// s.log.Debugf("History stats: %s", s.history.String())
 
 	// print result to log
 	s.log.Infof("Search result: %s", searchResult.String())
