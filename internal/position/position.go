@@ -212,13 +212,6 @@ func (p *Position) DoMove(m Move) {
 		}
 	} // DEBUG
 
-	if assert.DEBUG {
-		assert.Assert(m.IsValid(), "Position DoMove: Invalid move %s", m.String())
-		assert.Assert(fromPc != PieceNone, "Position DoMove: No piece on %s for move %s", fromPc.String(), m.StringUci())
-		assert.Assert(myColor == p.nextPlayer, "Position DoMove: Piece to move does not belong to next player %s", fromPc.String())
-		assert.Assert(targetPc.TypeOf() != King, "Position DoMove: King cannot be captured yet target piece is %s", targetPc.String())
-	}
-
 	// Save state of board for undo
 	// this helps the compiler to prove that it is in bounds for the several updates we do after
 	tmpHistoryCounter := p.historyCounter
@@ -369,13 +362,12 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 	// to test if a position is attacked we do a reverse attack from the
 	// target square to see if we hit a piece of the same or similar type
 
-	all := p.OccupiedAll()
+	occupiedAll := p.OccupiedAll()
 
 	// non sliding
-	// TODO change to GetAttacksBb
 	if (GetPawnAttacks(by.Flip(), sq)&p.piecesBb[by][Pawn] != 0) || // check pawns
-		(GetPseudoAttacks(Knight, sq)&p.piecesBb[by][Knight] != 0) || // check knights
-		(GetPseudoAttacks(King, sq)&p.piecesBb[by][King] != 0) { // check king
+		(GetAttacksBb(Knight, sq, BbZero)&p.piecesBb[by][Knight] != 0) || // check knights
+		(GetAttacksBb(King, sq, BbZero)&p.piecesBb[by][King] != 0) { // check king
 		return true
 	}
 
@@ -383,9 +375,9 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 	// they also could hit us which means the square is attacked.
 	// This is a bit slower as the previous code but it let's us avoid rotated bitboards
 	// in put/remove
-	if GetAttacksBb(Bishop, sq, all)&p.piecesBb[by][Bishop] > 0 ||
-		GetAttacksBb(Rook, sq, all)&p.piecesBb[by][Rook] > 0 ||
-		GetAttacksBb(Queen, sq, all)&p.piecesBb[by][Queen] > 0 {
+	if GetAttacksBb(Bishop, sq, occupiedAll)&p.piecesBb[by][Bishop] > 0 ||
+		GetAttacksBb(Rook, sq, occupiedAll)&p.piecesBb[by][Rook] > 0 ||
+		GetAttacksBb(Queen, sq, occupiedAll)&p.piecesBb[by][Queen] > 0 {
 		return true
 	}
 

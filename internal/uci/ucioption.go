@@ -50,6 +50,7 @@ func init() {
 		"Quiescence": {NameID: "Quiescence", HandlerFunc: useQuiescence, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQuiescence), CurrentValue: strconv.FormatBool(Settings.Search.UseQuiescence)},
 		"Use_QHash":  {NameID: "Use_QHash", HandlerFunc: useQSHash, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQSTT), CurrentValue: strconv.FormatBool(Settings.Search.UseQSTT)},
 		"Use_SEE":    {NameID: "Use_SEE", HandlerFunc: useSee, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseSEE), CurrentValue: strconv.FormatBool(Settings.Search.UseSEE)},
+		"Use_PromNonQuiet":    {NameID: "Use_PromNonQuiet", HandlerFunc: usePromNonQuiet, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePromNonQuiet), CurrentValue: strconv.FormatBool(Settings.Search.UsePromNonQuiet)},
 
 		"Use_PVS":         {NameID: "Use_PVS", HandlerFunc: usePvs, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePVS), CurrentValue: strconv.FormatBool(Settings.Search.UsePVS)},
 		"Use_IID":         {NameID: "Use_IID", HandlerFunc: useIID, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseIID), CurrentValue: strconv.FormatBool(Settings.Search.UseIID)},
@@ -84,6 +85,7 @@ func init() {
 		"Quiescence",
 		"Use_QHash",
 		"Use_SEE",
+		"Use_PromNonQuiet",
 
 		"Use_IID",
 		"Use_PVS",
@@ -318,6 +320,12 @@ func useSee(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseSEE = v
 	log.Debugf("Set use SEE to %v", Settings.Search.UseSEE)
+}
+
+func usePromNonQuiet(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UsePromNonQuiet = v
+	log.Debugf("Set use Promotion as Non-quiet to %v", Settings.Search.UsePromNonQuiet)
 }
 
 func useExt(u *UciHandler, o *uciOption) {

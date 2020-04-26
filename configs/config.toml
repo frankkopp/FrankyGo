@@ -31,6 +31,7 @@ Ponder = true
 UseQuiescence = true
 UseQSStandpat = true
 UseSee = true
+UsePromNonQuiet = false
 
 # move sorting
 UsePVS = true

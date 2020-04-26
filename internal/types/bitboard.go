@@ -347,10 +347,10 @@ func RotateSquareL45(sq Square) Square {
 }
 
 // GetAttacksBb returns a bitboard representing all the squares attacked by a
-// piece of the given type pt (not pawn) placed on 's'.
+// piece of the given type pt (not pawn) placed on 'sq'.
 // For sliding pieces this uses the pre-computed Magic Bitboard Attack arrays.
-// For Knight and King this uses the pre-computed pseudo attacks.
-// From Stockfish
+// For Knight and King this the occupied Bitboard is ignored (can be BbZero)
+// as for these non sliders the pre-computed pseudo attacks are used
 func GetAttacksBb(pt PieceType, sq Square, occupied Bitboard) Bitboard {
 	if pt == Pawn {
 		msg := fmt.Sprint("GetAttackBb called with piece type Pawn is not supported")

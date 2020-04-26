@@ -39,9 +39,10 @@ type searchConfiguration struct {
 	UsePonder bool
 
 	// Quiescence search
-	UseQuiescence bool
-	UseQSStandpat bool
-	UseSEE        bool
+	UseQuiescence   bool
+	UseQSStandpat   bool
+	UseSEE          bool
+	UsePromNonQuiet bool
 
 	// Move ordering
 	UsePVS            bool
@@ -93,6 +94,7 @@ func init() {
 	Settings.Search.UseQuiescence = true
 	Settings.Search.UseQSStandpat = true
 	Settings.Search.UseSEE = true
+	Settings.Search.UsePromNonQuiet = false
 
 	Settings.Search.UsePVS = true
 	Settings.Search.UseIID = true

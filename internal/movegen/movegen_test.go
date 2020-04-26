@@ -69,6 +69,7 @@ func TestMovegenString(t *testing.T) {
 }
 
 func TestMovegenGeneratePawnMoves(t *testing.T) {
+	config.Settings.Search.UsePromNonQuiet = false
 	mg := NewMoveGen()
 	pos, _ := position.NewPositionFen("1kr3nr/pp1pP1P1/2p1p3/3P1p2/1n1bP3/2P5/PP3PPP/RNBQKBNR w KQ -")
 	moves := moveslice.MoveSlice{}
@@ -79,6 +80,20 @@ func TestMovegenGeneratePawnMoves(t *testing.T) {
 	moves.Clear()
 	mg.generatePawnMoves(pos, GenQuiet, false, BbZero, &moves)
 	assert.Equal(t, 16, moves.Len())
+
+	moves.Clear()
+	mg.generatePawnMoves(pos, GenAll, false, BbZero, &moves)
+	assert.Equal(t, 25, moves.Len())
+
+	config.Settings.Search.UsePromNonQuiet = true
+
+	moves.Clear()
+	mg.generatePawnMoves(pos, GenNonQuiet, false, BbZero, &moves)
+	assert.Equal(t, 11, moves.Len())
+
+	moves.Clear()
+	mg.generatePawnMoves(pos, GenQuiet, false, BbZero, &moves)
+	assert.Equal(t, 14, moves.Len())
 
 	moves.Clear()
 	mg.generatePawnMoves(pos, GenAll, false, BbZero, &moves)
@@ -150,6 +165,7 @@ func TestMovegenGenerateMoves(t *testing.T) {
 }
 
 func TestOnDemand(t *testing.T) {
+	config.Settings.Search.UsePromNonQuiet = false
 
 	mg := NewMoveGen()
 
@@ -188,6 +204,72 @@ func TestOnDemand(t *testing.T) {
 		moves.PushBack(move)
 	}
 	assert.Equal(t, 218, moves.Len())
+	moves.Clear()
+
+}
+
+
+func TestOnDemandPromNonQuiet(t *testing.T) {
+	config.Settings.Search.UsePromNonQuiet = true
+
+	mg := NewMoveGen()
+
+	pos := position.NewPosition()
+
+	var moves = moveslice.NewMoveSlice(100)
+	for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
+		moves.PushBack(move)
+	}
+	assert.Equal(t, 20, moves.Len())
+	assert.Equal(t, "e2e4 d2d4 h2h3 a2a3 h2h4 g2g4 f2f4 e2e3 d2d3 c2c4 b2b4 a2a4 g2g3 "+
+		"b2b3 f2f3 c2c3 g1f3 b1c3 g1h3 b1a3", moves.StringUci())
+	moves.Clear()
+
+	pos, _ = position.NewPositionFen("r3k2r/pbpNqppp/1pn2n2/1B2p3/1b2P3/2PP1N2/PP1nQPPP/R3K2R w KQkq -")
+	for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
+		moves.PushBack(move)
+	}
+	assert.Equal(t, 40, moves.Len())
+	assert.Equal(t, "c3b4 d7f6 f3d2 b5c6 d7e5 f3e5 d7b6 e2d2 e1d2 d3d4 h2h3 a2a3 c3c4 h2h4 g2g4 a2a4 "+
+		"g2g3 b2b3 e1g1 e1c1 f3d4 d7c5 h1f1 a1d1 a1c1 b5c4 f3g5 e2e3 e2d1 b5a6 b5a4 e2f1 h1g1 a1b1 f3g1 d7f8 "+
+		"f3h4 d7b8 e1f1 e1d1", moves.StringUci())
+	moves.Clear()
+
+	// 218
+	pos, _ = position.NewPositionFen("R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 w - -")
+	for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
+		moves.PushBack(move)
+	}
+	assert.Equal(t, 218, moves.Len())
+	moves.Clear()
+
+	// 86
+	pos, _ = position.NewPositionFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
+	for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
+		moves.PushBack(move)
+	}
+	assert.Equal(t, 86, moves.Len())
+	assert.Equal(t, "c2b1Q a2b1Q c2c1Q a2a1Q c2b1N a2b1N f4g3 c2c1N a2a1N f4e3 c2b1R a2b1R c2b1B a2b1B b2a3 " +
+		"a8a3 d7e5 g6e5 b2e5 e6e5 c6e4 c4e4 h7h6 h7h5 b7b5 b7b6 f4f3 c2c1R a2a1R c2c1B a2a1B e8g8 e8c8 h8f8 a8d8 " +
+		"a8c8 d7b8 d7b6 g6e7 e6f7 e6e7 a8a7 a8a6 a8a5 a8a4 d7f8 d7f6 d7c5 g6f8 e6g8 e6f6 e6d6 e6f5 e6d5 e6g4 e6h3 " +
+		"c6d6 c6b6 c6a6 c6d5 c6c5 c6b5 c6a4 c4a6 c4d5 c4c5 c4b5 c4b4 c4a4 c4b3 c4e2 c4f1 b2d4 b2c3 b2c1 b2a1 g6h4 " +
+		"c4d4 c4d3 c4c3 h8g8 a8b8 e8f8 e8d8 e8f7 e8e7", moves.StringUci())
+	moves.Clear()
+
+	config.Settings.Search.UsePromNonQuiet = false
+
+	// 86
+	mg.ResetOnDemand()
+	pos, _ = position.NewPositionFen("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq e3")
+	for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
+		moves.PushBack(move)
+	}
+	assert.Equal(t, 86, moves.Len())
+	assert.Equal(t, "c2b1Q a2b1Q c2b1N a2b1N f4g3 f4e3 c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 d7e5 g6e5 b2e5 e6e5" +
+		" c6e4 c4e4 c2c1Q a2a1Q c2c1N a2a1N h7h6 h7h5 b7b5 b7b6 f4f3 c2c1R a2a1R c2c1B a2a1B e8g8 e8c8 h8f8 a8d8 a8c8 " +
+		"d7b8 d7b6 g6e7 e6f7 e6e7 a8a7 a8a6 a8a5 a8a4 d7f8 d7f6 d7c5 g6f8 e6g8 e6f6 e6d6 e6f5 e6d5 e6g4 e6h3 c6d6 c6b6 " +
+		"c6a6 c6d5 c6c5 c6b5 c6a4 c4a6 c4d5 c4c5 c4b5 c4b4 c4a4 c4b3 c4e2 c4f1 b2d4 b2c3 b2c1 b2a1 g6h4 c4d4 c4d3 c4c3 " +
+		"h8g8 a8b8 e8f8 e8d8 e8f7 e8e7", moves.StringUci())
 	moves.Clear()
 
 }
@@ -233,6 +315,8 @@ func TestMovegenGeneratePseudoLegalMoves(t *testing.T) {
 }
 
 func TestMovegenGenerateLegalMoves(t *testing.T) {
+	config.Settings.Search.UsePromNonQuiet = false
+
 	mg := NewMoveGen()
 
 	pos := position.NewPosition()
@@ -377,6 +461,7 @@ func TestMovegenGetMoveFromSan(t *testing.T) {
 }
 
 func TestOnDemandKillerPv(t *testing.T) {
+	config.Settings.Search.UsePromNonQuiet = false
 
 	mg := NewMoveGen()
 	var moves = moveslice.NewMoveSlice(100)
@@ -422,6 +507,7 @@ func TestOnDemandKillerPv(t *testing.T) {
 }
 
 func TestPseudoLegalPVKiller(t *testing.T) {
+	config.Settings.Search.UsePromNonQuiet = false
 
 	mg := NewMoveGen()
 	var moves = moveslice.NewMoveSlice(100)

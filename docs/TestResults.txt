@@ -88,6 +88,12 @@ Stockfish Weak SkillLvl 10
 00 FrankyGo Config 1 - 01 Franky-1.0        : 38,5/50 36-9-5  77%  +210
 00 FrankyGo Config 1 - Stockfish Weak       : 38,5/50 37-10-3 77%  +210
 
+26.4.2020
+Mac: PromNonQuiet
+
+PC:
+
+
 
 
 TOURNAMENT

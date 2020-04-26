@@ -114,6 +114,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// + Quiescence
 	Settings.Search.UseQuiescence = true
+	Settings.Search.UsePromNonQuiet = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base+QS"))
 
 	// + QS Standpat
@@ -183,11 +184,10 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseLmp = true
 
 	r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
+
 	Settings.Search.UseHistoryCounter = true
 	Settings.Search.UseCounterMoves = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "HISTORY"))
-
-
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -318,6 +318,7 @@ func turnOffFeatures() {
 	Settings.Search.UseQuiescence = false
 	Settings.Search.UseQSStandpat = false
 	Settings.Search.UseSEE = false
+	Settings.Search.UsePromNonQuiet = false
 	Settings.Search.UseTT = false
 	Settings.Search.UseTTMove = false
 	Settings.Search.UseTTValue = false

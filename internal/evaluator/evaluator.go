@@ -100,8 +100,8 @@ func (e *Evaluator) InitEval(p *position.Position) {
 	e.them = e.us.Flip()
 	e.ourKing = e.position.KingSquare(e.us)
 	e.theirKing = e.position.KingSquare(e.them)
-	e.kingRing[e.us] = GetPseudoAttacks(King, e.ourKing)
-	e.kingRing[e.them] = GetPseudoAttacks(King, e.theirKing)
+	e.kingRing[e.us] = GetAttacksBb(King, e.ourKing, BbZero)
+	e.kingRing[e.them] = GetAttacksBb(King, e.theirKing, BbZero)
 	e.ourPieces = e.position.OccupiedBb(e.us)
 
 	// reset all values
@@ -336,7 +336,7 @@ func (e *Evaluator) bishopEval(us Color, them Color, sq Square) {
 	}
 
 	// long diagonal / seeing center
-	popCount := (GetPseudoAttacks(Bishop, sq) & CenterSquares).PopCount()
+	popCount := (GetAttacksBb(Bishop, sq, BbZero) & CenterSquares).PopCount()
 	tmpScore.MidGameValue += Settings.Eval.BishopCenterAimBonus * popCount
 	// s.EndGameValue += 0
 
