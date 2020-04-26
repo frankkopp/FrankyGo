@@ -631,7 +631,10 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 					}
 					// store a successful counter move to the previous opponent move
 					if Settings.Search.UseCounterMoves {
-						s.history.CounterMoves[p.LastMove().From()][p.LastMove().To()] = move
+						lastMove := p.LastMove()
+						if lastMove != MoveNone {
+							s.history.CounterMoves[lastMove.From()][lastMove.To()] = move
+						}
 					}
 					ttType = BETA
 					break
@@ -648,7 +651,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		// no beta cutoff - decrease historyCounter for the move
 		// we decrease it by only half the increase amount
 		if Settings.Search.UseHistoryCounter {
-			s.history.HistoryCount[us][from][to] -= 1 << (depth-1)
+			s.history.HistoryCount[us][from][to] -= 1 << depth
 			if s.history.HistoryCount[us][from][to] < 0 {
 				s.history.HistoryCount[us][from][to] = 0
 			}

@@ -359,28 +359,30 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	searchResult.SearchTime = time.Since(s.startTime)
 	searchResult.Pv = *s.pv[0]
 
-	// At the end of a search we send the result in any case even if
-	// searched has been stopped.
-	s.sendResult(searchResult)
-
-	// save result until overwritten by the next search
-	s.lastSearchResult = searchResult
-	s.hasResult = true
-
 	// print stats to log
 	s.log.Info(out.Sprintf("Search finished after %s", searchResult.SearchTime))
 	s.log.Info(out.Sprintf("Search depth was %d(%d) with %d nodes visited. NPS = %d nps",
 		s.statistics.CurrentSearchDepth, s.statistics.CurrentExtraSearchDepth, s.nodesVisited,
 		util.Nps(s.nodesVisited, searchResult.SearchTime)))
 	s.log.Infof("Search stats: %s", s.statistics.String())
+	s.log.Debugf("History stats: %s", s.history.String())
 
 	// print result to log
 	s.log.Infof("Search result: %s", searchResult.String())
+
+
+	// save result until overwritten by the next search
+	s.lastSearchResult = searchResult
+	s.hasResult = true
 
 	// Clean up
 	// make sure timer stops as this could potentially still be running
 	// when search finished without any stop signal/limit
 	s.stopFlag = true
+
+	// At the end of a search we send the result in any case even if
+	// searched has been stopped.
+	s.sendResult(searchResult)
 }
 
 // Iterative Deepening:

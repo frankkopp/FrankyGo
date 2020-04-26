@@ -369,7 +369,10 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 	// to test if a position is attacked we do a reverse attack from the
 	// target square to see if we hit a piece of the same or similar type
 
+	all := p.OccupiedAll()
+
 	// non sliding
+	// TODO change to GetAttacksBb
 	if (GetPawnAttacks(by.Flip(), sq)&p.piecesBb[by][Pawn] != 0) || // check pawns
 		(GetPseudoAttacks(Knight, sq)&p.piecesBb[by][Knight] != 0) || // check knights
 		(GetPseudoAttacks(King, sq)&p.piecesBb[by][King] != 0) { // check king
@@ -380,9 +383,9 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 	// they also could hit us which means the square is attacked.
 	// This is a bit slower as the previous code but it let's us avoid rotated bitboards
 	// in put/remove
-	if GetAttacksBb(Bishop, sq, p.OccupiedAll())&p.piecesBb[by][Bishop] > 0 ||
-		GetAttacksBb(Rook, sq, p.OccupiedAll())&p.piecesBb[by][Rook] > 0 ||
-		GetAttacksBb(Queen, sq, p.OccupiedAll())&p.piecesBb[by][Queen] > 0 {
+	if GetAttacksBb(Bishop, sq, all)&p.piecesBb[by][Bishop] > 0 ||
+		GetAttacksBb(Rook, sq, all)&p.piecesBb[by][Rook] > 0 ||
+		GetAttacksBb(Queen, sq, all)&p.piecesBb[by][Queen] > 0 {
 		return true
 	}
 
@@ -1077,7 +1080,11 @@ func (p *Position) setupBoard(fen string) error {
 		if number, e := strconv.Atoi(string(c)); e == nil { // is number
 			currentSquare = Square(int(currentSquare) + (number * int(East)))
 		} else if string(c) == "/" { // find rank separator
-			currentSquare = currentSquare.To(South).To(South)
+			if currentSquare == SqNone {
+				currentSquare = SqA7
+			} else {
+				currentSquare = currentSquare.To(South).To(South)
+			}
 		} else { // find piece type
 			piece := PieceFromChar(string(c))
 			if piece == PieceNone {

@@ -711,7 +711,7 @@ func (mg *Movegen) updateSortValues(p *position.Position, moveList *moveslice.Mo
 			// reused for several consecutive searches or just for one search.
 			// TODO: Testing
 			count := mg.historyData.HistoryCount[us][move.From()][move.To()]
-			value := Value(count / 1000)
+			value := Value(count / 100)
 
 			// Counter Move History
 			// When we have a counter move which caused a beta cut off before we
@@ -719,7 +719,6 @@ func (mg *Movegen) updateSortValues(p *position.Position, moveList *moveslice.Mo
 			// TODO: Testing
 			if mg.historyData.CounterMoves[p.LastMove().From()][p.LastMove().To()] == move.MoveOf() {
 				value += 500
-				// out.Printf("CounterMove: %s%s = %s \n", p.LastMove().From(), p.LastMove().To(), move.StringUci())
 			}
 
 			// update move sort value

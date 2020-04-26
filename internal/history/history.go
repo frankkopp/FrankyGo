@@ -29,18 +29,40 @@
 package history
 
 import (
-	"github.com/frankkopp/FrankyGo/internal/types"
+	"strings"
+
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
+
+	. "github.com/frankkopp/FrankyGo/internal/types"
 )
+
+var out = message.NewPrinter(language.German)
 
 // History is a data structure updated during search to provide the move
 // generator with valuable information for move sorting
 type History struct {
-	HistoryCount [2][64][64]uint64
-	CounterMoves [64][64]types.Move
+	HistoryCount [2][64][64]int64
+	CounterMoves [64][64]Move
+}
+
+func (h History) String() string {
+	sb := strings.Builder{}
+	for sf := SqA1; sf < SqNone; sf++ {
+		for st := SqA1; st < SqNone; st++ {
+			sb.WriteString(out.Sprintf("Move=%s%s: ", sf.String(), st.String()))
+			for c := White; c <= 1; c++ {
+				count := h.HistoryCount[c][sf][st]
+				sb.WriteString(out.Sprintf("%s=%-7d ", c.String(), count))
+			}
+			m := h.CounterMoves[sf][st]
+			sb.WriteString(out.Sprintf("cm=%s\n", m.StringUci()))
+		}
+	}
+	return sb.String()
 }
 
 // NewHistory creates a new History instance.
 func NewHistory() *History {
 	return &History{}
 }
-

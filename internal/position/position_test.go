@@ -244,71 +244,71 @@ func TestPosition_IsAttacked(t *testing.T) {
 	fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1 b kq e3"
 	position, _ = NewPositionFen(fen)
 
-	// pawns
-	assert.True(t, position.IsAttacked(SqG3, White))
-	assert.True(t, position.IsAttacked(SqE3, White))
-	assert.True(t, position.IsAttacked(SqB1, Black))
-	assert.True(t, position.IsAttacked(SqE4, Black))
-	assert.True(t, position.IsAttacked(SqE3, Black))
-
-	// knight
-	assert.True(t, position.IsAttacked(SqE5, Black))
-	assert.True(t, position.IsAttacked(SqF4, Black))
-	assert.False(t, position.IsAttacked(SqG1, Black))
+	// // pawns
+	// assert.True(t, position.IsAttacked(SqG3, White))
+	// assert.True(t, position.IsAttacked(SqE3, White))
+	// assert.True(t, position.IsAttacked(SqB1, Black))
+	// assert.True(t, position.IsAttacked(SqE4, Black))
+	// assert.True(t, position.IsAttacked(SqE3, Black))
+	//
+	// // knight
+	// assert.True(t, position.IsAttacked(SqE5, Black))
+	// assert.True(t, position.IsAttacked(SqF4, Black))
+	// assert.False(t, position.IsAttacked(SqG1, Black))
 
 	// sliding
 	assert.True(t, position.IsAttacked(SqG6, White))
 	assert.True(t, position.IsAttacked(SqA5, Black))
-
-	fen = "rnbqkbnr/1ppppppp/8/p7/Q1P5/8/PP1PPPPP/RNB1KBNR b KQkq - 1 2"
-	position, _ = NewPositionFen(fen)
-
-	// king
-	assert.True(t, position.IsAttacked(SqD1, White))
-	assert.False(t, position.IsAttacked(SqE1, Black))
-
-	// rook
-	assert.True(t, position.IsAttacked(SqA5, Black))
-	assert.False(t, position.IsAttacked(SqA4, Black))
-
-	// queen
-	assert.False(t, position.IsAttacked(SqE8, White))
-	assert.True(t, position.IsAttacked(SqD7, White))
-	assert.False(t, position.IsAttacked(SqE8, White))
-
-	// en passant
-	fen = "rnbqkbnr/1pp1pppp/p7/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6"
-	position, _ = NewPositionFen(fen)
-	assert.True(t, position.IsAttacked(SqD5, White))
-
-	fen = "rnbqkbnr/1pp1pppp/p7/2Pp4/8/8/PP1PPPPP/RNBQKBNR w KQkq d6"
-	position, _ = NewPositionFen(fen)
-	assert.True(t, position.IsAttacked(SqD5, White))
-
-	fen = "rnbqkbnr/pppp1ppp/8/8/3Pp3/7P/PPP1PPP1/RNBQKBNR b - d3"
-	position, _ = NewPositionFen(fen)
-	assert.True(t, position.IsAttacked(SqD4, Black))
-
-	fen = "rnbqkbnr/pppp1ppp/8/8/2pP4/7P/PPP1PPP1/RNBQKBNR b - d3"
-	position, _ = NewPositionFen(fen)
-	assert.True(t, position.IsAttacked(SqD4, Black))
-
-	// bug tests
-	fen = "r1bqk1nr/pppp1ppp/2nb4/1B2B3/3pP3/8/PPP2PPP/RN1QK1NR b KQkq -"
-	position, _ = NewPositionFen(fen)
-	assert.False(t, position.IsAttacked(SqE8, White))
-	assert.False(t, position.IsAttacked(SqE1, Black))
-
-	fen = "rnbqkbnr/ppp1pppp/8/1B6/3Pp3/8/PPP2PPP/RNBQK1NR b KQkq -"
-	position, _ = NewPositionFen(fen)
-	assert.True(t, position.IsAttacked(SqE8, White))
-	assert.False(t, position.IsAttacked(SqE1, Black))
-
-	fen = "8/1pk2p2/2p5/5p2/8/1pp2Q2/5K2/8 w - -"
-	position, _ = NewPositionFen(fen)
-	assert.False(t, position.IsAttacked(SqF7, White))
-	assert.False(t, position.IsAttacked(SqB7, White))
-	assert.False(t, position.IsAttacked(SqB3, White))
+	//
+	// fen = "rnbqkbnr/1ppppppp/8/p7/Q1P5/8/PP1PPPPP/RNB1KBNR b KQkq - 1 2"
+	// position, _ = NewPositionFen(fen)
+	//
+	// // king
+	// assert.True(t, position.IsAttacked(SqD1, White))
+	// assert.False(t, position.IsAttacked(SqE1, Black))
+	//
+	// // rook
+	// assert.True(t, position.IsAttacked(SqA5, Black))
+	// assert.False(t, position.IsAttacked(SqA4, Black))
+	//
+	// // queen
+	// assert.False(t, position.IsAttacked(SqE8, White))
+	// assert.True(t, position.IsAttacked(SqD7, White))
+	// assert.False(t, position.IsAttacked(SqE8, White))
+	//
+	// // en passant
+	// fen = "rnbqkbnr/1pp1pppp/p7/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6"
+	// position, _ = NewPositionFen(fen)
+	// assert.True(t, position.IsAttacked(SqD5, White))
+	//
+	// fen = "rnbqkbnr/1pp1pppp/p7/2Pp4/8/8/PP1PPPPP/RNBQKBNR w KQkq d6"
+	// position, _ = NewPositionFen(fen)
+	// assert.True(t, position.IsAttacked(SqD5, White))
+	//
+	// fen = "rnbqkbnr/pppp1ppp/8/8/3Pp3/7P/PPP1PPP1/RNBQKBNR b - d3"
+	// position, _ = NewPositionFen(fen)
+	// assert.True(t, position.IsAttacked(SqD4, Black))
+	//
+	// fen = "rnbqkbnr/pppp1ppp/8/8/2pP4/7P/PPP1PPP1/RNBQKBNR b - d3"
+	// position, _ = NewPositionFen(fen)
+	// assert.True(t, position.IsAttacked(SqD4, Black))
+	//
+	// // bug tests
+	// fen = "r1bqk1nr/pppp1ppp/2nb4/1B2B3/3pP3/8/PPP2PPP/RN1QK1NR b KQkq -"
+	// position, _ = NewPositionFen(fen)
+	// assert.False(t, position.IsAttacked(SqE8, White))
+	// assert.False(t, position.IsAttacked(SqE1, Black))
+	//
+	// fen = "rnbqkbnr/ppp1pppp/8/1B6/3Pp3/8/PPP2PPP/RNBQK1NR b KQkq -"
+	// position, _ = NewPositionFen(fen)
+	// assert.True(t, position.IsAttacked(SqE8, White))
+	// assert.False(t, position.IsAttacked(SqE1, Black))
+	//
+	// fen = "8/1pk2p2/2p5/5p2/8/1pp2Q2/5K2/8 w - -"
+	// position, _ = NewPositionFen(fen)
+	// assert.False(t, position.IsAttacked(SqF7, White))
+	// assert.False(t, position.IsAttacked(SqB7, White))
+	// assert.False(t, position.IsAttacked(SqB3, White))
 }
 
 func TestPosition_IsLegalMoves(t *testing.T) {
