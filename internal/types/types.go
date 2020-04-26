@@ -38,10 +38,12 @@ func init() {
 	if initialized {
 		return
 	}
+
 	// bitboards
 	initBb()
 	// pos values
 	initPosValues()
+
 	initialized = true
 }
 

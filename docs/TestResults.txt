@@ -81,5 +81,82 @@ lmp[i] = 6 + int(math.Pow(float64(i) + 0.5, 1.3)) (macpc)
 00 FrankyGo Config 1 - 01 Franky-1.0        : 37,5/50 35-10-5  75%  +191
 00 FrankyGo Config 1 - Stockfish Weak       : 43,5/50 43-6-1   87%  +330
 
+25.4.2020
 Stockfish Weak SkillLvl 10
+-----------------00 FrankyGo Config 1-----------------
+00 FrankyGo Config 1 - 00 FrankyGo Config 2 : 29,0/50 15-7-28 58%   +56
+00 FrankyGo Config 1 - 01 Franky-1.0        : 38,5/50 36-9-5  77%  +210
+00 FrankyGo Config 1 - Stockfish Weak       : 38,5/50 37-10-3 77%  +210
+
+
+
+TOURNAMENT
+26.4.2020
+Search Config:
+2020-04-26 17:21:03,255<--1:0 : UseBook                bool   = true
+2020-04-26 17:21:03,262<--1:1 : BookPath               string = ..\books
+2020-04-26 17:21:03,270<--1:2 : BookFile               string = book.txt
+2020-04-26 17:21:03,277<--1:3 : BookFormat             string = Simple
+2020-04-26 17:21:03,283<--1:4 : UsePonder              bool   = true
+2020-04-26 17:21:03,290<--1:5 : UseQuiescence          bool   = true
+2020-04-26 17:21:03,297<--1:6 : UseQSStandpat          bool   = true
+2020-04-26 17:21:03,304<--1:7 : UseSEE                 bool   = true
+2020-04-26 17:21:03,311<--1:8 : UsePVS                 bool   = true
+2020-04-26 17:21:03,319<--1:9 : UseKiller              bool   = true
+2020-04-26 17:21:03,326<--1:10: UseIID                 bool   = true
+2020-04-26 17:21:03,334<--1:11: IIDDepth               int    = 6
+2020-04-26 17:21:03,340<--1:12: IIDReduction           int    = 2
+2020-04-26 17:21:03,347<--1:13: UseTT                  bool   = true
+2020-04-26 17:21:03,354<--1:14: TTSize                 int    = 256
+2020-04-26 17:21:03,360<--1:15: UseTTMove              bool   = true
+2020-04-26 17:21:03,367<--1:16: UseTTValue             bool   = true
+2020-04-26 17:21:03,374<--1:17: UseQSTT                bool   = true
+2020-04-26 17:21:03,381<--1:18: UseEvalTT              bool   = false
+2020-04-26 17:21:03,388<--1:19: UseMDP                 bool   = true
+2020-04-26 17:21:03,394<--1:20: UseRFP                 bool   = true
+2020-04-26 17:21:03,402<--1:21: UseNullMove            bool   = true
+2020-04-26 17:21:03,409<--1:22: NmpDepth               int    = 3
+2020-04-26 17:21:03,416<--1:23: NmpReduction           int    = 2
+2020-04-26 17:21:03,423<--1:24: UseExt                 bool   = true
+2020-04-26 17:21:03,430<--1:25: UseCheckExt            bool   = true
+2020-04-26 17:21:03,437<--1:26: UseThreatExt           bool   = false
+2020-04-26 17:21:03,443<--1:27: UseFP                  bool   = true
+2020-04-26 17:21:03,450<--1:28: UseLmp                 bool   = true
+2020-04-26 17:21:03,456<--1:29: UseLmr                 bool   = true
+2020-04-26 17:21:03,463<--1:30: LmrDepth               int    = 3
+2020-04-26 17:21:03,470<--1:31: LmrMovesSearched       int    = 3
+2020-04-26 17:21:03,477<--1:Evaluation Config:
+2020-04-26 17:21:03,484<--1:0 : UsePawnCache           bool   = false
+2020-04-26 17:21:03,490<--1:1 : PawnCacheSize          int    = 64
+2020-04-26 17:21:03,496<--1:2 : UseLazyEval            bool   = true
+2020-04-26 17:21:03,503<--1:3 : LazyEvalThreshold      int    = 700
+2020-04-26 17:21:03,510<--1:4 : Tempo                  int    = 30
+2020-04-26 17:21:03,516<--1:5 : UseAttacksInEval       bool   = false
+2020-04-26 17:21:03,523<--1:6 : UseMobility            bool   = false
+2020-04-26 17:21:03,530<--1:7 : MobilityBonus          int    = 5
+2020-04-26 17:21:03,536<--1:8 : UseAdvancedPieceEval   bool   = false
+2020-04-26 17:21:03,544<--1:9 : BishopPairBonus        int    = 20
+2020-04-26 17:21:03,551<--1:10: MinorBehindPawnBonus   int    = 15
+2020-04-26 17:21:03,558<--1:11: BishopPawnMalus        int    = 5
+2020-04-26 17:21:03,566<--1:12: BishopCenterAimBonus   int    = 20
+2020-04-26 17:21:03,573<--1:13: BishopBlockedMalus     int    = 40
+2020-04-26 17:21:03,582<--1:14: RookOnQueenFileBonus   int    = 6
+2020-04-26 17:21:03,588<--1:15: RookOnOpenFileBonus    int    = 25
+2020-04-26 17:21:03,595<--1:16: RookTrappedMalus       int    = 40
+2020-04-26 17:21:03,602<--1:17: KingRingAttacksBonus   int    = 10
+2020-04-26 17:21:03,609<--1:18: UseKingEval            bool   = false
+2020-04-26 17:21:03,615<--1:19: KingDangerMalus        int    = 50
+2020-04-26 17:21:03,622<--1:20: KingDefenderBonus      int    = 10
+-----------------00 FrankyGo Config 1-----------------
+00 FrankyGo Config 1 - 01 Franky-1.0        : 21,0/35 19-12-4   60%   +70 2020
+00 FrankyGo Config 1 - Abbess2018           : 25,0/35 22-7-6    71%  +156 2174
+00 FrankyGo Config 1 - Belzebub_067         : 23,0/35 18-7-10   66%  +115 1765
+00 FrankyGo Config 1 - Bismark_1.4          : 19,5/35 16-12-7   56%   +42 2053
+00 FrankyGo Config 1 - Clarabit_100_x64_win : 15,0/35 10-15-10  43%   -49 2052
+00 FrankyGo Config 1 - Clueless             : 21,0/35 21-14-0   60%   +70 1974
+00 FrankyGo Config 1 - Fmax                 : 21,5/35 17-9-9    61%   +78
+00 FrankyGo Config 1 - Monarch(v1.7)        : 10,5/35 8-22-5    30%  -147 1912
+00 FrankyGo Config 1 - RamJet_014           : 23,0/35 20-9-6    66%  +115 2123
+00 FrankyGo Config 1 - SEE                  : 26,5/35 25-7-3    76%  +200 1911
+00 FrankyGo Config 1 - Stockfish Weak       : 28,5/35 28-6-1    81%  +252
 

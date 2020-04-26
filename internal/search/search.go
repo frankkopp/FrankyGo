@@ -39,6 +39,7 @@ import (
 
 	"github.com/frankkopp/FrankyGo/internal/config"
 	"github.com/frankkopp/FrankyGo/internal/evaluator"
+	"github.com/frankkopp/FrankyGo/internal/history"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/internal/movegen"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
@@ -65,6 +66,9 @@ type Search struct {
 	book *openingbook.Book
 	tt   *transpositiontable.TtTable
 	eval *evaluator.Evaluator
+
+	// history heuristics
+	history *history.History
 
 	// previous search
 	lastSearchResult *Result
@@ -102,6 +106,7 @@ func NewSearch() *Search {
 		book:              nil,
 		tt:                nil,
 		eval:              evaluator.NewEvaluator(),
+		history:           history.NewHistory(),
 		lastSearchResult:  nil,
 		stopFlag:          false,
 		startTime:         time.Time{},
@@ -127,6 +132,7 @@ func (s *Search) NewGame() {
 	s.StopSearch()
 	if s.tt != nil {
 		s.tt.Clear()
+		s.history = history.NewHistory()
 	}
 }
 
@@ -275,6 +281,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.timeLimit = 0
 	s.extraTime = 0
 	s.nodesVisited = 0
+	// s.history = history.NewHistory()
 	s.statistics = Statistics{}
 	s.lastUciUpdateTime = s.startTime
 	s.initialize()
@@ -313,7 +320,11 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.mg = make([]*movegen.Movegen, 0, MaxDepth+1)
 	s.pv = make([]*moveslice.MoveSlice, 0, MaxDepth+1)
 	for i := 0; i <= MaxDepth; i++ {
-		s.mg = append(s.mg, movegen.NewMoveGen())
+		newMoveGen := movegen.NewMoveGen()
+		if config.Settings.Search.UseHistoryCounter || config.Settings.Search.UseCounterMoves {
+			newMoveGen.SetHistoryData(s.history)
+		}
+		s.mg = append(s.mg, newMoveGen)
 		s.pv = append(s.pv, moveslice.NewMoveSlice(MaxDepth+1))
 	}
 
@@ -348,28 +359,30 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	searchResult.SearchTime = time.Since(s.startTime)
 	searchResult.Pv = *s.pv[0]
 
-	// At the end of a search we send the result in any case even if
-	// searched has been stopped.
-	s.sendResult(searchResult)
-
-	// save result until overwritten by the next search
-	s.lastSearchResult = searchResult
-	s.hasResult = true
-
 	// print stats to log
 	s.log.Info(out.Sprintf("Search finished after %s", searchResult.SearchTime))
 	s.log.Info(out.Sprintf("Search depth was %d(%d) with %d nodes visited. NPS = %d nps",
 		s.statistics.CurrentSearchDepth, s.statistics.CurrentExtraSearchDepth, s.nodesVisited,
 		util.Nps(s.nodesVisited, searchResult.SearchTime)))
 	s.log.Infof("Search stats: %s", s.statistics.String())
+	s.log.Debugf("History stats: %s", s.history.String())
 
 	// print result to log
 	s.log.Infof("Search result: %s", searchResult.String())
+
+
+	// save result until overwritten by the next search
+	s.lastSearchResult = searchResult
+	s.hasResult = true
 
 	// Clean up
 	// make sure timer stops as this could potentially still be running
 	// when search finished without any stop signal/limit
 	s.stopFlag = true
+
+	// At the end of a search we send the result in any case even if
+	// searched has been stopped.
+	s.sendResult(searchResult)
 }
 
 // Iterative Deepening:

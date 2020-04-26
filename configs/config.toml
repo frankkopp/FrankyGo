@@ -34,8 +34,10 @@ UseSee = true
 
 # move sorting
 UsePVS = true
-UseKiller = true
 UseIID = true
+UseKiller = true
+UseHistoryCounter = false
+UseCounterMoves = false
 IIDDepth = 6
 IIDReduction = 2
 

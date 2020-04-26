@@ -24,48 +24,45 @@
  * SOFTWARE.
  */
 
-package types
+// Package history provides data structures and functionality to manage
+// history driven move tables (e.g. history counter, counter moves, etc.)
+package history
 
-import "fmt"
+import (
+	"strings"
 
-// Direction is a set of constants for moving squares within a Bb
-type Direction int8
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 
-// Direction is a set of constants for moving squares within a Bb
-//noinspection GoVarAndConstTypeMayBeOmitted
-const (
-	North     Direction = 8
-	East      Direction = 1
-	South     Direction = -North
-	West      Direction = -East
-	Northeast Direction = North + East
-	Southeast Direction = South + East
-	Southwest Direction = South + West
-	Northwest Direction = North + West
+	. "github.com/frankkopp/FrankyGo/internal/types"
 )
 
-var Directions = [8]Direction{ North, East, South, West, Northeast, Southeast, Southwest, Northwest }
+var out = message.NewPrinter(language.German)
 
-// String returns a string representation of a Direction (e.g. N, E, ...,NW,...)
-func (d Direction) String() string {
-	switch d {
-	case North:
-		return "N"
-	case East:
-		return "E"
-	case South:
-		return "S"
-	case West:
-		return "W"
-	case Northeast:
-		return "NE"
-	case Southeast:
-		return "SE"
-	case Southwest:
-		return "SW"
-	case Northwest:
-		return "NW"
-	default:
-		panic(fmt.Sprintf("Invalid direction %d", d))
+// History is a data structure updated during search to provide the move
+// generator with valuable information for move sorting
+type History struct {
+	HistoryCount [2][64][64]int64
+	CounterMoves [64][64]Move
+}
+
+func (h History) String() string {
+	sb := strings.Builder{}
+	for sf := SqA1; sf < SqNone; sf++ {
+		for st := SqA1; st < SqNone; st++ {
+			sb.WriteString(out.Sprintf("Move=%s%s: ", sf.String(), st.String()))
+			for c := White; c <= 1; c++ {
+				count := h.HistoryCount[c][sf][st]
+				sb.WriteString(out.Sprintf("%s=%-7d ", c.String(), count))
+			}
+			m := h.CounterMoves[sf][st]
+			sb.WriteString(out.Sprintf("cm=%s\n", m.StringUci()))
+		}
 	}
+	return sb.String()
+}
+
+// NewHistory creates a new History instance.
+func NewHistory() *History {
+	return &History{}
 }

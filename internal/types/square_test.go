@@ -118,30 +118,16 @@ func TestSquareFromFileRank(t *testing.T) {
 }
 
 func TestSquareDir(t *testing.T) {
-	tests := []struct {
-		square   Square
-		dir      Direction
-		expected Square
-	}{
-		{SqA1, North, SqA2},
-		{SqA1, East, SqB1},
-		{SqA1, South, SqNone},
-		{SqA1, West, SqNone},
-		{SqH8, North, SqNone},
-		{SqH8, East, SqNone},
-		{SqH8, South, SqH7},
-		{SqH8, West, SqG8},
-	}
-	var got Square
-	for _, test := range tests {
-		got = test.square.To(test.dir)
-		if test.expected != got {
-			t.Errorf("Square To %s of %s should be %s. Is %s",
-				test.dir.String(), test.square.String(), test.expected.String(), got.String())
-		} else {
-			t.Logf("Square To %s of %s is %s.", test.dir.String(), test.square.String(), got.String())
-		}
-	}
+	assert.EqualValues(t, SqA2, SqA1.To(North))
+	assert.EqualValues(t, SqA3, SqA1.To(North).To(North))
+	assert.EqualValues(t, SqB1, SqA1.To(East))
+	assert.EqualValues(t, SqA1, SqA2.To(South))
+	assert.EqualValues(t, SqNone, SqA2.To(South).To(South))
+	assert.EqualValues(t, SqNone, SqA1.To(West))
+	assert.EqualValues(t, SqNone, SqH8.To(North))
+	assert.EqualValues(t, SqNone, SqH8.To(East))
+	assert.EqualValues(t, SqH7, SqH8.To(South))
+
 }
 
 func TestMakeSquare(t *testing.T) {

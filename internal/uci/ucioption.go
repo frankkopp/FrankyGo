@@ -51,9 +51,11 @@ func init() {
 		"Use_QHash":  {NameID: "Use_QHash", HandlerFunc: useQSHash, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQSTT), CurrentValue: strconv.FormatBool(Settings.Search.UseQSTT)},
 		"Use_SEE":    {NameID: "Use_SEE", HandlerFunc: useSee, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseSEE), CurrentValue: strconv.FormatBool(Settings.Search.UseSEE)},
 
-		"Use_PVS":    {NameID: "Use_PVS", HandlerFunc: usePvs, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePVS), CurrentValue: strconv.FormatBool(Settings.Search.UsePVS)},
-		"Use_IID":    {NameID: "Use_IID", HandlerFunc: useIID, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseIID), CurrentValue: strconv.FormatBool(Settings.Search.UseIID)},
-		"Use_Killer": {NameID: "Use_Killer", HandlerFunc: useKiller, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseKiller), CurrentValue: strconv.FormatBool(Settings.Search.UseKiller)},
+		"Use_PVS":         {NameID: "Use_PVS", HandlerFunc: usePvs, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePVS), CurrentValue: strconv.FormatBool(Settings.Search.UsePVS)},
+		"Use_IID":         {NameID: "Use_IID", HandlerFunc: useIID, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseIID), CurrentValue: strconv.FormatBool(Settings.Search.UseIID)},
+		"Use_Killer":      {NameID: "Use_Killer", HandlerFunc: useKiller, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseKiller), CurrentValue: strconv.FormatBool(Settings.Search.UseKiller)},
+		"Use_HistCount":   {NameID: "Use_HistCount", HandlerFunc: useHC, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseHistoryCounter), CurrentValue: strconv.FormatBool(Settings.Search.UseHistoryCounter)},
+		"Use_CounterMove": {NameID: "Use_CounterMove", HandlerFunc: useCM, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseCounterMoves), CurrentValue: strconv.FormatBool(Settings.Search.UseCounterMoves)},
 
 		"Use_Rfp":      {NameID: "Use_Rfp", HandlerFunc: useRfp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseRFP), CurrentValue: strconv.FormatBool(Settings.Search.UseRFP)},
 		"Use_NullMove": {NameID: "Use_NullMove", HandlerFunc: useNullMove, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseNullMove), CurrentValue: strconv.FormatBool(Settings.Search.UseNullMove)},
@@ -86,6 +88,8 @@ func init() {
 		"Use_IID",
 		"Use_PVS",
 		"Use_Killer",
+		"Use_HistCount",
+		"Use_CounterMove",
 
 		"Use_Mdp",
 		"Use_Rfp",
@@ -272,6 +276,18 @@ func useKiller(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseKiller = v
 	log.Debugf("Set Use Killer Moves to %v", Settings.Search.UseKiller)
+}
+
+func useHC(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseHistoryCounter = v
+	log.Debugf("Set Use History Counter to %v", Settings.Search.UseHistoryCounter)
+}
+
+func useCM(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseCounterMoves = v
+	log.Debugf("Set Use Counter Moves to %v", Settings.Search.UseCounterMoves)
 }
 
 func useNullMove(u *UciHandler, o *uciOption) {
