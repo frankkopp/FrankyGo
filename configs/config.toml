@@ -31,14 +31,14 @@ Ponder = true
 UseQuiescence = true
 UseQSStandpat = true
 UseSee = true
-UsePromNonQuiet = false
+UsePromNonQuiet = true
 
 # move sorting
 UsePVS = true
 UseIID = true
 UseKiller = true
-UseHistoryCounter = false
-UseCounterMoves = false
+UseHistoryCounter = true
+UseCounterMoves = true
 IIDDepth = 6
 IIDReduction = 2
 

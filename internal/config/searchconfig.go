@@ -82,7 +82,7 @@ type searchConfiguration struct {
 	LmrMovesSearched int
 }
 
-// sets defaults which might be overwritten by config file
+// defaults which might be overwritten by config file
 func init() {
 	Settings.Search.UseBook = true
 	Settings.Search.BookPath = "./assets/books"
@@ -94,13 +94,13 @@ func init() {
 	Settings.Search.UseQuiescence = true
 	Settings.Search.UseQSStandpat = true
 	Settings.Search.UseSEE = true
-	Settings.Search.UsePromNonQuiet = false
+	Settings.Search.UsePromNonQuiet = true
 
 	Settings.Search.UsePVS = true
 	Settings.Search.UseIID = true
 	Settings.Search.UseKiller = true
-	Settings.Search.UseHistoryCounter = false
-	Settings.Search.UseCounterMoves = false
+	Settings.Search.UseHistoryCounter = true
+	Settings.Search.UseCounterMoves = true
 	Settings.Search.IIDDepth = 6
 	Settings.Search.IIDReduction = 2
 

@@ -182,11 +182,11 @@ func (ts *TestSuite) RunTests() {
 
 	out.Printf("Running Test Suite\n")
 	out.Printf("==================================================================\n")
-	out.Printf("EPD File:   %s\n", ts.FilePath)
-	out.Printf("SearchTime: %d ms\n", ts.Time.Milliseconds())
-	out.Printf("MaxDepth:   %d\n", ts.Depth)
-	out.Printf("Date:       %s\n", time.Now().Local())
-	out.Printf("No of ests: %d\n", len(ts.Tests))
+	out.Printf("EPD File:    %s\n", ts.FilePath)
+	out.Printf("SearchTime:  %d ms\n", ts.Time.Milliseconds())
+	out.Printf("MaxDepth:    %d\n", ts.Depth)
+	out.Printf("Date:        %s\n", time.Now().Local())
+	out.Printf("No of tests: %d\n", len(ts.Tests))
 	out.Println()
 
 	// execute all tests and store results in the
