@@ -203,7 +203,7 @@ func (ms *MoveSlice) ForEach(f func(index int)) {
 // as a parameter.
 // Waits until all elements have been processed. There is no
 // synchronization for the parallel execution. This needs to done
-// in the provided function
+// in the provided function if necessary
 func (ms *MoveSlice) ForEachParallel(f func(index int)) {
 	sliceLength := len(*ms)
 	var wg sync.WaitGroup
@@ -232,7 +232,7 @@ func (ms *MoveSlice) Sort() {
 	for i := 1; i < l; i++ {
 		tmp := (*ms)[i]
 		j := i
-		for j > 0 && tmp.ValueOf() > (*ms)[j-1].ValueOf() {
+		for j > 0 && tmp > (*ms)[j-1] {
 			(*ms)[j] = (*ms)[j-1]
 			j--
 		}
@@ -257,7 +257,7 @@ func (ms *MoveSlice) String() string {
 }
 
 // StringUci returns a string with a space separated list
-// of all moves i the list in UCI protocol format
+// of all moves in the list in UCI protocol format
 func (ms *MoveSlice) StringUci() string {
 	var os strings.Builder
 	size := len(*ms)

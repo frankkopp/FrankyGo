@@ -148,7 +148,7 @@ func (m Move) String() string {
 	if m == MoveNone {
 		return "Move: { MoveNone }"
 	}
-	return fmt.Sprintf("Move: { %s type:%s prom:%s value:%d (%d) }",
+	return fmt.Sprintf("Move: { %-5s  type:%1s  prom:%1s  value:%-6d  (%d) }",
 		m.StringUci(), m.MoveType().String(), m.PromotionType().Char(),m.ValueOf(), m)
 }
 
