@@ -66,6 +66,8 @@ func TestMain(m *testing.M) {
 func TestMovegenString(t *testing.T) {
 	mg := NewMoveGen()
 	out.Println(mg.String())
+	assert.EqualValues(t, "MoveGen: { OnDemand Stage: { 0 }, PV Move: Move: { MoveNone } Killer Move 1: " +
+		"Move: { MoveNone } Killer Move 2: Move: { MoveNone } }", mg.String())
 }
 
 func TestMovegenGeneratePawnMoves(t *testing.T) {
@@ -480,11 +482,6 @@ func TestOnDemandKillerPv(t *testing.T) {
 		" h8f8 a8d8 a8c8 d7b8 d7b6 g6e7 e6f7 e6e7 a8a7 a8a6 a8a5 a8a4 d7f8 d7f6 d7c5 g6f8 e6g8 e6f6 e6d6 e6f5"+
 		" e6d5 e6g4 e6h3 c6d6 c6b6 c6a6 c6d5 c6c5 c6b5 c6a4 c4a6 c4d5 c4c5 c4b5 c4b4 c4a4 c4b3 c4e2 c4f1 b2d4"+
 		" b2c3 b2c1 b2a1 c4d4 c4d3 c4c3 h8g8 a8b8 e8f8 e8d8 e8f7 e8e7", moves.StringUci())
-	// c2b1Q >a2b1Q< c2b1N a2b1N f4g3 f4e3 c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 d7e5 g6e5 b2e5 e6e5 c6e4
-	// c4e4 c2c1Q a2a1Q c2c1N a2a1N h7h6 h7h5 b7b5 >b7b6< f4f3 c2c1R a2a1R c2c1B a2a1B e8g8 e8c8 h8f8
-	// a8d8 a8c8 d7b6 g6e7 e6f7 e6e7 a8a7 a8a6 a8a5 a8a4 d7f8 d7f6 d7c5 g6f8 e6g8 e6f6 e6d6 e6f5
-	// e6d5 e6g4 e6h3 c6d6 c6b6 c6a6 c6d5 c6c5 c6b5 c6a4 c4a6 c4d5 c4c5 c4b5 c4b4 c4a4 c4b3 c4e2
-	// c4f1 b2d4 b2c3 b2c1 b2a1 d7b8 >g6h4< c4d4 c4d3 c4c3 h8g8 a8b8 e8f8 e8d8 e8f7 e8e7
 	moves.Clear()
 
 	// 48 kiwipete
@@ -499,9 +496,6 @@ func TestOnDemandKillerPv(t *testing.T) {
 	assert.Equal(t, "e2a6 d5e6 g2h3 e5f7 e5d7 e5g6 f3f6 f3h3 b2b3 d5d6 a2a3 g2g4 a2a4 g2g3 e1g1 e1c1 d2g5"+
 		" e5c4 e5d3 h1f1 a1d1 a1c1 e5c6 e2c4 e2d3 d2f4 d2e3 f3f4 f3e3 f3d3 c3b5 e2b5 f3f5 e5g4 f3g4 f3g3 f3h5 e2d1"+
 		" d2h6 h1g1 a1b1 c3b1 c3a4 c3d1 e2f1 d2c1 e1f1 e1d1", moves.StringUci())
-	// d5e6 g2h3 >e2a6< e5f7 e5d7 e5g6 f3f6 f3h3 d5d6 a2a3 g2g4 a2a4 g2g3 b2b3 >e1g1< e1c1 e5c4 e5d3 h1f1
-	// a1d1 a1c1 e5c6 e2c4 e2d3 d2f4 d2e3 f3f4 f3e3 f3d3 c3b5 e2b5 >d2g5< f3f5 e5g4 f3g4 f3g3 f3h5 e2d1
-	// d2h6 h1g1 a1b1 c3a4 c3d1 c3b1 e2f1 d2c1 e1f1 e1d1
 	moves.Clear()
 
 }
@@ -524,11 +518,6 @@ func TestPseudoLegalPVKiller(t *testing.T) {
 		" g6e7 e6f7 e6e7 a8a7 a8a6 a8a5 a8a4 h7h6 d7f8 d7f6 d7c5 g6f8 e6g8 e6f6 e6d6 e6f5 e6d5 e6g4 e6h3"+
 		" c6d6 c6b6 c6a6 c6d5 c6c5 c6b5 c6a4 c4a6 c4d5 c4c5 c4b5 c4b4 c4a4 c4b3 c4e2 c4f1 b2d4 b2c3 b2c1"+
 		" b2a1 c4d4 c4d3 c4c3 h7h5 b7b5 h8g8 a8b8 e8f7 e8e7 f4f3 c2c1R a2a1R c2c1B a2a1B", moves.StringUci())
-	// c2b1Q a2b1Q c2b1N a2b1N f4g3 b2a3 f4e3 a8a3 d7e5 g6e5 b2e5 e6e5 c6e4 c4e4 c2b1R a2b1R c2b1B
-	// a2b1B e8g8 e8c8 c2c1Q a2a1Q c2c1N a2a1N e8f8 h8f8 a8d8 a8c8 e8d8 d7b6 g6e7 e6f7 e6e7 a8a7 a8a6
-	// a8a5 a8a4 h7h6 d7f8 d7f6 d7c5 g6f8 e6g8 e6f6 e6d6 e6f5 e6d5 e6g4 e6h3 c6d6 c6b6 c6a6 c6d5 c6c5
-	// c6b5 c6a4 c4a6 c4d5 c4c5 c4b5 c4b4 c4a4 c4b3 c4e2 c4f1 b2d4 b2c3 b2c1 b2a1 d7b8 g6h4 c4d4 c4d3
-	// c4c3 h7h5 b7b5 h8g8 a8b8 b7b6 e8f7 e8e7 f4f3 c2c1R a2a1R c2c1B a2a1B
 	moves.Clear()
 
 	// 48 kiwipete
@@ -541,9 +530,6 @@ func TestPseudoLegalPVKiller(t *testing.T) {
 	assert.Equal(t, "e2a6 d5e6 g2h3 e5f7 e5d7 e5g6 f3f6 f3h3 b2b3 d2g5 e1g1 e1c1 e5c4 e5d3 h1f1 a1d1"+
 		" a1c1 e5c6 e2c4 e2d3 d2f4 d2e3 d5d6 f3f4 f3e3 f3d3 c3b5 e2b5 a2a3 f3f5 e5g4 f3g4 f3g3 g2g4 a2a4 e1f1"+
 		" f3h5 g2g3 e2d1 d2h6 h1g1 a1b1 e1d1 c3b1 c3a4 c3d1 e2f1 d2c1", moves.StringUci())
-	// d5e6 g2h3 e2a6 e5f7 e5d7 e5g6f3f6 f3h3 e1g1 e1c1 e5c4 e5d3 h1f1 a1d1 a1c1 e5c6 e2c4 e2d3 d2f4 d2e3
-	// d5d6 f3f4f3e3 f3d3 c3b5 e2b5 d2g5 a2a3 f3f5 e5g4 f3g4 f3g3 g2g4 a2a4 e1f1 f3h5 g2g3 b2b3e2d1 d2h6
-	// h1g1 a1b1 e1d1 c3a4 c3d1 c3b1 e2f1 d2c1
 	moves.Clear()
 
 }
@@ -672,9 +658,8 @@ func TestTimingOnDemandMoveGen(t *testing.T) {
 	}
 }
 
-// Old: 86.000.000 moves generated in 2.281 ns: 37.697.142 mps
-// New: 86.000.000 moves generated in 2.213 ns: 38.851.528 mps
-// New: 86.000.000 moves generated in 1.729 ns: 49.719.892 mps
+// GeneratePseudoLegalMoves took 2.228.838.600 ns for 1.000.000 iterations
+// 86.000.000 moves generated in 2.228 ns: 38.585.117 mps
 func TestTimingOnDemandRealMoveGen(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
