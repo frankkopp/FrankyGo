@@ -90,8 +90,92 @@ Stockfish Weak SkillLvl 10
 
 26.4.2020
 Mac: PromNonQuiet
+0 : UseBook                bool   = true
+1 : BookPath               string = ..\books
+2 : BookFile               string = book.txt
+3 : BookFormat             string = Simple
+4 : UsePonder              bool   = true
+5 : UseQuiescence          bool   = true
+6 : UseQSStandpat          bool   = true
+7 : UseSEE                 bool   = true
+8 : UsePromNonQuiet        bool   = true
+9 : UsePVS                 bool   = true
+10: UseIID                 bool   = true
+11: UseKiller              bool   = true
+12: UseHistoryCounter      bool   = true
+13: UseCounterMoves        bool   = true
+14: IIDDepth               int    = 6
+15: IIDReduction           int    = 2
+16: UseTT                  bool   = true
+17: TTSize                 int    = 256
+18: UseTTMove              bool   = true
+19: UseTTValue             bool   = true
+20: UseQSTT                bool   = true
+21: UseEvalTT              bool   = false
+22: UseMDP                 bool   = true
+23: UseRFP                 bool   = true
+24: UseNullMove            bool   = true
+25: NmpDepth               int    = 3
+26: NmpReduction           int    = 2
+27: UseExt                 bool   = true
+28: UseExtAddDepth         bool   = true
+29: UseCheckExt            bool   = true
+30: UseThreatExt           bool   = false
+31: UseFP                  bool   = true
+32: UseLmp                 bool   = true
+33: UseLmr                 bool   = true
+34: LmrDepth               int    = 3
+35: LmrMovesSearched       int    = 3
+-----------------00 FrankyGo Config 1-----------------
+00 FrankyGo Config 1 - 00 FrankyGo Config 2 : 26,5/50 19-16-15 53%   +21
+00 FrankyGo Config 1 - 01 Franky-1.0        : 27,0/50 24-20-6  54%   +28
+00 FrankyGo Config 1 - Stockfish Weak       : 41,5/50 40-7-3   83%  +275
 
-PC:
+
+26.4.2020
+PC: + HistCount/CounterMove
+0 : UseBook                bool   = true
+1 : BookPath               string = ../assets/books
+2 : BookFile               string = book.txt
+3 : BookFormat             string = Simple
+4 : UsePonder              bool   = true
+5 : UseQuiescence          bool   = true
+6 : UseQSStandpat          bool   = true
+7 : UseSEE                 bool   = true
+8 : UsePVS                 bool   = true
+9 : UseIID                 bool   = true
+10: UseKiller              bool   = true
+11: UseHistoryCounter      bool   = true
+12: UseCounterMoves        bool   = true
+13: IIDDepth               int    = 6
+14: IIDReduction           int    = 2
+15: UseTT                  bool   = true
+16: TTSize                 int    = 256
+17: UseTTMove              bool   = true
+18: UseTTValue             bool   = true
+19: UseQSTT                bool   = true
+20: UseEvalTT              bool   = false
+21: UseMDP                 bool   = true
+22: UseRFP                 bool   = true
+23: UseNullMove            bool   = true
+24: NmpDepth               int    = 3
+25: NmpReduction           int    = 2
+26: UseExt                 bool   = true
+27: UseExtAddDepth         bool   = true
+28: UseCheckExt            bool   = true
+29: UseThreatExt           bool   = false
+30: UseFP                  bool   = true
+31: UseLmp                 bool   = true
+32: UseLmr                 bool   = true
+33: LmrDepth               int    = 3
+34: LmrMovesSearched       int    = 3
+-----------------00 FrankyGo Config 1-----------------
+00 FrankyGo Config 1 - 00 FrankyGo Config 2 : 24,5/50 16-17-17  49%    -7
+00 FrankyGo Config 1 - 20 Franky-1.0        : 28,5/50 25-18-7   57%   +49
+00 FrankyGo Config 1 - Stockfish Weak Lvl10 : 19,5/50 15-26-9   39%   -78
+
+27.4.2020
+PC: - HistCount/CounterMove
 
 
 

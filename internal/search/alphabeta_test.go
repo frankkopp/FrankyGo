@@ -30,12 +30,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/pkg/profile"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/frankkopp/FrankyGo/internal/config"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
 	"github.com/frankkopp/FrankyGo/internal/position"
-	. "github.com/frankkopp/FrankyGo/internal/types"
 	"github.com/frankkopp/FrankyGo/internal/util"
 	"github.com/frankkopp/FrankyGo/test/testdata"
 )
@@ -134,30 +134,34 @@ func TestTimingTTSize(t *testing.T) {
 	}
 }
 
+// StartPos
 // v0.8.0 24.4.2020
 // NPS :  2.677.839 (evasion move gen)
+// v0.8.0 27.4.2020
+// NPS :  2.475.123
 func TestTiming(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
 
-	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
+	defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 
 	config.Settings.Search.UseBook = false
 	config.Settings.Search.UseHistoryCounter = true
 	config.Settings.Search.UseCounterMoves = true
+	config.Settings.Search.UsePromNonQuiet = true
 
 	s := NewSearch()
 	// "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
 	// rnbqkbnr/ppppp1pp/5p2/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq d3 0 2
 	// kiwipete
 	// r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -
-	p := position.NewPosition("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -")
+	p := position.NewPosition()
 	sl := NewSearchLimits()
 	// sl.Depth = 10
 	sl.TimeControl = true
-	sl.MoveTime = 30 * time.Second
+	sl.MoveTime = 60 * time.Second
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
 	out.Println("TT  : ", s.tt.String())

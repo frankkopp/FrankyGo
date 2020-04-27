@@ -352,10 +352,6 @@ func RotateSquareL45(sq Square) Square {
 // For Knight and King this the occupied Bitboard is ignored (can be BbZero)
 // as for these non sliders the pre-computed pseudo attacks are used
 func GetAttacksBb(pt PieceType, sq Square, occupied Bitboard) Bitboard {
-	if pt == Pawn {
-		msg := fmt.Sprint("GetAttackBb called with piece type Pawn is not supported")
-		panic(msg)
-	}
 	switch pt {
 	case Bishop:
 		return bishopMagics[sq].Attacks[bishopMagics[sq].index(occupied)]
@@ -363,8 +359,13 @@ func GetAttacksBb(pt PieceType, sq Square, occupied Bitboard) Bitboard {
 		return rookMagics[sq].Attacks[rookMagics[sq].index(occupied)]
 	case Queen:
 		return bishopMagics[sq].Attacks[bishopMagics[sq].index(occupied)] | rookMagics[sq].Attacks[rookMagics[sq].index(occupied)]
-	default:
+	case Knight:
 		return pseudoAttacks[pt][sq]
+	case King:
+		return pseudoAttacks[pt][sq]
+	default:
+		msg := fmt.Sprint("GetAttackBb called with piece type Pawn is not supported")
+		panic(msg)
 	}
 }
 

@@ -371,10 +371,10 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 		return true
 	}
 
-	// we do check a reverse attack with a queen to see if we can hit any other sliders. If yes
-	// they also could hit us which means the square is attacked.
-	// This is a bit slower as the previous code but it let's us avoid rotated bitboards
-	// in put/remove
+	// sliding
+	// we do check a reverse attack and check if there is piece of the right color
+	// in the reversed attack line. If yes they also could hit us which means
+	// the square is attacked.
 	if GetAttacksBb(Bishop, sq, occupiedAll)&p.piecesBb[by][Bishop] > 0 ||
 		GetAttacksBb(Rook, sq, occupiedAll)&p.piecesBb[by][Rook] > 0 ||
 		GetAttacksBb(Queen, sq, occupiedAll)&p.piecesBb[by][Queen] > 0 {
@@ -471,6 +471,7 @@ func (p *Position) IsLegalMove(move Move) bool {
 	}
 	// make the move on the position
 	// then check if the move leaves the king in check
+	// TODO Make this more efficient by not do/undo moves
 	p.DoMove(move)
 	legal := !p.IsAttacked(p.kingSquare[p.nextPlayer.Flip()], p.nextPlayer)
 	p.UndoMove()

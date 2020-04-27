@@ -156,8 +156,8 @@ func slidingAttack(directions *[4]Direction, sq Square, occupied Bitboard) Bitbo
 //  occ     >>= mBishopTbl[sq].shift;
 func (m *Magic) index(occupied Bitboard) uint {
 	occ := occupied & m.Mask
-	occ = occ * m.Magic
-	occ = occ >> m.Shift
+	occ *= m.Magic
+	occ >>= m.Shift
 	return uint(occ)
 }
 
