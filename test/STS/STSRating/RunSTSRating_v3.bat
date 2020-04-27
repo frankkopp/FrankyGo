@@ -12,7 +12,7 @@
 
 
 :: Normal run to get score, movetime is in millisec
-STS_Rating_v3 -f "STS1-STS15_LAN.epd" -e "FrankyGo_STS.exe" -t 1 -h 256 --movetime 154 --log
+STS_Rating_v3 -f "STS1-STS15_LAN.epd" -e "FrankyGo_STS.exe" -t 1 -h 256 --movetime 2000
 
 
 

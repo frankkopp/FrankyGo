@@ -51,3 +51,36 @@ Expected time to finish: 00:50:45
    Score    442    419    529    506    642    770    484    425    362    659    425    510    578    587    465   7803
 Score(%)   44.2   41.9   52.9   50.6   64.2   77.0   48.4   42.5   36.2   65.9   42.5   51.0   57.8   58.7   46.5   52.0
 
+Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
+Engine: FrankyGo dev0.9 (25.4.2020)
+Hash: 256, Threads: 1, time/pos: 2.000s
+Test duration: 00:00:00
+Expected time to finish: 00:00:00
+
+  STS ID   STS1   STS2   STS3   STS4   STS5   STS6   STS7   STS8   STS9  STS10  STS11  STS12  STS13  STS14  STS15    ALL
+  NumPos      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+ BestCnt      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+   Score      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+
+Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
+Engine: FrankyGo dev0.9 (25.4.2020)
+Hash: 256, Threads: 1, time/pos: 2.000s
+Test duration: 00:00:00
+Expected time to finish: 00:00:00
+
+  STS ID   STS1   STS2   STS3   STS4   STS5   STS6   STS7   STS8   STS9  STS10  STS11  STS12  STS13  STS14  STS15    ALL
+  NumPos      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+ BestCnt      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+   Score      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+
+Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
+Engine: FrankyGo dev0.9 (25.4.2020)
+Hash: 256, Threads: 1, time/pos: 2.000s
+Test duration: 00:00:00
+Expected time to finish: 00:00:00
+
+  STS ID   STS1   STS2   STS3   STS4   STS5   STS6   STS7   STS8   STS9  STS10  STS11  STS12  STS13  STS14  STS15    ALL
+  NumPos      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+ BestCnt      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+   Score      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+

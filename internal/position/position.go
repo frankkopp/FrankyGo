@@ -232,11 +232,11 @@ func (p *Position) DoMove(m Move) {
 	case Normal:
 		p.doNormalMove(fromSq, toSq, targetPc, fromPc, myColor)
 	case Promotion:
-		p.doPromotionMove(m, fromPc, myColor, toSq, targetPc, fromSq)
+		p.doPromotionMove(m, myColor, toSq, targetPc, fromSq)
 	case EnPassant:
-		p.doEnPassantMove(toSq, myColor, fromPc, fromSq)
+		p.doEnPassantMove(toSq, myColor, fromSq)
 	case Castling:
-		p.doCastlingMove(fromPc, myColor, toSq, fromSq)
+		p.doCastlingMove(toSq, fromSq)
 	}
 
 	// update additional state info
@@ -381,22 +381,6 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 		return true
 	}
 
-	// // sliding rooks and queens
-	// if (GetPseudoAttacks(Rook, sq)&p.piecesBb[by][Rook] != 0 || (GetPseudoAttacks(Rook, sq)&p.piecesBb[by][Queen] != 0)) &&
-	// 	(((GetMovesOnRank(sq, p.OccupiedAll()) |
-	// 		GetMovesOnFileRotated(sq, p.occupiedBbL90[White]|p.occupiedBbL90[Black])) &
-	// 		(p.piecesBb[by][Rook] | p.piecesBb[by][Queen])) != 0) {
-	// 	return true
-	// }
-	//
-	// // sliding bishop and queens
-	// if (GetPseudoAttacks(Bishop, sq)&p.piecesBb[by][Bishop] != 0 || (GetPseudoAttacks(Bishop, sq)&p.piecesBb[by][Queen] != 0)) &&
-	// 	(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[White]|p.occupiedBbR45[Black]) |
-	// 		GetMovesDiagDownRotated(sq, p.occupiedBbL45[White]|p.occupiedBbL45[Black])) &
-	// 		(p.piecesBb[by][Bishop] | p.piecesBb[by][Queen])) != 0) {
-	// 	return true
-	// }
-
 	// check en passant
 	if p.enPassantSquare != SqNone {
 		switch by {
@@ -471,7 +455,6 @@ func (p *Position) IsLegalMove(move Move) bool {
 	}
 	// make the move on the position
 	// then check if the move leaves the king in check
-	// TODO Make this more efficient by not do/undo moves
 	p.DoMove(move)
 	legal := !p.IsAttacked(p.kingSquare[p.nextPlayer.Flip()], p.nextPlayer)
 	p.UndoMove()
@@ -793,58 +776,27 @@ func (p *Position) doNormalMove(fromSq Square, toSq Square, targetPc Piece, from
 	p.movePiece(fromSq, toSq)
 }
 
-func (p *Position) doCastlingMove(fromPc Piece, myColor Color, toSq Square, fromSq Square) {
-	if assert.DEBUG {
-		assert.Assert(fromPc == MakePiece(myColor, King), "Position DoMove: Move type castling but from piece not king")
-	}
+func (p *Position) doCastlingMove(toSq Square, fromSq Square) {
 	switch toSq {
 	case SqG1:
-		if assert.DEBUG {
-			assert.Assert(p.castlingRights.Has(CastlingWhiteOO), "Position DoMove: White king side castling not available")
-			assert.Assert(fromSq == SqE1, "Position DoMove: Castling from square not correct")
-			assert.Assert(p.board[SqE1] == WhiteKing, "Position DoMove: SqE1 has no king for castling")
-			assert.Assert(p.board[SqH1] == WhiteRook, "Position DoMove: SqH1 has no rook for castling")
-			assert.Assert(p.OccupiedAll()&Intermediate(SqE1, SqH1) == 0, "Position DoMove: Castling king side blocked")
-		}
 		p.movePiece(fromSq, toSq)                                    // King
 		p.movePiece(SqH1, SqF1)                                      // Rook
 		p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
 		p.castlingRights.Remove(CastlingWhite)
 		p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in;
 	case SqC1:
-		if assert.DEBUG {
-			assert.Assert(p.castlingRights.Has(CastlingWhiteOOO), "Position DoMove: White queen side castling not available")
-			assert.Assert(fromSq == SqE1, "Position DoMove: Castling from square not correct")
-			assert.Assert(p.board[SqE1] == WhiteKing, "Position DoMove: SqE1 has no king for castling")
-			assert.Assert(p.board[SqA1] == WhiteRook, "Position DoMove: SqA1 has no rook for castling")
-			assert.Assert(p.OccupiedAll()&Intermediate(SqE1, SqA1) == 0, "Position DoMove: Castling queen side blocked")
-		}
 		p.movePiece(fromSq, toSq)                                    // King
 		p.movePiece(SqA1, SqD1)                                      // Rook
 		p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
 		p.castlingRights.Remove(CastlingWhite)
 		p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in
 	case SqG8:
-		if assert.DEBUG {
-			assert.Assert(p.castlingRights.Has(CastlingBlackOO), "Position DoMove: Black king side castling not available")
-			assert.Assert(fromSq == SqE8, "Position DoMove: Castling from square not correct")
-			assert.Assert(p.board[SqE8] == BlackKing, "Position DoMove: SqE8 has no king for castling")
-			assert.Assert(p.board[SqH8] == BlackRook, "Position DoMove: SqH8 has no rook for castling")
-			assert.Assert(p.OccupiedAll()&Intermediate(SqE8, SqH8) == 0, "Position DoMove: Castling king side blocked")
-		}
 		p.movePiece(fromSq, toSq)                                    // King
 		p.movePiece(SqH8, SqF8)                                      // Rook
 		p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
 		p.castlingRights.Remove(CastlingBlack)
 		p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // in
 	case SqC8:
-		if assert.DEBUG {
-			assert.Assert(p.castlingRights.Has(CastlingBlackOOO), "Position DoMove: Black queen side castling not available")
-			assert.Assert(fromSq == SqE8, "Position DoMove: Castling from square not correct")
-			assert.Assert(p.board[SqE8] == BlackKing, "Position DoMove: SqE8 has no king for castling")
-			assert.Assert(p.board[SqA8] == BlackRook, "Position DoMove: SqA8 has no rook for castling")
-			assert.Assert(p.OccupiedAll()&Intermediate(SqE8, SqA8) == 0, "Position DoMove: Castling queen side blocked")
-		}
 		p.movePiece(fromSq, toSq)                                    // King
 		p.movePiece(SqA8, SqD8)                                      // Rook
 		p.zobristKey ^= zobristBase.castlingRights[p.castlingRights] // out
@@ -857,25 +809,15 @@ func (p *Position) doCastlingMove(fromPc Piece, myColor Color, toSq Square, from
 	p.halfMoveClock++
 }
 
-func (p *Position) doEnPassantMove(toSq Square, myColor Color, fromPc Piece, fromSq Square) {
-	capSq := toSq.To(myColor.Flip().MoveDirection())
-	if assert.DEBUG {
-		assert.Assert(fromPc == MakePiece(myColor, Pawn), "Position DoMove: Move type en passant but from piece not pawn")
-		assert.Assert(p.enPassantSquare != SqNone, "Position DoMove: EnPassant move type without en passant")
-		assert.Assert(p.board[capSq] == MakePiece(myColor.Flip(), Pawn), "Position DoMove: Captured en passant piece invalid")
-	}
-	p.removePiece(capSq)
+func (p *Position) doEnPassantMove(toSq Square, myColor Color, fromSq Square) {
+	p.removePiece(toSq.To(myColor.Flip().MoveDirection()))
 	p.movePiece(fromSq, toSq)
 	p.clearEnPassant()
 	// reset half move clock because of pawn move
 	p.halfMoveClock = 0
 }
 
-func (p *Position) doPromotionMove(m Move, fromPc Piece, myColor Color, toSq Square, targetPc Piece, fromSq Square) {
-	if assert.DEBUG {
-		assert.Assert(fromPc == MakePiece(myColor, Pawn), "Position DoMove: Move type promotion but From piece not Pawn")
-		assert.Assert(myColor.PromotionRankBb().Has(toSq), "Position DoMove: Promotion move but wrong Rank")
-	}
+func (p *Position) doPromotionMove(m Move, myColor Color, toSq Square, targetPc Piece, fromSq Square) {
 	if targetPc != PieceNone { // capture
 		p.removePiece(toSq)
 	}
@@ -900,13 +842,6 @@ func (p *Position) movePiece(fromSq Square, toSq Square) {
 func (p *Position) putPiece(piece Piece, square Square) {
 	color := piece.ColorOf()
 	pieceType := piece.TypeOf()
-
-	if assert.DEBUG {
-		assert.Assert(p.board[square] == PieceNone, "tried to put piece on an occupied square: %s", square.String())
-		assert.Assert(!p.piecesBb[color][pieceType].Has(square), "tried to set bit on pieceBb which is already set: %s", square.String())
-		assert.Assert(!p.occupiedBb[color].Has(square), "tried to set bit on occupiedBb which is already set: %s", square.String())
-	}
-
 	// update board
 	p.board[square] = piece
 	if pieceType == King {
@@ -915,13 +850,6 @@ func (p *Position) putPiece(piece Piece, square Square) {
 	// update bitboards
 	p.piecesBb[color][pieceType].PushSquare(square)
 	p.occupiedBb[color].PushSquare(square)
-
-	// not used any more as we use the magic bitboards any more
-	// p.occupiedBbR90[color].PushSquare(RotateSquareR90(square))
-	// p.occupiedBbL90[color].PushSquare(RotateSquareL90(square))
-	// p.occupiedBbR45[color].PushSquare(RotateSquareR45(square))
-	// p.occupiedBbL45[color].PushSquare(RotateSquareL45(square))
-
 	// zobrist
 	p.zobristKey ^= zobristBase.pieces[piece][square]
 	// game phase
@@ -943,25 +871,11 @@ func (p *Position) removePiece(square Square) Piece {
 	removed := p.board[square]
 	color := removed.ColorOf()
 	pieceType := removed.TypeOf()
-
-	if assert.DEBUG {
-		assert.Assert(p.board[square] != PieceNone, "tried to remove piece from an empty square: %s", square.String())
-		assert.Assert(p.piecesBb[color][pieceType].Has(square), "tried to clear bit from pieceBb which is not set: %s", square.String())
-		assert.Assert(p.occupiedBb[color].Has(square), "tried to clear bit from occupiedBb which is not set: %s", square.String())
-	}
-
 	// update board
 	p.board[square] = PieceNone
 	// update bitboards
 	p.piecesBb[color][pieceType].PopSquare(square)
 	p.occupiedBb[color].PopSquare(square)
-
-	// not used any more as we use the magic bitboards any more
-	// p.occupiedBbR90[color].PopSquare(RotateSquareR90(square))
-	// p.occupiedBbL90[color].PopSquare(RotateSquareL90(square))
-	// p.occupiedBbR45[color].PopSquare(RotateSquareR45(square))
-	// p.occupiedBbL45[color].PopSquare(RotateSquareL45(square))
-
 	// zobrist
 	p.zobristKey ^= zobristBase.pieces[removed][square]
 	// game phase
@@ -1026,7 +940,7 @@ func (p *Position) fen() string {
 	// full move number
 	fen.WriteString(" ")
 	fen.WriteString(strconv.Itoa((p.nextHalfMoveNumber + 1) / 2))
-
+	// return fen string
 	return fen.String()
 }
 
@@ -1039,7 +953,7 @@ var regexWorB = regexp.MustCompile("^[w|b]$")
 // regex for castling rights in fen
 var regexCastlingRights = regexp.MustCompile("^(K?Q?k?q?|-)$")
 
-// regex for en passent square in fen
+// regex for en passant square in fen
 var regexEnPassant = regexp.MustCompile("^([a-h][1-8]|-)$")
 
 // setupBoard sets up a board based on a fen. This is basically
@@ -1047,7 +961,7 @@ var regexEnPassant = regexp.MustCompile("^([a-h][1-8]|-)$")
 // will be setup as well as all struct data is initialized to 0.
 func (p *Position) setupBoard(fen string) error {
 
-	// we will analyse the fen and only require the initial board layout part
+	// We will analyse the fen and only require the initial board layout part.
 	// All other parts will have defaults. E.g. next player is white, no castling, etc.
 	fen = strings.TrimSpace(fen)
 	fenParts := strings.Split(fen, " ")
@@ -1068,7 +982,7 @@ func (p *Position) setupBoard(fen string) error {
 	// with / jumping to file A of next lower rank
 	currentSquare := SqA8
 
-	// loop over fen and check an execute information
+	// loop over fen characters
 	for _, c := range fenParts[0] {
 		if number, e := strconv.Atoi(string(c)); e == nil { // is number
 			currentSquare = Square(int(currentSquare) + (number * int(East)))
