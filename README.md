@@ -36,6 +36,7 @@ Go implementation of a UCI compatible chess engine.
     * SEE for deciding on good qsearch moves
     * Reverse Futility Pruning (Static Null Move)
     * Futility Pruning
+    * History Pruning (History Count, Counter Move) 
     * ~2.5-3.5M nps
     * TODO: Aspiration Windows, Multi-cut Pruning, History Pruning 
 * Transposition Table

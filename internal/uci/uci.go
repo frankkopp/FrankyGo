@@ -462,6 +462,9 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 				return nil, true
 			}
 			i++
+		case "movetime":
+			// UCI wants moveTime but STS test suite uses movetime - this catches this
+			fallthrough
 		case "moveTime":
 			i++
 			parseInt, err := strconv.ParseInt(tokens[i], 10, 64)

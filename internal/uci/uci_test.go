@@ -210,12 +210,6 @@ func TestReadSearchLimits(t *testing.T) {
 	sl, err = uciHandler.readSearchLimits(tokens)
 	assert.True(t, err)
 
-	cmd = "go movetime 5000"
-	tokens = regexWhiteSpace.Split(cmd, -1)
-	strings.TrimSpace(tokens[0])
-	sl, err = uciHandler.readSearchLimits(tokens)
-	assert.True(t, err)
-
 	cmd = "go moveTime 5000"
 	tokens = regexWhiteSpace.Split(cmd, -1)
 	strings.TrimSpace(tokens[0])

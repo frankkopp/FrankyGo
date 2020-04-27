@@ -36,7 +36,7 @@ import (
 )
 
 func init()  {
-	fmt.Println("DEBUG MODE")
+	// fmt.Println("DEBUG MODE")
 }
 
 // DEBUG if this is set to "true" asserts are evaluated

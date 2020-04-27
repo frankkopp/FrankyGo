@@ -31,12 +31,8 @@
 // used in non production setting.
 package assert
 
-import (
-	"fmt"
-)
-
 func init()  {
-	fmt.Println("RELEASE MODE")
+	// fmt.Println("RELEASE MODE")
 }
 
 // DEBUG if this is set to "true" asserts are evaluated
