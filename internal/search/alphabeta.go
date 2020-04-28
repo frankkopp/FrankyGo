@@ -906,7 +906,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	// only quite moves
 	if movesSearched == 0 && !s.stopConditions() {
 		// if we have a mate we had a check before and therefore
-		// generated all move. We can be sure this is a mate.
+		// generated all moves. We can be sure this is a mate.
 		if p.HasCheck() {
 			s.statistics.Checkmates++
 			bestNodeValue = -ValueCheckMate + Value(ply)
@@ -928,12 +928,17 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	return bestNodeValue
 }
 
-// call evaluation on the position
+// After expanding the search to the required depth and all non quiet moves were
+// generated call the evaluation heuristic on the position.
+// This gives us a numerical value of this quiet position which we will return
+// back to the search.
 func (s *Search) evaluate(position *position.Position, ply int) Value {
 	s.statistics.LeafPositionsEvaluated++
 
 	var value = ValueNA
 
+	// We can try to see if TT also helps with already evaluated positions.
+	// This is currently deactivated in the config defaults.
 	if Settings.Search.UseTT && Settings.Search.UseEvalTT {
 		ttEntry := s.tt.Probe(position.ZobristKey())
 		if ttEntry != nil { // tt hit
@@ -948,6 +953,12 @@ func (s *Search) evaluate(position *position.Position, ply int) Value {
 		value = s.eval.Evaluate(position)
 	}
 
+	// Storing this value might save us calls to eval on the same position.
+	// as we only have a depth of 0 we expects this not to last very long in the
+	// TT and the time impact of probing and storing might be too expensive.
+	// As our current eval function is very simple it definitely is not worth
+	// the effort. With a more expensive eval function this might change.
+	// This is currently deactivated in the config defaults.
 	if Settings.Search.UseTT && Settings.Search.UseEvalTT {
 		s.storeTT(position, 0, ply, MoveNone, value, EXACT)
 	}
@@ -976,8 +987,8 @@ func (s *Search) goodCapture(p *position.Position, move Move) bool {
 	}
 }
 
-// savePV adds the given move as first move to a cleared dest and the appends
-// all src moves to dest
+// savePV adds the given move as first move to a dest moveslice and the appends
+// all src moves to dest. Dest will be cleared before the the append.
 func savePV(move Move, src *moveslice.MoveSlice, dest *moveslice.MoveSlice) {
 	dest.Clear()
 	dest.PushBack(move)
@@ -991,6 +1002,8 @@ func (s *Search) storeTT(p *position.Position, depth int, ply int, move Move, va
 
 // getPVLine fills the given pv move list with the pv move starting from the given
 // depth as long as these position are in the TT
+// This is used when we retrieve a value and move from the TT and would not get a PV
+// line otherwise.
 func (s *Search) getPVLine(p *position.Position, pv *moveslice.MoveSlice, depth int) {
 	// Recursion-less reading of the chain of pv moves
 	pv.Clear()
