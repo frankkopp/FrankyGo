@@ -107,7 +107,8 @@ In addition to this all the tools included and standardized in Go are extremely 
 the past to find good free tools for Java and especially C++ for profiling, assembly code review, etc. comfortable on 
 all platforms I'm using (Windows, Mac, Linux). 
 Just look at this output from the Go pprof profiler which comes for free with Go:
-[https://github.com/frankkopp/FrankyGo/blob/master/docs/pprof_graph.png|alt=pprof]
+
+![pprof](https://github.com/frankkopp/FrankyGo/raw/master/docs/pprof_graph.png)
 
 ## Installation
 Windows build: 
