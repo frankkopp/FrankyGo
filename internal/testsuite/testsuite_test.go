@@ -376,8 +376,6 @@ func TestCraftyTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UseHistoryCounter = true
-	config.Settings.Search.UseCounterMoves = true
 	ts, _ := NewTestSuite("test/testdata/testsets/crafty_test.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
