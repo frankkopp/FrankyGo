@@ -23,20 +23,20 @@ Go implementation of a UCI compatible chess engine.
 * Search as PVS AlphaBeta search
     * all UCI search modes 
     * Iterative Deepening
-    * Quiescence
     * Pondering
+    * Quiescence
+    * SEE for deciding on good qsearch moves
+    * Internal Iterative Deepening
     * Killer Moves
+    * History Pruning (History Count, Counter Move) 
     * Mate Distance Pruning
     * Null Move Pruning
-    * Internal Iterative Deepening
     * Late Move Reductions (needs further tuning)
     * Late Move Pruning (needs further tuning)
     * Check extension (needs further tuning/testing)
     * Mate threat extension (deactivated - needs further tuning/testing - currently weakens play)
-    * SEE for deciding on good qsearch moves
     * Reverse Futility Pruning (Static Null Move)
     * Futility Pruning
-    * History Pruning (History Count, Counter Move) 
     * ~2.5-3.5M nps
     * TODO: Aspiration Windows, Multi-cut Pruning, History Pruning 
 * Transposition Table

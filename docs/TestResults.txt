@@ -215,29 +215,8 @@ Search Config:
 2020-04-26 17:21:03,456<--1:29: UseLmr                 bool   = true
 2020-04-26 17:21:03,463<--1:30: LmrDepth               int    = 3
 2020-04-26 17:21:03,470<--1:31: LmrMovesSearched       int    = 3
-2020-04-26 17:21:03,477<--1:Evaluation Config:
-2020-04-26 17:21:03,484<--1:0 : UsePawnCache           bool   = false
-2020-04-26 17:21:03,490<--1:1 : PawnCacheSize          int    = 64
-2020-04-26 17:21:03,496<--1:2 : UseLazyEval            bool   = true
-2020-04-26 17:21:03,503<--1:3 : LazyEvalThreshold      int    = 700
-2020-04-26 17:21:03,510<--1:4 : Tempo                  int    = 30
-2020-04-26 17:21:03,516<--1:5 : UseAttacksInEval       bool   = false
-2020-04-26 17:21:03,523<--1:6 : UseMobility            bool   = false
-2020-04-26 17:21:03,530<--1:7 : MobilityBonus          int    = 5
-2020-04-26 17:21:03,536<--1:8 : UseAdvancedPieceEval   bool   = false
-2020-04-26 17:21:03,544<--1:9 : BishopPairBonus        int    = 20
-2020-04-26 17:21:03,551<--1:10: MinorBehindPawnBonus   int    = 15
-2020-04-26 17:21:03,558<--1:11: BishopPawnMalus        int    = 5
-2020-04-26 17:21:03,566<--1:12: BishopCenterAimBonus   int    = 20
-2020-04-26 17:21:03,573<--1:13: BishopBlockedMalus     int    = 40
-2020-04-26 17:21:03,582<--1:14: RookOnQueenFileBonus   int    = 6
-2020-04-26 17:21:03,588<--1:15: RookOnOpenFileBonus    int    = 25
-2020-04-26 17:21:03,595<--1:16: RookTrappedMalus       int    = 40
-2020-04-26 17:21:03,602<--1:17: KingRingAttacksBonus   int    = 10
-2020-04-26 17:21:03,609<--1:18: UseKingEval            bool   = false
-2020-04-26 17:21:03,615<--1:19: KingDangerMalus        int    = 50
-2020-04-26 17:21:03,622<--1:20: KingDefenderBonus      int    = 10
 -----------------00 FrankyGo Config 1-----------------
+00 FrankyGo Config 1 234,5/385 ==> 60.9%
 00 FrankyGo Config 1 - 01 Franky-1.0        : 21,0/35 19-12-4   60%   +70 2020
 00 FrankyGo Config 1 - Abbess2018           : 25,0/35 22-7-6    71%  +156 2174
 00 FrankyGo Config 1 - Belzebub_067         : 23,0/35 18-7-10   66%  +115 1765
