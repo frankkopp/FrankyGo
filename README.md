@@ -103,6 +103,12 @@ Also, some aspects needed some re-thinking (e.g. no cyclic imports) but overall 
 than for example C++ where I still find the compile-process unnecessary complicated (.h, cpp - declaration and 
 definition, etc.) or Java where I can't have user defined primitive types.
 
+In addition to this all the tools included and standardized in Go are extremely valuable. I had so many headaches in 
+the past to find good free tools for Java and especially C++ for profiling, assembly code review, etc. comfortable on 
+all platforms I'm using (Windows, Mac, Linux). 
+Just look at this output from the Go pprof profiler which comes for free with Go:
+[https://github.com/frankkopp/FrankyGo/blob/master/docs/pprof_graph.png|alt=pprof]
+
 ## Installation
 Windows build: 
 
