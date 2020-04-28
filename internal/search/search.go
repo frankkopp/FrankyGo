@@ -370,7 +370,6 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	// print result to log
 	s.log.Infof("Search result: %s", searchResult.String())
 
-
 	// save result until overwritten by the next search
 	s.lastSearchResult = searchResult
 	s.hasResult = true
@@ -479,7 +478,8 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 		// doing this after the first iteration ensures that
 		// we have done at least one complete search and have
 		// a pv (best) move
-		if !s.stopConditions() {
+		// If we only have one move to play also stop the search
+		if !s.stopConditions() && s.rootMoves.Len() > 1 {
 			// sort root moves for the next iteration
 			s.rootMoves.Sort()
 			s.statistics.CurrentBestRootMove = s.pv[0].At(0)

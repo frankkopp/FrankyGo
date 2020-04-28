@@ -44,6 +44,9 @@ type searchConfiguration struct {
 	UseSEE          bool
 	UsePromNonQuiet bool
 
+	UseAspiration bool
+	UseMTDf       bool
+
 	// Move ordering
 	UsePVS            bool
 	UseIID            bool
@@ -97,6 +100,9 @@ func init() {
 	Settings.Search.UsePromNonQuiet = true
 
 	Settings.Search.UsePVS = true
+	Settings.Search.UseAspiration = false
+	Settings.Search.UseMTDf = false
+
 	Settings.Search.UseIID = true
 	Settings.Search.UseKiller = true
 	Settings.Search.UseHistoryCounter = true

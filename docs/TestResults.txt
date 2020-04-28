@@ -229,3 +229,68 @@ Search Config:
 00 FrankyGo Config 1 - SEE                  : 26,5/35 25-7-3    76%  +200 1911
 00 FrankyGo Config 1 - Stockfish Weak       : 28,5/35 28-6-1    81%  +252
 
+===================================================================
+28.4.2020
+239/385 ==> 62%
+0 : UseBook                bool   = true
+1 : BookPath               string = ..\books
+2 : BookFile               string = book.txt
+3 : BookFormat             string = Simple
+4 : UsePonder              bool   = true
+5 : UseQuiescence          bool   = true
+6 : UseQSStandpat          bool   = true
+7 : UseSEE                 bool   = true
+8 : UsePromNonQuiet        bool   = true
+9 : UsePVS                 bool   = true
+10: UseIID                 bool   = true
+11: UseKiller              bool   = true
+12: UseHistoryCounter      bool   = true
+13: UseCounterMoves        bool   = true
+14: IIDDepth               int    = 6
+15: IIDReduction           int    = 2
+16: UseTT                  bool   = true
+17: TTSize                 int    = 256
+18: UseTTMove              bool   = true
+19: UseTTValue             bool   = true
+20: UseQSTT                bool   = true
+21: UseEvalTT              bool   = false
+22: UseMDP                 bool   = true
+23: UseRFP                 bool   = true
+24: UseNullMove            bool   = true
+25: NmpDepth               int    = 3
+26: NmpReduction           int    = 2
+27: UseExt                 bool   = true
+28: UseExtAddDepth         bool   = true
+29: UseCheckExt            bool   = true
+30: UseThreatExt           bool   = false
+31: UseFP                  bool   = true
+32: UseLmp                 bool   = true
+33: UseLmr                 bool   = true
+34: LmrDepth               int    = 3
+35: LmrMovesSearched       int    = 3
+-----------------00 FrankyGo Config 1-----------------
+00 FrankyGo Config 1 - 01 Franky-1.0        : 23,5/35 21-9-5  67%  +123
+00 FrankyGo Config 1 - Abbess2018           : 22,5/35 20-10-5 64%  +100
+00 FrankyGo Config 1 - Belzebub_067         : 25,5/35 23-7-5  73%  +173
+00 FrankyGo Config 1 - Bismark_1.4          : 21,5/35 19-11-5 61%   +78
+00 FrankyGo Config 1 - Clarabit_100_x64_win : 12,5/35 9-19-7  36%  -100
+00 FrankyGo Config 1 - Clueless             : 25,0/35 22-7-6  71%  +156
+00 FrankyGo Config 1 - Fmax                 : 28,0/35 27-6-2  80%  +241
+00 FrankyGo Config 1 - Monarch(v1.7)        : 10,5/35 8-22-5  30%  -147
+00 FrankyGo Config 1 - RamJet_014           : 15,5/35 13-17-5 44%   -42
+00 FrankyGo Config 1 - SEE                  : 22,5/35 21-11-3 64%  +100
+00 FrankyGo Config 1 - Stockfish Weak Lvl10 : 32,5/35 31-1-3  93%  +449 (not valid)
+
+    Engine               Score          00
+01: 00 FrankyGo Config 1 239,5/385 ·······
+02: Monarch(v1.7)        24,5/35    22-8-5
+03: Clarabit_100_x64_win 22,5/35    19-9-7
+04: RamJet_014           19,5/35   17-13-5
+05: Bismark_1.4          13,5/35   11-19-5
+06: Abbess2018           12,5/35   10-20-5
+06: SEE                  12,5/35   11-21-3
+08: 01 Franky-1.0        11,5/35    9-21-5
+09: Clueless             10,0/35    7-22-6
+10: Belzebub_067         9,5/35     7-23-5
+11: Fmax                 7,0/35     6-27-2
+12: Stockfish Weak Lvl10 2,5/35     1-31-3

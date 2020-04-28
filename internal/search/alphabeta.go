@@ -50,7 +50,7 @@ var trace = false
 // rootSearch starts the actual recursive alpha beta search with the root moves for the first ply.
 // As root moves are treated a little different this separate function supports readability
 // as mixing it with the normal search would require quite some "if ply==0" statements.
-func (s *Search) rootSearch(position *position.Position, depth int, alpha Value, beta Value) {
+func (s *Search) rootSearch(position *position.Position, depth int, alpha Value, beta Value) Value {
 	if trace {
 		s.slog.Debugf("Ply %-2.d Depth %-2.d start: %s", 0, depth, s.statistics.CurrentVariation.StringUci())
 		defer s.slog.Debugf("Ply %-2.d Depth %-2.d end: %s", 0, depth, s.statistics.CurrentVariation.StringUci())
@@ -111,7 +111,7 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 		// After that we can stop any time - any new best moves will
 		// have been stored in pv[0]
 		if s.stopConditions() && depth > 1 {
-			return
+			return 0
 		}
 
 		// set the value into he root move to later be able to sort
@@ -129,6 +129,9 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 	}
 	// MOVE LOOP
 	// ///////////////////////////////////////////////////////
+
+	// only needed for aspiration and MTDf
+	return bestNodeValue
 }
 
 // search is the normal alpha beta search after the root move ply (ply > 0)

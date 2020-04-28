@@ -380,17 +380,16 @@ func TestCraftyTests(t *testing.T) {
 	ts.RunTests()
 }
 
-// All but FP
 // Summary:
 // EPD File:   test/testdata/testsets/ecm98.epd
 // SearchTime: 5.000 ms
 // MaxDepth:   0
-// Date:       2020-04-22 20:38:43.7638852 +0200 CEST
-// Successful: 460 (59 %)
-// Failed:     309 (40 %)
+// Date:       2020-04-28 17:43:19.2814557 +0200 CEST
+// Successful: 424 (55 %)
+// Failed:     345 (44 %)
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
-// Test time: 1h4m14.3847089s
+// Test time: 1h4m15.4163679s
 func TestECMTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
