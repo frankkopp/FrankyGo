@@ -257,7 +257,7 @@ func (s *Search) ResizeCache() {
 // // Private
 // //////////////////////////////////////////////////////
 
-// run is called by StartSearch() in a separate go-routine
+// run is called by StartSearch() in a separate goroutine
 // It runs the actual search until a search limit is reached
 // or the search has been stopped by StopSearch()
 func (s *Search) run(position *position.Position, sl *Limits) {

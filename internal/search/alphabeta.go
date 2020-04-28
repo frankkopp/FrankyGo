@@ -70,8 +70,6 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 
 	// prepare root node search
 	bestNodeValue := ValueNA
-
-	// prepare move loop
 	var value Value
 
 	// ///////////////////////////////////////////////////////
@@ -109,9 +107,9 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 		s.statistics.CurrentVariation.PopBack()
 		position.UndoMove()
 
-		// we want to do at least have one complete search with depth 1
-		// later we can stop any time - any new best moves will have been
-		// stored in pv[0]
+		// we want to do at least one complete search with depth 1
+		// After that we can stop any time - any new best moves will
+		// have been stored in pv[0]
 		if s.stopConditions() && depth > 1 {
 			return
 		}
@@ -133,6 +131,11 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 	// ///////////////////////////////////////////////////////
 }
 
+// search is the normal alpha beta search after the root move ply (ply > 0)
+// it will be called recursively until the remaining depth == 0 and we would
+// enter quiescence search. Search consumes about 60% of the search time and
+// all major prunings are done here. Quiescence search uses about 40% of the
+// search time and has less options for pruning as not all moves are searched.
 func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, beta Value, isPV bool, doNull bool) Value {
 	if trace {
 		s.slog.Debugf("%0*s Ply %-2.d Depth %-2.d a:%-6.d b:%-6.d pv:%-6.v start:  %s", ply, "", ply, depth, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
@@ -144,7 +147,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		return ValueNA
 	}
 
-	// Leaf node when depth == 0 or max ply has been reached
+	// Enter quiescence search when depth == 0 or max ply has been reached
 	if depth == 0 || ply >= MaxDepth {
 		return s.qsearch(p, ply, alpha, beta, isPV)
 	}
@@ -183,7 +186,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	// If we have a value from a similar or deeper search we check
 	// if the value is usable. Exact values mean that the previously
 	// stored result already was a precise result and we do not
-	// need to search the position again. We can stop  searching
+	// need to search the position again. We can stop searching
 	// this branch and return the value.
 	// Alpha or Beta entries will only be used if they improve
 	// the current values.
@@ -283,7 +286,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 				return ValueNA
 			}
 
-			// counter for mate threats
+			// flag for mate threats
 			if nValue > ValueCheckMateThreshold {
 				// although this player did not make a move the value still is
 				// a mate - very good! Just adjust the value to not return an
@@ -313,10 +316,11 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	// Internal Iterative Deepening (IID)
 	// https://www.chessprogramming.org/Internal_Iterative_Deepening
 	// Used when no best move from the tt is available from a previous
-	// searches.  IID is used to find a good move to search first by
+	// searches. IID is used to find a good move to search first by
 	// searching the current position to a reduced depth, and using
 	// the best move of that search as the first move at the real depth.
-	// Does not make a big difference in search tree size.
+	// Does not make a big difference in search tree size when move
+	// order already is good.
 	if Settings.Search.UseIID {
 		if depth >= Settings.Search.IIDDepth &&
 			ttMove != MoveNone && // no move from TT
@@ -371,7 +375,8 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 
 	// ///////////////////////////////////////////////////////
 	// MOVE LOOP
-	for move := myMg.GetNextMove(p, movegen.GenAll, hasCheck); move != MoveNone; move = myMg.GetNextMove(p, movegen.GenAll, hasCheck) {
+	for move := myMg.GetNextMove(p, movegen.GenAll, hasCheck);
+		move != MoveNone; move = myMg.GetNextMove(p, movegen.GenAll, hasCheck) {
 
 		from := move.From()
 		to := move.To()
@@ -423,7 +428,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			// The check extensions is a bit redundant as our QS search
 			// searches all moves anyway when in check. But with this
 			// extension we hope to profit from using the prunings
-			// of the normal search which are not available in the
+			// of the normal search which are not available in
 			// qsearch.
 			if Settings.Search.UseCheckExt && givesCheck {
 				s.statistics.CheckExtension++
@@ -433,6 +438,8 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			// If we have found a mate threat during Null Move Search
 			// we extend normal search by one ply to try to find
 			// a way out.
+			// Deactivated in config as this grows the search tree
+			// too much.
 			if Settings.Search.UseThreatExt && matethreat {
 				s.statistics.ThreatExtension++
 				extension = 1
@@ -488,7 +495,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 
 			// LMP - Late Move Pruning
 			// aka Move Count Based Pruning
-			// TODO dangerous needs testing
+			// TODO: dangerous needs testing and tuning
 			if Settings.Search.UseLmp {
 				if movesSearched >= LmpMovesSearched(depth) {
 					s.statistics.LmpCuts++
@@ -506,7 +513,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			// newDepth is the "standard" new depth (depth - 1)
 			// lmrDepth is set to newDepth and only reduced
 			// if conditions apply.
-			// TODO: Test different config values
+			// TODO: needs testing and tuning
 			if Settings.Search.UseLmr {
 				// compute reduction from depth and move searched
 				if depth >= Settings.Search.LmrDepth &&
@@ -683,7 +690,15 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	return bestNodeValue
 }
 
-func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta Value, isPV bool) Value {
+// qsearch is a simplified search to counter the horizon effect in depth based
+// searches. It continues the search into deeper branches as long as there are
+// so called non quiet moves (usually capture, checks, promotions). Only if the
+// position is relatively quiet we will compute an evaluation of the position
+// to return to the previous depth.
+// Look for non quiet moves is supported be the move generator which only
+// generates captures or promotions in qsearch (when not in check) and also
+// by SEE (Static Exchange Evaluation) to determine winning captured sequences.
+func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value, isPV bool) Value {
 	if trace {
 		s.slog.Debugf("%0*s Ply %-2.d QSearch     a:%-6.d b:%-6.d pv:%-6.v start:  %s", ply, "", ply, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
 		defer s.slog.Debugf("%0*s Ply %-2.d QSearch     a:%-6.d b:%-6.d pv:%-6.v end  :  %s", ply, "", ply, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
@@ -693,8 +708,10 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 		s.statistics.CurrentExtraSearchDepth = ply
 	}
 
+	// if we have deactivated qsearch or we have reached our maximum depth
+	// we evaluate the position and return the value
 	if !Settings.Search.UseQuiescence || ply >= MaxDepth {
-		return s.evaluate(position, ply)
+		return s.evaluate(p, ply)
 	}
 
 	// Mate Distance Pruning
@@ -717,12 +734,12 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 	bestNodeValue := ValueNA
 	ttType := ALPHA
 	ttMove := MoveNone
-	hasCheck := position.HasCheck()
+	hasCheck := p.HasCheck()
 
 	// if in check we simply do a normal search (all moves) in qsearch
 	if !hasCheck {
 		// get an evaluation for the position
-		staticEval := s.evaluate(position, ply)
+		staticEval := s.evaluate(p, ply)
 		// Quiescence StandPat
 		// Use evaluation as a standing pat (lower bound)
 		// https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
@@ -741,7 +758,7 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 	// TT Lookup
 	var ttEntry *transpositiontable.TtEntry
 	if Settings.Search.UseQSTT {
-		ttEntry = s.tt.Probe(position.ZobristKey())
+		ttEntry = s.tt.Probe(p.ZobristKey())
 		if ttEntry != nil { // tt hit
 			s.statistics.TTHit++
 			ttMove = ttEntry.Move.MoveOf()
@@ -803,21 +820,22 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 
 	// ///////////////////////////////////////////////////////
 	// MOVE LOOP
-	for move := myMg.GetNextMove(position, mode, hasCheck); move != MoveNone; move = myMg.GetNextMove(position, mode, hasCheck) {
+	for move := myMg.GetNextMove(p, mode, hasCheck);
+		move != MoveNone; move = myMg.GetNextMove(p, mode, hasCheck) {
 
 		// reduce number of moves searched in quiescence
 		// by looking at good captures only
-		if !hasCheck && !s.goodCapture(position, move) {
+		if !hasCheck && !s.goodCapture(p, move) {
 			continue
 		}
 
 		// ///////////////////////////////////////////////////////
 		// DO MOVE
-		position.DoMove(move)
+		p.DoMove(move)
 
 		// check if legal move or skip
-		if !position.WasLegalMove() {
-			position.UndoMove()
+		if !p.WasLegalMove() {
+			p.UndoMove()
 			continue
 		}
 
@@ -829,15 +847,15 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 		// check repetition and 50 moves when in check
 		// otherwise only capturing moves are generated
 		// which break repetition and 50-moves rule anyway
-		if hasCheck && s.checkDrawRepAnd50(position, 2) {
+		if hasCheck && s.checkDrawRepAnd50(p, 2) {
 			value = ValueDraw
 		} else {
-			value = -s.qsearch(position, ply+1, -beta, -alpha, isPV)
+			value = -s.qsearch(p, ply+1, -beta, -alpha, isPV)
 		}
 
 		movesSearched++
 		s.statistics.CurrentVariation.PopBack()
-		position.UndoMove()
+		p.UndoMove()
 		// UNDO MOVE
 		// ///////////////////////////////////////////////////////
 
@@ -853,6 +871,25 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 			if value > alpha {
 				savePV(move, s.pv[ply+1], s.pv[ply])
 				if value >= beta {
+					// Count beta cuts
+					s.statistics.BetaCuts++
+					// Count beta cuts on first move
+					if movesSearched == 1 {
+						s.statistics.BetaCuts1st++
+					}
+					// counter for moves which caused a beta cut off
+					// we use 1 << depth as an increment to favor deeper searches
+					// a more repetitions
+					if Settings.Search.UseHistoryCounter {
+						s.history.HistoryCount[p.NextPlayer()][move.From()][move.To()] += 1 << 1
+					}
+					// store a successful counter move to the previous opponent move
+					if Settings.Search.UseCounterMoves {
+						lastMove := p.LastMove()
+						if lastMove != MoveNone {
+							s.history.CounterMoves[lastMove.From()][lastMove.To()] = move
+						}
+					}
 					ttType = BETA
 					break
 				}
@@ -870,7 +907,7 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 	if movesSearched == 0 && !s.stopConditions() {
 		// if we have a mate we had a check before and therefore
 		// generated all move. We can be sure this is a mate.
-		if position.HasCheck() {
+		if p.HasCheck() {
 			s.statistics.Checkmates++
 			bestNodeValue = -ValueCheckMate + Value(ply)
 			ttType = EXACT
@@ -885,7 +922,7 @@ func (s *Search) qsearch(position *position.Position, ply int, alpha Value, beta
 
 	// Store TT
 	if Settings.Search.UseQSTT {
-		s.storeTT(position, 1, ply, bestNodeMove, bestNodeValue, ttType)
+		s.storeTT(p, 1, ply, bestNodeMove, bestNodeValue, ttType)
 	}
 
 	return bestNodeValue

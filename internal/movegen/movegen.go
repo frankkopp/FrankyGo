@@ -667,9 +667,11 @@ func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode, evas
 			}
 		case od1: // capture
 			mg.generatePawnMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = od2
 		case od2:
 			mg.generateMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = od3
 		case od3:
 			mg.generateKingMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)

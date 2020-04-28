@@ -74,6 +74,9 @@ func init() {
 		"Eval_Mobility": {NameID: "Eval_Mobility", HandlerFunc: evalMob, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseMobility), CurrentValue: strconv.FormatBool(Settings.Eval.UseMobility)},
 		"Eval_AdvPiece": {NameID: "Eval_AdvPiece", HandlerFunc: evalAdv, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseAdvancedPieceEval), CurrentValue: strconv.FormatBool(Settings.Eval.UseAdvancedPieceEval)},
 	}
+
+	// as Go does not let us sort maps manually (e.g. insertion order) we need a
+	// list to control order of the entrys
 	sortOrderUciOptions = []string{
 		"Print Config",
 		"Clear Hash",
@@ -110,7 +113,7 @@ func init() {
 	}
 }
 
-// GetOptions returns all available uci options a slice of strings
+// GetOptions returns all available uci options as a slice of strings
 // to be send to the UCI user interface during the initialization
 // phase of the UCI protocol
 func (o *optionMap) GetOptions() *[]string {
