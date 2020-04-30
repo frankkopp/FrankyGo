@@ -47,6 +47,125 @@ import (
 
 var trace = false
 
+// Aspiration Search
+// AspirationSearch tries to achieve more beta cut offs by searching with a narrow
+// search window around an expected value for the search. We establish
+// a start value by doing a 3 ply normal search and expand the search window in
+// in 3 steps to the maximal window if search value returns outside of the window.
+// This only returns a valid value if we have a value within the aspiration window.
+// Otherwise we return ValueNA to signal that the aspiration search was not
+// successful before we had to stop and that the values of the root moves are not
+// usable.
+func (s *Search) aspirationSearch(p *position.Position, depth int, bestValue Value) Value {
+	// do a shallow search to get a good starting value for aspiration
+	if depth <= 3 {
+		return s.rootSearch(p, depth, ValueMin, ValueMax)
+	}
+
+	if trace {
+		s.log.Debugf("Aspiration for depth %d: START", depth)
+	}
+
+	value := ValueNA
+	// ##########################################################
+	// 1st aspiration
+	alpha := Max(bestValue-aspirationSteps[0], ValueMin)
+	beta := Min(bestValue+aspirationSteps[0], ValueMax)
+	if trace {
+		s.log.Debugf("Aspiration for depth %d: START 1st window %d/%d (bestValue=%d)", depth, alpha, beta, bestValue)
+	}
+	value = s.rootSearch(p, depth, alpha, beta)
+	// ##########################################################
+
+	// if search has been stopped and value has missed window return
+	// the value and the values of the root moves are invalid
+	if s.stopConditions() && (value <= alpha || value >= beta) {
+		return ValueNA
+	}
+
+	// ##########################################################
+	// 2nd aspiration
+	// FAIL LOW - decrease lower bound
+	if value <= alpha {
+		if trace {
+			s.log.Debugf("Aspiration for depth %d: FAIL_LOW 1st window %d/%d value=%d", depth, alpha, beta, value)
+		}
+		s.sendAspirationResearchInfo("upperbound")
+		// add some extra time because of fail low - we might have found a strong opponent's move
+		s.addExtraTime(1.3)
+		alpha = Max(bestValue-aspirationSteps[1], ValueMin)
+		s.statistics.AspirationResearches++
+		s.statistics.CurrentExtraSearchDepth = 0
+		if trace {
+			s.log.Debugf("Aspiration for depth %d: START 2nd window %d/%d", depth, alpha, beta)
+		}
+		value = s.rootSearch(p, depth, alpha, beta)
+	} else if value >= beta {
+		// FAIL HIGH - increase upper bound
+		if trace {
+			s.log.Debugf("Aspiration for depth %d: FAIL-HIGH: 1st window %d/%d value=%d", depth, alpha, beta, value)
+		}
+		s.sendAspirationResearchInfo("lowerbound")
+		beta = Min(bestValue+aspirationSteps[1], ValueMax)
+		s.statistics.AspirationResearches++
+		s.statistics.CurrentExtraSearchDepth = 0
+		if trace {
+			s.log.Debugf("Aspiration for depth %d: START 2nd window %d/%d", depth, alpha, beta)
+		}
+		value = s.rootSearch(p, depth, alpha, beta)
+	}
+	// ##########################################################
+
+	// if search has been stopped and value has missed window return
+	// the value and the values of the root moves are invalid
+	if s.stopConditions() && (value <= alpha || value >= beta) {
+		return ValueNA
+	}
+
+	// ##########################################################
+	// 3rd aspiration
+	// FAIL - full window search
+	if value <= alpha {
+		if trace {
+			s.log.Debugf("Aspiration for depth %d: FAIL_LOW 2nd window %d/%d value=%d", depth, alpha, beta, value)
+		}
+		s.sendAspirationResearchInfo("upperbound")
+		// add some extra time because of fail low - we might have found a strong opponent's move
+		s.addExtraTime(1.3)
+		s.statistics.AspirationResearches++
+		s.statistics.CurrentExtraSearchDepth = 0
+		alpha = -aspirationSteps[2]
+		beta = aspirationSteps[2]
+		if trace {
+			s.log.Debugf("Aspiration for depth %d: START 3rd window %d/%d", depth, alpha, beta)
+		}
+		value = s.rootSearch(p, depth, alpha, beta)
+	} else if value >= beta {
+		if trace {
+			s.log.Debugf("Aspiration for depth %d: FAIL-HIGH: 2nd window %d/%d value=%d", depth, alpha, beta, value)
+		}
+		s.sendAspirationResearchInfo("lowerbound")
+		s.statistics.AspirationResearches++
+		s.statistics.CurrentExtraSearchDepth = 0
+		alpha = -aspirationSteps[2]
+		beta = aspirationSteps[2]
+		if trace {
+			s.log.Debugf("Aspiration for depth %d: START 3rd window %d/%d", depth, alpha, beta)
+		}
+		value = s.rootSearch(p, depth, alpha, beta)
+	}
+	// ##########################################################
+
+	if trace {
+		s.log.Debugf("Aspiration for depth %d: END (Result %d in window %d/%d)", depth, value, alpha, beta)
+	}
+
+	// With a fully open search window of the last step we can accept
+	// partial searches as well. Root move values are usable and can
+	// be sorted to find the best move.
+	return value
+}
+
 // MTD(f)
 // https://askeplaat.wordpress.com/534-2/mtdf-algorithm/
 func (s *Search) mtdf(p *position.Position, depth int, f Value) Value {
@@ -60,7 +179,8 @@ func (s *Search) mtdf(p *position.Position, depth int, f Value) Value {
 		} else {
 			beta = g
 		}
-		g = s.rootSearch(p, depth, beta -1, beta)
+		s.statistics.MTDfSearches++
+		g = s.rootSearch(p, depth, beta-1, beta)
 		if g < beta {
 			upperbound = g
 		} else {
@@ -169,6 +289,10 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	if trace {
 		s.slog.Debugf("%0*s Ply %-2.d Depth %-2.d a:%-6.d b:%-6.d pv:%-6.v start:  %s", ply, "", ply, depth, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
 		defer s.slog.Debugf("%0*s Ply %-2.d Depth %-2.d a:%-6.d b:%-6.d pv:%-6.v end  :  %s", ply, "", ply, depth, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
+	}
+
+	if Settings.Search.UseMTDf {
+		isPV = false
 	}
 
 	// Check if search should be stopped
@@ -741,6 +865,10 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	// we evaluate the position and return the value
 	if !Settings.Search.UseQuiescence || ply >= MaxDepth {
 		return s.evaluate(p, ply)
+	}
+
+	if Settings.Search.UseMTDf {
+		isPV = false
 	}
 
 	// Mate Distance Pruning

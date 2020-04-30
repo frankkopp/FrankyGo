@@ -330,6 +330,11 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 		s.pv = append(s.pv, moveslice.NewMoveSlice(MaxDepth+1))
 	}
 
+	s.log.Infof("Search using: PVS=%t ASP=%t MTDf=%t",
+		config.Settings.Search.UsePVS,
+		config.Settings.Search.UseAspiration,
+		config.Settings.Search.UseMTDf)
+
 	// release the init phase lock to signal the calling go routine
 	// waiting in StartSearch() to return
 	s.initSemaphore.Release(1)
@@ -471,9 +476,20 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 			s.statistics.CurrentExtraSearchDepth = s.statistics.CurrentIterationDepth
 		}
 
+		bestValue := ValueNA
 		// ###########################################
 		// Start actual alpha beta search
-		s.rootSearch(position, iterationDepth, alpha, beta)
+		switch {
+		// ASPIRATION SEARCH
+		case config.Settings.Search.UseAspiration && iterationDepth > 3:
+			bestValue = s.aspirationSearch(position, iterationDepth, bestValue)
+		// MTD(f) SEARCH
+		case config.Settings.Search.UseMTDf && iterationDepth > 3:
+			bestValue = s.mtdf(position, iterationDepth, bestValue)
+		// PVS SEARCH (or pure ALPHA BETA when PVS deactivated)
+		default:
+			bestValue = s.rootSearch(position, iterationDepth, alpha, beta)
+		}
 		// ###########################################
 
 		// check if we need to stop
@@ -764,6 +780,30 @@ func (s *Search) sendIterationEndInfoToUci() {
 			s.statistics.CurrentSearchDepth,
 			s.statistics.CurrentExtraSearchDepth,
 			s.statistics.CurrentBestRootMoveValue.String(),
+			s.nodesVisited,
+			s.getNps(),
+			time.Since(s.startTime).Milliseconds(),
+			s.pv[0].StringUci()))
+	}
+}
+
+func (s *Search) sendAspirationResearchInfo(bound string) {
+	if s.uciHandlerPtr != nil {
+		s.uciHandlerPtr.SendAspirationResearchInfo(
+			s.statistics.CurrentSearchDepth,
+			s.statistics.CurrentExtraSearchDepth,
+			s.statistics.CurrentBestRootMoveValue,
+			bound,
+			s.nodesVisited,
+			s.getNps(),
+			time.Since(s.startTime),
+			*s.pv[0])
+	} else {
+		s.log.Infof(out.Sprintf("depth %d seldepth %d value %s %s nodes %d nps %d time %d pv %s",
+			s.statistics.CurrentSearchDepth,
+			s.statistics.CurrentExtraSearchDepth,
+			s.statistics.CurrentBestRootMoveValue.String(),
+			bound,
 			s.nodesVisited,
 			s.getNps(),
 			time.Since(s.startTime).Milliseconds(),

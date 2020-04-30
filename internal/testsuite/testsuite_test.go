@@ -356,8 +356,9 @@ func TestWACTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UseHistoryCounter = true
-	config.Settings.Search.UseCounterMoves = true
+	config.Settings.Search.UsePVS = true
+	config.Settings.Search.UseMTDf = true
+	config.Settings.Search.UseAspiration = false
 	ts, _ := NewTestSuite("test/testdata/testsets/wac.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
