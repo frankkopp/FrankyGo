@@ -33,7 +33,7 @@ import (
 	"github.com/frankkopp/FrankyGo/internal/util"
 )
 
-// value represents the positional value of a chess position
+// Value represents the positional value of a chess position
 type Value int16
 
 // Constants for values
@@ -58,6 +58,22 @@ func (v Value) IsValid() bool {
 // which typically is set to check mate value minus the maximum search depth
 func (v Value) IsCheckMateValue() bool {
 	return util.Abs(int(v)) > int(ValueCheckMateThreshold) && util.Abs(int(v)) <= int(ValueCheckMate)
+}
+
+// Min returns the smaller of the given values
+func Min(x, y Value) Value {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+// Max returns the bigger of the given values
+func Max(x, y Value) Value {
+	if x > y {
+		return x
+	}
+	return y
 }
 
 func (v Value) String() string {
