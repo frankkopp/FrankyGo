@@ -275,6 +275,8 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	// start search timer
 	s.startTime = time.Now()
 
+	s.log.Infof("Searching: %s", position.StringFen())
+
 	// init new search run
 	s.stopFlag = false
 	s.hasResult = false

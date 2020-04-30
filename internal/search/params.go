@@ -101,3 +101,5 @@ var fp = [7]types.Value{0, 100, 200, 300, 500, 900, 1200}
 // reverse futility pruning - array with margins per depth left
 var rfp = [4]types.Value{0, 200, 400, 800}
 
+// aspiration steps
+var aspirationSteps = [3]types.Value{50, 200, types.ValueMax}

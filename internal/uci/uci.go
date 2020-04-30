@@ -58,7 +58,7 @@ import (
 )
 
 var out = message.NewPrinter(language.German)
-var log  *logging.Logger
+var log *logging.Logger
 
 // UciHandler handles all communication with the chess ui via UCI
 // and controls options and search.
@@ -144,9 +144,9 @@ func (u *UciHandler) SendSearchUpdate(depth int, seldepth int, nodes uint64, nps
 }
 
 // SendAspirationResearchInfo sends information about Aspiration researches to the UCI ui
-func (u *UciHandler) SendAspirationResearchInfo(depth int, seldepth int, value Value, valueType ValueType, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice) {
-	// TODO
-	panic("implement me")
+func (u *UciHandler) SendAspirationResearchInfo(depth int, seldepth int, value Value, bound string, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice) {
+	u.send(fmt.Sprintf("info depth %d seldepth %d %s multipv 1 score %s nodes %d nps %d time %d pv %s",
+		depth, seldepth, value.String(), bound, nodes, nps, time.Milliseconds(), pv.StringUci()))
 }
 
 // SendCurrentRootMove sends the currently searched root move to the UCI ui
@@ -369,7 +369,7 @@ func (u *UciHandler) positionCommand(tokens []string) {
 				if move.IsValid() {
 					u.myPosition.DoMove(move)
 				} else {
-					msg := out.Sprintf("Command 'position' malformed. Invalid move '%s' (%s)", move.String(), tokens)
+					msg := out.Sprintf("Command 'position' malformed. Invalid move '%s' (%s)", tokens[i], tokens)
 					u.SendInfoString(msg)
 					log.Warning(msg)
 					return
