@@ -37,6 +37,8 @@ import (
 
 // Statistics are extra data and stats not essential for a functioning search
 type Statistics struct {
+	AspirationResearches uint64
+
 	BetaCuts    uint64
 	BetaCuts1st uint64
 

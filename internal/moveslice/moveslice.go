@@ -225,14 +225,16 @@ func (ms *MoveSlice) Clear() {
 	*ms = (*ms)[:0]
 }
 
-// Sort sorts the moves from highest value to lowest value
-// Uses InsertionSort as MoveSlices are mostly pre-sorted and small
+// Sort will sort moves from highest Value to lowest Value .
+// It uses a stable InsertionSort as MoveSlices are mostly pre-sorted and small.
+// Sorts move only on the base of their Value (Move value == move&0xFFFF0000).
+// Otherwise the order will not be changed.
 func (ms *MoveSlice) Sort() {
 	l := len(*ms)
 	for i := 1; i < l; i++ {
 		tmp := (*ms)[i]
 		j := i
-		for j > 0 && tmp > (*ms)[j-1] {
+		for j > 0 && (tmp&0xFFFF0000) > ((*ms)[j-1]&0xFFFF0000) {
 			(*ms)[j] = (*ms)[j-1]
 			j--
 		}

@@ -27,6 +27,7 @@
 package moveslice
 
 import (
+	"fmt"
 	"math/rand"
 	"os"
 	"path"
@@ -251,24 +252,24 @@ func TestMoveArraySort(t *testing.T) {
 	ma.PushBack(Move(328401301))
 	ma.PushBack(Move(325779863))
 
-	// for i := 0; i < ma.Len(); i++ {
-	// 	m := (*ma)[i]
-	// 	fmt.Printf("%3d. Value: %10d Move: %4d  ==>  %s\n", i+1, m&0xFFFF0000, m&0x0000FFFF, m.String())
-	// }
-	// fmt.Println()
+	for i := 0; i < ma.Len(); i++ {
+		m := (*ma)[i]
+		fmt.Printf("%3d. Value: %10d Move: %4d  ==>  %s\n", i+1, m&0xFFFF0000, m&0x0000FFFF, m.String())
+	}
+	fmt.Println()
 
 	ma.Sort()
 
-	// for i := 0; i < ma.Len(); i++ {
-	// 	m := (*ma)[i]
-	// 	fmt.Printf("%3d. Value: %10d Move: %4d  ==>  %s\n", i+1, m&0xFFFF0000, m&0x0000FFFF, m.String())
-	// }
-	// fmt.Println()
+	for i := 0; i < ma.Len(); i++ {
+		m := (*ma)[i]
+		fmt.Printf("%3d. Value: %10d Move: %4d  ==>  %s\n", i+1, m&0xFFFF0000, m&0x0000FFFF, m.String())
+	}
+	fmt.Println()
 
 	// check
 	tmp := ma.At(0)
 	for i := 0; i < ma.Len(); i++ {
-		assert.True(t, tmp >= ma.At(i))
+		assert.True(t, tmp&0xFFFF0000 >= ma.At(i)&0xFFFF0000)
 		tmp = ma.At(i)
 	}
 }
