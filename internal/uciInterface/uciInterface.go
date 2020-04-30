@@ -45,7 +45,7 @@ type UciDriver interface{
 	SendReadyOk()
 	SendInfoString(info string)
 	SendIterationEndInfo(depth int, seldepth int, value types.Value, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice)
-	SendAspirationResearchInfo(depth int, seldepth int, value types.Value, valueType types.ValueType, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice)
+	SendAspirationResearchInfo(depth int, seldepth int, value types.Value, bound string, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice)
 	SendCurrentRootMove(currMove types.Move, moveNumber int)
 	SendSearchUpdate(depth int, seldepth int, nodes uint64, nps uint64, time time.Duration, hashfull int)
 	SendCurrentLine(moveList moveslice.MoveSlice)
