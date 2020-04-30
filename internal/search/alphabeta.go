@@ -47,6 +47,32 @@ import (
 
 var trace = false
 
+// MTD(f)
+// https://askeplaat.wordpress.com/534-2/mtdf-algorithm/
+func (s *Search) mtdf(p *position.Position, depth int, f Value) Value {
+	g := f
+	upperbound := ValueMax
+	lowerbound := ValueMin
+	for {
+		var beta Value
+		if g == lowerbound {
+			beta = g + 1
+		} else {
+			beta = g
+		}
+		g = s.rootSearch(p, depth, beta -1, beta)
+		if g < beta {
+			upperbound = g
+		} else {
+			lowerbound = g
+		}
+		if lowerbound >= upperbound {
+			break
+		}
+	}
+	return g
+}
+
 // rootSearch starts the actual recursive alpha beta search with the root moves for the first ply.
 // As root moves are treated a little different this separate function supports readability
 // as mixing it with the normal search would require quite some "if ply==0" statements.
