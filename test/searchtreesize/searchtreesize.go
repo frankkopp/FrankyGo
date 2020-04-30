@@ -1,28 +1,28 @@
-//
-// FrankyGo - UCI chess engine in GO for learning purposes
-//
-// MIT License
-//
-// Copyright (c) 2018-2020 Frank Kopp
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-//
+/*
+ * FrankyGo - UCI chess engine in GO for learning purposes
+ *
+ * MIT License
+ *
+ * Copyright (c) 2018-2020 Frank Kopp
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 // Package searchtreesize provides data structures and functionality to
 // test the size of the search tree when certain heuristics and prunings
@@ -106,7 +106,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().QFpPrunings
+	ptrToSpecial = &s.Statistics().MTDfSearches
 	ptrToSpecial2 = &s.Statistics().BetaCuts
 
 	// Base
@@ -152,9 +152,6 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseIID = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "BASE"))
 
-	Settings.Search.UseHistoryCounter = true
-	Settings.Search.UseCounterMoves = true
-
 	// SEE for qsearch
 	Settings.Search.UseSEE = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "SEE"))
@@ -185,14 +182,12 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseLmr = true
 	// Late Move Pruning
 	Settings.Search.UseLmp = true
-
+	Settings.Search.UseHistoryCounter = true
+	Settings.Search.UseCounterMoves = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
 
-	Settings.Search.UseQFP = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "QFP"))
-
-	Settings.Search.UseRazoring = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "RAZOR"))
+	Settings.Search.UseMTDf = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "MTDf"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -227,7 +222,7 @@ func SizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 	// Print result
 	out.Printf("\n################## Results for depth %d ##########################\n\n", depth)
 
-	out.Printf("%-15s | %-6s   | %-8s | %-15s | %-12s | %-10s | %-7s | %-12s | %-12s |%s | %s\n",
+	out.Printf("%-15s | %-6s | %-8s | %-15s | %-12s | %-10s | %-7s | %-12s | %-12s |%s | %s\n",
 		"Test Name", "Move", "value", "Nodes", "Nps", "Time", "Depth", "Special", "Special2", "PV", "fen")
 	out.Println("----------------------------------------------------------------------------------------------------------------------------------------------")
 
@@ -236,8 +231,6 @@ func SizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 	// loop through all results and each test within.
 	// sum up results to later print a summary
 	for _, r := range results {
-		reference := types.MoveNone
-		diff := ""
 		for _, test := range r.Tests {
 			// sum up result for total report
 			sums[test.Name] = testSums{
@@ -250,17 +243,10 @@ func SizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 				Special:    sums[test.Name].Special + test.Special,
 				Special2:   sums[test.Name].Special2 + test.Special2,
 			}
-			// mark test with different moves
-			if reference != types.MoveNone && reference != test.Move {
-				diff = "*"
-			}
 			// print single test result
-			out.Printf("%-15s | %-6s %-1s | %-8s | %-15d | %-12d | %-10d | %3d/%-3d | %-12d | %-12d |%s | %s\n",
-				test.Name, test.Move.StringUci(), diff, test.Value.String(), test.Nodes, test.Nps,
+			out.Printf("%-15s | %-6s | %-8s | %-15d | %-12d | %-10d | %3d/%-3d | %-12d | %-12d |%s | %s\n",
+				test.Name, test.Move.StringUci(), test.Value.String(), test.Nodes, test.Nps,
 				test.Time.Milliseconds(), test.Depth, test.Extra, test.Special, test.Special2, test.Pv.StringUci(), r.Fen)
-			// change reference
-			reference = test.Move
-			diff = ""
 		}
 		out.Println()
 	}
@@ -339,11 +325,12 @@ func turnOffFeatures() {
 	Settings.Search.UseQSTT = false
 	Settings.Search.UseIID = false
 	Settings.Search.UsePVS = false
+	Settings.Search.UseAspiration = false
+	Settings.Search.UseMTDf = false
 	Settings.Search.UseKiller = false
 	Settings.Search.UseHistoryCounter = false
 	Settings.Search.UseCounterMoves = false
 	Settings.Search.UseMDP = false
-	Settings.Search.UseRazoring = false
 	Settings.Search.UseNullMove = false
 	Settings.Search.UseExt = false
 	Settings.Search.UseExtAddDepth = false
@@ -351,7 +338,6 @@ func turnOffFeatures() {
 	Settings.Search.UseThreatExt = false
 	Settings.Search.UseRFP = false
 	Settings.Search.UseFP = false
-	Settings.Search.UseQFP = false
 	Settings.Search.UseLmr = false
 	Settings.Search.UseLmp = false
 }
