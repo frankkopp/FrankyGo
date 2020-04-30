@@ -2,3 +2,4 @@
 *.pprof
 *.cache
 *.log
+bin/
