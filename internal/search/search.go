@@ -461,6 +461,7 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 	// not needed yet
 	alpha := ValueMin
 	beta := ValueMax
+	bestValue := ValueNA
 
 	// ###########################################
 	// ### BEGIN Iterative Deepening
@@ -476,7 +477,6 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 			s.statistics.CurrentExtraSearchDepth = s.statistics.CurrentIterationDepth
 		}
 
-		bestValue := ValueNA
 		// ###########################################
 		// Start actual alpha beta search
 		switch {
