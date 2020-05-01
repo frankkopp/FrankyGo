@@ -196,7 +196,7 @@ func (s *Search) mtdf(p *position.Position, depth int, f Value) Value {
 // rootSearch starts the actual recursive alpha beta search with the root moves for the first ply.
 // As root moves are treated a little different this separate function supports readability
 // as mixing it with the normal search would require quite some "if ply==0" statements.
-func (s *Search) rootSearch(position *position.Position, depth int, alpha Value, beta Value) Value {
+func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta Value) Value {
 	if trace {
 		s.slog.Debugf("Ply %-2.d Depth %-2.d start: %s", 0, depth, s.statistics.CurrentVariation.StringUci())
 		defer s.slog.Debugf("Ply %-2.d Depth %-2.d end: %s", 0, depth, s.statistics.CurrentVariation.StringUci())
@@ -222,36 +222,36 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 	// MOVE LOOP
 	for i, m := range *s.rootMoves {
 
-		position.DoMove(m)
+		p.DoMove(m)
 		s.nodesVisited++
 		s.statistics.CurrentVariation.PushBack(m)
 		s.statistics.CurrentRootMoveIndex = i
 		s.statistics.CurrentRootMove = m
 
 		// check repetition and 50 moves
-		if s.checkDrawRepAnd50(position, 2) {
+		if s.checkDrawRepAnd50(p, 2) {
 			value = ValueDraw
 		} else {
 			// ///////////////////////////////////////////////////////////////////
 			// PVS
 			// First move in a node is an assumed PV and searched with full search window
 			if !Settings.Search.UsePVS || i == 0 {
-				value = -s.search(position, depth-1, 1, -beta, -alpha, true, true)
+				value = -s.search(p, depth-1, 1, -beta, -alpha, true, true)
 			} else {
 				// Null window search after the initial PV search.
-				value = -s.search(position, depth-1, 1, -alpha-1, -alpha, false, true)
+				value = -s.search(p, depth-1, 1, -alpha-1, -alpha, false, true)
 				// If this move improved alpha without exceeding beta we do a proper full window
 				// search to get an accurate score.
 				if value > alpha && value < beta && !s.stopConditions() {
 					s.statistics.RootPvsResearches++
-					value = -s.search(position, depth-1, 1, -beta, -alpha, true, true)
+					value = -s.search(p, depth-1, 1, -beta, -alpha, true, true)
 				}
 			}
 			// ///////////////////////////////////////////////////////////////////
 		}
 
 		s.statistics.CurrentVariation.PopBack()
-		position.UndoMove()
+		p.UndoMove()
 
 		// we want to do at least one complete search with depth 1
 		// After that we can stop any time - any new best moves will
@@ -264,17 +264,48 @@ func (s *Search) rootSearch(position *position.Position, depth int, alpha Value,
 		// root moves according to value
 		s.rootMoves.Set(i, m.SetValue(value))
 
-		// Did we find a better move for this node (not ply)?
-		// For the first move this is always the case.
+		// Did we find a new best move?
+		// For the first move with a full window (alpha=-inf)
+		// this is always the case.
 		if value > bestNodeValue {
-			// new best value
 			bestNodeValue = value
-			// we have a new pv[0][0] - store pv+1 tp pv
-			savePV(m, s.pv[1], s.pv[0])
+			if value > alpha {
+				// fail high in root only when using aspiration search
+				if value >= beta {
+					s.statistics.BetaCuts++
+					return value
+				}
+				// value is < beta
+				// always the case when not using Aspiration
+				// we have a new best move and pv[0][0] - store pv+1 tp pv
+				s.statistics.BestMoveChange++
+				savePV(m, s.pv[1], s.pv[0])
+				alpha = bestNodeValue
+			}
 		}
 	}
 	// MOVE LOOP
 	// ///////////////////////////////////////////////////////
+
+	// DEBUG - ASSERT
+	// without aspiration bestNodeValue is always == alpha
+	// with aspiration it is <= alpha and it can happen
+	// that it never reaches alpha therefore no best root
+	// move would be found (fail low in root).
+	// In this case we either have time to do a re-search with
+	// a wider window (and maybe extra time) to find a new
+	// best move or we use the best move from the previous
+	// iteration in which case we would not understand why
+	// we failed low (opponent had a good move?)
+	if Settings.Search.UseAspiration {
+		if bestNodeValue < alpha {
+			s.log.Debugf("Aspiration FAIL LOW IN ROOT")
+		}
+	} else {
+		if bestNodeValue != alpha {
+			s.log.Warningf("BestNodeValue != alpha in root")
+		}
+	}
 
 	// only needed for aspiration and MTDf
 	return bestNodeValue
