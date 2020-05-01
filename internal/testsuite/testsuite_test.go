@@ -345,6 +345,18 @@ func TestWACTests(t *testing.T) {
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
 // Test time: 28m49.734886s
+//
+// RootAlpha
+// Summary:
+// EPD File:   test/testdata/testsets/crafty_test.epd
+// SearchTime: 5.000 ms
+// MaxDepth:   0
+// Date:       2020-05-01 18:01:13.2116238 +0200 CEST
+// Successful: 161 (46 %)
+// Failed:     184 (53 %)
+// Skipped:    0   (0 %)
+// Not tested: 0   (0 %)
+// Test time: 28m42.2265061s
 func TestCraftyTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
