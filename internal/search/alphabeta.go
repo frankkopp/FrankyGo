@@ -122,6 +122,7 @@ func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta V
 		// For the first move with a full window (alpha=-inf)
 		// this is always the case.
 		if value > bestNodeValue {
+			bestNodeValue = value
 			if value > alpha {
 				// fail high in root only when using aspiration search
 				if value >= beta {
