@@ -379,6 +379,7 @@ func TestECMTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
+	config.Settings.Search.UseAspiration = true
 	ts, _ := NewTestSuite("test/testdata/testsets/ecm98.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
