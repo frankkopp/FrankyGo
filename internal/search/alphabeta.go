@@ -57,11 +57,6 @@ var trace = false
 // successful before we had to stop and that the values of the root moves are not
 // usable.
 func (s *Search) aspirationSearch(p *position.Position, depth int, bestValue Value) Value {
-	// do a shallow search to get a good starting value for aspiration
-	if depth <= 3 {
-		return s.rootSearch(p, depth, ValueMin, ValueMax)
-	}
-
 	if trace {
 		s.log.Debugf("Aspiration for depth %d: START", depth)
 	}
@@ -269,19 +264,20 @@ func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta V
 		// this is always the case.
 		if value > bestNodeValue {
 			bestNodeValue = value
-			if value > alpha {
-				// fail high in root only when using aspiration search
-				if value >= beta {
-					s.statistics.BetaCuts++
-					return value
-				}
-				// value is < beta
-				// always the case when not using Aspiration
-				// we have a new best move and pv[0][0] - store pv+1 tp pv
-				s.statistics.BestMoveChange++
-				savePV(m, s.pv[1], s.pv[0])
-				alpha = bestNodeValue
-			}
+			// if value > alpha {
+			// 	// fail high in root only when using aspiration search
+			// 	if value >= beta {
+			// 		s.statistics.BetaCuts++
+			// 		return value
+			// 	}
+			// 	// value is < beta
+			// 	// always the case when not using Aspiration
+			// 	// we have a new best move and pv[0][0] - store pv+1 tp pv
+			// 	s.statistics.BestMoveChange++
+			// 	savePV(m, s.pv[1], s.pv[0])
+			// 	alpha = bestNodeValue
+			// }
+			savePV(m, s.pv[1], s.pv[0])
 		}
 	}
 	// MOVE LOOP

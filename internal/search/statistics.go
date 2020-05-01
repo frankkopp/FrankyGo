@@ -40,8 +40,9 @@ type Statistics struct {
 	BestMoveChange       uint64
 	AspirationResearches uint64
 
-	BetaCuts    uint64
-	BetaCuts1st uint64
+	MTDfSearches uint64
+	BetaCuts     uint64
+	BetaCuts1st  uint64
 
 	RfpPrunings uint64
 	FpPrunings  uint64
