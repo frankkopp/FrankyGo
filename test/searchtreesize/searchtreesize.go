@@ -226,7 +226,7 @@ func SizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 	// Print result
 	out.Printf("\n################## Results for depth %d ##########################\n\n", depth)
 
-	out.Printf("%-15s | %-6s | %-8s | %-15s | %-12s | %-10s | %-7s | %-12s | %-12s |%s | %s\n",
+	out.Printf("%-15s | %-6s   | %-8s | %-15s | %-12s | %-10s | %-7s | %-12s | %-12s |%s | %s\n",
 		"Test Name", "Move", "value", "Nodes", "Nps", "Time", "Depth", "Special", "Special2", "PV", "fen")
 	out.Println("----------------------------------------------------------------------------------------------------------------------------------------------")
 
@@ -235,6 +235,8 @@ func SizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 	// loop through all results and each test within.
 	// sum up results to later print a summary
 	for _, r := range results {
+		reference := types.MoveNone
+		diff := ""
 		for _, test := range r.Tests {
 			// sum up result for total report
 			sums[test.Name] = testSums{
@@ -247,10 +249,17 @@ func SizeTest(depth int, movetime time.Duration, startFen int, endFen int) {
 				Special:    sums[test.Name].Special + test.Special,
 				Special2:   sums[test.Name].Special2 + test.Special2,
 			}
+			// mark test with different moves
+			if reference != types.MoveNone && reference != test.Move {
+				diff = "*"
+			}
 			// print single test result
-			out.Printf("%-15s | %-6s | %-8s | %-15d | %-12d | %-10d | %3d/%-3d | %-12d | %-12d |%s | %s\n",
-				test.Name, test.Move.StringUci(), test.Value.String(), test.Nodes, test.Nps,
+			out.Printf("%-15s | %-6s %-1s | %-8s | %-15d | %-12d | %-10d | %3d/%-3d | %-12d | %-12d |%s | %s\n",
+				test.Name, test.Move.StringUci(), diff, test.Value.String(), test.Nodes, test.Nps,
 				test.Time.Milliseconds(), test.Depth, test.Extra, test.Special, test.Special2, test.Pv.StringUci(), r.Fen)
+			// change reference
+			reference = test.Move
+			diff = ""
 		}
 		out.Println()
 	}
