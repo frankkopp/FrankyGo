@@ -765,14 +765,16 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 
 	// prepare node search
 	bestNodeValue := ValueNA
+	bestNodeMove := MoveNone
 	ttType := ALPHA
 	ttMove := MoveNone
 	hasCheck := p.HasCheck()
 
 	// if in check we simply do a normal search (all moves) in qsearch
+	staticEval := ValueNA
 	if !hasCheck {
 		// get an evaluation for the position
-		staticEval := s.evaluate(p, ply)
+		staticEval = s.evaluate(p, ply)
 		// Quiescence StandPat
 		// Use evaluation as a standing pat (lower bound)
 		// https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
@@ -819,7 +821,6 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	}
 
 	// prepare node search
-	bestNodeMove := MoveNone // used to store in the TT
 	myMg := s.mg[ply]
 	myMg.ResetOnDemand()
 	s.pv[ply].Clear()
@@ -856,7 +857,35 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	for move := myMg.GetNextMove(p, mode, hasCheck);
 		move != MoveNone; move = myMg.GetNextMove(p, mode, hasCheck) {
 
-		// TODO Futility Pruning
+		givesCheck := p.GivesCheck(move)
+
+		// TODO: Futility for < alpha
+		// ///////////////////////////////////////////////////////
+		// Forward Pruning
+		// FP will only be done when the move is not
+		// interesting - no check, no capture, etc.
+		if Settings.Search.UseQFP &&
+			!isPV &&
+			move != ttMove &&
+			move != (*myMg.KillerMoves())[0] &&
+			move != (*myMg.KillerMoves())[1] &&
+			move.MoveType() != Promotion &&
+			!hasCheck && // pre move
+			!givesCheck { // from pre move null move check
+
+			// to check in futility pruning what material delta we have
+			moveGain := p.GetPiece(move.To()).ValueOf()
+
+			futilityMargin := Value(150)
+			if staticEval+moveGain+futilityMargin <= alpha {
+				if staticEval+moveGain > bestNodeValue {
+					bestNodeValue = staticEval + moveGain
+				}
+				s.statistics.QFpPrunings++
+				continue
+			}
+
+		}
 
 		// reduce number of moves searched in quiescence
 		// by looking at good captures only

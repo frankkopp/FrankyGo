@@ -106,8 +106,8 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().BetaCuts
-	ptrToSpecial2 = &s.Statistics().BetaCuts1st
+	ptrToSpecial = &s.Statistics().QFpPrunings
+	ptrToSpecial2 = &s.Statistics().BetaCuts
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
@@ -182,12 +182,13 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseLmr = true
 	// Late Move Pruning
 	Settings.Search.UseLmp = true
+	Settings.Search.UseHistoryCounter = true
+	Settings.Search.UseCounterMoves = true
 
 	r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
 
-	Settings.Search.UseHistoryCounter = true
-	Settings.Search.UseCounterMoves = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "HISTORY"))
+	Settings.Search.UseQFP = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "QFP"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -345,6 +346,7 @@ func turnOffFeatures() {
 	Settings.Search.UseThreatExt = false
 	Settings.Search.UseRFP = false
 	Settings.Search.UseFP = false
+	Settings.Search.UseQFP = false
 	Settings.Search.UseLmr = false
 	Settings.Search.UseLmp = false
 }

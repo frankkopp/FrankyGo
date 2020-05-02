@@ -79,6 +79,7 @@ type searchConfiguration struct {
 
 	// prunings after move generation but before making move
 	UseFP            bool
+	UseQFP           bool
 	UseLmp           bool
 	UseLmr           bool
 	LmrDepth         int
@@ -129,6 +130,7 @@ func init() {
 	Settings.Search.UseThreatExt = false
 
 	Settings.Search.UseFP = true
+	Settings.Search.UseQFP = false
 	Settings.Search.UseLmp = true
 	Settings.Search.UseLmr = true
 	Settings.Search.LmrDepth = 3
