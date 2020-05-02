@@ -53,7 +53,6 @@ var trace = false
 // a start value by doing a 3 ply normal search and expand the search window in
 // in 3 steps to the maximal window if search value returns outside of the window.
 func (s *Search) aspirationSearch(p *position.Position, depth int, bestValue Value) Value {
-	trace := true
 	if trace {
 		s.log.Debugf("Aspiration for depth %d: START best=%d", depth, bestValue)
 	}
@@ -124,8 +123,6 @@ func (s *Search) aspirationSearch(p *position.Position, depth int, bestValue Val
 // the minimax value is found.
 // https://askeplaat.wordpress.com/534-2/mtdf-algorithm/
 func (s *Search) mtdf(p *position.Position, depth int, bestValue Value) Value {
-	trace := false
-
 	value := bestValue
 	upperbound := ValueMax
 	lowerbound := ValueMin
@@ -374,6 +371,9 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		}
 	}
 
+	// for MTDf we do not have PVS and therefore don't
+	// have non PV nodes - to use prunings we set this PVS
+	// non PV flag to false.
 	if Settings.Search.UseMTDf {
 		isPV = false
 	}
@@ -755,6 +755,8 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			bestNodeValue = value
 			bestNodeMove = move
 
+			// for MTDf we need to have this here to get
+			// a pv line. Is this correct at all?
 			if Settings.Search.UseMTDf {
 				savePV(move, s.pv[ply+1], s.pv[ply])
 			}
@@ -805,7 +807,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 				// We found a move between alpha and beta which means we
 				// really have found the best move so far in the ply which
 				// can be forced (opponent can't avoid it).
-				// TODO: double check
 				if !Settings.Search.UseMTDf {
 					savePV(move, s.pv[ply+1], s.pv[ply])
 				}
@@ -896,6 +897,9 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	ttMove := MoveNone
 	hasCheck := p.HasCheck()
 
+	// for MTDf we do not have PVS and therefore don't
+	// have non PV nodes - to use prunings we set this PVS
+	// non PV flag to false.
 	if Settings.Search.UseMTDf {
 		isPV = false
 	}
@@ -1034,6 +1038,8 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 		if value > bestNodeValue {
 			bestNodeValue = value
 			bestNodeMove = move
+			// for MTDf we need to have this here to get
+			// a pv line. Is this correct at all?
 			if Settings.Search.UseMTDf {
 				savePV(move, s.pv[ply+1], s.pv[ply])
 			}
@@ -1061,7 +1067,6 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 					ttType = BETA
 					break
 				}
-				// TODO: double check
 				if !Settings.Search.UseMTDf {
 					savePV(move, s.pv[ply+1], s.pv[ply])
 				}
