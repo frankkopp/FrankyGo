@@ -73,19 +73,13 @@ func TestDevelopAndTest(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-
 	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
-
 	config.Settings.Search.UseBook = false
-	config.Settings.Search.UseHistoryCounter = true
-	config.Settings.Search.UseCounterMoves = true
-
 	s := NewSearch()
 	// "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
 	// rnbqkbnr/ppppp1pp/5p2/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq d3 0 2
-	// kiwipete
-	// r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -
+	// kiwipete: r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -
 	p := position.NewPosition("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -")
 	sl := NewSearchLimits()
 	// sl.Depth = 10

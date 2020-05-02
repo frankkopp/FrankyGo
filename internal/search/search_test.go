@@ -199,3 +199,12 @@ func TestSearchDev(t *testing.T) {
 	search.WaitWhileSearching()
 }
 
+func TestGolandBug(t *testing.T) {
+	config.Settings.Search.UseBook = false
+	search := NewSearch()
+	p := position.NewPosition()
+	sl := NewSearchLimits()
+	sl.Depth = 10
+	search.StartSearch(*p, *sl)
+	search.WaitWhileSearching()
+}
