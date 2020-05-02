@@ -188,6 +188,10 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	Settings.Search.UseAspiration = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "ASP"))
+	Settings.Search.UseAspiration = false
+
+	Settings.Search.UseMTDf = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "MTDf"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////

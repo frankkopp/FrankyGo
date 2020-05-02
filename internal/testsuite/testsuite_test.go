@@ -151,9 +151,23 @@ func TestNewTestSuite(t *testing.T) {
 // 35: UseLmr                 bool   = true
 // 36: LmrDepth               int    = 3
 // 37: LmrMovesSearched       int    = 3
+//
+// MTDf
+// Summary:
+// EPD File:   test/testdata/testsets/franky_tests.epd
+// SearchTime: 3.000 ms
+// MaxDepth:   0
+// Date:       2020-05-02 02:59:53.803276 +0200 CEST
+// Successful: 13  (100 %)
+// Failed:     0   (0 %)
+// Skipped:    0   (0 %)
+// Not tested: 0   (0 %)
+// Test time: 35.4837035s
+// Configuration: Search Config:
 func TestRunTestSuiteTest(t *testing.T) {
-	config.Settings.Search.UseRFP = true
-	config.Settings.Search.UseFP = true
+	config.Settings.Search.UsePVS = false
+	config.Settings.Search.UseAspiration = false
+	config.Settings.Search.UseMTDf = true
 	ts, _ := NewTestSuite("test/testdata/testsets/franky_tests.epd", 3*time.Second, 0)
 	ts.RunTests()
 }
@@ -222,10 +236,40 @@ func TestRunTestSuiteTest(t *testing.T) {
 // 35: UseLmr                 bool   = true
 // 36: LmrDepth               int    = 3
 // 37: LmrMovesSearched       int    = 3
+//
+// MTDf (TODO - check)
+// Results for Test Suite
+// ------------------------------------------------------------------------------------------------------------------------------------
+// EPD File:   test/testdata/testsets/nullMoveZugZwangTest.epd
+// SearchTime: 10.000 ms
+// MaxDepth:   0
+// Date:       2020-05-02 03:01:36.8535347 +0200 CEST
+// ====================================================================================================================================
+//  Nr. | Result     | Move     | Value    | Expected Result |Fen | Id
+// ====================================================================================================================================
+// 1    | Failed     | e1e6     | cp -245  | bm e1f1 | 8/8/p1p5/1p5p/1P5p/8/PPP2K1p/4R1rk w - - | zugzwang.001
+// 2    | Failed     | c7d7     | cp 0     | bm g5h6 | 1q1k4/2Rr4/8/2Q3K1/8/8/8/8 w - - | zugzwang.002
+// 3    | Failed     | f7e7     | cp 11    | bm g4g5 | 7k/5K2/5P1p/3p4/6P1/3p4/8/8 w - - | zugzwang.003
+// 4    | Failed     | g7h6     | cp 0     | bm h3h4 | 8/6B1/p5p1/Pp4kp/1P5r/5P1Q/4q1PK/8 w - - | zugzwang.004
+// 5    | Failed     | d6d8     | cp -51   | bm f4d5 | 8/8/1p1r1k2/p1pPN1p1/P3KnP1/1P6/8/3R4 b - - | zugzwang.005
+// ====================================================================================================================================
+// Summary:
+// EPD File:   test/testdata/testsets/nullMoveZugZwangTest.epd
+// SearchTime: 10.000 ms
+// MaxDepth:   0
+// Date:       2020-05-02 03:01:36.8535347 +0200 CEST
+// Successful: 0   (0 %)
+// Failed:     5   (100 %)
+// Skipped:    0   (0 %)
+// Not tested: 0   (0 %)
+// Test time: 50.0528239s
 func TestZugzwangTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
+	config.Settings.Search.UsePVS = false
+	config.Settings.Search.UseAspiration = false
+	config.Settings.Search.UseMTDf = true
 	ts, _ := NewTestSuite("test/testdata/testsets/nullMoveZugZwangTest.epd", 10*time.Second, 0)
 	ts.RunTests()
 }
@@ -313,6 +357,9 @@ func TestMateTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
+	config.Settings.Search.UsePVS = false
+	config.Settings.Search.UseAspiration = false
+	config.Settings.Search.UseMTDf = true
 	ts, _ := NewTestSuite("test/testdata/testsets/mate_test_suite.epd", 15*time.Second, 0)
 	ts.RunTests()
 }
@@ -327,10 +374,25 @@ func TestMateTests(t *testing.T) {
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
 // Test time: 15m18.0870814s
+//
+// MTDf
+// Summary:
+// EPD File:   test/testdata/testsets/wac.epd
+// SearchTime: 5.000 ms
+// MaxDepth:   0
+// Date:       2020-05-02 03:23:18.4027014 +0200 CEST
+// Successful: 192 (95 %)
+// Failed:     9   (4 %)
+// Skipped:    0   (0 %)
+// Not tested: 0   (0 %)
+// Test time: 15m17.0509323s
 func TestWACTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
+	config.Settings.Search.UsePVS = false
+	config.Settings.Search.UseAspiration = false
+	config.Settings.Search.UseMTDf = true
 	ts, _ := NewTestSuite("test/testdata/testsets/wac.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
@@ -357,10 +419,26 @@ func TestWACTests(t *testing.T) {
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
 // Test time: 28m42.2265061s
+//
+// MTDf
+// Summary:
+// EPD File:   test/testdata/testsets/crafty_test.epd
+// SearchTime: 5.000 ms
+// MaxDepth:   0
+// Date:       2020-05-02 03:52:52.0807002 +0200 CEST
+// Successful: 155 (44 %)
+// Failed:     190 (55 %)
+// Skipped:    0   (0 %)
+// Not tested: 0   (0 %)
+// Test time: 28m41.2219044s
+// Configuration: Search Config:
 func TestCraftyTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
+	config.Settings.Search.UsePVS = false
+	config.Settings.Search.UseAspiration = false
+	config.Settings.Search.UseMTDf = true
 	ts, _ := NewTestSuite("test/testdata/testsets/crafty_test.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
@@ -386,11 +464,25 @@ func TestCraftyTests(t *testing.T) {
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
 // Test time: 1h4m11.360931673s
+//
+// MTDf
+// Summary:
+// EPD File:   test/testdata/testsets/ecm98.epd
+// SearchTime: 5.000 ms
+// MaxDepth:   0
+// Date:       2020-05-02 12:01:10.5886708 +0200 CEST
+// Successful: 566 (73 %)
+// Failed:     203 (26 %)
+// Skipped:    0   (0 %)
+// Not tested: 0   (0 %)
+// Test time: 1h4m11.4441303s
 func TestECMTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UseAspiration = true
+	config.Settings.Search.UsePVS = false
+	config.Settings.Search.UseAspiration = false
+	config.Settings.Search.UseMTDf = true
 	ts, _ := NewTestSuite("test/testdata/testsets/ecm98.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
