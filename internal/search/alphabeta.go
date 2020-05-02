@@ -856,8 +856,6 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	for move := myMg.GetNextMove(p, mode, hasCheck);
 		move != MoveNone; move = myMg.GetNextMove(p, mode, hasCheck) {
 
-		// TODO Futility Pruning
-
 		// reduce number of moves searched in quiescence
 		// by looking at good captures only
 		if !hasCheck && !s.goodCapture(p, move) {
