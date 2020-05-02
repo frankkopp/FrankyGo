@@ -389,10 +389,30 @@ func TestECMTestsQFP(t *testing.T) {
 		t.Skip("skipping test in short mode.")
 	}
 	config.Settings.Search.UseQFP = false
+	// Summary:
+	// EPD File:   test/testdata/testsets/ecm98.epd
+	// SearchTime: 5.000 ms
+	// MaxDepth:   0
+	// Date:       2020-05-02 18:37:35.909006 +0200 CEST
+	// Successful: 490 (63 %)
+	// Failed:     279 (36 %)
+	// Skipped:    0   (0 %)
+	// Not tested: 0   (0 %)
+	// Test time: 1h4m10.909488272s
 	ts, _ := NewTestSuite("test/testdata/testsets/ecm98.epd", 5*time.Second, 0)
 	ts.RunTests()
 
 	config.Settings.Search.UseQFP = true
+	// Summary:
+	// EPD File:   test/testdata/testsets/ecm98.epd
+	// SearchTime: 5.000 ms
+	// MaxDepth:   0
+	// Date:       2020-05-02 19:41:46.755004 +0200 CEST
+	// Successful: 499 (64 %)
+	// Failed:     270 (35 %)
+	// Skipped:    0   (0 %)
+	// Not tested: 0   (0 %)
+	// Test time: 1h4m10.760225118s
 	ts2, _ := NewTestSuite("test/testdata/testsets/ecm98.epd", 5*time.Second, 0)
 	ts2.RunTests()
 }
