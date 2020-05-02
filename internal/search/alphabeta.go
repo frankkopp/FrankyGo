@@ -859,7 +859,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 
 		givesCheck := p.GivesCheck(move)
 
-		// TODO: Futility for < alpha
+		// TODO: Testing
 		// ///////////////////////////////////////////////////////
 		// Forward Pruning
 		// FP will only be done when the move is not
@@ -884,7 +884,6 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 				s.statistics.QFpPrunings++
 				continue
 			}
-
 		}
 
 		// reduce number of moves searched in quiescence
