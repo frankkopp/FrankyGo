@@ -480,11 +480,51 @@ func TestECMTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
+	config.Settings.Search.UsePVS = true
+	config.Settings.Search.UseAspiration = false
+	config.Settings.Search.UseMTDf = false
+	// Summary:
+	// EPD File:   test/testdata/testsets/ecm98.epd
+	// SearchTime: 5.000 ms
+	// MaxDepth:   0
+	// Date:       2020-05-02 13:51:01.848948 +0200 CEST
+	// Successful: 492 (63 %)
+	// Failed:     277 (36 %)
+	// Skipped:    0   (0 %)
+	// Not tested: 0   (0 %)
+	// Test time: 1h4m10.888877218s
+	ts, _ := NewTestSuite("test/testdata/testsets/ecm98.epd", 5*time.Second, 0)
+	ts.RunTests()
+	config.Settings.Search.UsePVS = true
+	config.Settings.Search.UseAspiration = true
+	config.Settings.Search.UseMTDf = false
+	// Summary:
+	// EPD File:   test/testdata/testsets/ecm98.epd
+	// SearchTime: 5.000 ms
+	// MaxDepth:   0
+	// Date:       2020-05-02 14:55:12.936006 +0200 CEST
+	// Successful: 492 (63 %)
+	// Failed:     277 (36 %)
+	// Skipped:    0   (0 %)
+	// Not tested: 0   (0 %)
+	// Test time: 1h4m11.001542203s
+	ts1, _ := NewTestSuite("test/testdata/testsets/ecm98.epd", 5*time.Second, 0)
+	ts1.RunTests()
 	config.Settings.Search.UsePVS = false
 	config.Settings.Search.UseAspiration = false
 	config.Settings.Search.UseMTDf = true
-	ts, _ := NewTestSuite("test/testdata/testsets/ecm98.epd", 5*time.Second, 0)
-	ts.RunTests()
+	// Summary:
+	// EPD File:   test/testdata/testsets/ecm98.epd
+	// SearchTime: 5.000 ms
+	// MaxDepth:   0
+	// Date:       2020-05-02 15:59:24.341412 +0200 CEST
+	// Successful: 560 (72 %)
+	// Failed:     209 (27 %)
+	// Skipped:    0   (0 %)
+	// Not tested: 0   (0 %)
+	// Test time: 1h4m11.311020444s
+	ts2, _ := NewTestSuite("test/testdata/testsets/ecm98.epd", 5*time.Second, 0)
+	ts2.RunTests()
 }
 
 func TestStressTests(t *testing.T) {
