@@ -78,21 +78,24 @@ func TestDevelopAndTest(t *testing.T) {
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 
 	config.Settings.Search.UseBook = false
-	config.Settings.Search.UseAspiration = true
+	// config.Settings.Search.UseTT = false
+	config.Settings.Search.UsePVS = false
+	config.Settings.Search.UseAspiration = false
+	config.Settings.Search.UseMTDf = true
 
 	s := NewSearch()
 	// "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
 	// rnbqkbnr/ppppp1pp/5p2/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq d3 0 2
 	// kiwipete
 	// r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -
-	p := position.NewPosition("r1bqk2r/pp2bppp/2p5/3pP3/P2Q1P2/2N1B3/1PP3PP/R4RK1 b kq -")
+	// 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+	p := position.NewPosition("4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -")
 	sl := NewSearchLimits()
 	sl.Depth = 10
 	// sl.TimeControl = true
 	// sl.MoveTime = 10 * time.Second
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
-	out.Println("TT  : ", s.tt.String())
 	out.Println("NPS : ", util.Nps(s.nodesVisited, s.lastSearchResult.SearchTime))
 }
 

@@ -52,10 +52,6 @@ var trace = false
 // search window around an expected value for the search. We establish
 // a start value by doing a 3 ply normal search and expand the search window in
 // in 3 steps to the maximal window if search value returns outside of the window.
-// This only returns a valid value if we have a value within the aspiration window.
-// Otherwise we return ValueNA to signal that the aspiration search was not
-// successful before we had to stop and that the values of the root moves are not
-// usable.
 func (s *Search) aspirationSearch(p *position.Position, depth int, bestValue Value) Value {
 	trace := true
 	if trace {
@@ -63,94 +59,49 @@ func (s *Search) aspirationSearch(p *position.Position, depth int, bestValue Val
 	}
 
 	value := ValueNA
-	// ##########################################################
-	// 1st aspiration
+	steps := len(aspirationSteps)
+
+	// new search window
 	alpha := Max(bestValue-aspirationSteps[0], ValueMin)
 	beta := Min(bestValue+aspirationSteps[0], ValueMax)
-	if trace {
-		s.log.Debugf("Aspiration for depth %d: START 1st window %d/%d (bestValue=%d)", depth, alpha, beta, bestValue)
-	}
-	value = s.rootSearch(p, depth, alpha, beta)
-	// ##########################################################
 
-	// if search has been stopped and value has missed window return
-	// the value and the values of the root moves are invalid
-	if s.stopConditions() && (value <= alpha || value >= beta) {
-		return ValueNA
-	}
-
-	// ##########################################################
-	// 2nd aspiration
-	// FAIL LOW - decrease lower bound
-	if value <= alpha {
+	for i := 1; i < steps; i++ {
 		if trace {
-			s.log.Debugf("Aspiration for depth %d: FAIL-LOW 1st window %d/%d value=%d", depth, alpha, beta, value)
+			s.log.Debugf("Aspiration for depth %d: START window %d ==> %d/%d (bestValue=%d)", depth, i, alpha, beta, bestValue)
 		}
-		s.sendAspirationResearchInfo("upperbound")
-		// add some extra time because of fail low - we might have found a strong opponent's move
-		s.addExtraTime(1.3)
-		alpha = Max(bestValue-aspirationSteps[1], ValueMin)
-		s.statistics.AspirationResearches++
-		s.statistics.CurrentExtraSearchDepth = 0
-		if trace {
-			s.log.Debugf("Aspiration for depth %d: START 2nd window %d/%d", depth, alpha, beta)
-		}
+		// search with the reduced window or last with the full window
 		value = s.rootSearch(p, depth, alpha, beta)
-	} else if value >= beta {
-		// FAIL HIGH - increase upper bound
-		if trace {
-			s.log.Debugf("Aspiration for depth %d: FAIL-HIGH: 1st window %d/%d value=%d", depth, alpha, beta, value)
+		// if search has been stopped and value has missed window return
+		// the value and the values of the root moves are invalid
+		if s.stopConditions() && (value <= alpha || value >= beta) {
+			return ValueNA
 		}
-		s.sendAspirationResearchInfo("lowerbound")
-		beta = Min(bestValue+aspirationSteps[1], ValueMax)
-		s.statistics.AspirationResearches++
-		s.statistics.CurrentExtraSearchDepth = 0
-		if trace {
-			s.log.Debugf("Aspiration for depth %d: START 2nd window %d/%d", depth, alpha, beta)
+		// check if value was within in window or expand the window
+		if value <= alpha {
+			// FAIL LOW - decrease upper bound
+			if trace {
+				s.log.Debugf("Aspiration for depth %d: FAIL-LOW window %d ==> %d/%d value=%d", depth, i, alpha, beta, value)
+			}
+			s.sendAspirationResearchInfo("upperbound")
+			// add some extra time because of fail low
+			// we might have found a strong opponent's move
+			s.addExtraTime(1.3)
+			alpha = Max(bestValue-aspirationSteps[i], ValueMin)
+			s.statistics.AspirationResearches++
+			s.statistics.CurrentExtraSearchDepth = 0
+		} else if value >= beta {
+			// FAIL HIGH - increase upper bound
+			if trace {
+				s.log.Debugf("Aspiration for depth %d: FAIL-HIGH: window %d ==> %d/%d value=%d", depth, i, alpha, beta, value)
+			}
+			s.sendAspirationResearchInfo("lowerbound")
+			beta = Min(bestValue+aspirationSteps[i], ValueMax)
+			s.statistics.AspirationResearches++
+			s.statistics.CurrentExtraSearchDepth = 0
+		} else {
+			break
 		}
-		value = s.rootSearch(p, depth, alpha, beta)
 	}
-	// ##########################################################
-
-	// if search has been stopped and value has missed window return
-	// the value and the values of the root moves are invalid
-	if s.stopConditions() && (value <= alpha || value >= beta) {
-		return ValueNA
-	}
-
-	// ##########################################################
-	// 3rd aspiration
-	// FAIL - full window search
-	if value <= alpha {
-		if trace {
-			s.log.Debugf("Aspiration for depth %d: FAIL-LOW 2nd window %d/%d value=%d", depth, alpha, beta, value)
-		}
-		s.sendAspirationResearchInfo("upperbound")
-		// add some extra time because of fail low - we might have found a strong opponent's move
-		s.addExtraTime(1.3)
-		s.statistics.AspirationResearches++
-		s.statistics.CurrentExtraSearchDepth = 0
-		alpha = -aspirationSteps[2]
-		beta = aspirationSteps[2]
-		if trace {
-			s.log.Debugf("Aspiration for depth %d: START 3rd window %d/%d", depth, alpha, beta)
-		}
-		value = s.rootSearch(p, depth, alpha, beta)
-	} else if value >= beta {
-		if trace {
-			s.log.Debugf("Aspiration for depth %d: FAIL-HIGH: 2nd window %d/%d value=%d", depth, alpha, beta, value)
-		}
-		s.sendAspirationResearchInfo("lowerbound")
-		s.statistics.AspirationResearches++
-		s.statistics.CurrentExtraSearchDepth = 0
-		alpha = -aspirationSteps[2]
-		beta = aspirationSteps[2]
-		if trace {
-			s.log.Debugf("Aspiration for depth %d: START 3rd window %d/%d", depth, alpha, beta)
-		}
-		value = s.rootSearch(p, depth, alpha, beta)
-	}
-	// ##########################################################
 
 	if trace {
 		s.log.Debugf("Aspiration for depth %d: END (Result %d in window %d/%d)", depth, value, alpha, beta)
@@ -163,30 +114,52 @@ func (s *Search) aspirationSearch(p *position.Position, depth int, bestValue Val
 }
 
 // MTD(f)
+// The algorithm works by calling an AlphaBetaWithMemory search a number
+// of times with a search window of zero size. The search works by zooming
+// in on the minimax value. Each AlphaBeta call returns a bound on the
+// minimax value. The bounds are stored in upperbound and lowerbound,
+// forming an interval around the true minimax value for that search depth.
+// Plus and minus INFINITY is shorthand for values outside the range
+// of leaf values. When both the upper and the lower bound collide,
+// the minimax value is found.
 // https://askeplaat.wordpress.com/534-2/mtdf-algorithm/
-func (s *Search) mtdf(p *position.Position, depth int, f Value) Value {
-	g := f
+func (s *Search) mtdf(p *position.Position, depth int, bestValue Value) Value {
+	trace := false
+
+	value := bestValue
 	upperbound := ValueMax
 	lowerbound := ValueMin
 	for {
 		var beta Value
-		if g == lowerbound {
-			beta = g + 1
+		if value == lowerbound {
+			beta = value + 1
 		} else {
-			beta = g
+			beta = value
 		}
 		s.statistics.MTDfSearches++
-		g = s.rootSearch(p, depth, beta-1, beta)
-		if g < beta {
-			upperbound = g
+		if trace {
+			s.log.Debugf("MTDf d=%d alpha=%d beta=%d nodes=%d", depth, beta-1, beta, s.nodesVisited)
+		}
+		value = s.rootSearch(p, depth, beta-1, beta)
+		if value < beta {
+			if trace {
+				s.log.Debugf("MTDf value %d < beta %d ==> upperbound = value", value, beta)
+			}
+			upperbound = value
 		} else {
-			lowerbound = g
+			if trace {
+				s.log.Debugf("MTDf value %d >= beta %d ==> lowerbound = value", value, beta)
+			}
+			lowerbound = value
+		}
+		if trace {
+			s.log.Debugf("MTDf lowerbound %d upperbound %d", lowerbound, upperbound)
 		}
 		if lowerbound >= upperbound {
 			break
 		}
 	}
-	return g
+	return value
 }
 
 // rootSearch starts the actual recursive alpha beta search with the root moves for the first ply.
@@ -265,10 +238,10 @@ func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta V
 		// this is always the case.
 		if value > bestNodeValue {
 			bestNodeValue = value
+			savePV(m, s.pv[1], s.pv[0])
 			if value > alpha {
 				// fail high in root only when using aspiration search
 				if value >= beta {
-					s.log.Debugf("ROOT BETA CUT")
 					s.statistics.BetaCuts++
 					return value
 				}
@@ -276,10 +249,8 @@ func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta V
 				// always the case when not using Aspiration
 				// we have a new best move and pv[0][0] - store pv+1 tp pv
 				s.statistics.BestMoveChange++
-				savePV(m, s.pv[1], s.pv[0])
 				alpha = bestNodeValue
 			}
-			// savePV(m, s.pv[1], s.pv[0])
 		}
 	}
 	// MOVE LOOP
@@ -295,7 +266,7 @@ func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta V
 	// best move or we use the best move from the previous
 	// iteration in which case we would not understand why
 	// we failed low (opponent had a good move?)
-	if Settings.Search.UseAspiration {
+	if Settings.Search.UseAspiration || Settings.Search.UseMTDf {
 		if bestNodeValue < alpha {
 			s.log.Debugf("Aspiration FAIL LOW IN ROOT value=%d", bestNodeValue)
 		}
@@ -318,10 +289,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	if trace {
 		s.slog.Debugf("%0*s Ply %-2.d Depth %-2.d a:%-6.d b:%-6.d pv:%-6.v start:  %s", ply, "", ply, depth, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
 		defer s.slog.Debugf("%0*s Ply %-2.d Depth %-2.d a:%-6.d b:%-6.d pv:%-6.v end  :  %s", ply, "", ply, depth, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
-	}
-
-	if Settings.Search.UseMTDf {
-		isPV = false
 	}
 
 	// Check if search should be stopped
@@ -352,11 +319,11 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 
 	// prepare node search
 	us := p.NextPlayer()
+	hasCheck := p.HasCheck()
 	bestNodeValue := ValueNA
 	bestNodeMove := MoveNone // used to store in the TT
 	ttMove := MoveNone
 	ttType := ALPHA
-	hasCheck := p.HasCheck()
 	matethreat := false
 
 	// TT Lookup
@@ -405,6 +372,10 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		} else {
 			s.statistics.TTMiss++
 		}
+	}
+
+	if Settings.Search.UseMTDf {
+		isPV = false
 	}
 
 	// Reverse Futility Pruning, (RFP, Static Null Move Pruning)
@@ -476,7 +447,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 				s.statistics.NMPMateBeta++
 				nValue = ValueCheckMateThreshold
 			} else if nValue < ValueCheckMateThreshold {
-				// the player did not move a got mated ==> mate threat
+				// the player did not move and got mated ==> mate threat
 				s.statistics.NMPMateAlpha++
 				matethreat = true
 			}
@@ -783,6 +754,11 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			// not for all of the ply (not yet clear if >alpha)
 			bestNodeValue = value
 			bestNodeMove = move
+
+			if Settings.Search.UseMTDf {
+				savePV(move, s.pv[ply+1], s.pv[ply])
+			}
+
 			// Did we find a better move than in previous nodes in ply
 			// then this is our new PV and best move for this ply.
 			// If we never find a better alpha this means all moves in
@@ -791,8 +767,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			// node we would play. We will return alpha and store a alpha
 			// node in TT with no best move for TT.
 			if value > alpha {
-				// we have a new best move for the ply
-				savePV(move, s.pv[ply+1], s.pv[ply])
 				// If we found a move that is better or equal than beta
 				// this means that the opponent can/will avoid this
 				// position altogether so we can stop search this node.
@@ -831,6 +805,10 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 				// We found a move between alpha and beta which means we
 				// really have found the best move so far in the ply which
 				// can be forced (opponent can't avoid it).
+				// TODO: double check
+				if !Settings.Search.UseMTDf {
+					savePV(move, s.pv[ply+1], s.pv[ply])
+				}
 				// We raise alpha so the successive searches in this ply
 				// need to find even better moves or dismiss the moves.
 				alpha = value
@@ -896,10 +874,6 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 		return s.evaluate(p, ply)
 	}
 
-	if Settings.Search.UseMTDf {
-		isPV = false
-	}
-
 	// Mate Distance Pruning
 	// Did we already find a shorter mate then ignore
 	// this one.
@@ -922,6 +896,10 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	ttMove := MoveNone
 	hasCheck := p.HasCheck()
 
+	if Settings.Search.UseMTDf {
+		isPV = false
+	}
+
 	// if in check we simply do a normal search (all moves) in qsearch
 	if !hasCheck {
 		// get an evaluation for the position
@@ -943,7 +921,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 
 	// TT Lookup
 	var ttEntry *transpositiontable.TtEntry
-	if Settings.Search.UseQSTT {
+	if Settings.Search.UseTT && Settings.Search.UseQSTT {
 		ttEntry = s.tt.Probe(p.ZobristKey())
 		if ttEntry != nil { // tt hit
 			s.statistics.TTHit++
@@ -1056,8 +1034,10 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 		if value > bestNodeValue {
 			bestNodeValue = value
 			bestNodeMove = move
-			if value > alpha {
+			if Settings.Search.UseMTDf {
 				savePV(move, s.pv[ply+1], s.pv[ply])
+			}
+			if value > alpha {
 				if value >= beta {
 					// Count beta cuts
 					s.statistics.BetaCuts++
@@ -1080,6 +1060,10 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 					}
 					ttType = BETA
 					break
+				}
+				// TODO: double check
+				if !Settings.Search.UseMTDf {
+					savePV(move, s.pv[ply+1], s.pv[ply])
 				}
 				alpha = value
 				ttType = EXACT
@@ -1109,7 +1093,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	}
 
 	// Store TT
-	if Settings.Search.UseQSTT {
+	if Settings.Search.UseTT && Settings.Search.UseQSTT {
 		s.storeTT(p, 1, ply, bestNodeMove, bestNodeValue, ttType)
 	}
 
