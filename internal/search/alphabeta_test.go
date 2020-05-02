@@ -151,6 +151,11 @@ func TestTiming(t *testing.T) {
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 
 	config.Settings.Search.UseBook = false
+	config.Settings.Search.TTSize = 512
+
+	config.Settings.Search.UsePVS = false
+	config.Settings.Search.UseAspiration = false
+	config.Settings.Search.UseMTDf = true
 
 	s := NewSearch()
 	// "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
