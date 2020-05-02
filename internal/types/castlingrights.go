@@ -39,14 +39,14 @@ const (
 	CastlingNone CastlingRights = 0 // 0000
 
 	CastlingWhiteOO  CastlingRights = 1                                  // 0001
-	CastlingWhiteOOO CastlingRights = CastlingWhiteOO << 1               // 0010
-	CastlingWhite    CastlingRights = CastlingWhiteOO | CastlingWhiteOOO // 0011
+	CastlingWhiteOOO                = CastlingWhiteOO << 1               // 0010
+	CastlingWhite                   = CastlingWhiteOO | CastlingWhiteOOO // 0011
 
-	CastlingBlackOO  CastlingRights = CastlingWhiteOO << 2               // 0100
-	CastlingBlackOOO CastlingRights = CastlingBlackOO << 1               // 1000
-	CastlingBlack    CastlingRights = CastlingBlackOO | CastlingBlackOOO // 1100
+	CastlingBlackOO  = CastlingWhiteOO << 2               // 0100
+	CastlingBlackOOO = CastlingBlackOO << 1               // 1000
+	CastlingBlack    = CastlingBlackOO | CastlingBlackOOO // 1100
 
-	CastlingAny          CastlingRights = CastlingWhite | CastlingBlack // 1111
+	CastlingAny                         = CastlingWhite | CastlingBlack // 1111
 	CastlingRightsLength CastlingRights = 16
 )
 

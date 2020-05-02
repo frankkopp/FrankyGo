@@ -61,10 +61,10 @@ const (
 	KB uint64 = 1024
 
 	// MB = KB * KB
-	MB uint64 = KB * KB
+	MB = KB * KB
 
 	// GB = KB * MB
-	GB uint64 = KB * MB
+	GB = KB * MB
 
 	// GamePhaseMax maximum game phase value. Game phase is used to
 	// determine if we are in the beginning or end phase of a chess game

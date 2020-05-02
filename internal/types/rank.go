@@ -41,7 +41,7 @@ const (
 	Rank7      Rank = iota
 	Rank8      Rank = iota
 	RankNone   Rank = iota
-	RankLength Rank = RankNone
+	RankLength      = RankNone
 )
 
 // IsValid checks if f represents a valid file

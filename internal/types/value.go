@@ -42,11 +42,11 @@ const (
 	ValueDraw               Value = 0
 	ValueOne                Value = 1
 	ValueInf                Value = 15_000
-	ValueNA                 Value = -ValueInf - 1
+	ValueNA                       = -ValueInf - 1
 	ValueMax                Value = 10_000
-	ValueMin                Value = -ValueMax
-	ValueCheckMate          Value = ValueMax
-	ValueCheckMateThreshold Value = ValueCheckMate - MaxDepth - 1
+	ValueMin                      = -ValueMax
+	ValueCheckMate                = ValueMax
+	ValueCheckMateThreshold       = ValueCheckMate - MaxDepth - 1
 )
 
 // IsValid checks if value is within valid range (between Min and Max)

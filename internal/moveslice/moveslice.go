@@ -193,7 +193,7 @@ func (ms *MoveSlice) Equals(other *MoveSlice) bool {
 // ForEach simple range loop calling the given function on each element
 // in stored order
 func (ms *MoveSlice) ForEach(f func(index int)) {
-	for index, _ := range *ms {
+	for index := range *ms {
 		f(index)
 	}
 }
@@ -208,7 +208,7 @@ func (ms *MoveSlice) ForEachParallel(f func(index int)) {
 	sliceLength := len(*ms)
 	var wg sync.WaitGroup
 	wg.Add(sliceLength)
-	for index, _ := range *ms {
+	for index := range *ms {
 		go func(i int) {
 			defer wg.Done()
 			f(i)

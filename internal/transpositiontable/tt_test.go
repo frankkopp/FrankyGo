@@ -192,7 +192,7 @@ func TestAge(t *testing.T) {
 
 	logTest.Debug("Filling tt")
 	startTime := time.Now()
-	for i, _ := range tt.data {
+	for i := range tt.data {
 		tt.numberOfEntries++
 		tt.data[i].Key = position.Key(i)
 		tt.data[i].Age++

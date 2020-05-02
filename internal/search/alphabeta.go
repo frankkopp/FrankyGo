@@ -123,6 +123,8 @@ func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta V
 		// this is always the case.
 		if value > bestNodeValue {
 			bestNodeValue = value
+			// we have a new best move and pv[0][0] - store pv+1 tp pv
+			savePV(m, s.pv[1], s.pv[0])
 			if value > alpha {
 				// fail high in root only when using aspiration search
 				if value >= beta {
@@ -131,9 +133,7 @@ func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta V
 				}
 				// value is < beta
 				// always the case when not using Aspiration
-				// we have a new best move and pv[0][0] - store pv+1 tp pv
 				s.statistics.BestMoveChange++
-				savePV(m, s.pv[1], s.pv[0])
 				alpha = bestNodeValue
 			}
 		}
@@ -643,8 +643,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			// node we would play. We will return alpha and store a alpha
 			// node in TT with no best move for TT.
 			if value > alpha {
-				// we have a new best move for the ply
-				savePV(move, s.pv[ply+1], s.pv[ply])
 				// If we found a move that is better or equal than beta
 				// this means that the opponent can/will avoid this
 				// position altogether so we can stop search this node.
@@ -683,6 +681,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 				// We found a move between alpha and beta which means we
 				// really have found the best move so far in the ply which
 				// can be forced (opponent can't avoid it).
+				savePV(move, s.pv[ply+1], s.pv[ply])
 				// We raise alpha so the successive searches in this ply
 				// need to find even better moves or dismiss the moves.
 				alpha = value
@@ -905,21 +904,14 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 			bestNodeValue = value
 			bestNodeMove = move
 			if value > alpha {
-				savePV(move, s.pv[ply+1], s.pv[ply])
 				if value >= beta {
-					// Count beta cuts
 					s.statistics.BetaCuts++
-					// Count beta cuts on first move
 					if movesSearched == 1 {
 						s.statistics.BetaCuts1st++
 					}
-					// counter for moves which caused a beta cut off
-					// we use 1 << depth as an increment to favor deeper searches
-					// a more repetitions
 					if Settings.Search.UseHistoryCounter {
 						s.history.HistoryCount[p.NextPlayer()][move.From()][move.To()] += 1 << 1
 					}
-					// store a successful counter move to the previous opponent move
 					if Settings.Search.UseCounterMoves {
 						lastMove := p.LastMove()
 						if lastMove != MoveNone {
@@ -929,6 +921,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 					ttType = BETA
 					break
 				}
+				savePV(move, s.pv[ply+1], s.pv[ply])
 				alpha = value
 				ttType = EXACT
 			}

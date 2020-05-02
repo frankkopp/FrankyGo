@@ -199,8 +199,8 @@ const (
 	valueShift    uint = 16
 
 	squareMask   Move = 0x3F
-	toMask       Move = squareMask
-	fromMask     Move = squareMask << fromShift
+	toMask            = squareMask
+	fromMask          = squareMask << fromShift
 	promTypeMask Move = 3 << promTypeShift
 	moveTypeMask Move = 3 << typeShift
 	moveMask     Move = 0xFFFF               // first 16-bit
