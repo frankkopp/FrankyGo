@@ -226,27 +226,93 @@ func TestZugzwangTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UseRazoring = true
 	ts, _ := NewTestSuite("test/testdata/testsets/nullMoveZugZwangTest.epd", 10*time.Second, 0)
 	ts.RunTests()
 }
 
-// Summary:
-// config.Settings.Search.UseRazoring = true
+// Results for Test Suite
+// ------------------------------------------------------------------------------------------------------------------------------------
 // EPD File:   test/testdata/testsets/mate_test_suite.epd
 // SearchTime: 15.000 ms
 // MaxDepth:   0
-// Date:       2020-05-03 11:10:54.9756125 +0200 CEST
-// Successful: 15  (75 %)
-// Failed:     5   (25 %)
+// Date:       2020-05-01 16:40:53.049496 +0200 CEST
+// ====================================================================================================================================
+//  Nr. | Result     | Move     | Value    | Expected Result | Fen| Id
+// ====================================================================================================================================
+// 1    | Success    | f1e2     | mate 3   | dm 3               | 4r1b1/1p4B1/pN2pR2/RB2k3/1P2N2p/2p3b1/n2P1p1r/5K1n w - - |
+// 2    | Success    | a6b7     | mate 3   | dm 3               | b7/p1BR2pK/B1p5/pNk3p1/Pp4Pp/1P3n2/4R2r/7n w - - |
+// 3    | Success    | b3b6     | mate 3   | dm 3               | 6K1/n1P2N1p/6pr/b1pp3b/n2Bp1k1/1R2R1Pp/3p1P2/2qN1B2 w - - |
+// 4    | Success    | e7e8B    | mate 3   | dm 3               | 8/2P1P1P1/3PkP2/8/4K3/8/8/8 w - - |
+// 5    | Success    | d1h5     | mate 4   | dm 4               | r4rk1/pppqbp1p/3pp1p1/8/4P3/1P1P3R/PBP2PPP/R2Q2K1 w - - |
+// 6    | Success    | h5h7     | mate 4   | dm 4               | r4qrk/ppp1b1pp/3p1p2/4pPPQ/4P2P/3PB3/PPP5/1K4RR w - - |
+// 7    | Success    | e8e3     | mate 4   | dm 4               | r3r3/p1p2p1k/3p2pp/2p5/2P2n2/2N2B2/PPR1PP1q/3RQK2 b - - |
+// 8    | Failed     | d4a4     | mate 5   | dm 4               | 3r4/1p1r4/1Pp5/3p4/p2R4/K1NN4/1P6/kqBB3R w - - |
+// 9    | Success    | d4g1     | mate 4   | dm 4               | n7/3p1p2/NpkNp1p1/1p2P3/3Q4/6B1/b7/4K3 w - - |
+// 10   | Failed     | d2d4     | mate 5   | dm 4               | 1b1R2B1/p1n1p3/p3P2K/N1k5/2N2P2/5P2/2PP4/R7 w - - |
+// 11   | Success    | f1a6     | mate 4   | dm 4               | K6Q/1p6/pPq4P/P2p2P1/4pP1N/7k/n5R1/1n2BB2 w - - |
+// 12   | Success    | g4h6     | mate 5   | dm 5               | 1r4k1/1b2K1pp/7b/2pp3P/6NB/2Q2pp1/4p3/5r2 w - - |
+// 13   | Success    | d1g1     | mate 5   | dm 5               | r2r4/1p1R3p/5pk1/b1B1Pp2/p4P2/P7/1P5P/1K1R4 w - - |
+// 14   | Success    | f2h1     | mate 5   | dm 5               | 5rk1/pp4p1/8/3N3p/2P4P/1P4K1/P2r1n2/R3R3 b - - |
+// 15   | Failed     | d4f6     | mate 7   | dm 5               | 6b1/4Kpk1/5r2/8/3B2P1/7R/8/8 w - - |
+// 16   | Failed     | c1b1     | mate 14  | dm 5               | 8/8/8/p7/8/8/R6p/2K2Rbk w - - |
+// 17   | Failed     | h6f4     | cp -1480 | dm 5               | b7/8/7B/7p/8/2p3r1/2P1P1pp/4K1kq w - - |
+// 18   | Success    | f8e8     | mate 5   | dm 5               | 5R2/6r1/3P4/1BBk4/8/3N4/8/K7 w - - |
+// 19   | Failed     | c3d4     | cp 478   | dm 5               | 1r1r2k1/p4ppp/1qp5/4Pb2/3b1P2/1PP2N2/P2BQ1PP/2KR3R w - - |
+// 20   | Success    | e3c5     | mate 6   | dm 6               | 4k3/8/4K3/8/4N3/4B3/3P1P2/8 w - - |
+// ====================================================================================================================================
+// Summary:
+// EPD File:   test/testdata/testsets/mate_test_suite.epd
+// SearchTime: 15.000 ms
+// MaxDepth:   0
+// Date:       2020-05-01 16:40:53.049496 +0200 CEST
+// Successful: 14  (70 %)
+// Failed:     6   (30 %)
 // Skipped:    0   (0 %)
 // Not tested: 0   (0 %)
-// Test time: 3m44.6555458s
+// Test time: 4m1.077031s
+// Configuration: Search Config:
+// 0 : UseBook                bool   = false
+// 1 : BookPath               string = ./assets/books
+// 2 : BookFile               string = book.txt
+// 3 : BookFormat             string = Simple
+// 4 : UsePonder              bool   = true
+// 5 : UseQuiescence          bool   = true
+// 6 : UseQSStandpat          bool   = true
+// 7 : UseSEE                 bool   = true
+// 8 : UsePromNonQuiet        bool   = true
+// 9 : UseAspiration          bool   = false
+// 10: UseMTDf                bool   = false
+// 11: UsePVS                 bool   = true
+// 12: UseIID                 bool   = true
+// 13: UseKiller              bool   = true
+// 14: UseHistoryCounter      bool   = true
+// 15: UseCounterMoves        bool   = true
+// 16: IIDDepth               int    = 6
+// 17: IIDReduction           int    = 2
+// 18: UseTT                  bool   = true
+// 19: TTSize                 int    = 256
+// 20: UseTTMove              bool   = true
+// 21: UseTTValue             bool   = true
+// 22: UseQSTT                bool   = true
+// 23: UseEvalTT              bool   = false
+// 24: UseMDP                 bool   = true
+// 25: UseRFP                 bool   = true
+// 26: UseNullMove            bool   = true
+// 27: NmpDepth               int    = 3
+// 28: NmpReduction           int    = 2
+// 29: UseExt                 bool   = true
+// 30: UseExtAddDepth         bool   = true
+// 31: UseCheckExt            bool   = true
+// 32: UseThreatExt           bool   = false
+// 33: UseFP                  bool   = true
+// 34: UseLmp                 bool   = true
+// 35: UseLmr                 bool   = true
+// 36: LmrDepth               int    = 3
+// 37: LmrMovesSearched       int    = 3
 func TestMateTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UseRazoring = true
 	ts, _ := NewTestSuite("test/testdata/testsets/mate_test_suite.epd", 15*time.Second, 0)
 	ts.RunTests()
 }
@@ -313,23 +379,40 @@ func TestECMTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
+	config.Settings.Search.UseQFP = true
+	ts, _ := NewTestSuite("test/testdata/testsets/ecm98.epd", 5*time.Second, 0)
+	ts.RunTests()
+}
 
-	config.Settings.Search.UseRazoring = false
+func TestECMTestsQFP(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+	config.Settings.Search.UseQFP = false
 	// Summary:
 	// EPD File:   test/testdata/testsets/ecm98.epd
 	// SearchTime: 5.000 ms
-	// Successful: 497 (64 %)
-	// Failed:     272 (35 %)
+	// MaxDepth:   0
+	// Date:       2020-05-02 18:37:35.909006 +0200 CEST
+	// Successful: 490 (63 %)
+	// Failed:     279 (36 %)
+	// Skipped:    0   (0 %)
+	// Not tested: 0   (0 %)
+	// Test time: 1h4m10.909488272s
 	ts, _ := NewTestSuite("test/testdata/testsets/ecm98.epd", 5*time.Second, 0)
 	ts.RunTests()
 
-	config.Settings.Search.UseRazoring = true
+	config.Settings.Search.UseQFP = true
 	// Summary:
 	// EPD File:   test/testdata/testsets/ecm98.epd
 	// SearchTime: 5.000 ms
-	// Date:       2020-05-03 03:21:06.0137971 +0200 CEST
-	// Successful: 505 (65 %)
-	// Failed:     264 (34 %)
+	// MaxDepth:   0
+	// Date:       2020-05-02 19:41:46.755004 +0200 CEST
+	// Successful: 499 (64 %)
+	// Failed:     270 (35 %)
+	// Skipped:    0   (0 %)
+	// Not tested: 0   (0 %)
+	// Test time: 1h4m10.760225118s
 	ts2, _ := NewTestSuite("test/testdata/testsets/ecm98.epd", 5*time.Second, 0)
 	ts2.RunTests()
 }
@@ -362,73 +445,76 @@ func TestFeatureTests(t *testing.T) {
 	}
 
 	// setup tests
-	searchTime := 2000 * time.Millisecond
+	searchTime := 200 * time.Millisecond
 	searchDepth := 0
 
 	// Feature Settings
-	config.Settings.Search.UseQuiescence = true
-	config.Settings.Search.UseQSStandpat = true
-	config.Settings.Search.UseSEE = true
-	config.Settings.Search.UsePromNonQuiet = true
+	{
+		config.Settings.Search.UseQuiescence = true
+		config.Settings.Search.UseQSStandpat = true
+		config.Settings.Search.UseSEE = true
+		config.Settings.Search.UsePromNonQuiet = true
 
-	config.Settings.Search.UseTT = true
-	config.Settings.Search.TTSize = 256
-	config.Settings.Search.UseTTValue = true
-	config.Settings.Search.UseQSTT = true
+		config.Settings.Search.UseTT = true
+		config.Settings.Search.TTSize = 256
+		config.Settings.Search.UseTTValue = true
+		config.Settings.Search.UseQSTT = true
 
-	config.Settings.Search.UsePVS = true
-	config.Settings.Search.UseAspiration = false
-	config.Settings.Search.UseMTDf = false
+		config.Settings.Search.UsePVS = true
+		config.Settings.Search.UseAspiration = false
+		config.Settings.Search.UseMTDf = false
 
-	config.Settings.Search.UseTTMove = true
-	config.Settings.Search.UseIID = true
-	config.Settings.Search.IIDDepth = 6
-	config.Settings.Search.IIDReduction = 2
-	config.Settings.Search.UseKiller = true
-	config.Settings.Search.UseHistoryCounter = true
-	config.Settings.Search.UseCounterMoves = true
+		config.Settings.Search.UseTTMove = true
+		config.Settings.Search.UseIID = true
+		config.Settings.Search.IIDDepth = 6
+		config.Settings.Search.IIDReduction = 2
+		config.Settings.Search.UseKiller = true
+		config.Settings.Search.UseHistoryCounter = true
+		config.Settings.Search.UseCounterMoves = true
 
-	config.Settings.Search.UseMDP = true
-	config.Settings.Search.UseRazoring = true
-	config.Settings.Search.RazorMargin = 531
-	config.Settings.Search.UseNullMove = true
-	config.Settings.Search.NmpDepth = 3
-	config.Settings.Search.NmpReduction = 2
+		config.Settings.Search.UseMDP = true
+		config.Settings.Search.UseRazoring = true
+		config.Settings.Search.RazorMargin = 531
+		config.Settings.Search.UseNullMove = true
+		config.Settings.Search.NmpDepth = 3
+		config.Settings.Search.NmpReduction = 2
 
-	config.Settings.Search.UseExt = true
-	config.Settings.Search.UseExtAddDepth = true
-	config.Settings.Search.UseCheckExt = true
-	config.Settings.Search.UseThreatExt = false
+		config.Settings.Search.UseExt = true
+		config.Settings.Search.UseExtAddDepth = true
+		config.Settings.Search.UseCheckExt = true
+		config.Settings.Search.UseThreatExt = false
 
-	config.Settings.Search.UseRFP = true
-	config.Settings.Search.UseFP = true
-	config.Settings.Search.UseLmr = true
-	config.Settings.Search.LmrDepth = 3
-	config.Settings.Search.LmrMovesSearched = 3
-	config.Settings.Search.UseLmp = true
+		config.Settings.Search.UseRFP = true
+		config.Settings.Search.UseFP = true
+		config.Settings.Search.UseQFP = true
+		config.Settings.Search.UseLmr = true
+		config.Settings.Search.LmrDepth = 3
+		config.Settings.Search.LmrMovesSearched = 3
+		config.Settings.Search.UseLmp = true
 
-	config.Settings.Eval.Tempo = 34
-	config.Settings.Eval.UseLazyEval = true
-	config.Settings.Eval.LazyEvalThreshold = 700
+		config.Settings.Eval.Tempo = 34
+		config.Settings.Eval.UseLazyEval = true
+		config.Settings.Eval.LazyEvalThreshold = 700
 
-	config.Settings.Eval.UsePawnCache = false
-	config.Settings.Eval.PawnCacheSize = 64
-	config.Settings.Eval.UseAttacksInEval = false
-	config.Settings.Eval.UseMobility = false
-	config.Settings.Eval.MobilityBonus = 5
-	config.Settings.Eval.UseAdvancedPieceEval = false
-	config.Settings.Eval.BishopPairBonus = 20
-	config.Settings.Eval.MinorBehindPawnBonus = 15
-	config.Settings.Eval.BishopPawnMalus = 5
-	config.Settings.Eval.BishopCenterAimBonus = 20
-	config.Settings.Eval.BishopBlockedMalus = 40
-	config.Settings.Eval.RookOnQueenFileBonus = 6
-	config.Settings.Eval.RookOnOpenFileBonus = 25
-	config.Settings.Eval.RookTrappedMalus = 40
-	config.Settings.Eval.KingRingAttacksBonus = 10
-	config.Settings.Eval.UseKingEval = false
-	config.Settings.Eval.KingDangerMalus = 50
-	config.Settings.Eval.KingDefenderBonus = 10
+		config.Settings.Eval.UsePawnCache = false
+		config.Settings.Eval.PawnCacheSize = 64
+		config.Settings.Eval.UseAttacksInEval = false
+		config.Settings.Eval.UseMobility = false
+		config.Settings.Eval.MobilityBonus = 5
+		config.Settings.Eval.UseAdvancedPieceEval = false
+		config.Settings.Eval.BishopPairBonus = 20
+		config.Settings.Eval.MinorBehindPawnBonus = 15
+		config.Settings.Eval.BishopPawnMalus = 5
+		config.Settings.Eval.BishopCenterAimBonus = 20
+		config.Settings.Eval.BishopBlockedMalus = 40
+		config.Settings.Eval.RookOnQueenFileBonus = 6
+		config.Settings.Eval.RookOnOpenFileBonus = 25
+		config.Settings.Eval.RookTrappedMalus = 40
+		config.Settings.Eval.KingRingAttacksBonus = 10
+		config.Settings.Eval.UseKingEval = false
+		config.Settings.Eval.KingDangerMalus = 50
+		config.Settings.Eval.KingDefenderBonus = 10
+	}
 
 	folder := "test/testdata/featuretests/"
 

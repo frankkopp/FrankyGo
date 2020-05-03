@@ -63,6 +63,7 @@ UseThreatExt = false
 
 # pruning post-move
 UseFP = true
+UseQFP = false
 UseLmp = true
 UseLmr = true
 LmrDepth = 3

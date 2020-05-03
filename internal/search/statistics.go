@@ -37,6 +37,8 @@ import (
 
 // Statistics are extra data and stats not essential for a functioning search
 type Statistics struct {
+	QFpPrunings uint64
+
 	BestMoveChange       uint64
 	AspirationResearches uint64
 
