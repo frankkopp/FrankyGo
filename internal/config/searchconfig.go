@@ -93,7 +93,7 @@ type searchConfiguration struct {
 func init() {
 	Settings.Search.UseBook = true
 	Settings.Search.BookPath = "./assets/books"
-	Settings.Search.BookPath = "book.txt"
+	Settings.Search.BookFile = "book.txt"
 	Settings.Search.BookFormat = "Simple"
 
 	Settings.Search.UsePonder = true

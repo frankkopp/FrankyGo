@@ -152,6 +152,9 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseIID = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "BASE"))
 
+	Settings.Search.UseHistoryCounter = true
+	Settings.Search.UseCounterMoves = true
+
 	// SEE for qsearch
 	Settings.Search.UseSEE = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "SEE"))
@@ -182,8 +185,6 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseLmr = true
 	// Late Move Pruning
 	Settings.Search.UseLmp = true
-	Settings.Search.UseHistoryCounter = true
-	Settings.Search.UseCounterMoves = true
 
 	r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
 

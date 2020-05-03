@@ -224,7 +224,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	// this branch and return the value.
 	// Alpha or Beta entries will only be used if they improve
 	// the current values.
-	// TODO : Some engines treat the cut for alpha and beta nodes
+	// TODO: Some engines treat the cut for alpha and beta nodes
 	//  differently for PV and non PV nodes - needs more testing
 	//  if this is relevant
 	var ttEntry *transpositiontable.TtEntry
@@ -431,6 +431,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 
 		from := move.From()
 		to := move.To()
+		givesCheck := p.GivesCheck(move)
 
 		if false { // DEBUG
 			err := false
@@ -469,8 +470,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		newDepth := depth - 1
 		lmrDepth := newDepth
 		extension := 0
-
-		givesCheck := p.GivesCheck(move)
 
 		// Here we try some search extensions. This has to be done
 		// very carefully as it usually is more effective to prune
@@ -519,7 +518,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			!matethreat { // from pre move null move check
 
 			// to check in futility pruning what material delta we have
-			materialEval := p.Material(us) - p.Material(us.Flip())
 			moveGain := p.GetPiece(to).ValueOf()
 
 			// Futility Pruning
@@ -535,9 +533,9 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			// TODO: Crafty excepts moves were passed pawns are far ahead.
 			if Settings.Search.UseFP && depth < 7 {
 				futilityMargin := fp[depth]
-				if materialEval+moveGain+futilityMargin <= alpha {
-					if materialEval+moveGain > bestNodeValue {
-						bestNodeValue = materialEval + moveGain
+				if staticEval+moveGain+futilityMargin <= alpha {
+					if staticEval+moveGain > bestNodeValue {
+						bestNodeValue = staticEval + moveGain
 					}
 					s.statistics.FpPrunings++
 					continue
