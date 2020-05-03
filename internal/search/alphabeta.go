@@ -132,7 +132,7 @@ func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta V
 					return value
 				}
 				// value is < beta
-				// always the case when not using Aspiration
+				// always the case when not using aspiration search
 				s.statistics.BestMoveChange++
 				alpha = bestNodeValue
 			}
@@ -259,6 +259,24 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		}
 	}
 
+	// get an evaluation for the position
+	staticEval := ValueNA
+	if !hasCheck {
+		staticEval = s.evaluate(p, ply)
+		// TODO: Consider storing in TT
+	}
+
+	// Razoring from Stockfish
+	// When static eval is well below alpha at the last node
+	// jump directly into qsearch
+	if Settings.Search.UseRazoring &&
+		depth == 1 &&
+		staticEval != ValueNA &&
+		staticEval <= alpha-Value(Settings.Search.RazorMargin) {
+
+		return s.qsearch(p, ply, alpha, beta, isPV)
+	}
+
 	// Reverse Futility Pruning, (RFP, Static Null Move Pruning)
 	// https://www.chessprogramming.org/Reverse_Futility_Pruning
 	// Anticipate likely alpha low in the next ply by a beta cut
@@ -268,8 +286,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		depth <= 3 &&
 		!isPV &&
 		!hasCheck {
-		// get an evaluation for the position
-		staticEval := s.evaluate(p, ply)
+
 		margin := rfp[depth]
 		if staticEval-margin >= beta {
 			s.statistics.RfpPrunings++
@@ -790,7 +807,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 
 	// TT Lookup
 	var ttEntry *transpositiontable.TtEntry
-	if Settings.Search.UseQSTT {
+	if Settings.Search.UseTT && Settings.Search.UseQSTT {
 		ttEntry = s.tt.Probe(p.ZobristKey())
 		if ttEntry != nil { // tt hit
 			s.statistics.TTHit++
@@ -948,7 +965,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	}
 
 	// Store TT
-	if Settings.Search.UseQSTT {
+	if Settings.Search.UseTT && Settings.Search.UseQSTT {
 		s.storeTT(p, 1, ply, bestNodeMove, bestNodeValue, ttType)
 	}
 

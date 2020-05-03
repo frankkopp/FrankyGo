@@ -17,6 +17,7 @@
       <w>dsfile</w>
       <w>enpassant</w>
       <w>evals</w>
+      <w>featuretests</w>
       <w>fenb</w>
       <w>fide</w>
       <w>foldername</w>
@@ -67,6 +68,7 @@
       <w>testdepth</w>
       <w>testsets</w>
       <w>testsuite</w>
+      <w>testsuites</w>
       <w>testtime</w>
       <w>transpositiontable</w>
       <w>ucihandler</w>
