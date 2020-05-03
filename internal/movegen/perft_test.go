@@ -133,7 +133,7 @@ func TestStandardPerftOd(t *testing.T) {
 //noinspection GoImportUsedAsName
 func TestKiwipetePerft(t *testing.T) {
 
-	maxDepth := 5
+	maxDepth := 4
 	var perft Perft
 	assert := assert.New(t)
 
