@@ -362,73 +362,75 @@ func TestFeatureTests(t *testing.T) {
 	}
 
 	// setup tests
-	searchTime := 2000 * time.Millisecond
+	searchTime := 200 * time.Millisecond
 	searchDepth := 0
 
 	// Feature Settings
-	config.Settings.Search.UseQuiescence = true
-	config.Settings.Search.UseQSStandpat = true
-	config.Settings.Search.UseSEE = true
-	config.Settings.Search.UsePromNonQuiet = true
+	{
+		config.Settings.Search.UseQuiescence = true
+		config.Settings.Search.UseQSStandpat = true
+		config.Settings.Search.UseSEE = true
+		config.Settings.Search.UsePromNonQuiet = true
 
-	config.Settings.Search.UseTT = true
-	config.Settings.Search.TTSize = 256
-	config.Settings.Search.UseTTValue = true
-	config.Settings.Search.UseQSTT = true
+		config.Settings.Search.UseTT = true
+		config.Settings.Search.TTSize = 256
+		config.Settings.Search.UseTTValue = true
+		config.Settings.Search.UseQSTT = true
 
-	config.Settings.Search.UsePVS = true
-	config.Settings.Search.UseAspiration = false
-	config.Settings.Search.UseMTDf = false
+		config.Settings.Search.UsePVS = true
+		config.Settings.Search.UseAspiration = false
+		config.Settings.Search.UseMTDf = false
 
-	config.Settings.Search.UseTTMove = true
-	config.Settings.Search.UseIID = true
-	config.Settings.Search.IIDDepth = 6
-	config.Settings.Search.IIDReduction = 2
-	config.Settings.Search.UseKiller = true
-	config.Settings.Search.UseHistoryCounter = true
-	config.Settings.Search.UseCounterMoves = true
+		config.Settings.Search.UseTTMove = true
+		config.Settings.Search.UseIID = true
+		config.Settings.Search.IIDDepth = 6
+		config.Settings.Search.IIDReduction = 2
+		config.Settings.Search.UseKiller = true
+		config.Settings.Search.UseHistoryCounter = true
+		config.Settings.Search.UseCounterMoves = true
 
-	config.Settings.Search.UseMDP = true
-	config.Settings.Search.UseRazoring = true
-	config.Settings.Search.RazorMargin = 531
-	config.Settings.Search.UseNullMove = true
-	config.Settings.Search.NmpDepth = 3
-	config.Settings.Search.NmpReduction = 2
+		config.Settings.Search.UseMDP = true
+		config.Settings.Search.UseRazoring = true
+		config.Settings.Search.RazorMargin = 531
+		config.Settings.Search.UseNullMove = true
+		config.Settings.Search.NmpDepth = 3
+		config.Settings.Search.NmpReduction = 2
 
-	config.Settings.Search.UseExt = true
-	config.Settings.Search.UseExtAddDepth = true
-	config.Settings.Search.UseCheckExt = true
-	config.Settings.Search.UseThreatExt = false
+		config.Settings.Search.UseExt = true
+		config.Settings.Search.UseExtAddDepth = true
+		config.Settings.Search.UseCheckExt = true
+		config.Settings.Search.UseThreatExt = false
 
-	config.Settings.Search.UseRFP = true
-	config.Settings.Search.UseFP = true
-	config.Settings.Search.UseLmr = true
-	config.Settings.Search.LmrDepth = 3
-	config.Settings.Search.LmrMovesSearched = 3
-	config.Settings.Search.UseLmp = true
+		config.Settings.Search.UseRFP = true
+		config.Settings.Search.UseFP = true
+		config.Settings.Search.UseLmr = true
+		config.Settings.Search.LmrDepth = 3
+		config.Settings.Search.LmrMovesSearched = 3
+		config.Settings.Search.UseLmp = true
 
-	config.Settings.Eval.Tempo = 34
-	config.Settings.Eval.UseLazyEval = true
-	config.Settings.Eval.LazyEvalThreshold = 700
+		config.Settings.Eval.Tempo = 34
+		config.Settings.Eval.UseLazyEval = true
+		config.Settings.Eval.LazyEvalThreshold = 700
 
-	config.Settings.Eval.UsePawnCache = false
-	config.Settings.Eval.PawnCacheSize = 64
-	config.Settings.Eval.UseAttacksInEval = false
-	config.Settings.Eval.UseMobility = false
-	config.Settings.Eval.MobilityBonus = 5
-	config.Settings.Eval.UseAdvancedPieceEval = false
-	config.Settings.Eval.BishopPairBonus = 20
-	config.Settings.Eval.MinorBehindPawnBonus = 15
-	config.Settings.Eval.BishopPawnMalus = 5
-	config.Settings.Eval.BishopCenterAimBonus = 20
-	config.Settings.Eval.BishopBlockedMalus = 40
-	config.Settings.Eval.RookOnQueenFileBonus = 6
-	config.Settings.Eval.RookOnOpenFileBonus = 25
-	config.Settings.Eval.RookTrappedMalus = 40
-	config.Settings.Eval.KingRingAttacksBonus = 10
-	config.Settings.Eval.UseKingEval = false
-	config.Settings.Eval.KingDangerMalus = 50
-	config.Settings.Eval.KingDefenderBonus = 10
+		config.Settings.Eval.UsePawnCache = false
+		config.Settings.Eval.PawnCacheSize = 64
+		config.Settings.Eval.UseAttacksInEval = false
+		config.Settings.Eval.UseMobility = false
+		config.Settings.Eval.MobilityBonus = 5
+		config.Settings.Eval.UseAdvancedPieceEval = false
+		config.Settings.Eval.BishopPairBonus = 20
+		config.Settings.Eval.MinorBehindPawnBonus = 15
+		config.Settings.Eval.BishopPawnMalus = 5
+		config.Settings.Eval.BishopCenterAimBonus = 20
+		config.Settings.Eval.BishopBlockedMalus = 40
+		config.Settings.Eval.RookOnQueenFileBonus = 6
+		config.Settings.Eval.RookOnOpenFileBonus = 25
+		config.Settings.Eval.RookTrappedMalus = 40
+		config.Settings.Eval.KingRingAttacksBonus = 10
+		config.Settings.Eval.UseKingEval = false
+		config.Settings.Eval.KingDangerMalus = 50
+		config.Settings.Eval.KingDefenderBonus = 10
+	}
 
 	folder := "test/testdata/featuretests/"
 
