@@ -233,7 +233,7 @@ func TestProcessingPGNLarge(t *testing.T) {
 	book := NewBook()
 	logTest.Debugf("Memory statistics: %s", util.MemStat())
 	err := book.Initialize(config.Settings.Search.BookPath+"/superbook.pgn", "", Pgn, false, false)
-	util.GcWithStats()
+	logTest.Debugf(util.GcWithStats())
 
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
 	assert.Equal(t, 4_821_316, book.NumberOfEntries())

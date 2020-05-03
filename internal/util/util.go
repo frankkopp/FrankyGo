@@ -29,8 +29,9 @@
 package util
 
 import (
-	"log"
+	"fmt"
 	"runtime"
+	"strings"
 	"time"
 
 	"golang.org/x/text/language"
@@ -106,11 +107,13 @@ func MemStat() string {
 
 // GcWithStats performs a forced garbage collection measuring
 // duration and pre- and post-memory statistics.
-func GcWithStats() {
-	log.Printf("Mem stats: %s\n", MemStat())
+func GcWithStats() string {
+	os := strings.Builder{}
+	os.WriteString(fmt.Sprintf("Mem stats: %s ", MemStat()))
 	startGC := time.Now()
 	runtime.GC()
 	elapsed := time.Since(startGC)
-	log.Printf("GC took  : %d ms\n", elapsed.Milliseconds())
-	log.Printf("Mem stats: %s\n", MemStat())
+	os.WriteString(fmt.Sprintf("GC took: %d ms ", elapsed.Milliseconds()))
+	os.WriteString(fmt.Sprintf("Mem stats: %s", MemStat()))
+	return os.String()
 }

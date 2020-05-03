@@ -190,12 +190,8 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	// Did we already find a shorter mate then ignore
 	// this one.
 	if Settings.Search.UseMDP {
-		if alpha < -ValueCheckMate+Value(ply) {
-			alpha = -ValueCheckMate + Value(ply)
-		}
-		if beta > ValueCheckMate-Value(ply) {
-			beta = ValueCheckMate - Value(ply)
-		}
+		alpha = Max(alpha, -ValueCheckMate+Value(ply))
+		beta = Min(beta, ValueCheckMate-Value(ply))
 		if alpha >= beta {
 			s.statistics.Mdp++
 			return alpha
@@ -766,12 +762,8 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	// Did we already find a shorter mate then ignore
 	// this one.
 	if Settings.Search.UseMDP {
-		if alpha < -ValueCheckMate+Value(ply) {
-			alpha = -ValueCheckMate + Value(ply)
-		}
-		if beta > ValueCheckMate-Value(ply) {
-			beta = ValueCheckMate - Value(ply)
-		}
+		alpha = Max(alpha, -ValueCheckMate+Value(ply))
+		beta = Min(beta, ValueCheckMate-Value(ply))
 		if alpha >= beta {
 			s.statistics.Mdp++
 			return alpha

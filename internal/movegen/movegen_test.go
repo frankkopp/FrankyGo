@@ -665,8 +665,6 @@ func TestTimingOnDemandRealMoveGen(t *testing.T) {
 		t.Skip("skipping test in short mode.")
 	}
 
-	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
-
 	const rounds = 5
 	const iterations uint64 = 1_000_000
 

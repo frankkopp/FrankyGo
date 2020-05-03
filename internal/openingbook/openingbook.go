@@ -136,7 +136,7 @@ func (b *Book) Initialize(bookPath string, bookFile string, bookFormat BookForma
 
 	b.log.Infof("Initializing Opening Book [%s]", bookFilePath)
 	err := b.initialize(bookFilePath, bookFormat, useCache, recreateCache)
-	util.GcWithStats()
+	b.log.Info(util.GcWithStats())
 
 	return err
 }
@@ -161,8 +161,8 @@ func (b *Book) initialize(bookFilePath string, bookFormat BookFormat, useCache b
 			b.log.Warningf("Cache could not be loaded. Reading original data from \"%s\"", bookFilePath)
 		}
 		if hasCache {
-			b.log.Infof("Finished reading cache from file in: %d ms\n", elapsedReading.Milliseconds())
-			b.log.Infof("Book from cache file contains %d entries\n", len(b.bookMap))
+			b.log.Debugf("Finished reading cache from file in: %d ms\n", elapsedReading.Milliseconds())
+			b.log.Debugf("Book from cache file contains %d entries\n", len(b.bookMap))
 			return nil
 		} // else no cache file just load the data from original file
 	}

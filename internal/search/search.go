@@ -247,7 +247,7 @@ func (s *Search) ResizeCache() {
 	s.tt = nil
 	s.initialize()
 	// good point in time to let the garbage collector do its work
-	util.GcWithStats()
+	s.log.Debug(util.GcWithStats())
 	if s.tt != nil {
 		s.uciHandlerPtr.SendInfoString(out.Sprintf("Hash resized: %s", s.tt.String()))
 	}
@@ -307,15 +307,15 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 			s.log.Debug("Opening Book: Choosing book move: ", bookMove.StringUci())
 		}
 	} else {
-		s.log.Debug("Opening Book: Not using book")
+		s.log.Info("Opening Book: Not using book")
 	}
 
 	// age TT entries
 	if s.tt != nil {
-		s.log.Debugf("Transposition Table: Using TT (%s)", s.tt.String())
+		s.log.Infof("Transposition Table: Using TT (%s)", s.tt.String())
 		s.tt.AgeEntries()
 	} else {
-		s.log.Debug("Transposition Table: Not using TT")
+		s.log.Info("Transposition Table: Not using TT")
 	}
 
 	// Initialize ply based data
@@ -366,7 +366,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.log.Info(out.Sprintf("Search depth was %d(%d) with %d nodes visited. NPS = %d nps",
 		s.statistics.CurrentSearchDepth, s.statistics.CurrentExtraSearchDepth, s.nodesVisited,
 		util.Nps(s.nodesVisited, searchResult.SearchTime)))
-	s.log.Infof("Search stats: %s", s.statistics.String())
+	s.log.Debugf("Search stats: %s", s.statistics.String())
 	// s.log.Debugf("History stats: %s", s.history.String())
 
 	// print result to log
@@ -584,38 +584,38 @@ func (s *Search) stopConditions() bool {
 // and sets up time control
 func (s *Search) setupSearchLimits(position *position.Position, sl *Limits) {
 	if sl.Infinite {
-		s.log.Debug("Search mode: Infinite")
+		s.log.Info("Search mode: Infinite")
 	}
 	if sl.Ponder {
-		s.log.Debug("Search mode: Ponder")
+		s.log.Info("Search mode: Ponder")
 	}
 	if sl.Mate > 0 {
-		s.log.Debugf("Search mode: Search for mate in %d", sl.Mate)
+		s.log.Infof("Search mode: Search for mate in %d", sl.Mate)
 	}
 	if sl.TimeControl {
 		s.timeLimit = s.setupTimeControl(position, sl)
 		s.extraTime = 0
 		if sl.MoveTime > 0 {
-			s.log.Debugf("Search mode: Time controlled: Time per move %s", sl.MoveTime)
+			s.log.Infof("Search mode: Time controlled: Time per move %s", sl.MoveTime)
 		} else {
-			s.log.Debug(out.Sprintf("Search mode: Time controlled: White = %s (inc %s) Black = %s (inc %s) Moves to go: %d",
+			s.log.Info(out.Sprintf("Search mode: Time controlled: White = %s (inc %s) Black = %s (inc %s) Moves to go: %d",
 				sl.WhiteTime, sl.WhiteInc, sl.BlackTime, sl.BlackInc, sl.MovesToGo))
-			s.log.Debug(out.Sprintf("Search mode: Time limit     : %s", s.timeLimit))
+			s.log.Info(out.Sprintf("Search mode: Time limit     : %s", s.timeLimit))
 		}
 		if sl.Ponder {
-			s.log.Debug("Search mode: Ponder - time control postponed until ponderhit received")
+			s.log.Info("Search mode: Ponder - time control postponed until ponderhit received")
 		}
 	} else {
-		s.log.Debug("Search mode: No time control")
+		s.log.Info("Search mode: No time control")
 	}
 	if sl.Depth > 0 {
 		s.log.Debugf("Search mode: Depth limited  : %d", sl.Depth)
 	}
 	if sl.Nodes > 0 {
-		s.log.Debugf(out.Sprintf("Search mode: Nodes limited  : %d", sl.Nodes))
+		s.log.Infof(out.Sprintf("Search mode: Nodes limited  : %d", sl.Nodes))
 	}
 	if sl.Moves.Len() > 0 {
-		s.log.Debugf(out.Sprintf("Search mode: Moves limited  : %s", sl.Moves.StringUci()))
+		s.log.Infof(out.Sprintf("Search mode: Moves limited  : %s", sl.Moves.StringUci()))
 	}
 }
 
