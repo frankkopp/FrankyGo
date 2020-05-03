@@ -66,7 +66,7 @@ func init() {
 	Settings.Eval.LazyEvalThreshold = 700
 
 	// evaluation value
-	Settings.Eval.Tempo = 30
+	Settings.Eval.Tempo = 34
 
 	Settings.Eval.UseAttacksInEval = false
 

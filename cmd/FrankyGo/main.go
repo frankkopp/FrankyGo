@@ -28,6 +28,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"runtime"
 	"time"
@@ -58,7 +59,7 @@ func main() {
 	bookPath := flag.String("bookpath", "../assets/books", "path to opening book files")
 	bookFile := flag.String("bookfile", "", "opening book file\nprovide path if file is not in same directory as executable\nPlease also provide bookFormat otherwise this will be ignored")
 	bookFormat := flag.String("bookFormat", "", "format of opening book\n(Simple|San|Pgn)")
-	testSuite := flag.String("testsuite", "", "path to file containing EPD tests")
+	testSuite := flag.String("testsuite", "", "path to file containing EPD tests or folder containing EPD files")
 	testMovetime := flag.Int("testtime", 2000, "search time for each test position in milliseconds")
 	testSearchdepth := flag.Int("testdepth", 0, "search depth limit for each test position")
 	flag.Parse()
@@ -109,8 +110,19 @@ func main() {
 
 	// execute test suite if command line options are given
 	if *testSuite != "" {
-		ts, _ := testsuite.NewTestSuite(*testSuite, time.Duration(*testMovetime*1_000_000), *testSearchdepth)
-		ts.RunTests()
+		name := *testSuite
+		fi, err := os.Stat(name)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		switch mode := fi.Mode(); {
+		case mode.IsDir():
+			testsuite.FeatureTests(name+"/", time.Duration(*testMovetime*int(time.Millisecond)), *testSearchdepth)
+		case mode.IsRegular():
+			ts, _ := testsuite.NewTestSuite(name, time.Duration(*testMovetime*1_000_000), *testSearchdepth)
+			ts.RunTests()
+		}
 		return
 	}
 
