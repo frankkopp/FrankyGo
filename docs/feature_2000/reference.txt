@@ -1,0 +1,90 @@
+
+Feature Test Result Report
+==============================================================================
+Date                 : 2020-05-03 17:18:33.8970722 +0200 CEST m=+2685.122521801
+Test took            : 44m44.5005237s
+Test setup           : search time: 2s max depth: 0
+Number of testsuites : 6
+Number of tests      : 1.353
+
+===============================================================================================================================================
+ Test Suite                | Success Rate |           Nodes | Successful |     Failed |    Skipped |        N/A |   Tests | File
+===============================================================================================================================================
+ crafty_test.epd           |       47,5 % |   1.674.062.914 |        164 |        181 |          0 |          0 |     345 | test/testdata/featuretests/crafty_test.epd
+ ecm98.epd                 |       59,6 % |   3.616.068.624 |        458 |        311 |          0 |          0 |     769 | test/testdata/featuretests/ecm98.epd
+ franky_tests.epd          |      100,0 % |      68.511.540 |         13 |          0 |          0 |          0 |      13 | test/testdata/featuretests/franky_tests.epd
+ mate_test_suite.epd       |       65,0 % |     121.070.745 |         13 |          7 |          0 |          0 |      20 | test/testdata/featuretests/mate_test_suite.epd
+ nullMoveZugZwangTest.epd  |       20,0 % |      24.103.460 |          1 |          4 |          0 |          0 |       5 | test/testdata/featuretests/nullMoveZugZwangTest.epd
+ wac.epd                   |       93,5 % |     921.424.841 |        188 |         13 |          0 |          0 |     201 | test/testdata/featuretests/wac.epd
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ TOTAL                     |       61,9 % |   6.425.242.124 |        837 |        516 |          0 |          0 |   1.353 |
+===============================================================================================================================================
+
+Total Time: 44m30.2168494s
+Total NPS : 2.406.262
+
+Configuration: Search Config:
+0 : UseBook                bool   = false
+1 : BookPath               string = ./assets/books
+2 : BookFile               string = book.txt
+3 : BookFormat             string = Simple
+4 : UsePonder              bool   = true
+5 : UseQuiescence          bool   = true
+6 : UseQSStandpat          bool   = true
+7 : UseSEE                 bool   = true
+8 : UsePromNonQuiet        bool   = true
+9 : UseAspiration          bool   = false
+10: UseMTDf                bool   = false
+11: UsePVS                 bool   = true
+12: UseIID                 bool   = true
+13: UseKiller              bool   = true
+14: UseHistoryCounter      bool   = true
+15: UseCounterMoves        bool   = true
+16: IIDDepth               int    = 6
+17: IIDReduction           int    = 2
+18: UseTT                  bool   = true
+19: TTSize                 int    = 256
+20: UseTTMove              bool   = true
+21: UseTTValue             bool   = true
+22: UseQSTT                bool   = true
+23: UseEvalTT              bool   = false
+24: UseMDP                 bool   = true
+25: UseRazoring            bool   = true
+26: RazorMargin            int    = 531
+27: UseRFP                 bool   = true
+28: UseNullMove            bool   = true
+29: NmpDepth               int    = 3
+30: NmpReduction           int    = 2
+31: UseExt                 bool   = true
+32: UseExtAddDepth         bool   = true
+33: UseCheckExt            bool   = true
+34: UseThreatExt           bool   = false
+35: UseFP                  bool   = true
+36: UseLmp                 bool   = true
+37: UseLmr                 bool   = true
+38: LmrDepth               int    = 3
+39: LmrMovesSearched       int    = 3
+
+Evaluation Config:
+0 : UsePawnCache           bool   = false
+1 : PawnCacheSize          int    = 64
+2 : UseLazyEval            bool   = true
+3 : LazyEvalThreshold      int    = 700
+4 : Tempo                  int    = 34
+5 : UseAttacksInEval       bool   = false
+6 : UseMobility            bool   = false
+7 : MobilityBonus          int    = 5
+8 : UseAdvancedPieceEval   bool   = false
+9 : BishopPairBonus        int    = 20
+10: MinorBehindPawnBonus   int    = 15
+11: BishopPawnMalus        int    = 5
+12: BishopCenterAimBonus   int    = 20
+13: BishopBlockedMalus     int    = 40
+14: RookOnQueenFileBonus   int    = 6
+15: RookOnOpenFileBonus    int    = 25
+16: RookTrappedMalus       int    = 40
+17: KingRingAttacksBonus   int    = 10
+18: UseKingEval            bool   = false
+19: KingDangerMalus        int    = 50
+20: KingDefenderBonus      int    = 10
+

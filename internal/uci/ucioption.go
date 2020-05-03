@@ -47,13 +47,14 @@ func init() {
 
 		"Ponder": {NameID: "Ponder", HandlerFunc: usePonder, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePonder), CurrentValue: strconv.FormatBool(Settings.Search.UsePonder)},
 
-		"Quiescence": {NameID: "Quiescence", HandlerFunc: useQuiescence, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQuiescence), CurrentValue: strconv.FormatBool(Settings.Search.UseQuiescence)},
-		"Use_QHash":  {NameID: "Use_QHash", HandlerFunc: useQSHash, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQSTT), CurrentValue: strconv.FormatBool(Settings.Search.UseQSTT)},
-		"Use_SEE":    {NameID: "Use_SEE", HandlerFunc: useSee, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseSEE), CurrentValue: strconv.FormatBool(Settings.Search.UseSEE)},
-		"Use_PromNonQuiet":    {NameID: "Use_PromNonQuiet", HandlerFunc: usePromNonQuiet, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePromNonQuiet), CurrentValue: strconv.FormatBool(Settings.Search.UsePromNonQuiet)},
+		"Quiescence":       {NameID: "Quiescence", HandlerFunc: useQuiescence, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQuiescence), CurrentValue: strconv.FormatBool(Settings.Search.UseQuiescence)},
+		"Use_QHash":        {NameID: "Use_QHash", HandlerFunc: useQSHash, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQSTT), CurrentValue: strconv.FormatBool(Settings.Search.UseQSTT)},
+		"Use_SEE":          {NameID: "Use_SEE", HandlerFunc: useSee, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseSEE), CurrentValue: strconv.FormatBool(Settings.Search.UseSEE)},
+		"Use_PromNonQuiet": {NameID: "Use_PromNonQuiet", HandlerFunc: usePromNonQuiet, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePromNonQuiet), CurrentValue: strconv.FormatBool(Settings.Search.UsePromNonQuiet)},
 
-		"Use_PVS":         {NameID: "Use_PVS", HandlerFunc: usePvs, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePVS), CurrentValue: strconv.FormatBool(Settings.Search.UsePVS)},
-		"Use_ASP":         {NameID: "Use_ASP", HandlerFunc: useAsp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseAspiration), CurrentValue: strconv.FormatBool(Settings.Search.UseAspiration)},
+		"Use_PVS":  {NameID: "Use_PVS", HandlerFunc: usePvs, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePVS), CurrentValue: strconv.FormatBool(Settings.Search.UsePVS)},
+		"Use_ASP":  {NameID: "Use_ASP", HandlerFunc: useAsp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseAspiration), CurrentValue: strconv.FormatBool(Settings.Search.UseAspiration)},
+		"Use_MTDf": {NameID: "Use_MTDf", HandlerFunc: useMtdf, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseMTDf), CurrentValue: strconv.FormatBool(Settings.Search.UseMTDf)},
 
 		"Use_IID":         {NameID: "Use_IID", HandlerFunc: useIID, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseIID), CurrentValue: strconv.FormatBool(Settings.Search.UseIID)},
 		"Use_Killer":      {NameID: "Use_Killer", HandlerFunc: useKiller, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseKiller), CurrentValue: strconv.FormatBool(Settings.Search.UseKiller)},
@@ -272,13 +273,19 @@ func useQSHash(u *UciHandler, o *uciOption) {
 func usePvs(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UsePVS = v
-	log.Debugf("Set Use PVS to %v", Settings.Search.UsePVS)
+	log.Debugf("Set Use Principal Variation Search to %v", Settings.Search.UsePVS)
 }
 
 func useAsp(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseAspiration = v
-	log.Debugf("Set Use AspirationSearch to %v", Settings.Search.UseAspiration)
+	log.Debugf("Set Use Aspiration Search to %v", Settings.Search.UseAspiration)
+}
+
+func useMtdf(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseMTDf = v
+	log.Debugf("Set Use MDTf Search to %v", Settings.Search.UseMTDf)
 }
 
 func useMdp(u *UciHandler, o *uciOption) {

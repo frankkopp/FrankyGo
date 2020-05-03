@@ -44,11 +44,12 @@ type searchConfiguration struct {
 	UseSEE          bool
 	UsePromNonQuiet bool
 
-	UseAspiration bool
-	UseMTDf       bool
+	// main search algorithm
+	UsePVS        bool
+	UseAspiration bool // not yet implemented
+	UseMTDf       bool // not yet implemented
 
 	// Move ordering
-	UsePVS            bool
 	UseIID            bool
 	UseKiller         bool
 	UseHistoryCounter bool
@@ -121,7 +122,7 @@ func init() {
 	Settings.Search.UseEvalTT = false
 
 	Settings.Search.UseMDP = true
-	Settings.Search.UseRazoring = false
+	Settings.Search.UseRazoring = true
 	Settings.Search.RazorMargin = 531
 	Settings.Search.UseRFP = true
 	Settings.Search.UseNullMove = true
@@ -134,7 +135,7 @@ func init() {
 	Settings.Search.UseThreatExt = false
 
 	Settings.Search.UseFP = true
-	Settings.Search.UseQFP = false
+	Settings.Search.UseQFP = true
 	Settings.Search.UseLmp = true
 	Settings.Search.UseLmr = true
 	Settings.Search.LmrDepth = 3

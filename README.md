@@ -6,6 +6,9 @@ Go implementation of a UCI compatible chess engine.
 [![Go Report Card](https://goreportcard.com/badge/github.com/frankkopp/FrankyGo)](https://goreportcard.com/report/github.com/frankkopp/FrankyGo)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/frankkopp/WorkerPool/blob/master/LICENSE)
 
+## Description
+TODO - prose description of FrankyGo
+
 ## Features (v0.9.0)
 * UCI protocol (to use the engine in Arena, xboard, Fritz or other chess user interfaces)
     * UCI Options
@@ -36,9 +39,11 @@ Go implementation of a UCI compatible chess engine.
     * Check extension (needs further tuning/testing)
     * Mate threat extension (deactivated - needs further tuning/testing - currently weakens play)
     * Reverse Futility Pruning (Static Null Move)
-    * Futility Pruning
-    * ~2.5-3.5M nps
-    * TODO: Aspiration Windows, Multi-cut Pruning, History Pruning 
+    * Futility Pruning (also in quiescence search)
+    * Razoring (Stockfish like)
+    * History Pruning (History Count, Counter Moves)
+    * ~2.4 nps on average on i7-7700 and 256 MB hash
+    * TODO: Aspiration Windows, MTDf, Multi-cut Pruning,  
 * Transposition Table
 * Opening Book from PGN, SAN and Simple move list files and persistent cache
 * Evaluation
@@ -48,12 +53,12 @@ Go implementation of a UCI compatible chess engine.
 * Tests:   
     * Test framework to run EPD test suites
     * Test to determine search tree size for features
+    * Test tool to run multiple test suites to test features
 * General: 
     * logging, command lines options, configuration files, search and eval parameters in config files
 
 * Open topics: 
     * Parallel search
-            
      
 ## Learning Go
 Learning a new programming language is always most efficient within a real project.
@@ -113,15 +118,15 @@ Just look at this output from the Go pprof profiler which comes for free with Go
 ## Installation
 Windows build: 
 
-go build -o FrankyGo.exe github.com/frankkopp/FrankyGo/cmd/FrankyGo
+    go build -o FrankyGo.exe github.com/frankkopp/FrankyGo/cmd/FrankyGo
 
-Run FrankyGo.exe
+    Run FrankyGo.exe    
 
 Unix/Mac build: 
 
-go build -o FrankyGo github.com/frankkopp/FrankyGo/cmd/FrankyGo
+    go build -o FrankyGo github.com/frankkopp/FrankyGo/cmd/FrankyGo
 
-Run FrankyGo
+    Run FrankyGo
 
 ## Usage
 Typically, a UCI engine will be used with a UCI compatible chess interface like Arena, xboard, Fritz, etc.
@@ -143,18 +148,25 @@ Use --help for more command line options
 ## Roadmap
 ### vx.x (planned)
 - TODO:
+    - Aspiration
+    - MTDf
     - Better Evaluation and testing
     - Pawn Structure Cache
     - MultiCut Pruning
        - https://hci.iwr.uni-heidelberg.de/system/files/private/downloads/1935772097/report_qingyang-cao_enhanced-forward-pruning.pdf
     - Other Prunings
-    - Aspiration
     - Continuously Performance/Profiling/Testing
     - Tuning and Testing of all search features and parameters
 
 ## Versions
 ### v0.9.0 (in progress)
 - TODO:
+    - make it runnable without config file / config file optional
+    
+- DONE:
+    - Razor (Stockfish)
+    - QSearch Futility Pruning
+    - Additional Feature Test tool
     - History Heuristics 
 
 ### v0.8.0 (done)

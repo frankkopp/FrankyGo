@@ -48,7 +48,7 @@ IIDReduction = 2
 
 # prunings pre-move
 UseMDP = true
-UseRazoring = false
+UseRazoring = true
 RazorMargin = 531
 UseRFP = true
 UseNullMove = true
@@ -63,7 +63,7 @@ UseThreatExt = false
 
 # pruning post-move
 UseFP = true
-UseQFP = false
+UseQFP = true
 UseLmp = true
 UseLmr = true
 LmrDepth = 3
