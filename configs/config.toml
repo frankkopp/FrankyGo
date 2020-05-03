@@ -48,6 +48,8 @@ IIDReduction = 2
 
 # prunings pre-move
 UseMDP = true
+UseRazoring = false
+RazorMargin = 531
 UseRFP = true
 UseNullMove = true
 NmpDepth = 3

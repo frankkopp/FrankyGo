@@ -66,6 +66,8 @@ type searchConfiguration struct {
 
 	// Prunings pre move gen
 	UseMDP       bool
+	UseRazoring  bool
+	RazorMargin  int
 	UseRFP       bool
 	UseNullMove  bool
 	NmpDepth     int
@@ -119,6 +121,8 @@ func init() {
 	Settings.Search.UseEvalTT = false
 
 	Settings.Search.UseMDP = true
+	Settings.Search.UseRazoring = false
+	Settings.Search.RazorMargin = 531
 	Settings.Search.UseRFP = true
 	Settings.Search.UseNullMove = true
 	Settings.Search.NmpDepth = 3

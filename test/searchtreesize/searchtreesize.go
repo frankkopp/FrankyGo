@@ -190,6 +190,9 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseQFP = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "QFP"))
 
+	Settings.Search.UseRazoring = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "RAZOR"))
+
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
 
@@ -339,6 +342,7 @@ func turnOffFeatures() {
 	Settings.Search.UseHistoryCounter = false
 	Settings.Search.UseCounterMoves = false
 	Settings.Search.UseMDP = false
+	Settings.Search.UseRazoring = false
 	Settings.Search.UseNullMove = false
 	Settings.Search.UseExt = false
 	Settings.Search.UseExtAddDepth = false
