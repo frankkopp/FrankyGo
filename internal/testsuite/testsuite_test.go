@@ -486,6 +486,7 @@ func TestFeatureTests(t *testing.T) {
 
 		config.Settings.Search.UseRFP = true
 		config.Settings.Search.UseFP = true
+		config.Settings.Search.UseQFP = true
 		config.Settings.Search.UseLmr = true
 		config.Settings.Search.LmrDepth = 3
 		config.Settings.Search.LmrMovesSearched = 3
