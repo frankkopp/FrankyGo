@@ -40,8 +40,10 @@ import (
 	"github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/internal/movegen"
 	"github.com/frankkopp/FrankyGo/internal/position"
+	"github.com/frankkopp/FrankyGo/internal/search"
 	"github.com/frankkopp/FrankyGo/internal/testsuite"
 	"github.com/frankkopp/FrankyGo/internal/uci"
+	"github.com/frankkopp/FrankyGo/internal/util"
 	"github.com/frankkopp/FrankyGo/internal/version"
 )
 
@@ -64,7 +66,8 @@ func main() {
 	testMovetime := flag.Int("testtime", 2000, "search time for each test position in milliseconds")
 	testSearchdepth := flag.Int("testdepth", 0, "search depth limit for each test position")
 	perft := flag.Int("perft", 0, "starts perft with the given depth")
-	fen := flag.String("fen", position.StartFen, "fen for perft test")
+	fen := flag.String("fen", position.StartFen, "fen for perft and nps test")
+	nps := flag.Int("nps", 0, "starts nodes per second test for given amount of seconds")
 	flag.Parse()
 
 	// print version info and exit
@@ -110,6 +113,20 @@ func main() {
 	// called. These loggers start with the default log level and must be reset
 	// to the actual level required.
 	logging.GetLog()
+
+	// nps test
+	if *nps != 0 {
+		config.Settings.Search.UseBook = false
+		s := search.NewSearch()
+		p := position.NewPosition(*fen)
+		sl := search.NewSearchLimits()
+		sl.TimeControl = true
+		sl.MoveTime = time.Duration(*nps * int(time.Second))
+		s.StartSearch(*p, *sl)
+		s.WaitWhileSearching()
+		out.Println("NPS : ", util.Nps(s.NodesVisited(), s.LastSearchResult().SearchTime))
+		return
+	}
 
 	// perft
 	if *perft != 0 {

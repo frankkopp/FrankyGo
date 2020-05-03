@@ -55,7 +55,7 @@ TODO - prose description of FrankyGo
     * Test to determine search tree size for features
     * Test tool to run multiple test suites to test features
 * General: 
-    * logging, command lines options, configuration files, search and eval parameters in config files
+    * logging, command lines options, configuration file, search and eval parameters in config files
 
 * Open topics: 
     * Parallel search
