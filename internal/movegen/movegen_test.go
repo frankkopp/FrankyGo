@@ -658,8 +658,8 @@ func TestTimingOnDemandMoveGen(t *testing.T) {
 	}
 }
 
-// GeneratePseudoLegalMoves took 2.228.838.600 ns for 1.000.000 iterations
-// 86.000.000 moves generated in 2.228 ns: 38.585.117 mps
+// GeneratePseudoLegalMoves took 1.655.000.800 ns for 1.000.000 iterations
+// 86.000.000 moves generated in 1.655 ns: 51.963.721 mps
 func TestTimingOnDemandRealMoveGen(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")

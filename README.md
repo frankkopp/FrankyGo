@@ -7,9 +7,48 @@ Go implementation of a UCI compatible chess engine.
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/frankkopp/WorkerPool/blob/master/LICENSE)
 
 ## Description
-TODO - prose description of FrankyGo
+FrankyGo is the fourth chess engine I wrote. The first one was written in Java and it had a JavaFx UI 
+([Chessly](https://github.com/frankkopp/Chessly)) but did not support UCI. I was very inexperienced then, and the 
+engine itself was not good. But I learned a lot and also liked developing the JavaFx part. I then rewrote it still 
+in Java again but as an UCI engine. This time the structure was much better thanks to many great chess engine 
+developers I learned from. I also found out that my interest is in programming itself more than it is in building  
+the "best" chess engine. Therefore, I used what I learned from other chess engines but tried to build mine in a 
+clean and easy to understand way. This resulted in Franky 1.0 
+([Github](https://github.com/frankkopp/FrankyUCIChessEngine),
+[CCRL](http://www.computerchess.org.uk/ccrl/404/cgi/engine_details.cgi?print=Details&each_game=1&eng=Franky%201.0%2064-bit#Franky_1_0_64-bit))
+ 
+I then started to re-write it in C++ ([FrankyCPP](https://github.com/frankkopp/FrankyCPP)) and came quite far. 
+But C++ (and its infrastructure) make it necessary to focus a lot on the language itself and its tools around it. 
+E.g. I learned a lot about different compilers on different platforms, CMake, Boost, Google Test, etc. but it rather 
+distracted me a lot from developing the chess engine itself. My time is limited so this was very annoying. 
 
-## Features (v0.9.0)
+Then I looked into [Go](https://golang.org/doc/). A completely new language compiled directly into machine code, 
+platform independent, with a garbage collector and the promise to be as fast as C++/C. 
+This was the motivation to start FrankyGo and Go kept its promises. Easy to learn, great tool set, no distraction from 
+the code by the language and indeed fast. See below "Learning Go".
+
+So FrankyGo is now a rather clean chess engine with a lot of potential. As mentioned above I do not claim to have 
+invented any of algorithms and in fact I used many ideas from Stockfish, Crafty, Beowulf, etc. See "Credits" below.
+But I had a lot of fun developing it and I do hope to have more fun improving it in the future. 
+
+There is a small issue though - when developing a chess engine up to a certain level testing starts to completely 
+overshadow development. Every feature, every evaluation, every change needs lots of testing against KPIs, test suites, 
+itself and real other engines. These tests are extremely time-consuming to be meaningful. It needs thousands of games 
+to reliably prove that a feature is an improvement, and these games need time. Too short thinking times make the tests 
+unreliable especially for features which have increased effect in deeper searches. So several computers doing tests
+at the same time ios normal but also rather stressful :)
+
+I will go on improving FrankyGo, and I'm happy to receive any feedback on my Go code but also  of course on improving 
+the engine itself.  
+
+A word on v1.0: I have implemented most major and common chess engine features, and the search itself is ok for now
+but can of course always be improved. There are many great ideas out there to make it even more effective. 
+Evaluation in v1.0 is very basic. Only material and positional differences are counted. There are already some other
+evaluations implemented but deactivated as they need a lot of testing and tuning.  
+
+Estimated ELO is 2050. 
+
+## Features (v1.0.0)
 * UCI protocol (to use the engine in Arena, xboard, Fritz or other chess user interfaces)
     * UCI Options
     * UCI Search Modes
@@ -133,17 +172,53 @@ Typically, a UCI engine will be used with a UCI compatible chess interface like 
 Just configure a new engine in the UCI interface pointing to the executable of FrankyGo. If necessary use 
 command line options to find config file, logs folder and opening books folder.    
 
-To run FrankyGo needs to find its config file:
-
-Default place to look for it is ../configs/config.toml
-
+To configure the engine, the search and evaluation a config file can be used. 
+Default place to look for it is ./config.toml
 Use command line option "-config" to change location
 
 Also helpful:
 * logs files are stored in folder "../logs" or folder defined by cmd line option "-logpath"
 * opening books are searched in folder "../assets/book" or folder defined in cmd line option "-bookpath"
 
-Use --help for more command line options
+Command line options:
+
+```
+ Usage of D:\_DEV\go\src\github.com\frankkopp\FrankyGo\bin\FrankyGo.exe:
+   -bookFormat string
+         format of opening book
+         (Simple|San|Pgn)
+   -bookfile string
+         opening book file
+         provide path if file is not in same directory as executable
+         Please also provide bookFormat otherwise this will be ignored
+   -bookpath string
+         path to opening book files (default "../assets/books")
+   -config string
+         path to configuration settings file (default "./config.toml")
+   -fen string
+         fen for perft and nps test (default "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+   -loglvl string
+         standard log level
+         (critical|error|warning|notice|info|debug) (default "info")
+   -logpath string
+         path where to write log files to (default "../logs")
+   -nps int
+         starts nodes per second test for given amount of seconds
+   -perft int
+         starts perft with the given depth
+   -searchloglvl string
+         search log level
+         (critical|error|warning|notice|info|debug)
+   -testdepth int
+         search depth limit for each test position
+   -testsuite string
+         path to file containing EPD tests or folder containing EPD files
+   -testtime int
+         search time for each test position in milliseconds (default 2000)
+   -version
+         prints version and exits
+```
+
 
 ## Roadmap
 ### vx.x (planned)
@@ -159,7 +234,7 @@ Use --help for more command line options
     - Tuning and Testing of all search features and parameters
 
 ## Versions
-### v0.9.0 (in progress)
+### v1.0.0 (in progress)
 - TODO:
     - make it runnable without config file / config file optional
     
@@ -255,3 +330,17 @@ Use --help for more command line options
     - MoveArray and MoveList - both are for list of moves - MoveArray is faster for sorting
         might be slower when inserting at the front - needs testing
     - Most types (all required for perft)
+
+## Credits
+- https://www.chessprogramming.org
+- Stockfish / Tord Romstad, Marco Costalba, Joona Kiiski and Gary Linscott
+- Crafty / Robert Hyatt
+- TalkChess.org
+- Flux, Pulse / Phokham Nonava
+- Beowulf / Colin Frayn
+- Mediocre / Jonatan Pettersson
+- Bruce Moreland & GERBIL (http://www.brucemo.com/compchess/programming/index.htm)
+- CPW-Engine / Pawel Koziol, Edmund Moshammer
+- DarkThought / Ernst A. Heinz
+- Arena Chess GUI / Martin Blume (Germany) et al
+- and many more
