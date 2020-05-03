@@ -182,12 +182,13 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseLmr = true
 	// Late Move Pruning
 	Settings.Search.UseLmp = true
+	Settings.Search.UseHistoryCounter = true
+	Settings.Search.UseCounterMoves = true
 
 	r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
 
-	Settings.Search.UseHistoryCounter = true
-	Settings.Search.UseCounterMoves = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "HISTORY"))
+	Settings.Search.UseRazoring = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "RAZOR"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -338,6 +339,7 @@ func turnOffFeatures() {
 	Settings.Search.UseHistoryCounter = false
 	Settings.Search.UseCounterMoves = false
 	Settings.Search.UseMDP = false
+	Settings.Search.UseRazoring = false
 	Settings.Search.UseNullMove = false
 	Settings.Search.UseExt = false
 	Settings.Search.UseExtAddDepth = false

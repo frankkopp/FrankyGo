@@ -90,6 +90,8 @@ type SuiteResult struct {
 	FailedCounter    int
 	SkippedCounter   int
 	NotTestedCounter int
+	Nodes            uint64
+	Time             time.Duration
 }
 
 // Test defines the data structure for a test after reading in the
@@ -107,6 +109,8 @@ type Test struct {
 	value       Value
 	rType       resultType
 	line        string
+	nodes       uint64
+	time        time.Duration
 	nps         uint64
 }
 
@@ -196,6 +200,8 @@ func (ts *TestSuite) RunTests() {
 		startTime2 := time.Now()
 		runSingleTest(s, sl, t)
 		elapsedTime := time.Since(startTime2)
+		t.nodes = s.NodesVisited()
+		t.time = s.LastSearchResult().SearchTime
 		t.nps = util.Nps(s.NodesVisited(), s.LastSearchResult().SearchTime)
 		out.Printf("Test finished in %d ms with result %s (%s) - nps: %d\n\n",
 			elapsedTime.Milliseconds(), t.rType.String(), t.actual.StringUci(), t.nps)
@@ -215,6 +221,8 @@ func (ts *TestSuite) RunTests() {
 		case Success:
 			tr.SuccessCounter++
 		}
+		tr.Nodes += t.nodes
+		tr.Time += t.time
 	}
 	ts.LastResult = tr
 
