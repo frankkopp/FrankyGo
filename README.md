@@ -9,7 +9,7 @@ Go implementation of a UCI compatible chess engine.
 ## Description
 FrankyGo is the fourth chess engine I wrote. The first one was written in Java and it had a JavaFx UI 
 ([Chessly](https://github.com/frankkopp/Chessly)) but did not support UCI. I was very inexperienced then, and the 
-engine itself was not good. But I learned a lot and also liked developing the JavaFx part. I then rewrote it still 
+engine itself was not good. But I learned a lot and also liked developing the JavaFx part. I then rewrote it  
 in Java again but as an UCI engine. This time the structure was much better thanks to many great chess engine 
 developers I learned from. I also found out that my interest is in programming itself more than it is in building  
 the "best" chess engine. Therefore, I used what I learned from other chess engines but tried to build mine in a 
@@ -18,9 +18,9 @@ clean and easy to understand way. This resulted in Franky 1.0
 [CCRL](http://www.computerchess.org.uk/ccrl/404/cgi/engine_details.cgi?print=Details&each_game=1&eng=Franky%201.0%2064-bit#Franky_1_0_64-bit))
  
 I then started to re-write it in C++ ([FrankyCPP](https://github.com/frankkopp/FrankyCPP)) and came quite far. 
-But C++ (and its infrastructure) make it necessary to focus a lot on the language itself and its tools around it. 
-E.g. I learned a lot about different compilers on different platforms, CMake, Boost, Google Test, etc. but it rather 
-distracted me a lot from developing the chess engine itself. My time is limited so this was very annoying. 
+But C++ (and its infrastructure) forced me to focus a lot on the language itself and its tools around it. 
+E.g. I learned a lot (too much?) about different compilers on different platforms, CMake, Boost, Google Test, etc. 
+but it rather distracted me a lot from developing the chess engine itself. My time is limited so this was very annoying. 
 
 Then I looked into [Go](https://golang.org/doc/). A completely new language compiled directly into machine code, 
 platform independent, with a garbage collector and the promise to be as fast as C++/C. 
