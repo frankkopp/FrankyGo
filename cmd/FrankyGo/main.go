@@ -38,6 +38,8 @@ import (
 
 	"github.com/frankkopp/FrankyGo/internal/config"
 	"github.com/frankkopp/FrankyGo/internal/logging"
+	"github.com/frankkopp/FrankyGo/internal/movegen"
+	"github.com/frankkopp/FrankyGo/internal/position"
 	"github.com/frankkopp/FrankyGo/internal/testsuite"
 	"github.com/frankkopp/FrankyGo/internal/uci"
 	"github.com/frankkopp/FrankyGo/internal/version"
@@ -46,9 +48,8 @@ import (
 var out = message.NewPrinter(language.German)
 
 func main() {
-	// defer profile.Start().Stop()
-	// defer profile.Start(profile.TraceProfile, profile.ProfilePath(".")).Stop()
-	// go tool pprof -http :8080 ./main ./prof.null/cpu.pprof
+	// defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
+	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 
 	// command line args
 	versionInfo := flag.Bool("version", false, "prints version and exits")
@@ -62,6 +63,8 @@ func main() {
 	testSuite := flag.String("testsuite", "", "path to file containing EPD tests or folder containing EPD files")
 	testMovetime := flag.Int("testtime", 2000, "search time for each test position in milliseconds")
 	testSearchdepth := flag.Int("testdepth", 0, "search depth limit for each test position")
+	perft := flag.Int("perft", 0, "starts perft with the given depth")
+	fen := flag.String("fen", position.StartFen, "fen for perft test")
 	flag.Parse()
 
 	// print version info and exit
@@ -107,6 +110,15 @@ func main() {
 	// called. These loggers start with the default log level and must be reset
 	// to the actual level required.
 	logging.GetLog()
+
+	// perft
+	if *perft != 0 {
+		var perftTest movegen.Perft
+		for i := 1; i <= *perft; i++ {
+			perftTest.StartPerft(*fen, i, true)
+		}
+		return
+	}
 
 	// execute test suite if command line options are given
 	if *testSuite != "" {

@@ -20,7 +20,7 @@ TODO - prose description of FrankyGo
     * all moves or on demand in phases 
     * mode: all, capture only, non capture, check evasions
     * move sorting for estimated value of move, pv move and killer moves
-    * ~50 Million moves per sec on my i7-7700
+    * ~53 Million moves per sec on my i7-7700
 * Perft tests
     * ~4.8+Million nps 
 * Search as PVS AlphaBeta search
