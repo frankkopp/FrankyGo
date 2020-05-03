@@ -96,7 +96,7 @@ func FeatureTests(folder string, searchTime time.Duration, searchDepth int) stri
 	os.WriteString(out.Sprintf("Number of tests      : %d\n", executedTests))
 	os.WriteString(out.Sprintln())
 	os.WriteString(out.Sprintf("===============================================================================================================================================\n"))
-	os.WriteString(out.Sprintf(" %-25s | %-12s | %-15s | %-10s | %-10s | %-10s | %-10s | %-6s | %s\n", "Test Suite", "Success Rate", "      Nodes", "Successful", "    Failed", "   Skipped", "       N/A", "  Tests", "File"))
+	os.WriteString(out.Sprintf(" %-25s | %-12s | %-15s | %-10s | %-10s | %-10s | %-10s | %-6s | %s\n", "Test Suite", "Success Rate", "          Nodes", "Successful", "    Failed", "   Skipped", "       N/A", "  Tests", "File"))
 	os.WriteString(out.Sprintf("===============================================================================================================================================\n"))
 	for _, name := range keys {
 		r := result[name]
@@ -116,7 +116,8 @@ func FeatureTests(folder string, searchTime time.Duration, searchDepth int) stri
 	os.WriteString(out.Sprintf(" %-25s |      %5.1f %% | %15d |   %8d |   %8d |   %8d |   %8d |  %6d | %s\n", "TOTAL", successRate, totalNodes, totalSuccess, totalFailed, totalSkipped, totalNotTested, totalTests, ""))
 	os.WriteString(out.Sprintf("===============================================================================================================================================\n"))
 	os.WriteString(out.Sprintln())
-	os.WriteString(out.Sprintf("Total NPS: %d\n", util.Nps(totalNodes, totalTime)))
+	os.WriteString(out.Sprintf("Total Time: %s\n", totalTime))
+	os.WriteString(out.Sprintf("Total NPS : %d\n", util.Nps(totalNodes, totalTime)))
 	os.WriteString(out.Sprintln())
 	os.WriteString(out.Sprintf("Configuration: %s\n", config.Settings.String()))
 	os.WriteString(out.Sprintln())

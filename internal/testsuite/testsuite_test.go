@@ -362,7 +362,7 @@ func TestFeatureTests(t *testing.T) {
 	}
 
 	// setup tests
-	searchTime := 200 * time.Millisecond
+	searchTime := 2000 * time.Millisecond
 	searchDepth := 0
 
 	// Feature Settings
@@ -407,7 +407,7 @@ func TestFeatureTests(t *testing.T) {
 	config.Settings.Search.LmrMovesSearched = 3
 	config.Settings.Search.UseLmp = true
 
-	config.Settings.Eval.Tempo = 50
+	config.Settings.Eval.Tempo = 34
 	config.Settings.Eval.UseLazyEval = true
 	config.Settings.Eval.LazyEvalThreshold = 700
 

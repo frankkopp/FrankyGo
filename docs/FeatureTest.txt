@@ -1,0 +1,175 @@
+
+No Razor
+Feature Test Result Report
+==============================================================================
+Date                 : 2020-05-03 15:29:31.4228584 +0200 CEST m=+287.655553701
+Test took            : 4m47.0305547s
+Test setup           : search time: 200ms max depth: 0
+Number of testsuites : 6
+Number of tests      : 1.353
+
+===============================================================================================================================================
+ Test Suite                | Success Rate |           Nodes | Successful |     Failed |    Skipped |        N/A |   Tests | File
+===============================================================================================================================================
+ crafty_test.epd           |       42,0 % |     177.980.949 |        145 |        200 |          0 |          0 |     345 | test/testdata/featuretests/crafty_test.epd
+ ecm98.epd                 |       38,6 % |     390.787.073 |        297 |        472 |          0 |          0 |     769 | test/testdata/featuretests/ecm98.epd
+ franky_tests.epd          |      100,0 % |       7.746.451 |         13 |          0 |          0 |          0 |      13 | test/testdata/featuretests/franky_tests.epd
+ mate_test_suite.epd       |       40,0 % |      11.487.423 |          8 |         12 |          0 |          0 |      20 | test/testdata/featuretests/mate_test_suite.epd
+ nullMoveZugZwangTest.epd  |       20,0 % |       2.499.175 |          1 |          4 |          0 |          0 |       5 | test/testdata/featuretests/nullMoveZugZwangTest.epd
+ wac.epd                   |       85,6 % |     103.612.002 |        172 |         29 |          0 |          0 |     201 | test/testdata/featuretests/wac.epd
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ TOTAL                     |       47,0 % |     694.113.073 |        636 |        717 |          0 |          0 |   1.353 |
+===============================================================================================================================================
+
+Total NPS: 2.542.281
+
+Razor 531
+Feature Test Result Report
+==============================================================================
+Date                 : 2020-05-03 15:09:21.5596584 +0200 CEST m=+287.564023201
+Test took            : 4m46.9703068s
+Test setup           : search time: 200ms max depth: 0
+Number of testsuites : 6
+Number of tests      : 1.353
+
+===============================================================================================================================================
+ Test Suite                | Success Rate |       Nodes     | Successful |     Failed |    Skipped |        N/A |   Tests | File
+===============================================================================================================================================
+ crafty_test.epd           |       41,2 % |     171.162.443 |        142 |        203 |          0 |          0 |     345 | test/testdata/featuretests/crafty_test.epd
+ ecm98.epd                 |       38,1 % |     361.880.210 |        293 |        476 |          0 |          0 |     769 | test/testdata/featuretests/ecm98.epd
+ franky_tests.epd          |      100,0 % |       7.704.875 |         13 |          0 |          0 |          0 |      13 | test/testdata/featuretests/franky_tests.epd
+ mate_test_suite.epd       |       35,0 % |      11.219.080 |          7 |         13 |          0 |          0 |      20 | test/testdata/featuretests/mate_test_suite.epd
+ nullMoveZugZwangTest.epd  |       20,0 % |       2.509.808 |          1 |          4 |          0 |          0 |       5 | test/testdata/featuretests/nullMoveZugZwangTest.epd
+ wac.epd                   |       84,1 % |      98.669.499 |        169 |         32 |          0 |          0 |     201 | test/testdata/featuretests/wac.epd
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ TOTAL                     |       46,2 % |     653.145.915 |        625 |        728 |          0 |          0 |   1.353 |
+===============================================================================================================================================
+
+Total NPS: 2.393.933
+
+Razor 531
+Feature Test Result Report
+==============================================================================
+Date                 : 2020-05-03 16:01:01.9115768 +0200 CEST m=+287.850884601
+Test took            : 4m47.2168865s
+Test setup           : search time: 200ms max depth: 0
+Number of testsuites : 6
+Number of tests      : 1.353
+
+===============================================================================================================================================
+ Test Suite                | Success Rate |           Nodes | Successful |     Failed |    Skipped |        N/A |   Tests | File
+===============================================================================================================================================
+ crafty_test.epd           |       41,7 % |     167.884.426 |        144 |        201 |          0 |          0 |     345 | test/testdata/featuretests/crafty_test.epd
+ ecm98.epd                 |       38,2 % |     353.443.731 |        294 |        475 |          0 |          0 |     769 | test/testdata/featuretests/ecm98.epd
+ franky_tests.epd          |      100,0 % |       7.278.156 |         13 |          0 |          0 |          0 |      13 | test/testdata/featuretests/franky_tests.epd
+ mate_test_suite.epd       |       35,0 % |      10.810.689 |          7 |         13 |          0 |          0 |      20 | test/testdata/featuretests/mate_test_suite.epd
+ nullMoveZugZwangTest.epd  |       20,0 % |       2.216.390 |          1 |          4 |          0 |          0 |       5 | test/testdata/featuretests/nullMoveZugZwangTest.epd
+ wac.epd                   |       83,6 % |      94.432.876 |        168 |         33 |          0 |          0 |     201 | test/testdata/featuretests/wac.epd
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ TOTAL                     |       46,3 % |     636.066.268 |        627 |        726 |          0 |          0 |   1.353 |
+===============================================================================================================================================
+
+Total Time: 4m32.808419s
+Total NPS : 2.331.549
+
+Razor 350
+Feature Test Result Report
+==============================================================================
+Date                 : 2020-05-03 15:40:32.840495 +0200 CEST m=+288.126434801
+Test took            : 4m47.4584339s
+Test setup           : search time: 200ms max depth: 0
+Number of testsuites : 6
+Number of tests      : 1.353
+
+===============================================================================================================================================
+ Test Suite                | Success Rate |           Nodes | Successful |     Failed |    Skipped |        N/A |   Tests | File
+===============================================================================================================================================
+ crafty_test.epd           |       42,0 % |     155.777.282 |        145 |        200 |          0 |          0 |     345 | test/testdata/featuretests/crafty_test.epd
+ ecm98.epd                 |       36,4 % |     340.263.329 |        280 |        489 |          0 |          0 |     769 | test/testdata/featuretests/ecm98.epd
+ franky_tests.epd          |      100,0 % |       7.688.027 |         13 |          0 |          0 |          0 |      13 | test/testdata/featuretests/franky_tests.epd
+ mate_test_suite.epd       |       35,0 % |      10.977.962 |          7 |         13 |          0 |          0 |      20 | test/testdata/featuretests/mate_test_suite.epd
+ nullMoveZugZwangTest.epd  |       20,0 % |       2.409.029 |          1 |          4 |          0 |          0 |       5 | test/testdata/featuretests/nullMoveZugZwangTest.epd
+ wac.epd                   |       82,6 % |      91.925.544 |        166 |         35 |          0 |          0 |     201 | test/testdata/featuretests/wac.epd
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ TOTAL                     |       45,2 % |     609.041.173 |        612 |        741 |          0 |          0 |   1.353 |
+===============================================================================================================================================
+
+Total Time: 4m33.0558827s
+Total NPS : 2.230.463
+
+Razor 600
+Feature Test Result Report
+==============================================================================
+Date                 : 2020-05-03 15:53:44.3909215 +0200 CEST m=+287.951035701
+Test took            : 4m47.3300353s
+Test setup           : search time: 200ms max depth: 0
+Number of testsuites : 6
+Number of tests      : 1.353
+
+===============================================================================================================================================
+ Test Suite                | Success Rate |           Nodes | Successful |     Failed |    Skipped |        N/A |   Tests | File
+===============================================================================================================================================
+ crafty_test.epd           |       41,2 % |     170.595.272 |        142 |        203 |          0 |          0 |     345 | test/testdata/featuretests/crafty_test.epd
+ ecm98.epd                 |       38,1 % |     366.401.154 |        293 |        476 |          0 |          0 |     769 | test/testdata/featuretests/ecm98.epd
+ franky_tests.epd          |      100,0 % |       7.709.497 |         13 |          0 |          0 |          0 |      13 | test/testdata/featuretests/franky_tests.epd
+ mate_test_suite.epd       |       35,0 % |      10.903.414 |          7 |         13 |          0 |          0 |      20 | test/testdata/featuretests/mate_test_suite.epd
+ nullMoveZugZwangTest.epd  |       20,0 % |       2.539.311 |          1 |          4 |          0 |          0 |       5 | test/testdata/featuretests/nullMoveZugZwangTest.epd
+ wac.epd                   |       83,1 % |      97.254.948 |        167 |         34 |          0 |          0 |     201 | test/testdata/featuretests/wac.epd
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ TOTAL                     |       46,0 % |     655.403.596 |        623 |        730 |          0 |          0 |   1.353 |
+===============================================================================================================================================
+
+Total Time: 4m33.0289625s
+Total NPS : 2.400.491
+
+Tempo 0
+Razor 531
+Feature Test Result Report
+==============================================================================
+Date                 : 2020-05-03 16:09:38.8459392 +0200 CEST m=+287.933610501
+Test took            : 4m47.2796079s
+Test setup           : search time: 200ms max depth: 0
+Number of testsuites : 6
+Number of tests      : 1.353
+
+===============================================================================================================================================
+ Test Suite                | Success Rate |           Nodes | Successful |     Failed |    Skipped |        N/A |   Tests | File
+===============================================================================================================================================
+ crafty_test.epd           |       41,2 % |     169.823.523 |        142 |        203 |          0 |          0 |     345 | test/testdata/featuretests/crafty_test.epd
+ ecm98.epd                 |       37,3 % |     361.151.600 |        287 |        482 |          0 |          0 |     769 | test/testdata/featuretests/ecm98.epd
+ franky_tests.epd          |      100,0 % |       7.403.064 |         13 |          0 |          0 |          0 |      13 | test/testdata/featuretests/franky_tests.epd
+ mate_test_suite.epd       |       30,0 % |      11.490.494 |          6 |         14 |          0 |          0 |      20 | test/testdata/featuretests/mate_test_suite.epd
+ nullMoveZugZwangTest.epd  |       20,0 % |       2.218.439 |          1 |          4 |          0 |          0 |       5 | test/testdata/featuretests/nullMoveZugZwangTest.epd
+ wac.epd                   |       83,1 % |      95.077.185 |        167 |         34 |          0 |          0 |     201 | test/testdata/featuretests/wac.epd
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ TOTAL                     |       45,5 % |     647.164.305 |        616 |        737 |          0 |          0 |   1.353 |
+===============================================================================================================================================
+
+Total Time: 4m32.9145411s
+Total NPS : 2.371.307
+
+Tempo 25
+Razor 531
+Feature Test Result Report
+==============================================================================
+Date                 : 2020-05-03 16:15:21.3366872 +0200 CEST m=+287.935393701
+Test took            : 4m47.263603s
+Test setup           : search time: 200ms max depth: 0
+Number of testsuites : 6
+Number of tests      : 1.353
+
+===============================================================================================================================================
+ Test Suite                | Success Rate |           Nodes | Successful |     Failed |    Skipped |        N/A |   Tests | File
+===============================================================================================================================================
+ crafty_test.epd           |       42,6 % |     168.717.281 |        147 |        198 |          0 |          0 |     345 | test/testdata/featuretests/crafty_test.epd
+ ecm98.epd                 |       37,7 % |     350.079.321 |        290 |        479 |          0 |          0 |     769 | test/testdata/featuretests/ecm98.epd
+ franky_tests.epd          |      100,0 % |       7.660.545 |         13 |          0 |          0 |          0 |      13 | test/testdata/featuretests/franky_tests.epd
+ mate_test_suite.epd       |       35,0 % |      11.301.914 |          7 |         13 |          0 |          0 |      20 | test/testdata/featuretests/mate_test_suite.epd
+ nullMoveZugZwangTest.epd  |       20,0 % |       2.276.984 |          1 |          4 |          0 |          0 |       5 | test/testdata/featuretests/nullMoveZugZwangTest.epd
+ wac.epd                   |       82,6 % |      96.461.650 |        166 |         35 |          0 |          0 |     201 | test/testdata/featuretests/wac.epd
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ TOTAL                     |       46,1 % |     636.497.695 |        624 |        729 |          0 |          0 |   1.353 |
+===============================================================================================================================================
+
+Total Time: 4m33.1088332s
+Total NPS : 2.330.564
