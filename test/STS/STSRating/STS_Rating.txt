@@ -1,33 +1,5 @@
 Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
 Engine: FrankyGo v1.0.0rc (4.5.2020)
-Hash: 256, Threads: 1, time/pos: 0.130s
-Test duration: 00:03:46
-Expected time to finish: 00:04:00
-STS rating: -243
-
-  STS ID   STS1   STS2   STS3   STS4   STS5   STS6   STS7   STS8   STS9  STS10  STS11  STS12  STS13  STS14  STS15    ALL
-  NumPos    100    100    100    100    100    100    100    100    100    100    100    100    100    100    100   1500
- BestCnt      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
-   Score      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
-Score(%)    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0
-  Rating   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243
-
-Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
-Engine: FrankyGo v1.0.0rc (4.5.2020)
-Hash: 256, Threads: 1, time/pos: 0.130s
-Test duration: 00:03:00
-Expected time to finish: 00:04:00
-STS rating: -243
-
-  STS ID   STS1   STS2   STS3   STS4   STS5   STS6   STS7   STS8   STS9  STS10  STS11  STS12  STS13  STS14  STS15    ALL
-  NumPos    100    100    100    100    100    100    100    100    100    100    100    100    100    100    100   1500
- BestCnt      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
-   Score      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
-Score(%)    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0
-  Rating   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243
-
-Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
-Engine: FrankyGo v1.0.0rc (4.5.2020)
 Hash: 128, Threads: 1, time/pos: 0.127s
 Test duration: 00:02:53
 Expected time to finish: 00:03:55
