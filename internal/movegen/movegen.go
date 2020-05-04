@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 // Package movegen contains functionality to create moves on a
 // chess position. It implements several variants like
@@ -52,8 +52,8 @@ var log *logging.Logger
 //  movegen.NewMoveGen()
 // Creating this directly will not work.
 type Movegen struct {
-	pseudoLegalMoves       *moveslice.MoveSlice
-	legalMoves             *moveslice.MoveSlice
+	pseudoLegalMoves *moveslice.MoveSlice
+	legalMoves       *moveslice.MoveSlice
 
 	onDemandMoves          *moveslice.MoveSlice
 	currentODZobrist       position.Key
@@ -61,20 +61,20 @@ type Movegen struct {
 	currentODStage         int8
 	takeIndex              int
 
-	killerMoves            [2]Move
-	pvMove                 Move
-	pvMovePushed           bool
-	historyData            *history.History
+	killerMoves  [2]Move
+	pvMove       Move
+	pvMovePushed bool
+	historyData  *history.History
 }
 
 // //////////////////////////////////////////////////////
 // // Public
 // //////////////////////////////////////////////////////
 
-// GenMode generation modes for on demand move generation
+// GenMode generation modes for on demand move generation.
 type GenMode int
 
-// GenMode generation modes for on demand move generation
+// GenMode generation modes for on demand move generation.
 const (
 	GenZero     GenMode = 0b00
 	GenNonQuiet GenMode = 0b01
@@ -98,8 +98,8 @@ func NewMoveGen() *Movegen {
 		log = myLogging.GetLog()
 	}
 	tmpMg := &Movegen{
-		pseudoLegalMoves:       moveslice.NewMoveSlice(MaxMoves),
-		legalMoves:             moveslice.NewMoveSlice(MaxMoves),
+		pseudoLegalMoves: moveslice.NewMoveSlice(MaxMoves),
+		legalMoves:       moveslice.NewMoveSlice(MaxMoves),
 
 		onDemandMoves:          moveslice.NewMoveSlice(MaxMoves),
 		currentODZobrist:       0,
@@ -107,10 +107,10 @@ func NewMoveGen() *Movegen {
 		currentODStage:         odNew,
 		takeIndex:              0,
 
-		killerMoves:            [2]Move{MoveNone, MoveNone},
-		pvMove:                 MoveNone,
-		pvMovePushed:           false,
-		historyData:            nil,
+		killerMoves:  [2]Move{MoveNone, MoveNone},
+		pvMove:       MoveNone,
+		pvMovePushed: false,
+		historyData:  nil,
 	}
 	return tmpMg
 }
@@ -137,7 +137,7 @@ func NewMoveGen() *Movegen {
 // Because of beta cuts off we quite often will never have to check the full legality
 // of these moves anyway.
 func (mg *Movegen) GeneratePseudoLegalMoves(p *position.Position, mode GenMode, evasion bool) *moveslice.MoveSlice {
-
+	// re-use move list
 	mg.pseudoLegalMoves.Clear()
 
 	// when in check only generate moves either blocking or capturing the attacker
@@ -306,7 +306,7 @@ func (mg *Movegen) GetNextMove(p *position.Position, mode GenMode, evasion bool)
 }
 
 // ResetOnDemand resets the move on demand generator to start fresh.
-// Also deletes Killer and PV moves
+// Also deletes Killer and PV moves.
 func (mg *Movegen) ResetOnDemand() {
 	mg.onDemandMoves.Clear()
 	mg.onDemandEvasionTargets = BbZero
@@ -350,7 +350,7 @@ func (mg *Movegen) SetHistoryData(historyData *history.History) {
 // HasLegalMove determines if we have at least one legal move. We only have to find
 // one legal move. We search for any KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN move
 // and return immediately if we found one.
-// The order of our search is approx from the most likely to the least likely
+// The order of our search is approx from the most likely to the least likely.
 func (mg *Movegen) HasLegalMove(position *position.Position) bool {
 
 	us := position.NextPlayer()
@@ -444,7 +444,7 @@ func (mg *Movegen) HasLegalMove(position *position.Position) bool {
 	return false
 }
 
-// Regex for UCI notation (UCI)
+// Regex for UCI notation (UCI).
 var regexUciMove = regexp.MustCompile("([a-h][1-8][a-h][1-8])([NBRQnbrq])?")
 
 // GetMoveFromUci Generates all legal moves and matches the given UCI
@@ -518,12 +518,10 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 				fallthrough
 			case SqG8: // black king side
 				castlingString = "O-O"
-				break
 			case SqC1: // white queen side
 				fallthrough
 			case SqC8: // black queen side
 				castlingString = "O-O-O"
-				break
 			default:
 				log.Error("Move type CASTLING but wrong to square: %s %s", castlingString, kingToSquare.String())
 				continue

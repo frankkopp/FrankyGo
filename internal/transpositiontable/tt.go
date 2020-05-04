@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 // Package transpositiontable implements a transposition table (cache)
 // data structure and functionality for a chess engine search.
@@ -51,7 +51,7 @@ import (
 var out = message.NewPrinter(language.German)
 
 // TtEntry struct is the data structure for each entry in the transposition
-// table. Each entry has 16-bytes (128-bits)
+// table. Each entry has 16-bytes (128-bits).
 type TtEntry struct {
 	Key        position.Key // 64-bit Zobrist Key
 	Move       Move         // 32-bit Move and value
@@ -97,7 +97,7 @@ type TtStats struct {
 // as a maximum of memory usage. actual size will be determined
 // by the number of elements fitting into this size which need
 // to be a power of 2 for efficient hashing/addressing via bit
-// masks
+// masks.
 func NewTtTable(sizeInMByte int) *TtTable {
 	tt := TtTable{
 		log:                myLogging.GetLog(),
@@ -157,7 +157,7 @@ func (tt *TtTable) GetEntry(key position.Key) *TtEntry {
 }
 
 // Probe returns a pointer to the corresponding tt entry
-// or nil if it was not found. Decreases TtEntry.Age by 1
+// or nil if it was not found. Decreases TtEntry.Age by 1.
 func (tt *TtTable) Probe(key position.Key) *TtEntry {
 	tt.Stats.numberOfProbes++
 	e := &tt.data[tt.hash(key)]
@@ -274,7 +274,6 @@ func (tt *TtTable) String() string {
 func (tt *TtTable) Len() uint64 {
 	return tt.numberOfEntries
 }
-
 
 // AgeEntries ages each entry in the tt
 // Creates a number of go routines with processes each

@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 package search
 
@@ -235,6 +235,7 @@ func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta V
 		// this is always the case.
 		if value > bestNodeValue {
 			bestNodeValue = value
+			// we have a new best move and pv[0][0] - store pv+1 tp pv
 			savePV(m, s.pv[1], s.pv[0])
 			if value > alpha {
 				// fail high in root only when using aspiration search
@@ -243,8 +244,7 @@ func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta V
 					return value
 				}
 				// value is < beta
-				// always the case when not using Aspiration
-				// we have a new best move and pv[0][0] - store pv+1 tp pv
+				// always the case when not using aspiration search
 				s.statistics.BestMoveChange++
 				alpha = bestNodeValue
 			}
@@ -302,12 +302,8 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	// Did we already find a shorter mate then ignore
 	// this one.
 	if Settings.Search.UseMDP {
-		if alpha < -ValueCheckMate+Value(ply) {
-			alpha = -ValueCheckMate + Value(ply)
-		}
-		if beta > ValueCheckMate-Value(ply) {
-			beta = ValueCheckMate - Value(ply)
-		}
+		alpha = Max(alpha, -ValueCheckMate+Value(ply))
+		beta = Min(beta, ValueCheckMate-Value(ply))
 		if alpha >= beta {
 			s.statistics.Mdp++
 			return alpha
@@ -336,7 +332,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	// this branch and return the value.
 	// Alpha or Beta entries will only be used if they improve
 	// the current values.
-	// TODO : Some engines treat the cut for alpha and beta nodes
+	// TODO: Some engines treat the cut for alpha and beta nodes
 	//  differently for PV and non PV nodes - needs more testing
 	//  if this is relevant
 	var ttEntry *transpositiontable.TtEntry
@@ -371,6 +367,24 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		}
 	}
 
+	// get an evaluation for the position
+	staticEval := ValueNA
+	if !hasCheck {
+		staticEval = s.evaluate(p, ply)
+		// TODO: Consider storing in TT
+	}
+
+	// Razoring from Stockfish
+	// When static eval is well below alpha at the last node
+	// jump directly into qsearch
+	if Settings.Search.UseRazoring &&
+		depth == 1 &&
+		staticEval != ValueNA &&
+		staticEval <= alpha-Value(Settings.Search.RazorMargin) {
+
+		return s.qsearch(p, ply, alpha, beta, isPV)
+	}
+
 	// for MTDf we do not have PVS and therefore don't
 	// have non PV nodes - to use prunings we set this PVS
 	// non PV flag to false.
@@ -387,8 +401,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		depth <= 3 &&
 		!isPV &&
 		!hasCheck {
-		// get an evaluation for the position
-		staticEval := s.evaluate(p, ply)
+
 		margin := rfp[depth]
 		if staticEval-margin >= beta {
 			s.statistics.RfpPrunings++
@@ -533,6 +546,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 
 		from := move.From()
 		to := move.To()
+		givesCheck := p.GivesCheck(move)
 
 		if false { // DEBUG
 			err := false
@@ -571,8 +585,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		newDepth := depth - 1
 		lmrDepth := newDepth
 		extension := 0
-
-		givesCheck := p.GivesCheck(move)
 
 		// Here we try some search extensions. This has to be done
 		// very carefully as it usually is more effective to prune
@@ -621,7 +633,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			!matethreat { // from pre move null move check
 
 			// to check in futility pruning what material delta we have
-			materialEval := p.Material(us) - p.Material(us.Flip())
 			moveGain := p.GetPiece(to).ValueOf()
 
 			// Futility Pruning
@@ -637,9 +648,9 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			// TODO: Crafty excepts moves were passed pawns are far ahead.
 			if Settings.Search.UseFP && depth < 7 {
 				futilityMargin := fp[depth]
-				if materialEval+moveGain+futilityMargin <= alpha {
-					if materialEval+moveGain > bestNodeValue {
-						bestNodeValue = materialEval + moveGain
+				if staticEval+moveGain+futilityMargin <= alpha {
+					if staticEval+moveGain > bestNodeValue {
+						bestNodeValue = staticEval + moveGain
 					}
 					s.statistics.FpPrunings++
 					continue
@@ -879,12 +890,8 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	// Did we already find a shorter mate then ignore
 	// this one.
 	if Settings.Search.UseMDP {
-		if alpha < -ValueCheckMate+Value(ply) {
-			alpha = -ValueCheckMate + Value(ply)
-		}
-		if beta > ValueCheckMate-Value(ply) {
-			beta = ValueCheckMate - Value(ply)
-		}
+		alpha = Max(alpha, -ValueCheckMate+Value(ply))
+		beta = Min(beta, ValueCheckMate-Value(ply))
 		if alpha >= beta {
 			s.statistics.Mdp++
 			return alpha
@@ -893,6 +900,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 
 	// prepare node search
 	bestNodeValue := ValueNA
+	bestNodeMove := MoveNone
 	ttType := ALPHA
 	ttMove := MoveNone
 	hasCheck := p.HasCheck()
@@ -905,9 +913,10 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	}
 
 	// if in check we simply do a normal search (all moves) in qsearch
+	staticEval := ValueNA
 	if !hasCheck {
 		// get an evaluation for the position
-		staticEval := s.evaluate(p, ply)
+		staticEval = s.evaluate(p, ply)
 		// Quiescence StandPat
 		// Use evaluation as a standing pat (lower bound)
 		// https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
@@ -954,7 +963,6 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	}
 
 	// prepare node search
-	bestNodeMove := MoveNone // used to store in the TT
 	myMg := s.mg[ply]
 	myMg.ResetOnDemand()
 	s.pv[ply].Clear()
@@ -991,7 +999,34 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	for move := myMg.GetNextMove(p, mode, hasCheck);
 		move != MoveNone; move = myMg.GetNextMove(p, mode, hasCheck) {
 
-		// TODO Futility Pruning
+		givesCheck := p.GivesCheck(move)
+
+		// TODO: Testing
+		// ///////////////////////////////////////////////////////
+		// Forward Pruning
+		// FP will only be done when the move is not
+		// interesting - no check, no capture, etc.
+		if Settings.Search.UseQFP &&
+			!isPV &&
+			move != ttMove &&
+			move != (*myMg.KillerMoves())[0] &&
+			move != (*myMg.KillerMoves())[1] &&
+			move.MoveType() != Promotion &&
+			!hasCheck && // pre move
+			!givesCheck { // from pre move null move check
+
+			// to check in futility pruning what material delta we have
+			moveGain := p.GetPiece(move.To()).ValueOf()
+
+			futilityMargin := Value(150)
+			if staticEval+moveGain+futilityMargin <= alpha {
+				if staticEval+moveGain > bestNodeValue {
+					bestNodeValue = staticEval + moveGain
+				}
+				s.statistics.QFpPrunings++
+				continue
+			}
+		}
 
 		// reduce number of moves searched in quiescence
 		// by looking at good captures only
@@ -1045,19 +1080,13 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 			}
 			if value > alpha {
 				if value >= beta {
-					// Count beta cuts
 					s.statistics.BetaCuts++
-					// Count beta cuts on first move
 					if movesSearched == 1 {
 						s.statistics.BetaCuts1st++
 					}
-					// counter for moves which caused a beta cut off
-					// we use 1 << depth as an increment to favor deeper searches
-					// a more repetitions
 					if Settings.Search.UseHistoryCounter {
 						s.history.HistoryCount[p.NextPlayer()][move.From()][move.To()] += 1 << 1
 					}
-					// store a successful counter move to the previous opponent move
 					if Settings.Search.UseCounterMoves {
 						lastMove := p.LastMove()
 						if lastMove != MoveNone {

@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 // Package searchtreesize provides data structures and functionality to
 // test the size of the search tree when certain heuristics and prunings
@@ -152,6 +152,9 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseIID = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "BASE"))
 
+	Settings.Search.UseHistoryCounter = true
+	Settings.Search.UseCounterMoves = true
+
 	// SEE for qsearch
 	Settings.Search.UseSEE = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "SEE"))
@@ -177,13 +180,18 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// Futility
 	Settings.Search.UseFP = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "FP"))
+	Settings.Search.UseQFP = true
+
+	// r.Tests = append(r.Tests, measure(s, sl, p, "QFP"))
+
+	Settings.Search.UseRazoring = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "RAZOR"))
 
 	// Late Move Reduction
 	Settings.Search.UseLmr = true
 	// Late Move Pruning
 	Settings.Search.UseLmp = true
-	Settings.Search.UseHistoryCounter = true
-	Settings.Search.UseCounterMoves = true
+
 	r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
 
 	Settings.Search.UseAspiration = true
@@ -344,6 +352,7 @@ func turnOffFeatures() {
 	Settings.Search.UseHistoryCounter = false
 	Settings.Search.UseCounterMoves = false
 	Settings.Search.UseMDP = false
+	Settings.Search.UseRazoring = false
 	Settings.Search.UseNullMove = false
 	Settings.Search.UseExt = false
 	Settings.Search.UseExtAddDepth = false
@@ -351,6 +360,7 @@ func turnOffFeatures() {
 	Settings.Search.UseThreatExt = false
 	Settings.Search.UseRFP = false
 	Settings.Search.UseFP = false
+	Settings.Search.UseQFP = false
 	Settings.Search.UseLmr = false
 	Settings.Search.UseLmp = false
 }

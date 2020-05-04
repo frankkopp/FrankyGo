@@ -6,7 +6,47 @@ Go implementation of a UCI compatible chess engine.
 [![Go Report Card](https://goreportcard.com/badge/github.com/frankkopp/FrankyGo)](https://goreportcard.com/report/github.com/frankkopp/FrankyGo)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/frankkopp/WorkerPool/blob/master/LICENSE)
 
-## Features (v0.9.0)
+## Description
+FrankyGo is the fourth chess engine I wrote. The first one was written in Java and had a JavaFX UI 
+([Chessly](https://github.com/frankkopp/Chessly)) but did not support UCI. I was very inexperienced then, and the 
+engine itself was not good. But I learned a lot and also liked developing the JavaFx part. I then rewrote it in Java 
+again but as an UCI engine. This time the structure was much better thanks to many great chess engine developers I 
+learned from. I also found out that my interest is in actual programming rather than building the "best" chess engine. 
+Therefore, I used what I learned from other chess engines but tried to build mine in a clean and easy to understand way. 
+This resulted in Franky 1.0
+([Github](https://github.com/frankkopp/FrankyUCIChessEngine),
+[CCRL](http://www.computerchess.org.uk/ccrl/404/cgi/engine_details.cgi?print=Details&each_game=1&eng=Franky%201.0%2064-bit#Franky_1_0_64-bit))
+ 
+I then started to re-write it in C++ ([FrankyCPP](https://github.com/frankkopp/FrankyCPP)) and came quite far. But C++ 
+(and its infrastructure) forced me to focus a lot on the language itself, and the surrounding tools. E.g. I learned a lot 
+(too much?) about different compilers on different platforms, CMake, Boost, Google Test, etc. but it rather distracted 
+me a lot from developing the chess engine itself. My time is limited so this was very annoying. 
+
+Then I looked into [Go](https://golang.org/doc/). A completely new language compiled directly into machine code, 
+platform independent, with a garbage collector and the promise to be as fast as C++/C. This was the motivation to start 
+FrankyGo and Go kept its promises. Easy to learn, great tool set, no distraction from the code by the language and 
+indeed fast. See below "Learning Go".
+
+So FrankyGo is now a rather clean chess engine with a lot of potential. As mentioned above I do not claim to have 
+invented any of algorithms and in fact I used many ideas from Stockfish, Crafty, Beowulf, etc. See "Credits" below.
+ But I had a lot of fun developing it and I do hope to have more fun improving it in the future.
+
+There is a small issue though - when developing a chess engine up to a certain level, testing starts to completely 
+overshadow development. Every feature, every evaluation, every change needs lots of testing against KPIs, test suites, 
+itself and real other engines. These tests are extremely time-consuming if they are to be meaningful. It needs thousands
+ of games to reliably prove that a feature is an improvement, and these games need time. Too short thinking times make 
+ the tests unreliable, especially for features which have increased effect in deeper searches. So several computers 
+ doing tests at the same time is normal but also rather stressful :)
+
+I will go on improving FrankyGo, and I'm happy to receive any feedback on my Go code but also of course on improving 
+the engine itself.
+
+A word on v1.0: I have implemented most major and common chess engine features, and the search itself is ok for now 
+but can of course always be improved. There are many great ideas out there to make it even more effective. Evaluation 
+in v1.0 is very basic. Only material and positional differences are counted. There are already some other evaluations 
+implemented but deactivated as they need a lot of testing and tuning.
+
+## Features (v1.1.0)
 * UCI protocol (to use the engine in Arena, xboard, Fritz or other chess user interfaces)
     * UCI Options
     * UCI Search Modes
@@ -17,7 +57,7 @@ Go implementation of a UCI compatible chess engine.
     * all moves or on demand in phases 
     * mode: all, capture only, non capture, check evasions
     * move sorting for estimated value of move, pv move and killer moves
-    * ~50 Million moves per sec on my i7-7700
+    * ~53 Million moves per sec on my i7-7700
 * Perft tests
     * ~4.8+Million nps 
 * Search as PVS AlphaBeta search
@@ -36,9 +76,11 @@ Go implementation of a UCI compatible chess engine.
     * Check extension (needs further tuning/testing)
     * Mate threat extension (deactivated - needs further tuning/testing - currently weakens play)
     * Reverse Futility Pruning (Static Null Move)
-    * Futility Pruning
-    * ~2.5-3.5M nps
-    * TODO: Aspiration Windows, Multi-cut Pruning, History Pruning 
+    * Futility Pruning (also in quiescence search)
+    * Razoring (Stockfish like)
+    * History Pruning (History Count, Counter Moves)
+    * ~2.4 nps on average on i7-7700 and 256 MB hash
+    * TODO: Aspiration Windows, MTDf, Multi-cut Pruning,  
 * Transposition Table
 * Opening Book from PGN, SAN and Simple move list files and persistent cache
 * Evaluation
@@ -48,12 +90,12 @@ Go implementation of a UCI compatible chess engine.
 * Tests:   
     * Test framework to run EPD test suites
     * Test to determine search tree size for features
+    * Test tool to run multiple test suites to test features
 * General: 
-    * logging, command lines options, configuration files, search and eval parameters in config files
+    * logging, command lines options, configuration file, search and eval parameters in config files
 
 * Open topics: 
     * Parallel search
-            
      
 ## Learning Go
 Learning a new programming language is always most efficient within a real project.
@@ -113,49 +155,97 @@ Just look at this output from the Go pprof profiler which comes for free with Go
 ## Installation
 Windows build: 
 
-go build -o FrankyGo.exe github.com/frankkopp/FrankyGo/cmd/FrankyGo
+    go build -o FrankyGo.exe github.com/frankkopp/FrankyGo/cmd/FrankyGo
 
-Run FrankyGo.exe
+    Run FrankyGo.exe    
 
 Unix/Mac build: 
 
-go build -o FrankyGo github.com/frankkopp/FrankyGo/cmd/FrankyGo
+    go build -o FrankyGo github.com/frankkopp/FrankyGo/cmd/FrankyGo
 
-Run FrankyGo
+    Run FrankyGo
 
 ## Usage
 Typically, a UCI engine will be used with a UCI compatible chess interface like Arena, xboard, Fritz, etc.
 Just configure a new engine in the UCI interface pointing to the executable of FrankyGo. If necessary use 
 command line options to find config file, logs folder and opening books folder.    
 
-To run FrankyGo needs to find its config file:
-
-Default place to look for it is ../configs/config.toml
-
-Use command line option "-config" to change location
+To configure the engine (log level, search and evaluation features and parameters, etc.) a config file can be used. 
+Default place to look for it is ./config.toml. Use command line option "-config" to change the location.
 
 Also helpful:
 * logs files are stored in folder "../logs" or folder defined by cmd line option "-logpath"
 * opening books are searched in folder "../assets/book" or folder defined in cmd line option "-bookpath"
 
-Use --help for more command line options
+Command line options:
+
+```
+ Usage of D:\_DEV\go\src\github.com\frankkopp\FrankyGo\bin\FrankyGo.exe:
+   -bookFormat string
+         format of opening book
+         (Simple|San|Pgn)
+   -bookfile string
+         opening book file
+         provide path if file is not in same directory as executable
+         Please also provide bookFormat otherwise this will be ignored
+   -bookpath string
+         path to opening book files (default "../assets/books")
+   -config string
+         path to configuration settings file (default "./config.toml")
+   -fen string
+         fen for perft and nps test (default "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+   -loglvl string
+         standard log level
+         (critical|error|warning|notice|info|debug) (default "info")
+   -logpath string
+         path where to write log files to (default "../logs")
+   -nps int
+         starts nodes per second test for given amount of seconds
+   -perft int
+         starts perft with the given depth
+   -searchloglvl string
+         search log level
+         (critical|error|warning|notice|info|debug)
+   -testdepth int
+         search depth limit for each test position
+   -testsuite string
+         path to file containing EPD tests or folder containing EPD files
+   -testtime int
+         search time for each test position in milliseconds (default 2000)
+   -version
+         prints version and exits
+```
 
 ## Roadmap
 ### vx.x (planned)
 - TODO:
+    - Aspiration
+    - MTDf
     - Better Evaluation and testing
     - Pawn Structure Cache
     - MultiCut Pruning
-       - https://hci.iwr.uni-heidelberg.de/system/files/private/downloads/1935772097/report_qingyang-cao_enhanced-forward-pruning.pdf
     - Other Prunings
-    - Aspiration
     - Continuously Performance/Profiling/Testing
     - Tuning and Testing of all search features and parameters
 
 ## Versions
-### v0.9.0 (in progress)
-- TODO:
-    - History Heuristics 
+### v1.1.0 (in progress)
+- TODO: 
+    - Aspiration as option
+    - MTDf as option
+    - Better Evaluation and testing
+    - Pawn Structure Cache
+    
+- DONE:
+
+### v1.0.0 (done)
+- DONE:
+    - change default behavior for log files so running the executable without logs folder works smoothly
+    - make it runnable without config file / config file optional
+    - Razor (Stockfish)
+    - QSearch Futility Pruning
+    - Additional Feature Test tool
+    - History Heuristics (History Counter, Counter Moves)
 
 ### v0.8.0 (done)
 - DONE
@@ -186,18 +276,11 @@ Use --help for more command line options
     - TT in QS
     - MDP/MPP
 
-- Remarks
-    PVS and TT might have some dependencies which I have not fully understood yet.
-    Some engines for example only cut with TT values for alpha/beta value in non PV nodes.
-    Tests show no drop in Search strength either way and also search tree size shows no
-    obvious issues
-
 ### v0.5 (done)
 - DONE
     - Use TT
     - SearchTreeSize
     - Quiescence search
-    - Score as string()
     - Evaluation (simple)
 
 ### v0.4 (done)
@@ -243,3 +326,17 @@ Use --help for more command line options
     - MoveArray and MoveList - both are for list of moves - MoveArray is faster for sorting
         might be slower when inserting at the front - needs testing
     - Most types (all required for perft)
+
+## Credits
+- https://www.chessprogramming.org
+- Stockfish / Tord Romstad, Marco Costalba, Joona Kiiski and Gary Linscott
+- Crafty / Robert Hyatt
+- TalkChess.org
+- Flux, Pulse / Phokham Nonava
+- Beowulf / Colin Frayn
+- Mediocre / Jonatan Pettersson
+- Bruce Moreland & GERBIL (http://www.brucemo.com/compchess/programming/index.htm)
+- CPW-Engine / Pawel Koziol, Edmund Moshammer
+- DarkThought / Ernst A. Heinz
+- Arena Chess GUI / Martin Blume (Germany) et al
+- and many more

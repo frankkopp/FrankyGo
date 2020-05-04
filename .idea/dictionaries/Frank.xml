@@ -17,6 +17,7 @@
       <w>dsfile</w>
       <w>enpassant</w>
       <w>evals</w>
+      <w>featuretests</w>
       <w>fenb</w>
       <w>fide</w>
       <w>foldername</w>
@@ -37,6 +38,7 @@
       <w>moveslice</w>
       <w>movestogo</w>
       <w>movetime</w>
+      <w>mtdf</w>
       <w>noninfringement</w>
       <w>openingbook</w>
       <w>passant</w>
@@ -57,6 +59,8 @@
       <w>searchtreesize</w>
       <w>seldepth</w>
       <w>setoption</w>
+      <w>shortfile</w>
+      <w>shortpkg</w>
       <w>sloglvl</w>
       <w>smalltest</w>
       <w>standpat</w>
@@ -67,6 +71,7 @@
       <w>testdepth</w>
       <w>testsets</w>
       <w>testsuite</w>
+      <w>testsuites</w>
       <w>testtime</w>
       <w>transpositiontable</w>
       <w>ucihandler</w>
