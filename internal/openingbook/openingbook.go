@@ -146,7 +146,7 @@ func (b *Book) initialize(bookFilePath string, bookFormat BookFormat, useCache b
 
 	// check file path
 	if _, err := os.Stat(bookFilePath); err != nil {
-		b.log.Warningf("file \"%s\" not found: %s\n", bookFilePath)
+		b.log.Warningf("file \"%s\" not found\n", bookFilePath)
 		return err
 	}
 

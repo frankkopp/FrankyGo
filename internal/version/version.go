@@ -32,13 +32,14 @@ import (
 
 // Version information as constants
 const (
-	Major  = 0
-	Minor  = 9
-	Status = "dev"
-	Date   = "25.4.2020"
+	Major  = 1
+	Minor  = 0
+	Patch  = 0
+	Status = "rc"
+	Date   = "4.5.2020"
 )
 
 // Version returns the version of the application as a string
 func Version() string {
-	return fmt.Sprintf("%s%d.%d (%s)", Status, Major, Minor, Date)
+	return fmt.Sprintf("v%d.%d.%d%s (%s)", Major, Minor, Patch, Status, Date)
 }

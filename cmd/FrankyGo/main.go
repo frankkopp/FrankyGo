@@ -59,11 +59,11 @@ func main() {
 	logLvl := flag.String("loglvl", "info", "standard log level\n(critical|error|warning|notice|info|debug)")
 	searchlogLvl := flag.String("searchloglvl", "", "search log level\n(critical|error|warning|notice|info|debug)")
 	logPath := flag.String("logpath", ".", "path where to write log files to")
-	bookPath := flag.String("bookpath", "../assets/books", "path to opening book files")
+	bookPath := flag.String("bookpath", ".", "path to opening book files")
 	bookFile := flag.String("bookfile", "", "opening book file\nprovide path if file is not in same directory as executable\nPlease also provide bookFormat otherwise this will be ignored")
 	bookFormat := flag.String("bookFormat", "", "format of opening book\n(Simple|San|Pgn)")
 	testSuite := flag.String("testsuite", "", "path to file containing EPD tests or folder containing EPD files")
-	testMovetime := flag.Int("testtime", 2000, "search time for each test position in milliseconds")
+	testMovetime := flag.Int("testtime", 0, "search time for each test position in milliseconds")
 	testSearchdepth := flag.Int("testdepth", 0, "search depth limit for each test position")
 	perft := flag.Int("perft", 0, "starts perft on the start position with the given depth\nuse -fen to provide a different position")
 	fen := flag.String("fen", position.StartFen, "fen for perft and nps test")
@@ -146,11 +146,16 @@ func main() {
 			fmt.Println(err)
 			return
 		}
+		searchTime := *testMovetime
+		searchDepth := *testSearchdepth
+		if searchTime == 0 && searchDepth == 0 {
+			searchTime = 2000
+		}
 		switch mode := fi.Mode(); {
 		case mode.IsDir():
-			out.Println(testsuite.FeatureTests(name+"/", time.Duration(*testMovetime*int(time.Millisecond)), *testSearchdepth))
+			out.Println(testsuite.FeatureTests(name+"/", time.Duration(searchTime*int(time.Millisecond)), searchDepth))
 		case mode.IsRegular():
-			ts, _ := testsuite.NewTestSuite(name, time.Duration(*testMovetime*1_000_000), *testSearchdepth)
+			ts, _ := testsuite.NewTestSuite(name, time.Duration(searchTime*1_000_000), searchDepth)
 			ts.RunTests()
 		}
 		return
