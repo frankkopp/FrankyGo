@@ -216,7 +216,6 @@ Command line options:
          prints version and exits
 ```
 
-
 ## Roadmap
 ### vx.x (planned)
 - TODO:
