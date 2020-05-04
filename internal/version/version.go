@@ -30,12 +30,12 @@ import (
 	"fmt"
 )
 
-// Version information as constants
+// Version information as constants.
 const (
 	Major  = 1
 	Minor  = 0
 	Patch  = 0
-	Status = "rc"
+	Status = ""
 	Date   = "4.5.2020"
 )
 
