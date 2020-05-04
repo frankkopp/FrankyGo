@@ -33,9 +33,9 @@ import (
 // Version information as constants.
 const (
 	Major  = 1
-	Minor  = 0
+	Minor  = 1
 	Patch  = 0
-	Status = ""
+	Status = "dev"
 	Date   = "4.5.2020"
 )
 
