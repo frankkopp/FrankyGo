@@ -225,17 +225,14 @@ Command line options:
     - Better Evaluation and testing
     - Pawn Structure Cache
     - MultiCut Pruning
-       - https://hci.iwr.uni-heidelberg.de/system/files/private/downloads/1935772097/report_qingyang-cao_enhanced-forward-pruning.pdf
     - Other Prunings
     - Continuously Performance/Profiling/Testing
     - Tuning and Testing of all search features and parameters
 
 ## Versions
-### v1.0.0 (in progress)
-- TODO:
-    - change default behavior for log files so running the executable without logs folder works smoothly
-
+### v1.0.0 (done)
 - DONE:
+    - change default behavior for log files so running the executable without logs folder works smoothly
     - make it runnable without config file / config file optional
     - Razor (Stockfish)
     - QSearch Futility Pruning
