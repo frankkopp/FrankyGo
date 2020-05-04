@@ -48,7 +48,7 @@ var out = message.NewPrinter(language.German)
 
 // singleTest holds the result data for a single test
 // A single test is one fen with one set of feature executing
-// one search according to the settings (depth odr time)
+// one search according to the settings (depth odr time).
 type singleTest struct {
 	Name     string
 	Nodes    uint64
@@ -63,14 +63,14 @@ type singleTest struct {
 	Pv       moveslice.MoveSlice
 }
 
-// result is representing a series of single tests for a single position (FEN)
+// result is representing a series of single tests for a single position (FEN).
 type result struct {
 	Fen   string
 	Tests []singleTest
 }
 
 // testSums is a helper data structure to sum up all results from a list of
-// single tests for a set of features to create a total reports at the end
+// single tests for a set of features to create a total reports at the end.
 type testSums struct {
 	SumCounter uint64
 	SumNodes   uint64
