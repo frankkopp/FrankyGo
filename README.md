@@ -7,46 +7,44 @@ Go implementation of a UCI compatible chess engine.
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/frankkopp/WorkerPool/blob/master/LICENSE)
 
 ## Description
-FrankyGo is the fourth chess engine I wrote. The first one was written in Java and it had a JavaFx UI 
+FrankyGo is the fourth chess engine I wrote. The first one was written in Java and had a JavaFX UI 
 ([Chessly](https://github.com/frankkopp/Chessly)) but did not support UCI. I was very inexperienced then, and the 
-engine itself was not good. But I learned a lot and also liked developing the JavaFx part. I then rewrote it  
-in Java again but as an UCI engine. This time the structure was much better thanks to many great chess engine 
-developers I learned from. I also found out that my interest is in programming itself more than it is in building  
-the "best" chess engine. Therefore, I used what I learned from other chess engines but tried to build mine in a 
-clean and easy to understand way. This resulted in Franky 1.0 
+engine itself was not good. But I learned a lot and also liked developing the JavaFx part. I then rewrote it in Java 
+again but as an UCI engine. This time the structure was much better thanks to many great chess engine developers I 
+learned from. I also found out that my interest is in actual programming rather than building the "best" chess engine. 
+Therefore, I used what I learned from other chess engines but tried to build mine in a clean and easy to understand way. 
+This resulted in Franky 1.0
 ([Github](https://github.com/frankkopp/FrankyUCIChessEngine),
 [CCRL](http://www.computerchess.org.uk/ccrl/404/cgi/engine_details.cgi?print=Details&each_game=1&eng=Franky%201.0%2064-bit#Franky_1_0_64-bit))
  
-I then started to re-write it in C++ ([FrankyCPP](https://github.com/frankkopp/FrankyCPP)) and came quite far. 
-But C++ (and its infrastructure) forced me to focus a lot on the language itself and its tools around it. 
-E.g. I learned a lot (too much?) about different compilers on different platforms, CMake, Boost, Google Test, etc. 
-but it rather distracted me a lot from developing the chess engine itself. My time is limited so this was very annoying. 
+I then started to re-write it in C++ ([FrankyCPP](https://github.com/frankkopp/FrankyCPP)) and came quite far. But C++ 
+(and its infrastructure) forced me to focus a lot on the language itself and the tools around it. E.g. I learned a lot 
+(too much?) about different compilers on different platforms, CMake, Boost, Google Test, etc. but it rather distracted 
+me a lot from developing the chess engine itself. My time is limited so this was very annoying. 
 
 Then I looked into [Go](https://golang.org/doc/). A completely new language compiled directly into machine code, 
-platform independent, with a garbage collector and the promise to be as fast as C++/C. 
-This was the motivation to start FrankyGo and Go kept its promises. Easy to learn, great tool set, no distraction from 
-the code by the language and indeed fast. See below "Learning Go".
+platform independent, with a garbage collector and the promise to be as fast as C++/C. This was the motivation to start 
+FrankyGo and Go kept its promises. Easy to learn, great tool set, no distraction from the code by the language and 
+indeed fast. See below "Learning Go".
 
 So FrankyGo is now a rather clean chess engine with a lot of potential. As mentioned above I do not claim to have 
 invented any of algorithms and in fact I used many ideas from Stockfish, Crafty, Beowulf, etc. See "Credits" below.
-But I had a lot of fun developing it and I do hope to have more fun improving it in the future. 
+ But I had a lot of fun developing it and I do hope to have more fun improving it in the future.
 
-There is a small issue though - when developing a chess engine up to a certain level testing starts to completely 
+There is a small issue though - when developing a chess engine up to a certain level, testing starts to completely 
 overshadow development. Every feature, every evaluation, every change needs lots of testing against KPIs, test suites, 
-itself and real other engines. These tests are extremely time-consuming to be meaningful. It needs thousands of games 
-to reliably prove that a feature is an improvement, and these games need time. Too short thinking times make the tests 
-unreliable especially for features which have increased effect in deeper searches. So several computers doing tests
-at the same time ios normal but also rather stressful :)
+itself and real other engines. These tests are extremely time-consuming if they are to be meaningful. It needs thousands
+ of games to reliably prove that a feature is an improvement, and these games need time. Too short thinking times make 
+ the tests unreliable, especially for features which have increased effect in deeper searches. So several computers 
+ doing tests at the same time is normal but also rather stressful :)
 
-I will go on improving FrankyGo, and I'm happy to receive any feedback on my Go code but also  of course on improving 
-the engine itself.  
+I will go on improving FrankyGo, and I'm happy to receive any feedback on my Go code but also of course on improving 
+the engine itself.
 
-A word on v1.0: I have implemented most major and common chess engine features, and the search itself is ok for now
-but can of course always be improved. There are many great ideas out there to make it even more effective. 
-Evaluation in v1.0 is very basic. Only material and positional differences are counted. There are already some other
-evaluations implemented but deactivated as they need a lot of testing and tuning.  
-
-Estimated ELO is 2050. 
+A word on v1.0: I have implemented most major and common chess engine features, and the search itself is ok for now 
+but can of course always be improved. There are many great ideas out there to make it even more effective. Evaluation 
+in v1.0 is very basic. Only material and positional differences are counted. There are already some other evaluations 
+implemented but deactivated as they need a lot of testing and tuning.
 
 ## Features (v1.0.0)
 * UCI protocol (to use the engine in Arena, xboard, Fritz or other chess user interfaces)

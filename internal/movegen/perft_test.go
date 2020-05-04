@@ -130,6 +130,21 @@ func TestStandardPerftOd(t *testing.T) {
 	}
 }
 
+// Performing PERFT Test for Depth 6
+// FEN: r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -
+// -----------------------------------------
+// Time         : 28m54.8687383s
+// NPS          : 4.629.541 nps
+// Results:
+//   Nodes     : 8.031.647.685
+//   Captures  : 1.558.445.089
+//   EnPassant : 3.577.504
+//   Checks    : 92.238.050
+//   CheckMates: 360.003
+//   Castles   : 184.513.607
+//   Promotions: 56.627.920
+// -----------------------------------------
+// Finished PERFT Test for Depth 6
 //noinspection GoImportUsedAsName
 func TestKiwipetePerft(t *testing.T) {
 

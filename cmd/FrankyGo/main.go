@@ -65,9 +65,9 @@ func main() {
 	testSuite := flag.String("testsuite", "", "path to file containing EPD tests or folder containing EPD files")
 	testMovetime := flag.Int("testtime", 2000, "search time for each test position in milliseconds")
 	testSearchdepth := flag.Int("testdepth", 0, "search depth limit for each test position")
-	perft := flag.Int("perft", 0, "starts perft with the given depth")
+	perft := flag.Int("perft", 0, "starts perft on the start position with the given depth\nuse -fen to provide a different position")
 	fen := flag.String("fen", position.StartFen, "fen for perft and nps test")
-	nps := flag.Int("nps", 0, "starts nodes per second test for given amount of seconds")
+	nps := flag.Int("nps", 0, "starts nodes per second test on the start position for given amount of seconds\nuse -fen to provide a different position")
 	flag.Parse()
 
 	// print version info and exit
@@ -124,6 +124,7 @@ func main() {
 		sl.MoveTime = time.Duration(*nps * int(time.Second))
 		s.StartSearch(*p, *sl)
 		s.WaitWhileSearching()
+		out.Println()
 		out.Println("NPS : ", util.Nps(s.NodesVisited(), s.LastSearchResult().SearchTime))
 		return
 	}

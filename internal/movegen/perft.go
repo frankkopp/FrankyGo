@@ -96,6 +96,7 @@ func (perft *Perft) StartPerft(fen string, depth int, onDemandFlag bool) {
 	}
 
 	out.Printf("Performing PERFT Test for Depth %d\n", depth)
+	out.Printf("FEN: %s\n", fen)
 	out.Printf("-----------------------------------------\n")
 
 	result := uint64(0)
@@ -116,7 +117,7 @@ func (perft *Perft) StartPerft(fen string, depth int, onDemandFlag bool) {
 
 	perft.Nodes = result
 
-	out.Printf("Time         : %d ms\n", elapsed.Milliseconds())
+	out.Printf("Time         : %s\n", elapsed)
 	out.Printf("NPS          : %d nps\n", (perft.Nodes*uint64(time.Second.Nanoseconds()))/uint64(elapsed.Nanoseconds()+1))
 	out.Printf("Results:\n")
 	out.Printf("   Nodes     : %d\n", perft.Nodes)
