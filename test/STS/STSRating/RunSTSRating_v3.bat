@@ -7,7 +7,7 @@
 :: the movetime per pos used by the tool is 200ms. The tool will run a short benchmark
 :: to measure your machine speed to get the movetime, before starting the test suite.
 
-STS_Rating_v3 -f "STS1-STS15_LAN.epd" -e "FrankyGo.exe" --proto uci -h 256 --getrating
+STS_Rating_v3 -f "STS1-STS15_LAN.epd" -e "FrankyGo.exe" --proto uci -h 128 --getrating
 
 
 

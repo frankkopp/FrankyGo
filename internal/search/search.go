@@ -623,7 +623,13 @@ func (s *Search) setupSearchLimits(position *position.Position, sl *Limits) {
 // and returns a limit on the duration for the current search.
 func (s *Search) setupTimeControl(p *position.Position, sl *Limits) time.Duration {
 	if sl.MoveTime > 0 { // mode time per move
-		return sl.MoveTime
+		// we need a little room for executing the code
+		duration := sl.MoveTime - (20 * time.Millisecond)
+		if duration < 0 {
+			s.log.Warningf("Very short move time: %s. ", sl.MoveTime)
+			return sl.MoveTime
+		}
+		return duration
 	} else { // remaining time - estimated time per move
 		// moves left
 		movesLeft := int64(sl.MovesToGo)

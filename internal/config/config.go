@@ -72,12 +72,10 @@ func Setup() {
 	if initialized {
 		return
 	}
-
 	path, _ := util.ResolveFile(ConfFile)
 	if _, err := toml.DecodeFile(path, &Settings); err != nil {
 		log.Println("Config file not found. Using defaults. (", err, ")")
 	}
-
 	// setup log level - first check cmd line, then config file, finally leave defaults
 	setupLogLvl()
 	// setup search config after reading from configuration file if necessary

@@ -18,7 +18,7 @@ This resulted in Franky 1.0
 [CCRL](http://www.computerchess.org.uk/ccrl/404/cgi/engine_details.cgi?print=Details&each_game=1&eng=Franky%201.0%2064-bit#Franky_1_0_64-bit))
  
 I then started to re-write it in C++ ([FrankyCPP](https://github.com/frankkopp/FrankyCPP)) and came quite far. But C++ 
-(and its infrastructure) forced me to focus a lot on the language itself and the tools around it. E.g. I learned a lot 
+(and its infrastructure) forced me to focus a lot on the language itself, and the surrounding tools. E.g. I learned a lot 
 (too much?) about different compilers on different platforms, CMake, Boost, Google Test, etc. but it rather distracted 
 me a lot from developing the chess engine itself. My time is limited so this was very annoying. 
 

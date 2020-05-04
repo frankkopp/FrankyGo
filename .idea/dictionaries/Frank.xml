@@ -59,6 +59,8 @@
       <w>searchtreesize</w>
       <w>seldepth</w>
       <w>setoption</w>
+      <w>shortfile</w>
+      <w>shortpkg</w>
       <w>sloglvl</w>
       <w>smalltest</w>
       <w>standpat</w>

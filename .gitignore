@@ -3,3 +3,5 @@
 *.cache
 *.log
 bin/
+test/STS/STSRating/Stockfish.exe
+*.ser

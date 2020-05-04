@@ -43,9 +43,8 @@ import (
 )
 
 var (
-	standardLog *logging.Logger
-	testLog     *logging.Logger
-
+	standardLog    *logging.Logger
+	testLog        *logging.Logger
 	standardFormat = logging.MustStringFormatter(`%{time:15:04:05.000} %{shortpkg:-8.8s}:%{shortfile:-14.14s} %{level:-8.8s}:  %{message}`)
 )
 

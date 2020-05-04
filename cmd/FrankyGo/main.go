@@ -29,6 +29,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 	"time"
@@ -56,7 +57,7 @@ func main() {
 	// command line args
 	versionInfo := flag.Bool("version", false, "prints version and exits")
 	configFile := flag.String("config", "./config.toml", "path to configuration settings file")
-	logLvl := flag.String("loglvl", "info", "standard log level\n(critical|error|warning|notice|info|debug)")
+	logLvl := flag.String("loglvl", "", "standard log level\n(critical|error|warning|notice|info|debug)")
 	searchlogLvl := flag.String("searchloglvl", "", "search log level\n(critical|error|warning|notice|info|debug)")
 	logPath := flag.String("logpath", ".", "path where to write log files to")
 	bookPath := flag.String("bookpath", ".", "path to opening book files")
@@ -81,6 +82,7 @@ func main() {
 	config.ConfFile = *configFile
 
 	// read config file
+	log.Println(config.LogLevel)
 	config.Setup()
 
 	// After reading the configuration file and the defaults we can now overwrite
@@ -114,19 +116,19 @@ func main() {
 	// to the actual level required.
 	logging.GetLog()
 
-	// nps test
+	// run nps test and exit
 	if *nps != 0 {
 		npsTest(fen, nps)
 		return
 	}
 
-	// perft
+	// run perft test and exit
 	if *perft != 0 {
 		perftTest(perft, fen)
 		return
 	}
 
-	// execute test suite if command line options are given
+	// run test suite and exit
 	if *testSuite != "" {
 		testsuiteTest(testSuite, testMovetime, testSearchdepth)
 		return
