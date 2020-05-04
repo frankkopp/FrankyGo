@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 package search
 
@@ -139,7 +139,7 @@ func (s *Search) NewGame() {
 // StartSearch starts the search on the given position with
 // the given search limits. Search can be stopped with StopSearch().
 // Search status can be checked with IsSearching()
-// This takes a copy of the position and the search limits
+// This takes a copy of the position and the search limits.
 func (s *Search) StartSearch(p position.Position, sl Limits) {
 	// acquire init phase lock
 	_ = s.initSemaphore.Acquire(context.TODO(), 1)
@@ -176,7 +176,7 @@ func (s *Search) PonderHit() {
 	s.log.Warning("Ponderhit received while not pondering")
 }
 
-// IsSearching checks if search is running
+// IsSearching checks if search is running.
 func (s *Search) IsSearching() bool {
 	if !s.isRunning.TryAcquire(1) {
 		return true
@@ -186,7 +186,7 @@ func (s *Search) IsSearching() bool {
 }
 
 // WaitWhileSearching checks if search is running and blocks until
-// search has stopped
+// search has stopped.
 func (s *Search) WaitWhileSearching() {
 	// get and release semaphore. Will block if search is running
 	_ = s.isRunning.Acquire(context.TODO(), 1)
@@ -581,7 +581,7 @@ func (s *Search) stopConditions() bool {
 }
 
 // setupSearchLimits reports to log.debug on search limits for the search
-// and sets up time control
+// and sets up time control.
 func (s *Search) setupSearchLimits(position *position.Position, sl *Limits) {
 	if sl.Infinite {
 		s.log.Info("Search mode: Infinite")
@@ -620,7 +620,7 @@ func (s *Search) setupSearchLimits(position *position.Position, sl *Limits) {
 }
 
 // setupTimeControl sets up time control according to the given search limits
-// and returns a limit on the duration for the current search
+// and returns a limit on the duration for the current search.
 func (s *Search) setupTimeControl(p *position.Position, sl *Limits) time.Duration {
 	if sl.MoveTime > 0 { // mode time per move
 		return sl.MoveTime
@@ -672,7 +672,7 @@ func (s *Search) addExtraTime(f float64) {
 
 // startTimer starts a go routine which regularly checks the elapsed time against
 // the time limit and extra time given. If time limit is reached this will set
-// the stopFlag to true and terminate itself
+// the stopFlag to true and terminate itself.
 func (s *Search) startTimer() {
 	go func() {
 		timerStart := time.Now()
@@ -694,7 +694,7 @@ func (s *Search) startTimer() {
 }
 
 // checks repetitions and 50-moves rule. Returns true if the position
-// has repeated itself at least the given number of times
+// has repeated itself at least the given number of times.
 func (s *Search) checkDrawRepAnd50(p *position.Position, i int) bool {
 	if p.CheckRepetitions(i) || p.HalfMoveClock() >= 100 {
 		return true
@@ -702,21 +702,21 @@ func (s *Search) checkDrawRepAnd50(p *position.Position, i int) bool {
 	return false
 }
 
-// sends the search result to the uci handler if a handler is available
+// sends the search result to the uci handler if a handler is available.
 func (s *Search) sendResult(searchResult *Result) {
 	if s.uciHandlerPtr != nil {
 		s.uciHandlerPtr.SendResult(searchResult.BestMove, searchResult.PonderMove)
 	}
 }
 
-// sends an info string to the uci handler if a handler is available
+// sends an info string to the uci handler if a handler is available.
 func (s *Search) sendInfoStringToUci(msg string) {
 	if s.uciHandlerPtr != nil {
 		s.uciHandlerPtr.SendInfoString(msg)
 	}
 }
 
-// send UCI information about search - could be called each 500ms or so
+// send UCI information about search - could be called each 500ms or so.
 func (s *Search) sendSearchUpdateToUci() {
 	// also do a regular search update here
 	if time.Since(s.lastUciUpdateTime) > time.Second {
@@ -748,7 +748,7 @@ func (s *Search) sendSearchUpdateToUci() {
 	}
 }
 
-// send UCI information after each depth iteration
+// send UCI information after each depth iteration.
 func (s *Search) sendIterationEndInfoToUci() {
 	if s.uciHandlerPtr != nil {
 		s.uciHandlerPtr.SendIterationEndInfo(
@@ -786,17 +786,17 @@ func (s *Search) getNps() uint64 {
 // Getter and Setter
 // //////////////////////////////////////////////////////
 
-// LastSearchResult returns a copy of the last search result
+// LastSearchResult returns a copy of the last search result.
 func (s *Search) LastSearchResult() Result {
 	return *s.lastSearchResult
 }
 
-// NodesVisited returns the number of visited nodes in the last search
+// NodesVisited returns the number of visited nodes in the last search.
 func (s *Search) NodesVisited() uint64 {
 	return s.nodesVisited
 }
 
-// Statistics returns a pointer to the search statistics of the last search
+// Statistics returns a pointer to the search statistics of the last search.
 func (s *Search) Statistics() *Statistics {
 	return &s.statistics
 }

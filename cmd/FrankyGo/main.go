@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 package main
 
@@ -116,48 +116,19 @@ func main() {
 
 	// nps test
 	if *nps != 0 {
-		config.Settings.Search.UseBook = false
-		s := search.NewSearch()
-		p := position.NewPosition(*fen)
-		sl := search.NewSearchLimits()
-		sl.TimeControl = true
-		sl.MoveTime = time.Duration(*nps * int(time.Second))
-		s.StartSearch(*p, *sl)
-		s.WaitWhileSearching()
-		out.Println()
-		out.Println("NPS : ", util.Nps(s.NodesVisited(), s.LastSearchResult().SearchTime))
+		npsTest(fen, nps)
 		return
 	}
 
 	// perft
 	if *perft != 0 {
-		var perftTest movegen.Perft
-		for i := 1; i <= *perft; i++ {
-			perftTest.StartPerft(*fen, i, true)
-		}
+		perftTest(perft, fen)
 		return
 	}
 
 	// execute test suite if command line options are given
 	if *testSuite != "" {
-		name := *testSuite
-		fi, err := os.Stat(name)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		searchTime := *testMovetime
-		searchDepth := *testSearchdepth
-		if searchTime == 0 && searchDepth == 0 {
-			searchTime = 2000
-		}
-		switch mode := fi.Mode(); {
-		case mode.IsDir():
-			out.Println(testsuite.FeatureTests(name+"/", time.Duration(searchTime*int(time.Millisecond)), searchDepth))
-		case mode.IsRegular():
-			ts, _ := testsuite.NewTestSuite(name, time.Duration(searchTime*1_000_000), searchDepth)
-			ts.RunTests()
-		}
+		testsuiteTest(testSuite, testMovetime, testSearchdepth)
 		return
 	}
 
@@ -165,6 +136,47 @@ func main() {
 	// the UCI user interface
 	u := uci.NewUciHandler()
 	u.Loop()
+}
+
+func testsuiteTest(testSuite *string, testMovetime *int, testSearchdepth *int) {
+	name := *testSuite
+	fi, err := os.Stat(name)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	searchTime := *testMovetime
+	searchDepth := *testSearchdepth
+	if searchTime == 0 && searchDepth == 0 {
+		searchTime = 2000
+	}
+	switch mode := fi.Mode(); {
+	case mode.IsDir():
+		out.Println(testsuite.FeatureTests(name+"/", time.Duration(searchTime*int(time.Millisecond)), searchDepth))
+	case mode.IsRegular():
+		ts, _ := testsuite.NewTestSuite(name, time.Duration(searchTime*1_000_000), searchDepth)
+		ts.RunTests()
+	}
+}
+
+func perftTest(perft *int, fen *string) {
+	var pt movegen.Perft
+	for i := 1; i <= *perft; i++ {
+		pt.StartPerft(*fen, i, true)
+	}
+}
+
+func npsTest(fen *string, nps *int) {
+	config.Settings.Search.UseBook = false
+	s := search.NewSearch()
+	p := position.NewPosition(*fen)
+	sl := search.NewSearchLimits()
+	sl.TimeControl = true
+	sl.MoveTime = time.Duration(*nps * int(time.Second))
+	s.StartSearch(*p, *sl)
+	s.WaitWhileSearching()
+	out.Println()
+	out.Println("NPS : ", util.Nps(s.NodesVisited(), s.LastSearchResult().SearchTime))
 }
 
 func printVersionInfo() {

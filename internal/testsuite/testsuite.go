@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 // Package testsuite contains data structures and functionality to be able to
 // run chess test suites which contain chess positions as EPD (Extended Position Description).
@@ -64,7 +64,7 @@ var log *logging.Logger
 // which are defined as constants below.
 type testType uint8
 
-// Implemented test types
+// Implemented test types.
 const (
 	None testType = iota
 	DM   testType = iota
@@ -72,10 +72,10 @@ const (
 	AM   testType = iota
 )
 
-// resultType define possible results for a tests as a type and constants
+// resultType define possible results for a tests as a type and constants.
 type resultType uint8
 
-// resultType define possible results for a tests as a type and constants
+// resultType define possible results for a tests as a type and constants.
 const (
 	NotTested resultType = iota
 	Skipped   resultType = iota
@@ -83,7 +83,7 @@ const (
 	Success   resultType = iota
 )
 
-// SuiteResult data structure to collect sum of the results of tests
+// SuiteResult data structure to collect sum of the results of tests.
 type SuiteResult struct {
 	Counter          int
 	SuccessCounter   int
@@ -124,7 +124,7 @@ type TestSuite struct {
 }
 
 // NewTestSuite creates an instance of a TestSuite and reads in the given file
-// to create test cases which can be run with RunTests()
+// to create test cases which can be run with RunTests().
 func NewTestSuite(filePath string, searchTime time.Duration, depth int) (*TestSuite, error) {
 	out.Println("Preparing Test Suite", filePath)
 
@@ -165,7 +165,7 @@ func NewTestSuite(filePath string, searchTime time.Duration, depth int) (*TestSu
 	return newTestSuite, nil
 }
 
-// RunTests runs tests on a successfully created instance of a TestSuite
+// RunTests runs tests on a successfully created instance of a TestSuite.
 func (ts *TestSuite) RunTests() {
 
 	if len(ts.Tests) == 0 {
@@ -262,7 +262,7 @@ func (ts *TestSuite) RunTests() {
 }
 
 // determines which test type the test is and call the appropriate
-// test function
+// test function.
 func runSingleTest(s *search.Search, sl *search.Limits, t *Test) {
 	// reset search and search limits
 	s.NewGame()
