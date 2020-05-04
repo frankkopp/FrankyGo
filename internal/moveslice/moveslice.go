@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 // Package moveslice provides helper functionality for slices
 // of type Move (chess moves).
@@ -193,7 +193,7 @@ func (ms *MoveSlice) Equals(other *MoveSlice) bool {
 // ForEach simple range loop calling the given function on each element
 // in stored order
 func (ms *MoveSlice) ForEach(f func(index int)) {
-	for index, _ := range *ms {
+	for index := range *ms {
 		f(index)
 	}
 }
@@ -203,12 +203,12 @@ func (ms *MoveSlice) ForEach(f func(index int)) {
 // as a parameter.
 // Waits until all elements have been processed. There is no
 // synchronization for the parallel execution. This needs to done
-// in the provided function
+// in the provided function if necessary
 func (ms *MoveSlice) ForEachParallel(f func(index int)) {
 	sliceLength := len(*ms)
 	var wg sync.WaitGroup
 	wg.Add(sliceLength)
-	for index, _ := range *ms {
+	for index := range *ms {
 		go func(i int) {
 			defer wg.Done()
 			f(i)
@@ -225,14 +225,16 @@ func (ms *MoveSlice) Clear() {
 	*ms = (*ms)[:0]
 }
 
-// Sort sorts the moves from highest value to lowest value
-// Uses InsertionSort as MoveSlices are mostly pre-sorted and small
+// Sort will sort moves from highest Value to lowest Value .
+// It uses a stable InsertionSort as MoveSlices are mostly pre-sorted and small.
+// Sorts move only on the base of their Value (Move value == move&0xFFFF0000).
+// Otherwise the order will not be changed.
 func (ms *MoveSlice) Sort() {
 	l := len(*ms)
 	for i := 1; i < l; i++ {
 		tmp := (*ms)[i]
 		j := i
-		for j > 0 && tmp > (*ms)[j-1] {
+		for j > 0 && (tmp&0xFFFF0000) > ((*ms)[j-1]&0xFFFF0000) {
 			(*ms)[j] = (*ms)[j-1]
 			j--
 		}
@@ -257,7 +259,7 @@ func (ms *MoveSlice) String() string {
 }
 
 // StringUci returns a string with a space separated list
-// of all moves i the list in UCI protocol format
+// of all moves in the list in UCI protocol format
 func (ms *MoveSlice) StringUci() string {
 	var os strings.Builder
 	size := len(*ms)

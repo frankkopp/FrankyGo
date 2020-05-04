@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 package search
 
@@ -39,6 +39,7 @@ import (
 
 	"github.com/frankkopp/FrankyGo/internal/config"
 	"github.com/frankkopp/FrankyGo/internal/evaluator"
+	"github.com/frankkopp/FrankyGo/internal/history"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/internal/movegen"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
@@ -66,6 +67,9 @@ type Search struct {
 	tt   *transpositiontable.TtTable
 	eval *evaluator.Evaluator
 
+	// history heuristics
+	history *history.History
+
 	// previous search
 	lastSearchResult *Result
 
@@ -91,7 +95,7 @@ type Search struct {
 // //////////////////////////////////////////////////////
 
 // NewSearch creates a new Search instance. If the given
-// uci handler is nil all output will be sent to Stdout
+// uci handler is nil all output will be sent to Stdout.
 func NewSearch() *Search {
 	s := &Search{
 		log:               myLogging.GetLog(),
@@ -102,6 +106,7 @@ func NewSearch() *Search {
 		book:              nil,
 		tt:                nil,
 		eval:              evaluator.NewEvaluator(),
+		history:           history.NewHistory(),
 		lastSearchResult:  nil,
 		stopFlag:          false,
 		startTime:         time.Time{},
@@ -127,13 +132,14 @@ func (s *Search) NewGame() {
 	s.StopSearch()
 	if s.tt != nil {
 		s.tt.Clear()
+		s.history = history.NewHistory()
 	}
 }
 
 // StartSearch starts the search on the given position with
 // the given search limits. Search can be stopped with StopSearch().
 // Search status can be checked with IsSearching()
-// This takes a copy of the position and the search limits
+// This takes a copy of the position and the search limits.
 func (s *Search) StartSearch(p position.Position, sl Limits) {
 	// acquire init phase lock
 	_ = s.initSemaphore.Acquire(context.TODO(), 1)
@@ -170,7 +176,7 @@ func (s *Search) PonderHit() {
 	s.log.Warning("Ponderhit received while not pondering")
 }
 
-// IsSearching checks if search is running
+// IsSearching checks if search is running.
 func (s *Search) IsSearching() bool {
 	if !s.isRunning.TryAcquire(1) {
 		return true
@@ -180,7 +186,7 @@ func (s *Search) IsSearching() bool {
 }
 
 // WaitWhileSearching checks if search is running and blocks until
-// search has stopped
+// search has stopped.
 func (s *Search) WaitWhileSearching() {
 	// get and release semaphore. Will block if search is running
 	_ = s.isRunning.Acquire(context.TODO(), 1)
@@ -241,7 +247,7 @@ func (s *Search) ResizeCache() {
 	s.tt = nil
 	s.initialize()
 	// good point in time to let the garbage collector do its work
-	util.GcWithStats()
+	s.log.Debug(util.GcWithStats())
 	if s.tt != nil {
 		s.uciHandlerPtr.SendInfoString(out.Sprintf("Hash resized: %s", s.tt.String()))
 	}
@@ -251,9 +257,9 @@ func (s *Search) ResizeCache() {
 // // Private
 // //////////////////////////////////////////////////////
 
-// run is called by StartSearch() in a separate go-routine
+// run is called by StartSearch() in a separate goroutine
 // It runs the actual search until a search limit is reached
-// or the search has been stopped by StopSearch()
+// or the search has been stopped by StopSearch().
 func (s *Search) run(position *position.Position, sl *Limits) {
 	// check if there is already a search running
 	// and if not grab the isRunning semaphore
@@ -269,12 +275,15 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	// start search timer
 	s.startTime = time.Now()
 
+	s.log.Infof("Searching: %s", position.StringFen())
+
 	// init new search run
 	s.stopFlag = false
 	s.hasResult = false
 	s.timeLimit = 0
 	s.extraTime = 0
 	s.nodesVisited = 0
+	// s.history = history.NewHistory()
 	s.statistics = Statistics{}
 	s.lastUciUpdateTime = s.startTime
 	s.initialize()
@@ -298,22 +307,26 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 			s.log.Debug("Opening Book: Choosing book move: ", bookMove.StringUci())
 		}
 	} else {
-		s.log.Debug("Opening Book: Not using book")
+		s.log.Info("Opening Book: Not using book")
 	}
 
 	// age TT entries
 	if s.tt != nil {
-		s.log.Debugf("Transposition Table: Using TT (%s)", s.tt.String())
+		s.log.Infof("Transposition Table: Using TT (%s)", s.tt.String())
 		s.tt.AgeEntries()
 	} else {
-		s.log.Debug("Transposition Table: Not using TT")
+		s.log.Info("Transposition Table: Not using TT")
 	}
 
 	// Initialize ply based data
 	s.mg = make([]*movegen.Movegen, 0, MaxDepth+1)
 	s.pv = make([]*moveslice.MoveSlice, 0, MaxDepth+1)
 	for i := 0; i <= MaxDepth; i++ {
-		s.mg = append(s.mg, movegen.NewMoveGen())
+		newMoveGen := movegen.NewMoveGen()
+		if config.Settings.Search.UseHistoryCounter || config.Settings.Search.UseCounterMoves {
+			newMoveGen.SetHistoryData(s.history)
+		}
+		s.mg = append(s.mg, newMoveGen)
 		s.pv = append(s.pv, moveslice.NewMoveSlice(MaxDepth+1))
 	}
 
@@ -348,28 +361,29 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	searchResult.SearchTime = time.Since(s.startTime)
 	searchResult.Pv = *s.pv[0]
 
-	// At the end of a search we send the result in any case even if
-	// searched has been stopped.
-	s.sendResult(searchResult)
-
-	// save result until overwritten by the next search
-	s.lastSearchResult = searchResult
-	s.hasResult = true
-
 	// print stats to log
 	s.log.Info(out.Sprintf("Search finished after %s", searchResult.SearchTime))
 	s.log.Info(out.Sprintf("Search depth was %d(%d) with %d nodes visited. NPS = %d nps",
 		s.statistics.CurrentSearchDepth, s.statistics.CurrentExtraSearchDepth, s.nodesVisited,
 		util.Nps(s.nodesVisited, searchResult.SearchTime)))
-	s.log.Infof("Search stats: %s", s.statistics.String())
+	s.log.Debugf("Search stats: %s", s.statistics.String())
+	// s.log.Debugf("History stats: %s", s.history.String())
 
 	// print result to log
 	s.log.Infof("Search result: %s", searchResult.String())
+
+	// save result until overwritten by the next search
+	s.lastSearchResult = searchResult
+	s.hasResult = true
 
 	// Clean up
 	// make sure timer stops as this could potentially still be running
 	// when search finished without any stop signal/limit
 	s.stopFlag = true
+
+	// At the end of a search we send the result in any case even if
+	// searched has been stopped.
+	s.sendResult(searchResult)
 }
 
 // Iterative Deepening:
@@ -466,7 +480,8 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 		// doing this after the first iteration ensures that
 		// we have done at least one complete search and have
 		// a pv (best) move
-		if !s.stopConditions() {
+		// If we only have one move to play also stop the search
+		if !s.stopConditions() && s.rootMoves.Len() > 1 {
 			// sort root moves for the next iteration
 			s.rootMoves.Sort()
 			s.statistics.CurrentBestRootMove = s.pv[0].At(0)
@@ -566,49 +581,55 @@ func (s *Search) stopConditions() bool {
 }
 
 // setupSearchLimits reports to log.debug on search limits for the search
-// and sets up time control
+// and sets up time control.
 func (s *Search) setupSearchLimits(position *position.Position, sl *Limits) {
 	if sl.Infinite {
-		s.log.Debug("Search mode: Infinite")
+		s.log.Info("Search mode: Infinite")
 	}
 	if sl.Ponder {
-		s.log.Debug("Search mode: Ponder")
+		s.log.Info("Search mode: Ponder")
 	}
 	if sl.Mate > 0 {
-		s.log.Debugf("Search mode: Search for mate in %d", sl.Mate)
+		s.log.Infof("Search mode: Search for mate in %d", sl.Mate)
 	}
 	if sl.TimeControl {
 		s.timeLimit = s.setupTimeControl(position, sl)
 		s.extraTime = 0
 		if sl.MoveTime > 0 {
-			s.log.Debugf("Search mode: Time controlled: Time per move %s", sl.MoveTime)
+			s.log.Infof("Search mode: Time controlled: Time per move %s", sl.MoveTime)
 		} else {
-			s.log.Debug(out.Sprintf("Search mode: Time controlled: White = %s (inc %s) Black = %s (inc %s) Moves to go: %d",
+			s.log.Info(out.Sprintf("Search mode: Time controlled: White = %s (inc %s) Black = %s (inc %s) Moves to go: %d",
 				sl.WhiteTime, sl.WhiteInc, sl.BlackTime, sl.BlackInc, sl.MovesToGo))
-			s.log.Debug(out.Sprintf("Search mode: Time limit     : %s", s.timeLimit))
+			s.log.Info(out.Sprintf("Search mode: Time limit     : %s", s.timeLimit))
 		}
 		if sl.Ponder {
-			s.log.Debug("Search mode: Ponder - time control postponed until ponderhit received")
+			s.log.Info("Search mode: Ponder - time control postponed until ponderhit received")
 		}
 	} else {
-		s.log.Debug("Search mode: No time control")
+		s.log.Info("Search mode: No time control")
 	}
 	if sl.Depth > 0 {
 		s.log.Debugf("Search mode: Depth limited  : %d", sl.Depth)
 	}
 	if sl.Nodes > 0 {
-		s.log.Debugf(out.Sprintf("Search mode: Nodes limited  : %d", sl.Nodes))
+		s.log.Infof(out.Sprintf("Search mode: Nodes limited  : %d", sl.Nodes))
 	}
 	if sl.Moves.Len() > 0 {
-		s.log.Debugf(out.Sprintf("Search mode: Moves limited  : %s", sl.Moves.StringUci()))
+		s.log.Infof(out.Sprintf("Search mode: Moves limited  : %s", sl.Moves.StringUci()))
 	}
 }
 
 // setupTimeControl sets up time control according to the given search limits
-// and returns a limit on the duration for the current search
+// and returns a limit on the duration for the current search.
 func (s *Search) setupTimeControl(p *position.Position, sl *Limits) time.Duration {
 	if sl.MoveTime > 0 { // mode time per move
-		return sl.MoveTime
+		// we need a little room for executing the code
+		duration := sl.MoveTime - (20 * time.Millisecond)
+		if duration < 0 {
+			s.log.Warningf("Very short move time: %s. ", sl.MoveTime)
+			return sl.MoveTime
+		}
+		return duration
 	} else { // remaining time - estimated time per move
 		// moves left
 		movesLeft := int64(sl.MovesToGo)
@@ -657,7 +678,7 @@ func (s *Search) addExtraTime(f float64) {
 
 // startTimer starts a go routine which regularly checks the elapsed time against
 // the time limit and extra time given. If time limit is reached this will set
-// the stopFlag to true and terminate itself
+// the stopFlag to true and terminate itself.
 func (s *Search) startTimer() {
 	go func() {
 		timerStart := time.Now()
@@ -679,7 +700,7 @@ func (s *Search) startTimer() {
 }
 
 // checks repetitions and 50-moves rule. Returns true if the position
-// has repeated itself at least the given number of times
+// has repeated itself at least the given number of times.
 func (s *Search) checkDrawRepAnd50(p *position.Position, i int) bool {
 	if p.CheckRepetitions(i) || p.HalfMoveClock() >= 100 {
 		return true
@@ -687,21 +708,21 @@ func (s *Search) checkDrawRepAnd50(p *position.Position, i int) bool {
 	return false
 }
 
-// sends the search result to the uci handler if a handler is available
+// sends the search result to the uci handler if a handler is available.
 func (s *Search) sendResult(searchResult *Result) {
 	if s.uciHandlerPtr != nil {
 		s.uciHandlerPtr.SendResult(searchResult.BestMove, searchResult.PonderMove)
 	}
 }
 
-// sends an info string to the uci handler if a handler is available
+// sends an info string to the uci handler if a handler is available.
 func (s *Search) sendInfoStringToUci(msg string) {
 	if s.uciHandlerPtr != nil {
 		s.uciHandlerPtr.SendInfoString(msg)
 	}
 }
 
-// send UCI information about search - could be called each 500ms or so
+// send UCI information about search - could be called each 500ms or so.
 func (s *Search) sendSearchUpdateToUci() {
 	// also do a regular search update here
 	if time.Since(s.lastUciUpdateTime) > time.Second {
@@ -733,7 +754,7 @@ func (s *Search) sendSearchUpdateToUci() {
 	}
 }
 
-// send UCI information after each depth iteration
+// send UCI information after each depth iteration.
 func (s *Search) sendIterationEndInfoToUci() {
 	if s.uciHandlerPtr != nil {
 		s.uciHandlerPtr.SendIterationEndInfo(
@@ -771,17 +792,17 @@ func (s *Search) getNps() uint64 {
 // Getter and Setter
 // //////////////////////////////////////////////////////
 
-// LastSearchResult returns a copy of the last search result
+// LastSearchResult returns a copy of the last search result.
 func (s *Search) LastSearchResult() Result {
 	return *s.lastSearchResult
 }
 
-// NodesVisited returns the number of visited nodes in the last search
+// NodesVisited returns the number of visited nodes in the last search.
 func (s *Search) NodesVisited() uint64 {
 	return s.nodesVisited
 }
 
-// Statistics returns a pointer to the search statistics of the last search
+// Statistics returns a pointer to the search statistics of the last search.
 func (s *Search) Statistics() *Statistics {
 	return &s.statistics
 }

@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 package position
 
@@ -35,6 +35,7 @@ import (
 	"time"
 
 	"github.com/op/go-logging"
+	"github.com/pkg/profile"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
@@ -721,53 +722,31 @@ func TestTimingIsAttacked(t *testing.T) {
 	}
 }
 
-// func BenchmarkIsAttackedVariations(b *testing.B) {
-//
-// 	p, _ := NewPositionFen("r5k1/p1qb1p1p/1p3np1/2b2p2/2B5/2P3N1/PP2QPPP/R3N1K1 b - -")
-// 	// p = NewPosition()
-//
-// 	f1 := func() {
-// 		for sq := SqA1; sq <= SqH8; sq++ {
-// 			res = GetAttacksBb(Bishop, sq, p.OccupiedAll()) & p.piecesBb[White][Bishop] > 0 ||
-// 				GetAttacksBb(Rook, sq, p.OccupiedAll()) & p.piecesBb[White][Rook] > 0 ||
-// 				GetAttacksBb(Queen, sq, p.OccupiedAll()) & p.piecesBb[White][Queen] > 0
-// 		}
-// 	}
-//
-// 	f2 := func() {
-// 		// for sq := SqA1; sq <= SqH8; sq++ {
-// 		// 	res = (GetPseudoAttacks(Rook, sq)&p.piecesBb[White][Rook] != 0 || (GetPseudoAttacks(Rook, sq)&p.piecesBb[White][Queen] != 0)) &&
-// 		// 		(((GetMovesOnRank(sq, p.OccupiedAll()) |
-// 		// 			GetMovesOnFileRotated(sq, p.occupiedBbL90[White]|p.occupiedBbL90[Black])) &
-// 		// 			(p.piecesBb[White][Rook] | p.piecesBb[White][Queen])) != 0) &&
-// 		// 		(GetPseudoAttacks(Bishop, sq)&p.piecesBb[White][Bishop] != 0 || (GetPseudoAttacks(Bishop, sq)&p.piecesBb[White][Queen] != 0)) &&
-// 		// 		(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[White]|p.occupiedBbR45[Black]) |
-// 		// 			GetMovesDiagDownRotated(sq, p.occupiedBbL45[White]|p.occupiedBbL45[Black])) &
-// 		// 			(p.piecesBb[White][Bishop] | p.piecesBb[White][Queen])) != 0)
-// 		//
-// 		// 	res = (GetPseudoAttacks(Rook, sq)&p.piecesBb[Black][Rook] != 0 || (GetPseudoAttacks(Rook, sq)&p.piecesBb[Black][Queen] != 0)) &&
-// 		// 		(((GetMovesOnRank(sq, p.OccupiedAll()) |
-// 		// 			GetMovesOnFileRotated(sq, p.occupiedBbL90[Black]|p.occupiedBbL90[Black])) &
-// 		// 			(p.piecesBb[Black][Rook] | p.piecesBb[Black][Queen])) != 0) &&
-// 		// 		(GetPseudoAttacks(Bishop, sq)&p.piecesBb[Black][Bishop] != 0 || (GetPseudoAttacks(Bishop, sq)&p.piecesBb[Black][Queen] != 0)) &&
-// 		// 		(((GetMovesDiagUpRotated(sq, p.occupiedBbR45[Black]|p.occupiedBbR45[Black]) |
-// 		// 			GetMovesDiagDownRotated(sq, p.occupiedBbL45[Black]|p.occupiedBbL45[Black])) &
-// 		// 			(p.piecesBb[Black][Bishop] | p.piecesBb[Black][Queen])) != 0)
-// 		// }
-// 	}
-//
-// 	benchmarks := []struct {
-// 		name string
-// 		f    func()
-// 	}{
-// 		{"Magic", f1},
-// 		{"NonMagic", f2},
-// 	}
-// 	for _, bm := range benchmarks {
-// 		b.Run(bm.name, func(b *testing.B) {
-// 			for i := 0; i < b.N; i++ {
-// 				bm.f()
-// 			}
-// 		})
-// 	}
-// }
+func TestTimingWasLegal(t *testing.T) {
+	defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
+
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
+	const rounds = 5
+	const iterations uint64 = 100_000_000
+
+	p, _ := NewPositionFen("r5k1/p1qb1p1p/1p3np1/2b2p2/2B5/2P3N1/PP2QPPP/R3N1K1 b - -")
+	move := CreateMove(SqF2, SqF3, Normal, PtNone)
+	p.DoMove(move)
+
+	for r := 1; r <= rounds; r++ {
+		out.Printf("Round %d\n", r)
+		start := time.Now()
+		test := false
+		for i := uint64(0); i < iterations; i++ {
+			test = p.WasLegalMove()
+			res = test
+		}
+		elapsed := time.Since(start)
+		out.Printf("Test took %s for %d iterations\n", elapsed, iterations)
+		out.Printf("Test took %d ns per test\n", elapsed.Nanoseconds()/int64(iterations))
+		out.Printf("Tests per sec %d tps\n", iterations*1e9/uint64(elapsed.Nanoseconds()))
+	}
+}

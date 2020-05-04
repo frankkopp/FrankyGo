@@ -1,33 +1,35 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 package main
 
 import (
 	"flag"
+	"fmt"
+	"log"
 	"os"
 	"runtime"
 	"time"
@@ -37,30 +39,36 @@ import (
 
 	"github.com/frankkopp/FrankyGo/internal/config"
 	"github.com/frankkopp/FrankyGo/internal/logging"
+	"github.com/frankkopp/FrankyGo/internal/movegen"
+	"github.com/frankkopp/FrankyGo/internal/position"
+	"github.com/frankkopp/FrankyGo/internal/search"
 	"github.com/frankkopp/FrankyGo/internal/testsuite"
 	"github.com/frankkopp/FrankyGo/internal/uci"
+	"github.com/frankkopp/FrankyGo/internal/util"
 	"github.com/frankkopp/FrankyGo/internal/version"
 )
 
 var out = message.NewPrinter(language.German)
 
 func main() {
-	// defer profile.Start().Stop()
-	// defer profile.Start(profile.TraceProfile, profile.ProfilePath(".")).Stop()
-	// go tool pprof -http :8080 ./main ./prof.null/cpu.pprof
+	// defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
+	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 
 	// command line args
 	versionInfo := flag.Bool("version", false, "prints version and exits")
-	configFile := flag.String("config", "../configs/config.toml", "path to configuration settings file")
+	configFile := flag.String("config", "./config.toml", "path to configuration settings file")
 	logLvl := flag.String("loglvl", "", "standard log level\n(critical|error|warning|notice|info|debug)")
 	searchlogLvl := flag.String("searchloglvl", "", "search log level\n(critical|error|warning|notice|info|debug)")
-	logPath := flag.String("logpath", "../logs", "path where to write log files to")
-	bookPath := flag.String("bookpath", "../assets/books", "path to opening book files")
+	logPath := flag.String("logpath", ".", "path where to write log files to")
+	bookPath := flag.String("bookpath", ".", "path to opening book files")
 	bookFile := flag.String("bookfile", "", "opening book file\nprovide path if file is not in same directory as executable\nPlease also provide bookFormat otherwise this will be ignored")
 	bookFormat := flag.String("bookFormat", "", "format of opening book\n(Simple|San|Pgn)")
-	testSuite := flag.String("testsuite", "", "path to file containing EPD tests")
-	testMovetime := flag.Int("testtime", 2000, "search time for each test position in milliseconds")
+	testSuite := flag.String("testsuite", "", "path to file containing EPD tests or folder containing EPD files")
+	testMovetime := flag.Int("testtime", 0, "search time for each test position in milliseconds")
 	testSearchdepth := flag.Int("testdepth", 0, "search depth limit for each test position")
+	perft := flag.Int("perft", 0, "starts perft on the start position with the given depth\nuse -fen to provide a different position")
+	fen := flag.String("fen", position.StartFen, "fen for perft and nps test")
+	nps := flag.Int("nps", 0, "starts nodes per second test on the start position for given amount of seconds\nuse -fen to provide a different position")
 	flag.Parse()
 
 	// print version info and exit
@@ -74,6 +82,7 @@ func main() {
 	config.ConfFile = *configFile
 
 	// read config file
+	log.Println(config.LogLevel)
 	config.Setup()
 
 	// After reading the configuration file and the defaults we can now overwrite
@@ -107,10 +116,21 @@ func main() {
 	// to the actual level required.
 	logging.GetLog()
 
-	// execute test suite if command line options are given
+	// run nps test and exit
+	if *nps != 0 {
+		npsTest(fen, nps)
+		return
+	}
+
+	// run perft test and exit
+	if *perft != 0 {
+		perftTest(perft, fen)
+		return
+	}
+
+	// run test suite and exit
 	if *testSuite != "" {
-		ts, _ := testsuite.NewTestSuite(*testSuite, time.Duration(*testMovetime*1_000_000), *testSearchdepth)
-		ts.RunTests()
+		testsuiteTest(testSuite, testMovetime, testSearchdepth)
 		return
 	}
 
@@ -118,6 +138,47 @@ func main() {
 	// the UCI user interface
 	u := uci.NewUciHandler()
 	u.Loop()
+}
+
+func testsuiteTest(testSuite *string, testMovetime *int, testSearchdepth *int) {
+	name := *testSuite
+	fi, err := os.Stat(name)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	searchTime := *testMovetime
+	searchDepth := *testSearchdepth
+	if searchTime == 0 && searchDepth == 0 {
+		searchTime = 2000
+	}
+	switch mode := fi.Mode(); {
+	case mode.IsDir():
+		out.Println(testsuite.FeatureTests(name+"/", time.Duration(searchTime*int(time.Millisecond)), searchDepth))
+	case mode.IsRegular():
+		ts, _ := testsuite.NewTestSuite(name, time.Duration(searchTime*1_000_000), searchDepth)
+		ts.RunTests()
+	}
+}
+
+func perftTest(perft *int, fen *string) {
+	var pt movegen.Perft
+	for i := 1; i <= *perft; i++ {
+		pt.StartPerft(*fen, i, true)
+	}
+}
+
+func npsTest(fen *string, nps *int) {
+	config.Settings.Search.UseBook = false
+	s := search.NewSearch()
+	p := position.NewPosition(*fen)
+	sl := search.NewSearchLimits()
+	sl.TimeControl = true
+	sl.MoveTime = time.Duration(*nps * int(time.Second))
+	s.StartSearch(*p, *sl)
+	s.WaitWhileSearching()
+	out.Println()
+	out.Println("NPS : ", util.Nps(s.NodesVisited(), s.LastSearchResult().SearchTime))
 }
 
 func printVersionInfo() {

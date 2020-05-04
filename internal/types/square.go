@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 package types
 
@@ -153,8 +153,42 @@ func SquareOf(f File, r Rank) Square {
 }
 
 // To returns the square on the chess board in the given direction
-// TODO: should maybe be pre-computed
 func (sq Square) To(d Direction) Square {
+	// Precomputed
+	// order:  North, East, South, West, Northeast, Southeast, Southwest, Northwest
+	switch d {
+	case North:
+		return sqTo[sq][0]
+	case East:
+		return sqTo[sq][1]
+	case South:
+		return sqTo[sq][2]
+	case West:
+		return sqTo[sq][3]
+	case Northeast:
+		return sqTo[sq][4]
+	case Southeast:
+		return sqTo[sq][5]
+	case Southwest:
+		return sqTo[sq][6]
+	case Northwest:
+		return sqTo[sq][7]
+	default:
+		panic(fmt.Sprintf("Invalid direction %d", d))
+	}
+}
+
+var sqTo [SqLength][8]Square
+
+func init() {
+	for sq := SqA1; sq < SqNone; sq++ {
+		for i, dir := range Directions {
+			sqTo[sq][i] = sq.toPreCompute(dir)
+		}
+	}
+}
+
+func (sq Square) toPreCompute(d Direction) Square {
 	// overflow To south or north are easily detected <0 ot >63
 	// east and west need check
 	switch d {

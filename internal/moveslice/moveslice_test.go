@@ -1,32 +1,33 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 package moveslice
 
 import (
+	"fmt"
 	"math/rand"
 	"os"
 	"path"
@@ -229,53 +230,68 @@ func TestMoveArrayString(t *testing.T) {
 
 func TestMoveArraySort(t *testing.T) {
 	ma := NewMoveSlice(MaxMoves)
-	ma.PushBack(e2e4)
-	ma.PushBack(d7d5)
-	ma.PushBack(e4d5)
-	ma.PushBack(d8d5)
-	ma.PushBack(b1c3)
-	// logTest.Debugf("Len=%d", len(*ma))
-	// logTest.Debugf("Cap=%d", cap(*ma))
-	assert.Equal(t, 5, len(*ma))
-	assert.Equal(t, MaxMoves, cap(*ma))
-	// logTest.Debugf("String() = %s", ma.String())
-	// logTest.Debugf("StringUci() = %s", ma.StringUci())
-	// for i, v := range *ma {
-	// 	fmt.Println(i, v)
-	// }
-	// fmt.Println("Sorted:")
-	// ma.Sort()
-	// logTest.Debugf("String() = %s", ma.String())
-	// logTest.Debugf("StringUci() = %s", ma.StringUci())
-	// for i, v := range *ma {
-	// 	fmt.Println(i, v)
-	// }
+	// Startpos moves
+	ma.PushBack(Move(327746072))
+	ma.PushBack(Move(327746137))
+	ma.PushBack(Move(327746202))
+	ma.PushBack(Move(329712347))
+	ma.PushBack(Move(329712412))
+	ma.PushBack(Move(327746397))
+	ma.PushBack(Move(327746462))
+	ma.PushBack(Move(327746527))
+	ma.PushBack(Move(328073744))
+	ma.PushBack(Move(327418449))
+	ma.PushBack(Move(327090834))
+	ma.PushBack(Move(327746259))
+	ma.PushBack(Move(327746324))
+	ma.PushBack(Move(327091029))
+	ma.PushBack(Move(327418774))
+	ma.PushBack(Move(328074199))
+	ma.PushBack(Move(325779536))
+	ma.PushBack(Move(328400978))
+	ma.PushBack(Move(328401301))
+	ma.PushBack(Move(325779863))
+
+	for i := 0; i < ma.Len(); i++ {
+		m := (*ma)[i]
+		fmt.Printf("%3d. Value: %10d Move: %4d  ==>  %s\n", i+1, m&0xFFFF0000, m&0x0000FFFF, m.String())
+	}
+	fmt.Println()
+
+	ma.Sort()
+
+	for i := 0; i < ma.Len(); i++ {
+		m := (*ma)[i]
+		fmt.Printf("%3d. Value: %10d Move: %4d  ==>  %s\n", i+1, m&0xFFFF0000, m&0x0000FFFF, m.String())
+	}
+	fmt.Println()
+
+	// check
+	tmp := ma.At(0)
+	for i := 0; i < ma.Len(); i++ {
+		assert.True(t, tmp&0xFFFF0000 >= ma.At(i)&0xFFFF0000)
+		tmp = ma.At(i)
+	}
 }
 
-
 func TestMoveArraySortRandom(t *testing.T) {
-
 	ma := NewMoveSlice(MaxMoves)
 	items := 10_000
-
 	// generate random moves
 	for i := 0; i < items; i++ {
 		ma.PushBack(Move(rand.Int31()))
 	}
-
 	// sort
 	// start := time.Now()
 	ma.Sort()
 	// elapsed := time.Since(start)
 	// out.Printf("%d ns\n", elapsed.Nanoseconds())
-
 	// check
 	tmp := ma.At(0)
 	for i := 0; i < items; i++ {
-		assert.True(t, tmp >= ma.At(i))
+		assert.True(t, (tmp&0xFFFF0000) >= (ma.At(i)&0xFFFF0000))
 		tmp = ma.At(i)
 	}
-
 }
 
 
@@ -368,19 +384,3 @@ func TestForEach(t *testing.T) {
 	// 	fmt.Printf("%d: %s\n", i, ma.At(i).String())
 	// })
 }
-
-
-func TestGoLandWithVeryLongName(t *testing.T) {
-	// fill array
-	noOfItems := 1_000
-	ma := NewMoveSlice(noOfItems)
-	for i := 0; i < noOfItems; i++ {
-		ma.PushBack(e2e4)
-	}
-
-	// fmt.Printf("counter %d\n", noOfItems)
-	// ma.ForEach(func (i int) {
-	// 	fmt.Printf("%d: %s\n", i, ma.At(i).String())
-	// })
-}
-

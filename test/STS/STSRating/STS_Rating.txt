@@ -1,0 +1,42 @@
+Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
+Engine: FrankyGo v1.0.0rc (4.5.2020)
+Hash: 128, Threads: 1, time/pos: 0.127s
+Test duration: 00:02:53
+Expected time to finish: 00:03:55
+STS rating: 1930
+
+  STS ID   STS1   STS2   STS3   STS4   STS5   STS6   STS7   STS8   STS9  STS10  STS11  STS12  STS13  STS14  STS15    ALL
+  NumPos    100    100    100    100    100    100    100    100    100    100    100    100    100    100    100   1500
+ BestCnt     33     20     31     33     54     48     29     16     24     65     34     36     48     43     23    537
+   Score    421    306    479    481    639    726    409    288    316    737    482    441    586    550    459   7320
+Score(%)   42.1   30.6   47.9   48.1   63.9   72.6   40.9   28.8   31.6   73.7   48.2   44.1   58.6   55.0   45.9   48.8
+  Rating   1632   1120   1890   1899   2602   2990   1578   1039   1164   3038   1903   1721   2366   2206   1801   1930
+
+Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
+Engine: Stockfish 240420 64
+Hash: 128, Threads: 1, time/pos: 0.130s
+Test duration: 00:03:27
+Expected time to finish: 00:04:00
+STS rating: 3371
+
+  STS ID   STS1   STS2   STS3   STS4   STS5   STS6   STS7   STS8   STS9  STS10  STS11  STS12  STS13  STS14  STS15    ALL
+  NumPos    100    100    100    100    100    100    100    100    100    100    100    100    100    100    100   1500
+ BestCnt     86     69     72     74     75     79     66     71     65     78     70     69     69     59     58   1060
+   Score    884    783    836    834    819    908    785    819    742    848    787    779    811    741    799  12175
+Score(%)   88.4   78.3   83.6   83.4   81.9   90.8   78.5   81.9   74.2   84.8   78.7   77.9   81.1   74.1   79.9   81.2
+  Rating   3693   3243   3479   3470   3404   3800   3252   3404   3061   3533   3261   3225   3368   3056   3315   3371
+
+Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
+Engine: Franky v1.0
+Hash: 128, Threads: 1, time/pos: 0.189s
+Test duration: 00:15:31
+Expected time to finish: 00:05:28
+STS rating: 1948
+
+  STS ID   STS1   STS2   STS3   STS4   STS5   STS6   STS7   STS8   STS9  STS10  STS11  STS12  STS13  STS14  STS15    ALL
+  NumPos    100    100    100    100    100    100    100    100    100    100    100    100    100    100    100   1500
+ BestCnt     24     33     40     33     53     47     31     15     21     58     27     36     62     44     15    539
+   Score    364    429    558    476    628    718    434    298    333    665    396    455    695    563    369   7381
+Score(%)   36.4   42.9   55.8   47.6   62.8   71.8   43.4   29.8   33.3   66.5   39.6   45.5   69.5   56.3   36.9   49.2
+  Rating   1378   1667   2242   1876   2553   2954   1689   1084   1240   2718   1520   1783   2851   2264   1400   1948
+

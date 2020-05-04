@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 // Package uci contains the UciHandler data structure and functionality to
 // handle the UCI protocol communication between the Chess User Interface
@@ -58,7 +58,7 @@ import (
 )
 
 var out = message.NewPrinter(language.German)
-var log  *logging.Logger
+var log *logging.Logger
 
 // UciHandler handles all communication with the chess ui via UCI
 // and controls options and search.
@@ -144,9 +144,9 @@ func (u *UciHandler) SendSearchUpdate(depth int, seldepth int, nodes uint64, nps
 }
 
 // SendAspirationResearchInfo sends information about Aspiration researches to the UCI ui
-func (u *UciHandler) SendAspirationResearchInfo(depth int, seldepth int, value Value, valueType ValueType, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice) {
-	// TODO
-	panic("implement me")
+func (u *UciHandler) SendAspirationResearchInfo(depth int, seldepth int, value Value, bound string, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice) {
+	u.send(fmt.Sprintf("info depth %d seldepth %d %s multipv 1 score %s nodes %d nps %d time %d pv %s",
+		depth, seldepth, value.String(), bound, nodes, nps, time.Milliseconds(), pv.StringUci()))
 }
 
 // SendCurrentRootMove sends the currently searched root move to the UCI ui
@@ -369,7 +369,7 @@ func (u *UciHandler) positionCommand(tokens []string) {
 				if move.IsValid() {
 					u.myPosition.DoMove(move)
 				} else {
-					msg := out.Sprintf("Command 'position' malformed. Invalid move '%s' (%s)", move.String(), tokens)
+					msg := out.Sprintf("Command 'position' malformed. Invalid move '%s' (%s)", tokens[i], tokens)
 					u.SendInfoString(msg)
 					log.Warning(msg)
 					return
@@ -462,6 +462,9 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 				return nil, true
 			}
 			i++
+		case "movetime":
+			// UCI wants moveTime but STS test suite uses movetime - this catches this
+			fallthrough
 		case "moveTime":
 			i++
 			parseInt, err := strconv.ParseInt(tokens[i], 10, 64)

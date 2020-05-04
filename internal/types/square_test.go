@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 package types
 
@@ -118,30 +118,16 @@ func TestSquareFromFileRank(t *testing.T) {
 }
 
 func TestSquareDir(t *testing.T) {
-	tests := []struct {
-		square   Square
-		dir      Direction
-		expected Square
-	}{
-		{SqA1, North, SqA2},
-		{SqA1, East, SqB1},
-		{SqA1, South, SqNone},
-		{SqA1, West, SqNone},
-		{SqH8, North, SqNone},
-		{SqH8, East, SqNone},
-		{SqH8, South, SqH7},
-		{SqH8, West, SqG8},
-	}
-	var got Square
-	for _, test := range tests {
-		got = test.square.To(test.dir)
-		if test.expected != got {
-			t.Errorf("Square To %s of %s should be %s. Is %s",
-				test.dir.String(), test.square.String(), test.expected.String(), got.String())
-		} else {
-			t.Logf("Square To %s of %s is %s.", test.dir.String(), test.square.String(), got.String())
-		}
-	}
+	assert.EqualValues(t, SqA2, SqA1.To(North))
+	assert.EqualValues(t, SqA3, SqA1.To(North).To(North))
+	assert.EqualValues(t, SqB1, SqA1.To(East))
+	assert.EqualValues(t, SqA1, SqA2.To(South))
+	assert.EqualValues(t, SqNone, SqA2.To(South).To(South))
+	assert.EqualValues(t, SqNone, SqA1.To(West))
+	assert.EqualValues(t, SqNone, SqH8.To(North))
+	assert.EqualValues(t, SqNone, SqH8.To(East))
+	assert.EqualValues(t, SqH7, SqH8.To(South))
+
 }
 
 func TestMakeSquare(t *testing.T) {

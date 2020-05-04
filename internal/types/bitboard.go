@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 package types
 
@@ -347,15 +347,11 @@ func RotateSquareL45(sq Square) Square {
 }
 
 // GetAttacksBb returns a bitboard representing all the squares attacked by a
-// piece of the given type pt (not pawn) placed on 's'.
+// piece of the given type pt (not pawn) placed on 'sq'.
 // For sliding pieces this uses the pre-computed Magic Bitboard Attack arrays.
-// For Knight and King this uses the pre-computed pseudo attacks.
-// From Stockfish
+// For Knight and King this the occupied Bitboard is ignored (can be BbZero)
+// as for these non sliders the pre-computed pseudo attacks are used
 func GetAttacksBb(pt PieceType, sq Square, occupied Bitboard) Bitboard {
-	if pt == Pawn {
-		msg := fmt.Sprint("GetAttackBb called with piece type Pawn is not supported")
-		panic(msg)
-	}
 	switch pt {
 	case Bishop:
 		return bishopMagics[sq].Attacks[bishopMagics[sq].index(occupied)]
@@ -363,8 +359,13 @@ func GetAttacksBb(pt PieceType, sq Square, occupied Bitboard) Bitboard {
 		return rookMagics[sq].Attacks[rookMagics[sq].index(occupied)]
 	case Queen:
 		return bishopMagics[sq].Attacks[bishopMagics[sq].index(occupied)] | rookMagics[sq].Attacks[rookMagics[sq].index(occupied)]
-	default:
+	case Knight:
 		return pseudoAttacks[pt][sq]
+	case King:
+		return pseudoAttacks[pt][sq]
+	default:
+		msg := fmt.Sprint("GetAttackBb called with piece type Pawn is not supported")
+		panic(msg)
 	}
 }
 
@@ -466,68 +467,68 @@ func SquaresBb(c Color) Bitboard {
 
 // Various constant bitboards
 const (
-	BbZero Bitboard = Bitboard(0)
-	BbAll  Bitboard = ^BbZero
-	BbOne  Bitboard = Bitboard(1)
+	BbZero = Bitboard(0)
+	BbAll  = ^BbZero
+	BbOne  = Bitboard(1)
 
 	FileA_Bb Bitboard = 0x0101010101010101
-	FileB_Bb Bitboard = FileA_Bb << 1
-	FileC_Bb Bitboard = FileA_Bb << 2
-	FileD_Bb Bitboard = FileA_Bb << 3
-	FileE_Bb Bitboard = FileA_Bb << 4
-	FileF_Bb Bitboard = FileA_Bb << 5
-	FileG_Bb Bitboard = FileA_Bb << 6
-	FileH_Bb Bitboard = FileA_Bb << 7
+	FileB_Bb          = FileA_Bb << 1
+	FileC_Bb          = FileA_Bb << 2
+	FileD_Bb          = FileA_Bb << 3
+	FileE_Bb          = FileA_Bb << 4
+	FileF_Bb          = FileA_Bb << 5
+	FileG_Bb          = FileA_Bb << 6
+	FileH_Bb          = FileA_Bb << 7
 
 	Rank1_Bb Bitboard = 0xFF
-	Rank2_Bb Bitboard = Rank1_Bb << (8 * 1)
-	Rank3_Bb Bitboard = Rank1_Bb << (8 * 2)
-	Rank4_Bb Bitboard = Rank1_Bb << (8 * 3)
-	Rank5_Bb Bitboard = Rank1_Bb << (8 * 4)
-	Rank6_Bb Bitboard = Rank1_Bb << (8 * 5)
-	Rank7_Bb Bitboard = Rank1_Bb << (8 * 6)
-	Rank8_Bb Bitboard = Rank1_Bb << (8 * 7)
+	Rank2_Bb          = Rank1_Bb << (8 * 1)
+	Rank3_Bb          = Rank1_Bb << (8 * 2)
+	Rank4_Bb          = Rank1_Bb << (8 * 3)
+	Rank5_Bb          = Rank1_Bb << (8 * 4)
+	Rank6_Bb          = Rank1_Bb << (8 * 5)
+	Rank7_Bb          = Rank1_Bb << (8 * 6)
+	Rank8_Bb          = Rank1_Bb << (8 * 7)
 
-	MsbMask   Bitboard = ^(Bitboard(1) << 63)
-	Rank8Mask Bitboard = ^Rank8_Bb
-	FileAMask Bitboard = ^FileA_Bb
-	FileHMask Bitboard = ^FileH_Bb
+	MsbMask   = ^(Bitboard(1) << 63)
+	Rank8Mask = ^Rank8_Bb
+	FileAMask = ^FileA_Bb
+	FileHMask = ^FileH_Bb
 
 	DiagUpA1 Bitboard = 0b10000000_01000000_00100000_00010000_00001000_00000100_00000010_00000001
-	DiagUpB1 Bitboard = (MsbMask & DiagUpA1) << 1 & FileAMask // shift EAST
-	DiagUpC1 Bitboard = (MsbMask & DiagUpB1) << 1 & FileAMask
-	DiagUpD1 Bitboard = (MsbMask & DiagUpC1) << 1 & FileAMask
-	DiagUpE1 Bitboard = (MsbMask & DiagUpD1) << 1 & FileAMask
-	DiagUpF1 Bitboard = (MsbMask & DiagUpE1) << 1 & FileAMask
-	DiagUpG1 Bitboard = (MsbMask & DiagUpF1) << 1 & FileAMask
-	DiagUpH1 Bitboard = (MsbMask & DiagUpG1) << 1 & FileAMask
-	DiagUpA2 Bitboard = (Rank8Mask & DiagUpA1) << 8 // shift NORTH
-	DiagUpA3 Bitboard = (Rank8Mask & DiagUpA2) << 8
-	DiagUpA4 Bitboard = (Rank8Mask & DiagUpA3) << 8
-	DiagUpA5 Bitboard = (Rank8Mask & DiagUpA4) << 8
-	DiagUpA6 Bitboard = (Rank8Mask & DiagUpA5) << 8
-	DiagUpA7 Bitboard = (Rank8Mask & DiagUpA6) << 8
-	DiagUpA8 Bitboard = (Rank8Mask & DiagUpA7) << 8
+	DiagUpB1          = (MsbMask & DiagUpA1) << 1 & FileAMask // shift EAST
+	DiagUpC1          = (MsbMask & DiagUpB1) << 1 & FileAMask
+	DiagUpD1          = (MsbMask & DiagUpC1) << 1 & FileAMask
+	DiagUpE1          = (MsbMask & DiagUpD1) << 1 & FileAMask
+	DiagUpF1          = (MsbMask & DiagUpE1) << 1 & FileAMask
+	DiagUpG1          = (MsbMask & DiagUpF1) << 1 & FileAMask
+	DiagUpH1          = (MsbMask & DiagUpG1) << 1 & FileAMask
+	DiagUpA2          = (Rank8Mask & DiagUpA1) << 8 // shift NORTH
+	DiagUpA3          = (Rank8Mask & DiagUpA2) << 8
+	DiagUpA4          = (Rank8Mask & DiagUpA3) << 8
+	DiagUpA5          = (Rank8Mask & DiagUpA4) << 8
+	DiagUpA6          = (Rank8Mask & DiagUpA5) << 8
+	DiagUpA7          = (Rank8Mask & DiagUpA6) << 8
+	DiagUpA8          = (Rank8Mask & DiagUpA7) << 8
 
 	DiagDownH1 Bitboard = 0b0000000100000010000001000000100000010000001000000100000010000000
-	DiagDownH2 Bitboard = (Rank8Mask & DiagDownH1) << 8 // shift NORTH
-	DiagDownH3 Bitboard = (Rank8Mask & DiagDownH2) << 8
-	DiagDownH4 Bitboard = (Rank8Mask & DiagDownH3) << 8
-	DiagDownH5 Bitboard = (Rank8Mask & DiagDownH4) << 8
-	DiagDownH6 Bitboard = (Rank8Mask & DiagDownH5) << 8
-	DiagDownH7 Bitboard = (Rank8Mask & DiagDownH6) << 8
-	DiagDownH8 Bitboard = (Rank8Mask & DiagDownH7) << 8
-	DiagDownG1 Bitboard = (DiagDownH1 >> 1) & FileHMask // shift WEST
-	DiagDownF1 Bitboard = (DiagDownG1 >> 1) & FileHMask
-	DiagDownE1 Bitboard = (DiagDownF1 >> 1) & FileHMask
-	DiagDownD1 Bitboard = (DiagDownE1 >> 1) & FileHMask
-	DiagDownC1 Bitboard = (DiagDownD1 >> 1) & FileHMask
-	DiagDownB1 Bitboard = (DiagDownC1 >> 1) & FileHMask
-	DiagDownA1 Bitboard = (DiagDownB1 >> 1) & FileHMask
+	DiagDownH2          = (Rank8Mask & DiagDownH1) << 8 // shift NORTH
+	DiagDownH3          = (Rank8Mask & DiagDownH2) << 8
+	DiagDownH4          = (Rank8Mask & DiagDownH3) << 8
+	DiagDownH5          = (Rank8Mask & DiagDownH4) << 8
+	DiagDownH6          = (Rank8Mask & DiagDownH5) << 8
+	DiagDownH7          = (Rank8Mask & DiagDownH6) << 8
+	DiagDownH8          = (Rank8Mask & DiagDownH7) << 8
+	DiagDownG1          = (DiagDownH1 >> 1) & FileHMask // shift WEST
+	DiagDownF1          = (DiagDownG1 >> 1) & FileHMask
+	DiagDownE1          = (DiagDownF1 >> 1) & FileHMask
+	DiagDownD1          = (DiagDownE1 >> 1) & FileHMask
+	DiagDownC1          = (DiagDownD1 >> 1) & FileHMask
+	DiagDownB1          = (DiagDownC1 >> 1) & FileHMask
+	DiagDownA1          = (DiagDownB1 >> 1) & FileHMask
 
-	CenterFiles   Bitboard = FileD_Bb | FileE_Bb
-	CenterRanks   Bitboard = Rank4_Bb | Rank5_Bb
-	CenterSquares Bitboard = CenterFiles & CenterRanks
+	CenterFiles   = FileD_Bb | FileE_Bb
+	CenterRanks   = Rank4_Bb | Rank5_Bb
+	CenterSquares = CenterFiles & CenterRanks
 )
 
 // ////////////////////
