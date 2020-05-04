@@ -1,86 +1,14 @@
 Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
-Engine: FrankyGo dev0.9 (25.4.2020)
-Hash: 128, Threads: 1, time/pos: 0.146s
-Test duration: 00:03:53
-Expected time to finish: 00:04:24
-STS rating: 1803
+Engine: FrankyGo v1.0.0rc (4.5.2020)
+Hash: 256, Threads: 1, time/pos: 0.130s
+Test duration: 00:03:46
+Expected time to finish: 00:04:00
+STS rating: -243
 
   STS ID   STS1   STS2   STS3   STS4   STS5   STS6   STS7   STS8   STS9  STS10  STS11  STS12  STS13  STS14  STS15    ALL
   NumPos    100    100    100    100    100    100    100    100    100    100    100    100    100    100    100   1500
- BestCnt     28     23     27     26     45     41     30     18     21     59     30     31     40     45     24    488
-   Score    387    330    414    408    549    688    432    308    303    676    415    411    529    590    451   6891
-Score(%)   38.7   33.0   41.4   40.8   54.9   68.8   43.2   30.8   30.3   67.6   41.5   41.1   52.9   59.0   45.1   45.9
-  Rating   1480   1226   1600   1574   2201   2820   1681   1128   1106   2767   1605   1587   2112   2384   1765   1803
-
-Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
-Engine: FrankyGo dev0.9 (25.4.2020)
-Hash: 256, Threads: 1, time/pos: 2.000s
-Test duration: 00:50:20
-Expected time to finish: 00:50:45
-
-  STS ID   STS1   STS2   STS3   STS4   STS5   STS6   STS7   STS8   STS9  STS10  STS11  STS12  STS13  STS14  STS15    ALL
-  NumPos    100    100    100    100    100    100    100    100    100    100    100    100    100    100    100   1500
- BestCnt     31     29     41     37     49     52     30     33     21     59     29     41     48     45     20    565
-   Score    446    391    543    485    594    760    447    437    348    687    438    521    565    608    442   7712
-Score(%)   44.6   39.1   54.3   48.5   59.4   76.0   44.7   43.7   34.8   68.7   43.8   52.1   56.5   60.8   44.2   51.4
-
-UsePromNonQuiet = false
-UseHistoryCounter = false
-UseCounterMoves = false
-Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
-Engine: FrankyGo dev0.9 (25.4.2020)
-Hash: 256, Threads: 1, time/pos: 2.000s
-Test duration: 00:50:21
-Expected time to finish: 00:50:45
-
-  STS ID   STS1   STS2   STS3   STS4   STS5   STS6   STS7   STS8   STS9  STS10  STS11  STS12  STS13  STS14  STS15    ALL
-  NumPos    100    100    100    100    100    100    100    100    100    100    100    100    100    100    100   1500
- BestCnt     29     31     39     36     53     56     37     31     26     55     27     42     50     44     20    576
-   Score    447    419    535    497    635    770    489    429    377    651    424    529    605    587    469   7863
-Score(%)   44.7   41.9   53.5   49.7   63.5   77.0   48.9   42.9   37.7   65.1   42.4   52.9   60.5   58.7   46.9   52.4
-
-Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
-Engine: FrankyGo dev0.9 (25.4.2020)
-Hash: 256, Threads: 1, time/pos: 2.000s
-Test duration: 00:50:23
-Expected time to finish: 00:50:45
-
-  STS ID   STS1   STS2   STS3   STS4   STS5   STS6   STS7   STS8   STS9  STS10  STS11  STS12  STS13  STS14  STS15    ALL
-  NumPos    100    100    100    100    100    100    100    100    100    100    100    100    100    100    100   1500
- BestCnt     29     31     38     37     53     56     36     31     25     55     30     39     48     44     21    573
-   Score    442    419    529    506    642    770    484    425    362    659    425    510    578    587    465   7803
-Score(%)   44.2   41.9   52.9   50.6   64.2   77.0   48.4   42.5   36.2   65.9   42.5   51.0   57.8   58.7   46.5   52.0
-
-Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
-Engine: FrankyGo dev0.9 (25.4.2020)
-Hash: 256, Threads: 1, time/pos: 2.000s
-Test duration: 00:00:00
-Expected time to finish: 00:00:00
-
-  STS ID   STS1   STS2   STS3   STS4   STS5   STS6   STS7   STS8   STS9  STS10  STS11  STS12  STS13  STS14  STS15    ALL
-  NumPos      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
  BestCnt      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
    Score      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
-
-Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
-Engine: FrankyGo dev0.9 (25.4.2020)
-Hash: 256, Threads: 1, time/pos: 2.000s
-Test duration: 00:00:00
-Expected time to finish: 00:00:00
-
-  STS ID   STS1   STS2   STS3   STS4   STS5   STS6   STS7   STS8   STS9  STS10  STS11  STS12  STS13  STS14  STS15    ALL
-  NumPos      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
- BestCnt      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
-   Score      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
-
-Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
-Engine: FrankyGo dev0.9 (25.4.2020)
-Hash: 256, Threads: 1, time/pos: 2.000s
-Test duration: 00:00:00
-Expected time to finish: 00:00:00
-
-  STS ID   STS1   STS2   STS3   STS4   STS5   STS6   STS7   STS8   STS9  STS10  STS11  STS12  STS13  STS14  STS15    ALL
-  NumPos      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
- BestCnt      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
-   Score      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+Score(%)    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0
+  Rating   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243   -243
 

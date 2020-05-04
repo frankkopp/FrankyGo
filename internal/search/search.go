@@ -95,7 +95,7 @@ type Search struct {
 // //////////////////////////////////////////////////////
 
 // NewSearch creates a new Search instance. If the given
-// uci handler is nil all output will be sent to Stdout
+// uci handler is nil all output will be sent to Stdout.
 func NewSearch() *Search {
 	s := &Search{
 		log:               myLogging.GetLog(),
@@ -259,7 +259,7 @@ func (s *Search) ResizeCache() {
 
 // run is called by StartSearch() in a separate goroutine
 // It runs the actual search until a search limit is reached
-// or the search has been stopped by StopSearch()
+// or the search has been stopped by StopSearch().
 func (s *Search) run(position *position.Position, sl *Limits) {
 	// check if there is already a search running
 	// and if not grab the isRunning semaphore
