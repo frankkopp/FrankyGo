@@ -58,7 +58,7 @@ func main() {
 	configFile := flag.String("config", "./config.toml", "path to configuration settings file")
 	logLvl := flag.String("loglvl", "info", "standard log level\n(critical|error|warning|notice|info|debug)")
 	searchlogLvl := flag.String("searchloglvl", "", "search log level\n(critical|error|warning|notice|info|debug)")
-	logPath := flag.String("logpath", "../logs", "path where to write log files to")
+	logPath := flag.String("logpath", ".", "path where to write log files to")
 	bookPath := flag.String("bookpath", "../assets/books", "path to opening book files")
 	bookFile := flag.String("bookfile", "", "opening book file\nprovide path if file is not in same directory as executable\nPlease also provide bookFormat otherwise this will be ignored")
 	bookFormat := flag.String("bookFormat", "", "format of opening book\n(Simple|San|Pgn)")
@@ -148,7 +148,7 @@ func main() {
 		}
 		switch mode := fi.Mode(); {
 		case mode.IsDir():
-			testsuite.FeatureTests(name+"/", time.Duration(*testMovetime*int(time.Millisecond)), *testSearchdepth)
+			out.Println(testsuite.FeatureTests(name+"/", time.Duration(*testMovetime*int(time.Millisecond)), *testSearchdepth))
 		case mode.IsRegular():
 			ts, _ := testsuite.NewTestSuite(name, time.Duration(*testMovetime*1_000_000), *testSearchdepth)
 			ts.RunTests()

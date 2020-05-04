@@ -170,9 +170,8 @@ Typically, a UCI engine will be used with a UCI compatible chess interface like 
 Just configure a new engine in the UCI interface pointing to the executable of FrankyGo. If necessary use 
 command line options to find config file, logs folder and opening books folder.    
 
-To configure the engine, the search and evaluation a config file can be used. 
-Default place to look for it is ./config.toml
-Use command line option "-config" to change location
+To configure the engine (log level, search and evaluation features and parameters, etc.) a config file can be used. 
+Default place to look for it is ./config.toml. Use command line option "-config" to change the location.
 
 Also helpful:
 * logs files are stored in folder "../logs" or folder defined by cmd line option "-logpath"
@@ -234,13 +233,14 @@ Command line options:
 ## Versions
 ### v1.0.0 (in progress)
 - TODO:
-    - make it runnable without config file / config file optional
-    
+    - change default behavior for log files so running the executable without logs folder works smoothly
+
 - DONE:
+    - make it runnable without config file / config file optional
     - Razor (Stockfish)
     - QSearch Futility Pruning
     - Additional Feature Test tool
-    - History Heuristics 
+    - History Heuristics (History Counter, Counter Moves)
 
 ### v0.8.0 (done)
 - DONE
@@ -271,18 +271,11 @@ Command line options:
     - TT in QS
     - MDP/MPP
 
-- Remarks
-    PVS and TT might have some dependencies which I have not fully understood yet.
-    Some engines for example only cut with TT values for alpha/beta value in non PV nodes.
-    Tests show no drop in Search strength either way and also search tree size shows no
-    obvious issues
-
 ### v0.5 (done)
 - DONE
     - Use TT
     - SearchTreeSize
     - Quiescence search
-    - Score as string()
     - Evaluation (simple)
 
 ### v0.4 (done)

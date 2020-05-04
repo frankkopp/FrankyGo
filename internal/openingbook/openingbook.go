@@ -136,7 +136,7 @@ func (b *Book) Initialize(bookPath string, bookFile string, bookFormat BookForma
 
 	b.log.Infof("Initializing Opening Book [%s]", bookFilePath)
 	err := b.initialize(bookFilePath, bookFormat, useCache, recreateCache)
-	b.log.Info(util.GcWithStats())
+	b.log.Debug(util.GcWithStats())
 
 	return err
 }
@@ -146,7 +146,7 @@ func (b *Book) initialize(bookFilePath string, bookFormat BookFormat, useCache b
 
 	// check file path
 	if _, err := os.Stat(bookFilePath); err != nil {
-		b.log.Errorf("File \"%s\" does not exist\n", bookFilePath)
+		b.log.Warningf("file \"%s\" not found: %s\n", bookFilePath)
 		return err
 	}
 

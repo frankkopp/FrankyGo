@@ -152,7 +152,9 @@ func ResolveFolder(folder string) (string, error) {
 		}
 	}
 
-	log.Println("Testing home")
+	if debug {
+		log.Println("Testing home")
+	}
 	dir, err = os.UserHomeDir()
 	if folderExists(filepath.Join(dir, folder)) {
 		if debug {
