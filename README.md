@@ -46,7 +46,7 @@ but can of course always be improved. There are many great ideas out there to ma
 in v1.0 is very basic. Only material and positional differences are counted. There are already some other evaluations 
 implemented but deactivated as they need a lot of testing and tuning.
 
-## Features (v1.0.0)
+## Features (v1.1.0)
 * UCI protocol (to use the engine in Arena, xboard, Fritz or other chess user interfaces)
     * UCI Options
     * UCI Search Modes
@@ -229,15 +229,15 @@ Command line options:
     - Tuning and Testing of all search features and parameters
 
 ## Versions
+### v1.1.0 (in progress)
+- TODO: 
+    - Aspiration as option
+    - MTDf as option
+    - Better Evaluation and testing
+    - Pawn Structure Cache
+    
+- DONE:
 
-### v1.0.2 (done)
-- FIX:
-    - Fixed a bug in pre computation of positional values.
-
-### v1.0.1 (done)
-- FIX:
-    - MoveGen hasLegalMove did not check pawn doubles but necessary when pawn double blocks attacker in an otherwise near mate position.
-     
 ### v1.0.0 (done)
 - DONE:
     - change default behavior for log files so running the executable without logs folder works smoothly

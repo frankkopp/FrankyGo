@@ -51,7 +51,7 @@ import (
 var out = message.NewPrinter(language.German)
 
 // TtEntry struct is the data structure for each entry in the transposition
-// table. Each entry has 16-bytes (128-bits)
+// table. Each entry has 16-bytes (128-bits).
 type TtEntry struct {
 	Key        position.Key // 64-bit Zobrist Key
 	Move       Move         // 32-bit Move and value
@@ -97,7 +97,7 @@ type TtStats struct {
 // as a maximum of memory usage. actual size will be determined
 // by the number of elements fitting into this size which need
 // to be a power of 2 for efficient hashing/addressing via bit
-// masks
+// masks.
 func NewTtTable(sizeInMByte int) *TtTable {
 	tt := TtTable{
 		log:                myLogging.GetLog(),
@@ -157,7 +157,7 @@ func (tt *TtTable) GetEntry(key position.Key) *TtEntry {
 }
 
 // Probe returns a pointer to the corresponding tt entry
-// or nil if it was not found. Decreases TtEntry.Age by 1
+// or nil if it was not found. Decreases TtEntry.Age by 1.
 func (tt *TtTable) Probe(key position.Key) *TtEntry {
 	tt.Stats.numberOfProbes++
 	e := &tt.data[tt.hash(key)]
@@ -274,7 +274,6 @@ func (tt *TtTable) String() string {
 func (tt *TtTable) Len() uint64 {
 	return tt.numberOfEntries
 }
-
 
 // AgeEntries ages each entry in the tt
 // Creates a number of go routines with processes each
