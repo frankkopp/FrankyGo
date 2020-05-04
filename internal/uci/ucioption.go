@@ -35,7 +35,7 @@ import (
 	. "github.com/frankkopp/FrankyGo/internal/config"
 )
 
-// init will define all available uci options and store them into the uciOption map
+// init will define all available uci options and store them into the uciOption map.
 func init() {
 	uciOptions = map[string]*uciOption{
 		"Print Config": {NameID: "Print Config", HandlerFunc: printConfig, OptionType: Button},
@@ -62,9 +62,11 @@ func init() {
 		"Use_CounterMove": {NameID: "Use_CounterMove", HandlerFunc: useCM, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseCounterMoves), CurrentValue: strconv.FormatBool(Settings.Search.UseCounterMoves)},
 
 		"Use_Rfp":      {NameID: "Use_Rfp", HandlerFunc: useRfp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseRFP), CurrentValue: strconv.FormatBool(Settings.Search.UseRFP)},
+		"Use_Razoring": {NameID: "Use_Razoring", HandlerFunc: useRazor, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseRazoring), CurrentValue: strconv.FormatBool(Settings.Search.UseRazoring)},
 		"Use_NullMove": {NameID: "Use_NullMove", HandlerFunc: useNullMove, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseNullMove), CurrentValue: strconv.FormatBool(Settings.Search.UseNullMove)},
 		"Use_Mdp":      {NameID: "Use_Mdp", HandlerFunc: useMdp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseMDP), CurrentValue: strconv.FormatBool(Settings.Search.UseMDP)},
 		"Use_Fp":       {NameID: "Use_Fp", HandlerFunc: useFp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseFP), CurrentValue: strconv.FormatBool(Settings.Search.UseFP)},
+		"Use_Qfp":      {NameID: "Use_Qfp", HandlerFunc: useQfp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQFP), CurrentValue: strconv.FormatBool(Settings.Search.UseQFP)},
 		"Use_Lmr":      {NameID: "Use_Lmr", HandlerFunc: useLmr, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseLmr), CurrentValue: strconv.FormatBool(Settings.Search.UseLmr)},
 		"Use_Lmp":      {NameID: "Use_Lmp", HandlerFunc: useLmp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseLmp), CurrentValue: strconv.FormatBool(Settings.Search.UseLmp)},
 
@@ -95,6 +97,7 @@ func init() {
 
 		"Use_PVS",
 		"Use_ASP",
+		"Use_MTDf",
 
 		"Use_IID",
 		"Use_Killer",
@@ -103,8 +106,10 @@ func init() {
 
 		"Use_Mdp",
 		"Use_Rfp",
+		"Use_Razoring",
 		"Use_NullMove",
 		"Use_Fp",
+		"Use_Qfp",
 		"Use_Lmr",
 		"Use_Lmp",
 
@@ -312,6 +317,12 @@ func useCM(u *UciHandler, o *uciOption) {
 	log.Debugf("Set Use Counter Moves to %v", Settings.Search.UseCounterMoves)
 }
 
+func useRazor(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseRazoring = v
+	log.Debugf("Set Use Razoring to %v", Settings.Search.UseRazoring)
+}
+
 func useNullMove(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseNullMove = v
@@ -382,6 +393,12 @@ func useFp(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseFP = v
 	log.Debugf("Set use Futility Pruning (FP) to %v", Settings.Search.UseFP)
+}
+
+func useQfp(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseQFP = v
+	log.Debugf("Set use Quiescence Futility Pruning (QFP) to %v", Settings.Search.UseQFP)
 }
 
 func evalLazy(u *UciHandler, o *uciOption) {
