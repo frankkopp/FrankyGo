@@ -45,7 +45,7 @@ import (
 
 var logTest *logging.Logger
 
-// make tests run in the projects root directory
+// make tests run in the projects root directory.
 func init() {
 	_, filename, _, _ := runtime.Caller(0)
 	dir := path.Join(path.Dir(filename), "../..")
@@ -55,7 +55,7 @@ func init() {
 	}
 }
 
-// Setup the tests
+// Setup the tests.
 func TestMain(m *testing.M) {
 	config.Setup()
 	logTest = myLogging.GetTestLog()
@@ -659,7 +659,7 @@ func TestTimingOnDemandMoveGen(t *testing.T) {
 }
 
 // GeneratePseudoLegalMoves took 1.655.000.800 ns for 1.000.000 iterations
-// 86.000.000 moves generated in 1.655 ns: 51.963.721 mps
+// 86.000.000 moves generated in 1.655 ns: 51.963.721 mps.
 func TestTimingOnDemandRealMoveGen(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")

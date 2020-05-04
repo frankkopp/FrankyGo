@@ -32,7 +32,7 @@ type logConfiguration struct {
 	LogPath      string
 }
 
-// sets defaults which might be overwritten by config file
+// sets defaults which might be overwritten by config file.
 func init() {
 	Settings.Log.LogLvl = "debug"
 	Settings.Log.SearchLogLvl = "debug"
@@ -40,7 +40,7 @@ func init() {
 }
 
 // set defaults for configurations here in case a configuration
-// is not available from the config file
+// is not available from the config file.
 func setupLogLvl() {
 	// log level
 	if Settings.Log.LogLvl != "" { // check config file
@@ -52,7 +52,7 @@ func setupLogLvl() {
 	}
 }
 
-// LogLevels mapping of string representations of log levels to numerical values
+// LogLevels mapping of string representations of log levels to numerical values.
 var LogLevels = map[string]int{
 	"off":      -1,
 	"critical": 0,

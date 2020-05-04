@@ -44,7 +44,7 @@ import (
 
 var logTest *logging2.Logger
 
-// make tests run in the projects root directory
+// make tests run in the projects root directory.
 func init() {
 	_, filename, _, _ := runtime.Caller(0)
 	dir := path.Join(path.Dir(filename), "../..")
@@ -54,7 +54,7 @@ func init() {
 	}
 }
 
-// Setup the tests
+// Setup the tests.
 func TestMain(m *testing.M) {
 	config.Setup()
 	logTest = logging.GetTestLog()
@@ -184,7 +184,7 @@ func TestRevealedAttacks(t *testing.T) {
 	assert.EqualValues(t, Bitboard(9225623836668985360), attacksTo)
 }
 
-// to compare magic bitboard attacks with loop generated attacks
+// to compare magic bitboard attacks with loop generated attacks.
 func buildAttacks(p *position.Position, pt PieceType, sq Square) Bitboard {
 	occupiedAll := p.OccupiedAll()
 	attacks := BbZero

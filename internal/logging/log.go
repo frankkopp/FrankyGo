@@ -55,7 +55,7 @@ func init() {
 }
 
 // GetLog returns an instance of a standard Logger preconfigured with a
-// os.Stdout backend and a "normal" logging format (e.g. time - file - level)
+// os.Stdout backend and a "normal" logging format (e.g. time - file - level).
 func GetLog() *logging.Logger {
 	// Stdout backend
 	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)
@@ -93,7 +93,7 @@ func GetLog() *logging.Logger {
 }
 
 // GetTestLog returns an instance of a standard Logger preconfigured with a
-// os.Stdout backend and a "normal" logging format (e.g. time - file - level)
+// os.Stdout backend and a "normal" logging format (e.g. time - file - level).
 func GetTestLog() *logging.Logger {
 	testLog = logging.MustGetLogger("test")
 	backend1 := logging.NewLogBackend(os.Stdout, "", log.Lmsgprefix)

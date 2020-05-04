@@ -34,7 +34,7 @@ import (
 	"testing"
 )
 
-// make tests run in the projects root directory
+// make tests run in the projects root directory.
 func init() {
 	_, filename, _, _ := runtime.Caller(0)
 	dir := path.Join(path.Dir(filename), "../..")
@@ -60,4 +60,3 @@ func Test(t *testing.T) {
 	Setup()
 	fmt.Println(Settings.String())
 }
-

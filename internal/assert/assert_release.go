@@ -35,7 +35,7 @@ func init() {
 	// fmt.Println("RELEASE MODE")
 }
 
-// DEBUG if this is set to "true" asserts are evaluated
+// DEBUG if this is set to "true" asserts are evaluated.
 const DEBUG = false
 
 // Assert runs the provided function and throws

@@ -40,7 +40,7 @@ import (
 var out = message.NewPrinter(language.German)
 
 // History is a data structure updated during search to provide the move
-// generator with valuable information for move sorting
+// generator with valuable information for move sorting.
 type History struct {
 	HistoryCount [2][64][64]int64
 	CounterMoves [64][64]Move

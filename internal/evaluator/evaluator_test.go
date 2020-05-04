@@ -35,8 +35,6 @@ import (
 
 	logging2 "github.com/op/go-logging"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 
 	. "github.com/frankkopp/FrankyGo/internal/config"
 	"github.com/frankkopp/FrankyGo/internal/logging"
@@ -46,7 +44,7 @@ import (
 
 var logTest *logging2.Logger
 
-// make tests run in the projects root directory
+// make tests run in the projects root directory.
 func init() {
 	_, filename, _, _ := runtime.Caller(0)
 	dir := path.Join(path.Dir(filename), "../..")
@@ -56,7 +54,7 @@ func init() {
 	}
 }
 
-// Setup the tests
+// Setup the tests.
 func TestMain(m *testing.M) {
 	Setup()
 	logTest = logging.GetTestLog()
@@ -67,10 +65,10 @@ func TestMain(m *testing.M) {
 //noinspection GoStructInitializationWithoutFieldNames
 func TestEvaluatorValueFromScore(t *testing.T) {
 	e := NewEvaluator()
-	v:= Value(0)
+	v := Value(0)
 
 	e.gamePhaseFactor = 1.0
-	e.score = Score{10, 0 }
+	e.score = Score{10, 0}
 	v = e.value()
 	assert.EqualValues(t, 10, v)
 	e.gamePhaseFactor = 0.0
@@ -81,7 +79,7 @@ func TestEvaluatorValueFromScore(t *testing.T) {
 	assert.EqualValues(t, 5, v)
 
 	e.gamePhaseFactor = 1.0
-	e.score = Score{50, 50 }
+	e.score = Score{50, 50}
 	v = e.value()
 	assert.EqualValues(t, 50, v)
 	e.gamePhaseFactor = 0.0
@@ -346,7 +344,6 @@ func TestTimingEval(t *testing.T) {
 		t.Skip("skipping test in short mode.")
 	}
 
-	out := message.NewPrinter(language.German)
 	p := position.NewPosition("r1b1k2r/pppp1ppp/2n2n2/1Bb1p2q/4P3/2NP1N2/1PP2PPP/R1BQK2R w KQkq -")
 	e := NewEvaluator()
 	result := Value(0)
@@ -367,4 +364,3 @@ func TestTimingEval(t *testing.T) {
 	}
 	_ = result
 }
-

@@ -64,7 +64,7 @@ type Attacks struct {
 	PawnsDouble [ColorLength]Bitboard
 }
 
-// NewAttacks creates a new instance of Attacks
+// NewAttacks creates a new instance of Attacks.
 func NewAttacks() *Attacks {
 	return &Attacks{
 		log: myLogging.GetLog(),
@@ -75,7 +75,7 @@ func NewAttacks() *Attacks {
 // new allocation by looping through all fields
 // This is considerably faster than creating a new instance
 // Benchmark/New_Instance-8   1.904.764  691.0 ns/op
-// Benchmark/Clear-8         13.043.875   91.7 ns/op
+// Benchmark/Clear-8         13.043.875   91.7 ns/op.
 func (a *Attacks) Clear() {
 	a.Zobrist = 0
 	for sq := 0; sq < SqLength; sq++ {
@@ -114,9 +114,8 @@ func (a *Attacks) Compute(p *position.Position) {
 	a.pawnAttacks(p)
 }
 
-// nonPawnAttacks calculates all attacks of non pawn pieces including king
+// nonPawnAttacks calculates all attacks of non pawn pieces including king.
 func (a *Attacks) nonPawnAttacks(p *position.Position) {
-
 	ptList := [5]PieceType{King, Knight, Bishop, Rook, Queen}
 	var attacks Bitboard
 	allPieces := p.OccupiedAll()
@@ -158,7 +157,6 @@ func (a *Attacks) pawnAttacks(p *position.Position) {
 
 // AttacksTo determines all attacks to the given square for the given color.
 func AttacksTo(p *position.Position, square Square, color Color) Bitboard {
-
 	// prepare en passant attacks
 	epAttacks := BbZero
 	enPassantSquare := p.GetEnPassantSquare()
@@ -191,7 +189,7 @@ func AttacksTo(p *position.Position, square Square, color Color) Bitboard {
 }
 
 // RevealedAttacks returns sliding attacks after a piece has been removed to reveal new attacks.
-// It is only necessary to look at slider pieces as only their attacks can be revealed
+// It is only necessary to look at slider pieces as only their attacks can be revealed.
 func RevealedAttacks(p *position.Position, square Square, occupied Bitboard, color Color) Bitboard {
 	// Sliding rooks and queens
 	return (GetAttacksBb(Rook, square, occupied) & (p.PiecesBb(color, Rook) | p.PiecesBb(color, Queen)) & occupied) |

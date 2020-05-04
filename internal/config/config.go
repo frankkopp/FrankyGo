@@ -40,7 +40,7 @@ import (
 	"github.com/frankkopp/FrankyGo/internal/util"
 )
 
-// globally available config values
+// globally available config values.
 var (
 	// ConfFile hold the path to the used config file (relative to working directory)
 	ConfFile = "./config.toml"
@@ -107,5 +107,3 @@ func (settings *conf) String() string {
 	}
 	return c.String()
 }
-
-

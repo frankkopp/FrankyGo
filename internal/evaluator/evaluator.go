@@ -67,13 +67,13 @@ type Evaluator struct {
 }
 
 // to avoid object creation and memory allocation
-// during evaluation we reuse this tmp Score
+// during evaluation we reuse this tmp Score.
 var tmpScore = Score{}
 
-// pre-computed list
+// pre-computed list.
 var threshold [GamePhaseMax + 1]int
 
-// initialize pre-computed values
+// initialize pre-computed values.
 func init() {
 	for i := 0; i <= GamePhaseMax; i++ {
 		gamePhaseFactor := float64(i) / GamePhaseMax
@@ -127,13 +127,13 @@ func (e *Evaluator) Evaluate(position *position.Position) Value {
 }
 
 // value adds up the mid and end games scores after multiplying
-// them with the game phase factor
+// them with the game phase factor.
 func (e *Evaluator) value() Value {
 	return e.score.ValueFromScore(e.gamePhaseFactor)
 }
 
 // internal evaluation to sum up all partial evaluations.
-// This assumes that InitEval() has been called beforehand
+// This assumes that InitEval() has been called beforehand.
 func (e *Evaluator) evaluate() Value {
 	// if not enough material on the board to achieve a mate it is a draw
 	if e.position.HasInsufficientMaterial() {
@@ -215,7 +215,7 @@ func (e *Evaluator) evaluate() Value {
 }
 
 // finalEval returns the value which is calculated always from the view of
-// white from the view of the next player of the position
+// white from the view of the next player of the position.
 func (e *Evaluator) finalEval(value Value) Value {
 	// we can use the Direction factor to avoid an if statement
 	// Direction returns positive 1 for White and negative 1 (-1) for Black
@@ -252,7 +252,7 @@ func (e *Evaluator) evalKing(c Color) *Score {
 	return &tmpScore
 }
 
-// evalPiece is the evaluation function for all pieces except pawns and kings
+// evalPiece is the evaluation function for all pieces except pawns and kings.
 func (e *Evaluator) evalPiece(c Color, pieceType PieceType) *Score {
 	tmpScore.MidGameValue = 0
 	tmpScore.EndGameValue = 0
