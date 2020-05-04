@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 package uci
 
@@ -47,13 +47,19 @@ func init() {
 
 		"Ponder": {NameID: "Ponder", HandlerFunc: usePonder, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePonder), CurrentValue: strconv.FormatBool(Settings.Search.UsePonder)},
 
-		"Quiescence": {NameID: "Quiescence", HandlerFunc: useQuiescence, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQuiescence), CurrentValue: strconv.FormatBool(Settings.Search.UseQuiescence)},
-		"Use_QHash":  {NameID: "Use_QHash", HandlerFunc: useQSHash, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQSTT), CurrentValue: strconv.FormatBool(Settings.Search.UseQSTT)},
-		"Use_SEE":    {NameID: "Use_SEE", HandlerFunc: useSee, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseSEE), CurrentValue: strconv.FormatBool(Settings.Search.UseSEE)},
+		"Quiescence":       {NameID: "Quiescence", HandlerFunc: useQuiescence, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQuiescence), CurrentValue: strconv.FormatBool(Settings.Search.UseQuiescence)},
+		"Use_QHash":        {NameID: "Use_QHash", HandlerFunc: useQSHash, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQSTT), CurrentValue: strconv.FormatBool(Settings.Search.UseQSTT)},
+		"Use_SEE":          {NameID: "Use_SEE", HandlerFunc: useSee, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseSEE), CurrentValue: strconv.FormatBool(Settings.Search.UseSEE)},
+		"Use_PromNonQuiet": {NameID: "Use_PromNonQuiet", HandlerFunc: usePromNonQuiet, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePromNonQuiet), CurrentValue: strconv.FormatBool(Settings.Search.UsePromNonQuiet)},
 
-		"Use_PVS":    {NameID: "Use_PVS", HandlerFunc: usePvs, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePVS), CurrentValue: strconv.FormatBool(Settings.Search.UsePVS)},
-		"Use_IID":    {NameID: "Use_IID", HandlerFunc: useIID, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseIID), CurrentValue: strconv.FormatBool(Settings.Search.UseIID)},
-		"Use_Killer": {NameID: "Use_Killer", HandlerFunc: useKiller, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseKiller), CurrentValue: strconv.FormatBool(Settings.Search.UseKiller)},
+		"Use_PVS":  {NameID: "Use_PVS", HandlerFunc: usePvs, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePVS), CurrentValue: strconv.FormatBool(Settings.Search.UsePVS)},
+		"Use_ASP":  {NameID: "Use_ASP", HandlerFunc: useAsp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseAspiration), CurrentValue: strconv.FormatBool(Settings.Search.UseAspiration)},
+		"Use_MTDf": {NameID: "Use_MTDf", HandlerFunc: useMtdf, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseMTDf), CurrentValue: strconv.FormatBool(Settings.Search.UseMTDf)},
+
+		"Use_IID":         {NameID: "Use_IID", HandlerFunc: useIID, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseIID), CurrentValue: strconv.FormatBool(Settings.Search.UseIID)},
+		"Use_Killer":      {NameID: "Use_Killer", HandlerFunc: useKiller, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseKiller), CurrentValue: strconv.FormatBool(Settings.Search.UseKiller)},
+		"Use_HistCount":   {NameID: "Use_HistCount", HandlerFunc: useHC, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseHistoryCounter), CurrentValue: strconv.FormatBool(Settings.Search.UseHistoryCounter)},
+		"Use_CounterMove": {NameID: "Use_CounterMove", HandlerFunc: useCM, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseCounterMoves), CurrentValue: strconv.FormatBool(Settings.Search.UseCounterMoves)},
 
 		"Use_Rfp":      {NameID: "Use_Rfp", HandlerFunc: useRfp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseRFP), CurrentValue: strconv.FormatBool(Settings.Search.UseRFP)},
 		"Use_NullMove": {NameID: "Use_NullMove", HandlerFunc: useNullMove, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseNullMove), CurrentValue: strconv.FormatBool(Settings.Search.UseNullMove)},
@@ -71,6 +77,9 @@ func init() {
 		"Eval_Mobility": {NameID: "Eval_Mobility", HandlerFunc: evalMob, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseMobility), CurrentValue: strconv.FormatBool(Settings.Eval.UseMobility)},
 		"Eval_AdvPiece": {NameID: "Eval_AdvPiece", HandlerFunc: evalAdv, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseAdvancedPieceEval), CurrentValue: strconv.FormatBool(Settings.Eval.UseAdvancedPieceEval)},
 	}
+
+	// as Go does not let us sort maps manually (e.g. insertion order) we need a
+	// list to control order of the entries
 	sortOrderUciOptions = []string{
 		"Print Config",
 		"Clear Hash",
@@ -82,10 +91,15 @@ func init() {
 		"Quiescence",
 		"Use_QHash",
 		"Use_SEE",
+		"Use_PromNonQuiet",
+
+		"Use_PVS",
+		"Use_ASP",
 
 		"Use_IID",
-		"Use_PVS",
 		"Use_Killer",
+		"Use_HistCount",
+		"Use_CounterMove",
 
 		"Use_Mdp",
 		"Use_Rfp",
@@ -104,7 +118,7 @@ func init() {
 	}
 }
 
-// GetOptions returns all available uci options a slice of strings
+// GetOptions returns all available uci options as a slice of strings
 // to be send to the UCI user interface during the initialization
 // phase of the UCI protocol
 func (o *optionMap) GetOptions() *[]string {
@@ -259,7 +273,19 @@ func useQSHash(u *UciHandler, o *uciOption) {
 func usePvs(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UsePVS = v
-	log.Debugf("Set Use PVS to %v", Settings.Search.UsePVS)
+	log.Debugf("Set Use Principal Variation Search to %v", Settings.Search.UsePVS)
+}
+
+func useAsp(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseAspiration = v
+	log.Debugf("Set Use Aspiration Search to %v", Settings.Search.UseAspiration)
+}
+
+func useMtdf(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseMTDf = v
+	log.Debugf("Set Use MDTf Search to %v", Settings.Search.UseMTDf)
 }
 
 func useMdp(u *UciHandler, o *uciOption) {
@@ -272,6 +298,18 @@ func useKiller(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseKiller = v
 	log.Debugf("Set Use Killer Moves to %v", Settings.Search.UseKiller)
+}
+
+func useHC(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseHistoryCounter = v
+	log.Debugf("Set Use History Counter to %v", Settings.Search.UseHistoryCounter)
+}
+
+func useCM(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseCounterMoves = v
+	log.Debugf("Set Use Counter Moves to %v", Settings.Search.UseCounterMoves)
 }
 
 func useNullMove(u *UciHandler, o *uciOption) {
@@ -302,6 +340,12 @@ func useSee(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseSEE = v
 	log.Debugf("Set use SEE to %v", Settings.Search.UseSEE)
+}
+
+func usePromNonQuiet(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UsePromNonQuiet = v
+	log.Debugf("Set use Promotion as Non-quiet to %v", Settings.Search.UsePromNonQuiet)
 }
 
 func useExt(u *UciHandler, o *uciOption) {

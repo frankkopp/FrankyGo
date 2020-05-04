@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 // Package movegen contains functionality to create moves on a
 // chess position. It implements several variants like
@@ -38,6 +38,8 @@ import (
 	"github.com/op/go-logging"
 
 	"github.com/frankkopp/FrankyGo/internal/attacks"
+	"github.com/frankkopp/FrankyGo/internal/config"
+	"github.com/frankkopp/FrankyGo/internal/history"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
 	"github.com/frankkopp/FrankyGo/internal/position"
@@ -50,49 +52,65 @@ var log *logging.Logger
 //  movegen.NewMoveGen()
 // Creating this directly will not work.
 type Movegen struct {
-	pseudoLegalMoves       *moveslice.MoveSlice
-	legalMoves             *moveslice.MoveSlice
+	pseudoLegalMoves *moveslice.MoveSlice
+	legalMoves       *moveslice.MoveSlice
+
 	onDemandMoves          *moveslice.MoveSlice
+	currentODZobrist       position.Key
 	onDemandEvasionTargets Bitboard
-	killerMoves            [2]Move
-	currentIteratorKey     position.Key
-	takeIndex              int
-	pvMove                 Move
 	currentODStage         int8
-	pvMovePushed           bool
+	takeIndex              int
+
+	killerMoves  [2]Move
+	pvMove       Move
+	pvMovePushed bool
+	historyData  *history.History
 }
 
 // //////////////////////////////////////////////////////
 // // Public
 // //////////////////////////////////////////////////////
 
-// GenMode generation modes for on demand move generation
+// GenMode generation modes for on demand move generation.
 type GenMode int
 
-// GenMode generation modes for on demand move generation
+// GenMode generation modes for on demand move generation.
 const (
-	GenZero   GenMode = 0b00
-	GenCap    GenMode = 0b01
-	GenNonCap GenMode = 0b10
-	GenAll    GenMode = 0b11
+	GenZero     GenMode = 0b00
+	GenNonQuiet GenMode = 0b01
+	GenQuiet    GenMode = 0b10
+	GenAll      GenMode = 0b11
 )
 
 // NewMoveGen creates a new instance of a move generator
+// This is the only time when we allocate new memory. The instance
+// will not create any move lists during normal move generation
+// as it will reuse pre-created internal lists which will
+// be returned via pointer to a caller.
+// OBS: Be careful when trying to store the list of generated
+// moves as the underlying list will be changed when move gen
+// is called again. A deep copy is necessary if you need a
+// copy of the move list.
+// For a deep copy use:
+//  moveslice.MoveSlice.Clone()
 func NewMoveGen() *Movegen {
 	if log == nil {
 		log = myLogging.GetLog()
 	}
 	tmpMg := &Movegen{
-		pseudoLegalMoves:       moveslice.NewMoveSlice(MaxMoves),
-		legalMoves:             moveslice.NewMoveSlice(MaxMoves),
+		pseudoLegalMoves: moveslice.NewMoveSlice(MaxMoves),
+		legalMoves:       moveslice.NewMoveSlice(MaxMoves),
+
 		onDemandMoves:          moveslice.NewMoveSlice(MaxMoves),
+		currentODZobrist:       0,
 		onDemandEvasionTargets: BbZero,
-		killerMoves:            [2]Move{MoveNone, MoveNone},
-		currentIteratorKey:     0,
-		takeIndex:              0,
-		pvMove:                 MoveNone,
 		currentODStage:         odNew,
-		pvMovePushed:           false,
+		takeIndex:              0,
+
+		killerMoves:  [2]Move{MoveNone, MoveNone},
+		pvMove:       MoveNone,
+		pvMovePushed: false,
+		historyData:  nil,
 	}
 	return tmpMg
 }
@@ -100,9 +118,18 @@ func NewMoveGen() *Movegen {
 // GeneratePseudoLegalMoves generates pseudo moves for the next player. Does not check if
 // king is left in check or if it passes an attacked square when castling or has been in check
 // before castling.
+//
+// If a PV move is set with setPV(Move pv) this move will be returned first and will
+// not be returned at its normal place.
+//
+// Killer moves will be played as soon as possible after non quiet moves. As Killer moves
+// are stored for the whole ply a Killer move might not be valid for the current position.
+// Therefore we need to wait until they are generated. Killer moves will then be pushed
+// to the top of the the quiet moves.
+//
 // Evasion is a parameter given when the position is in check and only evasion moves should
-// be generated. For testing purposes this is a parameter for now but obviously we could
-// determine checks very quickly internally in this function.
+// be generated. For testing purposes this is a parameter but obviously we could determine
+// checks very quickly internally in this function.
 // The idea of evasion is to avoid generating moves which are obviously not getting the
 // king out of check. This may reduce the total number of generated moves but there might
 // still be a few non legal moves. This is the case if considering and calculating all
@@ -110,7 +137,7 @@ func NewMoveGen() *Movegen {
 // Because of beta cuts off we quite often will never have to check the full legality
 // of these moves anyway.
 func (mg *Movegen) GeneratePseudoLegalMoves(p *position.Position, mode GenMode, evasion bool) *moveslice.MoveSlice {
-
+	// re-use move list
 	mg.pseudoLegalMoves.Clear()
 
 	// when in check only generate moves either blocking or capturing the attacker
@@ -118,33 +145,25 @@ func (mg *Movegen) GeneratePseudoLegalMoves(p *position.Position, mode GenMode, 
 		mg.onDemandEvasionTargets = mg.getEvasionTargets(p)
 	}
 
-	if mode&GenCap != 0 {
-		mg.generatePawnMoves(p, GenCap, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
+	// first generate all non quiet moves
+	if mode&GenNonQuiet != 0 {
+		mg.generatePawnMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
 		// castling never captures
-		mg.generateKingMoves(p, GenCap, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
-		mg.generateMoves(p, GenCap, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
+		mg.generateKingMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
+		mg.generateMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
 	}
-	if mode&GenNonCap != 0 {
-		mg.generatePawnMoves(p, GenNonCap, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
+	// second generate all other moves
+	if mode&GenQuiet != 0 {
+		mg.generatePawnMoves(p, GenQuiet, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
 		if !evasion { // no castling when in check
-			mg.generateCastling(p, GenNonCap, mg.pseudoLegalMoves)
+			mg.generateCastling(p, GenQuiet, mg.pseudoLegalMoves)
 		}
-		mg.generateKingMoves(p, GenNonCap, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
-		mg.generateMoves(p, GenNonCap, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
+		mg.generateKingMoves(p, GenQuiet, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
+		mg.generateMoves(p, GenQuiet, evasion, mg.onDemandEvasionTargets, mg.pseudoLegalMoves)
 	}
 
-	// PV and Killer handling
-	mg.pseudoLegalMoves.ForEach(func(i int) {
-		at := mg.pseudoLegalMoves.At(i)
-		switch {
-		case at.MoveOf() == mg.pvMove:
-			mg.pseudoLegalMoves.Set(i, at.SetValue(ValueMax))
-		case at.MoveOf() == mg.killerMoves[0]:
-			mg.pseudoLegalMoves.Set(i, at.SetValue(-4000))
-		case at.MoveOf() == mg.killerMoves[1]:
-			mg.pseudoLegalMoves.Set(i, at.SetValue(-4001))
-		}
-	})
+	// PV, Killer and history handling
+	mg.updateSortValues(p, mg.pseudoLegalMoves)
 
 	// sort moves
 	mg.pseudoLegalMoves.Sort()
@@ -159,6 +178,8 @@ func (mg *Movegen) GeneratePseudoLegalMoves(p *position.Position, mode GenMode, 
 
 // GenerateLegalMoves generates legal moves for the next player.
 // Uses GeneratePseudoLegalMoves and filters out illegal moves.
+// Usually only used for root moves generation as this is expensive. During
+// the AlphaBeta search we will only use pseudo legal move generation.
 func (mg *Movegen) GenerateLegalMoves(position *position.Position, mode GenMode) *moveslice.MoveSlice {
 	mg.legalMoves.Clear()
 	mg.GeneratePseudoLegalMoves(position, mode, false)
@@ -168,11 +189,18 @@ func (mg *Movegen) GenerateLegalMoves(position *position.Position, mode GenMode)
 	return mg.legalMoves
 }
 
-// GetNextMove returns the next move for the given position. Usually this would be used in a loop
-// during search.
+// GetNextMove is the main function for phased generation of pseudo legal moves.
+// It returns the next move for the given position and will usually be called in a
+// loop during search. As we hope for an early beta cut this will save time as not
+// all moves will have been generated.
+//
+// To reuse this on the same position a call to ResetOnDemand() is necessary. This
+// is not necessary when a different position is called as this func will reset it self
+// in this case.
 //
 // If a PV move is set with setPV(Move pv) this will be returned first
 // and will not be returned at its normal place.
+//
 // Killer moves will be played as soon as possible. As Killer moves are stored for
 // the whole ply a Killer move might not be valid for the current position. Therefore
 // we need to wait until they are generated by the phased move generation. Killers will
@@ -187,24 +215,21 @@ func (mg *Movegen) GenerateLegalMoves(position *position.Position, mode GenMode)
 // possible scenarios is more expensive than to just generate the move and dismiss is later.
 // Because of beta cuts off we quite often will never have to check the full legality
 // of these moves anyway.
-//
-// To reuse this on the sames position a call to ResetOnDemand() is necessary. This
-// is not necessary when a different position is called as this func will reset it self
-// in this case.
 func (mg *Movegen) GetNextMove(p *position.Position, mode GenMode, evasion bool) Move {
 
 	// if the position changes during iteration the iteration
 	// will be reset and generation will be restart with the
 	// new position.
-	if p.ZobristKey() != mg.currentIteratorKey {
+	if p.ZobristKey() != mg.currentODZobrist {
 		mg.onDemandMoves.Clear()
 		mg.onDemandEvasionTargets = BbZero
 		mg.currentODStage = odNew
 		mg.pvMovePushed = false
 		mg.takeIndex = 0
-		mg.currentIteratorKey = p.ZobristKey()
+		mg.currentODZobrist = p.ZobristKey()
 	}
 
+	// when in check only generate moves either blocking or capturing the attacker
 	if evasion && mg.onDemandEvasionTargets == BbZero {
 		mg.onDemandEvasionTargets = mg.getEvasionTargets(p)
 	}
@@ -281,12 +306,12 @@ func (mg *Movegen) GetNextMove(p *position.Position, mode GenMode, evasion bool)
 }
 
 // ResetOnDemand resets the move on demand generator to start fresh.
-// Also deletes Killer and PV moves
+// Also deletes Killer and PV moves.
 func (mg *Movegen) ResetOnDemand() {
 	mg.onDemandMoves.Clear()
 	mg.onDemandEvasionTargets = BbZero
 	mg.currentODStage = odNew
-	mg.currentIteratorKey = 0
+	mg.currentODZobrist = 0
 	mg.pvMove = MoveNone
 	mg.pvMovePushed = false
 	mg.takeIndex = 0
@@ -316,19 +341,25 @@ func (mg *Movegen) StoreKiller(move Move) {
 	}
 }
 
+// SetHistoryData provides a pointer to the search's history data
+// for the move generator so it can optimize sorting.
+func (mg *Movegen) SetHistoryData(historyData *history.History) {
+	mg.historyData = historyData
+}
+
 // HasLegalMove determines if we have at least one legal move. We only have to find
 // one legal move. We search for any KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN move
 // and return immediately if we found one.
-// The order of our search is approx from the most likely to the least likely
+// The order of our search is approx from the most likely to the least likely.
 func (mg *Movegen) HasLegalMove(position *position.Position) bool {
 
-	nextPlayer := position.NextPlayer()
-	nextPlayerBb := position.OccupiedBb(nextPlayer)
+	us := position.NextPlayer()
+	usBb := position.OccupiedBb(us)
 
 	// KING
 	// We do not need to check castling as possible castling implies King or Rook moves
-	kingSquare := position.KingSquare(nextPlayer)
-	tmpMoves := GetPseudoAttacks(King, kingSquare) &^ nextPlayerBb
+	kingSquare := position.KingSquare(us)
+	tmpMoves := GetAttacksBb(King, kingSquare, BbZero) &^ usBb
 	for tmpMoves != 0 {
 		toSquare := tmpMoves.PopLsb()
 		if position.IsLegalMove(CreateMove(kingSquare, toSquare, Normal, PtNone)) {
@@ -336,39 +367,38 @@ func (mg *Movegen) HasLegalMove(position *position.Position) bool {
 		}
 	}
 
-	myPawns := position.PiecesBb(nextPlayer, Pawn)
-	opponentBb := position.OccupiedBb(nextPlayer.Flip())
+	myPawns := position.PiecesBb(us, Pawn)
+	occupiedBb := position.OccupiedAll()
+	opponentBb := position.OccupiedBb(us.Flip())
 
 	// PAWN
-	// normal pawn captures to the west (includes promotions)
-	tmpMoves = ShiftBitboard(myPawns, nextPlayer.MoveDirection()+West) & opponentBb
+	// pawn pushes - check step one to unoccupied squares
+	// don't have to test double steps as they would be redundant to single steps
+	// for the purpose of finding at least one legal move
+	tmpMoves = ShiftBitboard(myPawns, us.MoveDirection()) &^ occupiedBb
 	for tmpMoves != 0 {
 		toSquare := tmpMoves.PopLsb()
-		fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection() + East)
+		fromSquare := toSquare.To(us.Flip().MoveDirection())
+		if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
+			return true
+		}
+	}
+
+	// normal pawn captures to the west (includes promotions)
+	tmpMoves = ShiftBitboard(myPawns, us.MoveDirection()+West) & opponentBb
+	for tmpMoves != 0 {
+		toSquare := tmpMoves.PopLsb()
+		fromSquare := toSquare.To(us.Flip().MoveDirection() + East)
 		if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
 			return true
 		}
 	}
 
 	// normal pawn captures to the east - promotions first
-	tmpMoves = ShiftBitboard(myPawns, nextPlayer.MoveDirection()+East) & opponentBb
+	tmpMoves = ShiftBitboard(myPawns, us.MoveDirection()+East) & opponentBb
 	for tmpMoves != 0 {
 		toSquare := tmpMoves.PopLsb()
-		fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection() + West)
-		if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
-			return true
-		}
-	}
-
-	occupiedBb := position.OccupiedAll()
-
-	// pawn pushes - check step one to unoccupied squares
-	// don't have to test double steps as they would be redundant to single steps
-	// for the purpose of finding at least one legal move
-	tmpMoves = ShiftBitboard(myPawns, nextPlayer.MoveDirection()) &^ occupiedBb
-	for tmpMoves != 0 {
-		toSquare := tmpMoves.PopLsb()
-		fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection())
+		fromSquare := toSquare.To(us.Flip().MoveDirection() + West)
 		if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
 			return true
 		}
@@ -376,22 +406,14 @@ func (mg *Movegen) HasLegalMove(position *position.Position) bool {
 
 	// OFFICERS
 	for pt := Knight; pt <= Queen; pt++ {
-		pieces := position.PiecesBb(nextPlayer, pt)
+		pieces := position.PiecesBb(us, pt)
 		for pieces != 0 {
 			fromSquare := pieces.PopLsb()
-			moves := GetPseudoAttacks(pt, fromSquare) &^ nextPlayerBb
+			moves := GetAttacksBb(pt, fromSquare, occupiedBb)
 			for moves != 0 {
 				toSquare := moves.PopLsb()
-				if pt > Knight { // sliding pieces
-					if Intermediate(fromSquare, toSquare)&occupiedBb == 0 {
-						if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
-							return true
-						}
-					}
-				} else { // knight cannot be blocked
-					if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
-						return true
-					}
+				if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
+					return true
 				}
 			}
 		}
@@ -401,18 +423,18 @@ func (mg *Movegen) HasLegalMove(position *position.Position) bool {
 	enPassantSquare := position.GetEnPassantSquare()
 	if enPassantSquare != SqNone {
 		// left
-		tmpMoves = ShiftBitboard(enPassantSquare.Bb(), nextPlayer.Flip().MoveDirection()+West) & myPawns
+		tmpMoves = ShiftBitboard(enPassantSquare.Bb(), us.Flip().MoveDirection()+West) & myPawns
 		if tmpMoves != 0 {
 			fromSquare := tmpMoves.PopLsb()
-			if position.IsLegalMove(CreateMove(fromSquare, fromSquare.To(nextPlayer.MoveDirection()+East), EnPassant, PtNone)) {
+			if position.IsLegalMove(CreateMove(fromSquare, fromSquare.To(us.MoveDirection()+East), EnPassant, PtNone)) {
 				return true
 			}
 		}
 		// right
-		tmpMoves = ShiftBitboard(enPassantSquare.Bb(), nextPlayer.Flip().MoveDirection()+East) & myPawns
+		tmpMoves = ShiftBitboard(enPassantSquare.Bb(), us.Flip().MoveDirection()+East) & myPawns
 		if tmpMoves != 0 {
 			fromSquare := tmpMoves.PopLsb()
-			if position.IsLegalMove(CreateMove(fromSquare, fromSquare.To(nextPlayer.MoveDirection()+West), EnPassant, PtNone)) {
+			if position.IsLegalMove(CreateMove(fromSquare, fromSquare.To(us.MoveDirection()+West), EnPassant, PtNone)) {
 				return true
 			}
 		}
@@ -422,7 +444,7 @@ func (mg *Movegen) HasLegalMove(position *position.Position) bool {
 	return false
 }
 
-// Regex for UCI notation (UCI)
+// Regex for UCI notation (UCI).
 var regexUciMove = regexp.MustCompile("([a-h][1-8][a-h][1-8])([NBRQnbrq])?")
 
 // GetMoveFromUci Generates all legal moves and matches the given UCI
@@ -478,7 +500,7 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 	disambRank := matches[3]
 	toSquare := matches[4]
 	promotion := matches[6]
-	// checkSign := matches[7]
+	// checkSign := matches[7] - ignore
 
 	movesFound := 0
 	moveFromSAN := MoveNone
@@ -496,12 +518,10 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 				fallthrough
 			case SqG8: // black king side
 				castlingString = "O-O"
-				break
 			case SqC1: // white queen side
 				fallthrough
 			case SqC8: // black queen side
 				castlingString = "O-O-O"
-				break
 			default:
 				log.Error("Move type CASTLING but wrong to square: %s %s", castlingString, kingToSquare.String())
 				continue
@@ -559,7 +579,7 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 	return MoveNone
 }
 
-// ValidateMove validates if a move is a valid move on the given position
+// ValidateMove validates if a move is a valid legal move on the given position
 func (mg *Movegen) ValidateMove(p *position.Position, move Move) bool {
 	if move == MoveNone {
 		return false
@@ -624,12 +644,12 @@ func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode, evas
 				case GenAll:
 					mg.pvMovePushed = true
 					mg.onDemandMoves.PushBack(mg.pvMove)
-				case GenCap:
+				case GenNonQuiet:
 					if p.IsCapturingMove(mg.pvMove) {
 						mg.pvMovePushed = true
 						mg.onDemandMoves.PushBack(mg.pvMove)
 					}
-				case GenNonCap:
+				case GenQuiet:
 					if !p.IsCapturingMove(mg.pvMove) {
 						mg.pvMovePushed = true
 						mg.onDemandMoves.PushBack(mg.pvMove)
@@ -638,44 +658,45 @@ func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode, evas
 			}
 			// decide which state we should continue with
 			// captures or non captures or both
-			if mode&GenCap != 0 {
+			if mode&GenNonQuiet != 0 {
 				mg.currentODStage = od1
 			} else {
 				mg.currentODStage = od4
 			}
 		case od1: // capture
-			mg.generatePawnMoves(p, GenCap, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.generatePawnMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = od2
 		case od2:
-			mg.generateMoves(p, GenCap, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.generateMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = od3
 		case od3:
-			mg.generateKingMoves(p, GenCap, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.generateKingMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
 			mg.currentODStage = od4
 		case od4:
-			if mode&GenNonCap != 0 {
+			if mode&GenQuiet != 0 {
 				mg.currentODStage = od5
 			} else {
 				mg.currentODStage = odEnd
 			}
 		case od5: // non capture
-			mg.generatePawnMoves(p, GenNonCap, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
-			mg.pushKiller(mg.onDemandMoves)
+			mg.generatePawnMoves(p, GenQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = od6
-			if evasion { // no castlings when in check
-				mg.currentODStage = od7
-			}
 		case od6:
-			mg.generateCastling(p, GenNonCap, mg.onDemandMoves)
-			mg.pushKiller(mg.onDemandMoves)
+			if !evasion { // no castlings when in check
+				mg.generateCastling(p, GenQuiet, mg.onDemandMoves)
+				mg.updateSortValues(p, mg.onDemandMoves)
+			}
 			mg.currentODStage = od7
 		case od7:
-			mg.generateMoves(p, GenNonCap, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
-			mg.pushKiller(mg.onDemandMoves)
+			mg.generateMoves(p, GenQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = od8
 		case od8:
-			mg.generateKingMoves(p, GenNonCap, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
-			mg.pushKiller(mg.onDemandMoves)
+			mg.generateKingMoves(p, GenQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = odEnd
 		case odEnd:
 			break
@@ -687,22 +708,48 @@ func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode, evas
 	} // while onDemandMoves.empty()
 }
 
-func (mg *Movegen) pushKiller(m *moveslice.MoveSlice) {
-	// Killer may only be returned if they actually are valid moves
-	// in this position which we can't know as Killers are stored
-	// for the whole ply. Obviously checking if the killer move is valid
-	// is expensive (part of a whole move generation) so we only re-sort
-	// them to the top once they are actually generated
+// Move order heuristics based on history data.
+func (mg *Movegen) updateSortValues(p *position.Position, moveList *moveslice.MoveSlice) {
+	us := p.NextPlayer()
+	for i := 0; i < len(*moveList); i++ {
+		move := &(*moveList)[i]
+		switch {
+		case move.MoveOf() == mg.pvMove: // PV move
+			(*move).SetValue(ValueMax)
+		case move.MoveOf() == mg.killerMoves[1]: // Killer 2
+			(*move).SetValue(-4001)
+		case move.MoveOf() == mg.killerMoves[0]: // Killer 1
+			(*move).SetValue(-4000)
+		case mg.historyData != nil: // historical search data
 
-	// Find the move in the list. If move not found ignore killer.
-	// Otherwise move element to the front.
-	for i := 0; i < len(*m); i++ {
-		move := &(*m)[i]
-		if mg.killerMoves[1] == move.MoveOf() {
-			(*move).SetValue(Value(-4001))
-		}
-		if mg.killerMoves[0] == move.MoveOf() {
-			(*move).SetValue(Value(-4000))
+			// History Count
+			// Moves that cause a beta cut in the search get an increasing value
+			// which favors many repetitions and deep searches.
+			// We use the history count to improve the sort value of a move
+			// If and how much a sort value has to be improved for a move is
+			// difficult to predict - this needs testing and experimentation.
+			// The current way is a hard cut for values <1000 and then 1 point
+			// per 1000 count points.
+			// It is also yet unclear if the history count table should be
+			// reused for several consecutive searches or just for one search.
+			// TODO: Testing
+			count := mg.historyData.HistoryCount[us][move.From()][move.To()]
+			value := Value(count / 100)
+
+			// Counter Move History
+			// When we have a counter move which caused a beta cut off before we
+			// bump up its sort value
+			// TODO: Testing
+			if mg.historyData.CounterMoves[p.LastMove().From()][p.LastMove().To()] == move.MoveOf() {
+				value += 500
+			}
+
+			// update move sort value
+			if value > 0 { // only touch the value if it would be improved
+				preValue := move.ValueOf()
+				(*move).SetValue(preValue + value)
+				// out.Printf("HistoryCount: %s = %d / %d ==> %d \n", move.StringUci(), count, preValue, preValue+value)
+			}
 		}
 	}
 }
@@ -741,7 +788,7 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 	piece := MakePiece(nextPlayer, Pawn)
 
 	// captures
-	if mode&GenCap != 0 {
+	if mode&GenNonQuiet != 0 {
 
 		// This algorithm shifts the own pawn bitboard in the direction of pawn captures
 		// and ANDs it with the opponents pieces. With this we get all possible captures
@@ -772,9 +819,8 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 			for promCaptures != 0 {
 				toSquare := promCaptures.PopLsb()
 				fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection() - dir)
-				// value is the delta of values from the two pieces involved plus the positional value
-				value := position.GetPiece(toSquare).ValueOf() - position.GetPiece(fromSquare).ValueOf() +
-					PosValue(piece, toSquare, gamePhase)
+				// value is the delta of values from the two pieces involved minus the promoted pawn
+				value := position.GetPiece(toSquare).ValueOf() - (2 * Pawn.ValueOf())
 				// add the possible promotion moves to the move list and also add value of the promoted piece type
 				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Queen, value+Queen.ValueOf()))
 				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Knight, value+Knight.ValueOf()))
@@ -810,10 +856,29 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 				}
 			}
 		}
+
+		// if this is enabled we treat Queen and Knight promotions as non quiet moves
+		if config.Settings.Search.UsePromNonQuiet {
+			promMoves := ShiftBitboard(myPawns, nextPlayer.MoveDirection()) &
+				^position.OccupiedAll() &
+				nextPlayer.PromotionRankBb()
+			if evasion {
+				promMoves &= evasionTargets
+			}
+			for promMoves != 0 {
+				toSquare := promMoves.PopLsb()
+				fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection())
+				// value for non captures is lowered by 10k
+				value := -Pawn.ValueOf()
+				// add the possible promotion moves to the move list and also add value of the promoted piece type
+				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Queen, value+Queen.ValueOf()))
+				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Knight, value+Knight.ValueOf()))
+			}
+		}
 	}
 
 	// non captures
-	if mode&GenNonCap != 0 {
+	if mode&GenQuiet != 0 {
 
 		//  Move my pawns forward one step and keep all on not occupied squares
 		//  Move pawns now on rank 3 (rank 6) another square forward to check for pawn doubles.
@@ -840,9 +905,13 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 			fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection())
 			// value for non captures is lowered by 10k
 			value := Value(-10_000)
-			// add the possible promotion moves to the move list and also add value of the promoted piece type
-			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Queen, value+Queen.ValueOf()))
-			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Knight, value+Knight.ValueOf()))
+			// if this is enabled we treat Queen and Knight promotions as non quiet moves
+			// and they are generated there
+			if !config.Settings.Search.UsePromNonQuiet {
+				// add the possible promotion moves to the move list and also add value of the promoted piece type
+				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Queen, value+Queen.ValueOf()))
+				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Knight, value+Knight.ValueOf()))
+			}
 			// rook and bishops are usually redundant to queen promotion (except in stale mate situations)
 			// therefore we give them lower sort order
 			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Rook, value+Rook.ValueOf()-Value(2000)))
@@ -874,7 +943,7 @@ func (mg *Movegen) generateCastling(position *position.Position, mode GenMode, m
 	// castling - pseudo castling - we will not check if we are in check after the move
 	// or if we have passed an attacked square with the king or if the king has been in check
 
-	if mode&GenNonCap != 0 && position.CastlingRights() != CastlingNone {
+	if mode&GenQuiet != 0 && position.CastlingRights() != CastlingNone {
 		cr := position.CastlingRights()
 		if nextPlayer == White { // white
 			if cr.Has(CastlingWhiteOO) && Intermediate(SqE1, SqH1)&occupiedBB == 0 {
@@ -903,10 +972,10 @@ func (mg *Movegen) generateKingMoves(p *position.Position, mode GenMode, evasion
 	fromSquare := kingSquareBb.PopLsb()
 
 	// pseudo attacks include all moves no matter if the king would be in check
-	pseudoMoves := GetPseudoAttacks(King, fromSquare)
+	pseudoMoves := GetAttacksBb(King, fromSquare, BbZero)
 
 	// captures
-	if mode&GenCap != 0 {
+	if mode&GenNonQuiet != 0 {
 		captures := pseudoMoves & p.OccupiedBb(them)
 		for captures != 0 {
 			toSquare := captures.PopLsb()
@@ -920,7 +989,7 @@ func (mg *Movegen) generateKingMoves(p *position.Position, mode GenMode, evasion
 	}
 
 	// non captures
-	if mode&GenNonCap != 0 {
+	if mode&GenQuiet != 0 {
 		nonCaptures := pseudoMoves &^ p.OccupiedAll()
 		for nonCaptures != 0 {
 			toSquare := nonCaptures.PopLsb()
@@ -969,7 +1038,7 @@ func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, evas
 			moves := GetAttacksBb(pt, fromSquare, occupiedBb)
 
 			// captures
-			if mode&GenCap != 0 {
+			if mode&GenNonQuiet != 0 {
 				captures := moves & position.OccupiedBb(nextPlayer.Flip())
 				if evasion {
 					captures &= evasionTargets
@@ -982,7 +1051,7 @@ func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, evas
 			}
 
 			// non captures
-			if mode&GenNonCap != 0 {
+			if mode&GenQuiet != 0 {
 				nonCaptures := moves &^ occupiedBb
 				if evasion {
 					nonCaptures &= evasionTargets

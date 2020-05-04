@@ -81,5 +81,216 @@ lmp[i] = 6 + int(math.Pow(float64(i) + 0.5, 1.3)) (macpc)
 00 FrankyGo Config 1 - 01 Franky-1.0        : 37,5/50 35-10-5  75%  +191
 00 FrankyGo Config 1 - Stockfish Weak       : 43,5/50 43-6-1   87%  +330
 
+25.4.2020
 Stockfish Weak SkillLvl 10
+-----------------00 FrankyGo Config 1-----------------
+00 FrankyGo Config 1 - 00 FrankyGo Config 2 : 29,0/50 15-7-28 58%   +56
+00 FrankyGo Config 1 - 01 Franky-1.0        : 38,5/50 36-9-5  77%  +210
+00 FrankyGo Config 1 - Stockfish Weak       : 38,5/50 37-10-3 77%  +210
 
+26.4.2020
+Mac: PromNonQuiet
+0 : UseBook                bool   = true
+1 : BookPath               string = ..\books
+2 : BookFile               string = book.txt
+3 : BookFormat             string = Simple
+4 : UsePonder              bool   = true
+5 : UseQuiescence          bool   = true
+6 : UseQSStandpat          bool   = true
+7 : UseSEE                 bool   = true
+8 : UsePromNonQuiet        bool   = true
+9 : UsePVS                 bool   = true
+10: UseIID                 bool   = true
+11: UseKiller              bool   = true
+12: UseHistoryCounter      bool   = true
+13: UseCounterMoves        bool   = true
+14: IIDDepth               int    = 6
+15: IIDReduction           int    = 2
+16: UseTT                  bool   = true
+17: TTSize                 int    = 256
+18: UseTTMove              bool   = true
+19: UseTTValue             bool   = true
+20: UseQSTT                bool   = true
+21: UseEvalTT              bool   = false
+22: UseMDP                 bool   = true
+23: UseRFP                 bool   = true
+24: UseNullMove            bool   = true
+25: NmpDepth               int    = 3
+26: NmpReduction           int    = 2
+27: UseExt                 bool   = true
+28: UseExtAddDepth         bool   = true
+29: UseCheckExt            bool   = true
+30: UseThreatExt           bool   = false
+31: UseFP                  bool   = true
+32: UseLmp                 bool   = true
+33: UseLmr                 bool   = true
+34: LmrDepth               int    = 3
+35: LmrMovesSearched       int    = 3
+-----------------00 FrankyGo Config 1-----------------
+00 FrankyGo Config 1 - 00 FrankyGo Config 2 : 26,5/50 19-16-15 53%   +21
+00 FrankyGo Config 1 - 01 Franky-1.0        : 27,0/50 24-20-6  54%   +28
+00 FrankyGo Config 1 - Stockfish Weak       : 41,5/50 40-7-3   83%  +275
+
+
+26.4.2020
+PC: + HistCount/CounterMove
+0 : UseBook                bool   = true
+1 : BookPath               string = ../assets/books
+2 : BookFile               string = book.txt
+3 : BookFormat             string = Simple
+4 : UsePonder              bool   = true
+5 : UseQuiescence          bool   = true
+6 : UseQSStandpat          bool   = true
+7 : UseSEE                 bool   = true
+8 : UsePVS                 bool   = true
+9 : UseIID                 bool   = true
+10: UseKiller              bool   = true
+11: UseHistoryCounter      bool   = true
+12: UseCounterMoves        bool   = true
+13: IIDDepth               int    = 6
+14: IIDReduction           int    = 2
+15: UseTT                  bool   = true
+16: TTSize                 int    = 256
+17: UseTTMove              bool   = true
+18: UseTTValue             bool   = true
+19: UseQSTT                bool   = true
+20: UseEvalTT              bool   = false
+21: UseMDP                 bool   = true
+22: UseRFP                 bool   = true
+23: UseNullMove            bool   = true
+24: NmpDepth               int    = 3
+25: NmpReduction           int    = 2
+26: UseExt                 bool   = true
+27: UseExtAddDepth         bool   = true
+28: UseCheckExt            bool   = true
+29: UseThreatExt           bool   = false
+30: UseFP                  bool   = true
+31: UseLmp                 bool   = true
+32: UseLmr                 bool   = true
+33: LmrDepth               int    = 3
+34: LmrMovesSearched       int    = 3
+-----------------00 FrankyGo Config 1-----------------
+00 FrankyGo Config 1 - 00 FrankyGo Config 2 : 24,5/50 16-17-17  49%    -7
+00 FrankyGo Config 1 - 20 Franky-1.0        : 28,5/50 25-18-7   57%   +49
+00 FrankyGo Config 1 - Stockfish Weak Lvl10 : 19,5/50 15-26-9   39%   -78
+
+27.4.2020
+PC: - HistCount/CounterMove
+
+
+
+
+TOURNAMENT
+26.4.2020
+Search Config:
+2020-04-26 17:21:03,255<--1:0 : UseBook                bool   = true
+2020-04-26 17:21:03,262<--1:1 : BookPath               string = ..\books
+2020-04-26 17:21:03,270<--1:2 : BookFile               string = book.txt
+2020-04-26 17:21:03,277<--1:3 : BookFormat             string = Simple
+2020-04-26 17:21:03,283<--1:4 : UsePonder              bool   = true
+2020-04-26 17:21:03,290<--1:5 : UseQuiescence          bool   = true
+2020-04-26 17:21:03,297<--1:6 : UseQSStandpat          bool   = true
+2020-04-26 17:21:03,304<--1:7 : UseSEE                 bool   = true
+2020-04-26 17:21:03,311<--1:8 : UsePVS                 bool   = true
+2020-04-26 17:21:03,319<--1:9 : UseKiller              bool   = true
+2020-04-26 17:21:03,326<--1:10: UseIID                 bool   = true
+2020-04-26 17:21:03,334<--1:11: IIDDepth               int    = 6
+2020-04-26 17:21:03,340<--1:12: IIDReduction           int    = 2
+2020-04-26 17:21:03,347<--1:13: UseTT                  bool   = true
+2020-04-26 17:21:03,354<--1:14: TTSize                 int    = 256
+2020-04-26 17:21:03,360<--1:15: UseTTMove              bool   = true
+2020-04-26 17:21:03,367<--1:16: UseTTValue             bool   = true
+2020-04-26 17:21:03,374<--1:17: UseQSTT                bool   = true
+2020-04-26 17:21:03,381<--1:18: UseEvalTT              bool   = false
+2020-04-26 17:21:03,388<--1:19: UseMDP                 bool   = true
+2020-04-26 17:21:03,394<--1:20: UseRFP                 bool   = true
+2020-04-26 17:21:03,402<--1:21: UseNullMove            bool   = true
+2020-04-26 17:21:03,409<--1:22: NmpDepth               int    = 3
+2020-04-26 17:21:03,416<--1:23: NmpReduction           int    = 2
+2020-04-26 17:21:03,423<--1:24: UseExt                 bool   = true
+2020-04-26 17:21:03,430<--1:25: UseCheckExt            bool   = true
+2020-04-26 17:21:03,437<--1:26: UseThreatExt           bool   = false
+2020-04-26 17:21:03,443<--1:27: UseFP                  bool   = true
+2020-04-26 17:21:03,450<--1:28: UseLmp                 bool   = true
+2020-04-26 17:21:03,456<--1:29: UseLmr                 bool   = true
+2020-04-26 17:21:03,463<--1:30: LmrDepth               int    = 3
+2020-04-26 17:21:03,470<--1:31: LmrMovesSearched       int    = 3
+-----------------00 FrankyGo Config 1-----------------
+00 FrankyGo Config 1 234,5/385 ==> 60.9%
+00 FrankyGo Config 1 - 01 Franky-1.0        : 21,0/35 19-12-4   60%   +70 2020
+00 FrankyGo Config 1 - Abbess2018           : 25,0/35 22-7-6    71%  +156 2174
+00 FrankyGo Config 1 - Belzebub_067         : 23,0/35 18-7-10   66%  +115 1765
+00 FrankyGo Config 1 - Bismark_1.4          : 19,5/35 16-12-7   56%   +42 2053
+00 FrankyGo Config 1 - Clarabit_100_x64_win : 15,0/35 10-15-10  43%   -49 2052
+00 FrankyGo Config 1 - Clueless             : 21,0/35 21-14-0   60%   +70 1974
+00 FrankyGo Config 1 - Fmax                 : 21,5/35 17-9-9    61%   +78
+00 FrankyGo Config 1 - Monarch(v1.7)        : 10,5/35 8-22-5    30%  -147 1912
+00 FrankyGo Config 1 - RamJet_014           : 23,0/35 20-9-6    66%  +115 2123
+00 FrankyGo Config 1 - SEE                  : 26,5/35 25-7-3    76%  +200 1911
+00 FrankyGo Config 1 - Stockfish Weak       : 28,5/35 28-6-1    81%  +252
+
+===================================================================
+28.4.2020
+239/385 ==> 62%
+0 : UseBook                bool   = true
+1 : BookPath               string = ..\books
+2 : BookFile               string = book.txt
+3 : BookFormat             string = Simple
+4 : UsePonder              bool   = true
+5 : UseQuiescence          bool   = true
+6 : UseQSStandpat          bool   = true
+7 : UseSEE                 bool   = true
+8 : UsePromNonQuiet        bool   = true
+9 : UsePVS                 bool   = true
+10: UseIID                 bool   = true
+11: UseKiller              bool   = true
+12: UseHistoryCounter      bool   = true
+13: UseCounterMoves        bool   = true
+14: IIDDepth               int    = 6
+15: IIDReduction           int    = 2
+16: UseTT                  bool   = true
+17: TTSize                 int    = 256
+18: UseTTMove              bool   = true
+19: UseTTValue             bool   = true
+20: UseQSTT                bool   = true
+21: UseEvalTT              bool   = false
+22: UseMDP                 bool   = true
+23: UseRFP                 bool   = true
+24: UseNullMove            bool   = true
+25: NmpDepth               int    = 3
+26: NmpReduction           int    = 2
+27: UseExt                 bool   = true
+28: UseExtAddDepth         bool   = true
+29: UseCheckExt            bool   = true
+30: UseThreatExt           bool   = false
+31: UseFP                  bool   = true
+32: UseLmp                 bool   = true
+33: UseLmr                 bool   = true
+34: LmrDepth               int    = 3
+35: LmrMovesSearched       int    = 3
+-----------------00 FrankyGo Config 1-----------------
+00 FrankyGo Config 1 - 01 Franky-1.0        : 23,5/35 21-9-5  67%  +123
+00 FrankyGo Config 1 - Abbess2018           : 22,5/35 20-10-5 64%  +100
+00 FrankyGo Config 1 - Belzebub_067         : 25,5/35 23-7-5  73%  +173
+00 FrankyGo Config 1 - Bismark_1.4          : 21,5/35 19-11-5 61%   +78
+00 FrankyGo Config 1 - Clarabit_100_x64_win : 12,5/35 9-19-7  36%  -100
+00 FrankyGo Config 1 - Clueless             : 25,0/35 22-7-6  71%  +156
+00 FrankyGo Config 1 - Fmax                 : 28,0/35 27-6-2  80%  +241
+00 FrankyGo Config 1 - Monarch(v1.7)        : 10,5/35 8-22-5  30%  -147
+00 FrankyGo Config 1 - RamJet_014           : 15,5/35 13-17-5 44%   -42
+00 FrankyGo Config 1 - SEE                  : 22,5/35 21-11-3 64%  +100
+00 FrankyGo Config 1 - Stockfish Weak Lvl10 : 32,5/35 31-1-3  93%  +449 (not valid)
+
+    Engine               Score          00
+01: 00 FrankyGo Config 1 239,5/385 ·······
+02: Monarch(v1.7)        24,5/35    22-8-5
+03: Clarabit_100_x64_win 22,5/35    19-9-7
+04: RamJet_014           19,5/35   17-13-5
+05: Bismark_1.4          13,5/35   11-19-5
+06: Abbess2018           12,5/35   10-20-5
+06: SEE                  12,5/35   11-21-3
+08: 01 Franky-1.0        11,5/35    9-21-5
+09: Clueless             10,0/35    7-22-6
+10: Belzebub_067         9,5/35     7-23-5
+11: Fmax                 7,0/35     6-27-2
+12: Stockfish Weak Lvl10 2,5/35     1-31-3

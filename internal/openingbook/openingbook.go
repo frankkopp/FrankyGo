@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 // Package openingbook
 // The OpeningBook reads game databases of different formats into an internal
@@ -62,13 +62,13 @@ import (
 
 var out = message.NewPrinter(language.German)
 
-// setting to use multiple goroutines or not - useful for debugging
+// setting to use multiple goroutines or not - useful for debugging.
 const parallel = true
 
-// BookFormat represent the supported book formats defined as constants
+// BookFormat represent the supported book formats defined as constants.
 type BookFormat uint8
 
-// Supported book formats
+// Supported book formats.
 const (
 	Simple BookFormat = iota
 	San    BookFormat = iota
@@ -85,7 +85,7 @@ var (
 
 // Successor  represents a tuple of a move
 // and a zobrist key of the position the
-// move leads to
+// move leads to.
 type Successor struct {
 	Move      uint32
 	NextEntry uint64
@@ -94,7 +94,7 @@ type Successor struct {
 // BookEntry represents a data structure for a move in the opening book
 // data structure. It describes exactly one position defined by a zobrist
 // key and has links to other entries representing moves and successor
-// positions
+// positions.
 type BookEntry struct {
 	ZobristKey uint64
 	Counter    int
@@ -118,7 +118,7 @@ func NewBook() *Book {
 	}
 }
 
-// mutex to support concurrent writing to the book data structure
+// mutex to support concurrent writing to the book data structure.
 var bookLock sync.Mutex
 
 // Initialize reads game data from the given file into the internal data structure.
@@ -136,7 +136,7 @@ func (b *Book) Initialize(bookPath string, bookFile string, bookFormat BookForma
 
 	b.log.Infof("Initializing Opening Book [%s]", bookFilePath)
 	err := b.initialize(bookFilePath, bookFormat, useCache, recreateCache)
-	util.GcWithStats()
+	b.log.Debug(util.GcWithStats())
 
 	return err
 }
@@ -146,7 +146,7 @@ func (b *Book) initialize(bookFilePath string, bookFormat BookFormat, useCache b
 
 	// check file path
 	if _, err := os.Stat(bookFilePath); err != nil {
-		b.log.Errorf("File \"%s\" does not exist\n", bookFilePath)
+		b.log.Warningf("file \"%s\" not found\n", bookFilePath)
 		return err
 	}
 
@@ -161,8 +161,8 @@ func (b *Book) initialize(bookFilePath string, bookFormat BookFormat, useCache b
 			b.log.Warningf("Cache could not be loaded. Reading original data from \"%s\"", bookFilePath)
 		}
 		if hasCache {
-			b.log.Infof("Finished reading cache from file in: %d ms\n", elapsedReading.Milliseconds())
-			b.log.Infof("Book from cache file contains %d entries\n", len(b.bookMap))
+			b.log.Debugf("Finished reading cache from file in: %d ms\n", elapsedReading.Milliseconds())
+			b.log.Debugf("Book from cache file contains %d entries\n", len(b.bookMap))
 			return nil
 		} // else no cache file just load the data from original file
 	}

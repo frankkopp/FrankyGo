@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 package uci
 
@@ -210,12 +210,6 @@ func TestReadSearchLimits(t *testing.T) {
 	sl, err = uciHandler.readSearchLimits(tokens)
 	assert.True(t, err)
 
-	cmd = "go movetime 5000"
-	tokens = regexWhiteSpace.Split(cmd, -1)
-	strings.TrimSpace(tokens[0])
-	sl, err = uciHandler.readSearchLimits(tokens)
-	assert.True(t, err)
-
 	cmd = "go moveTime 5000"
 	tokens = regexWhiteSpace.Split(cmd, -1)
 	strings.TrimSpace(tokens[0])
@@ -370,15 +364,14 @@ func TestInfiniteFinishedBeforeStop(t *testing.T) {
 }
 
 func TestDebug(t *testing.T) {
-	t.SkipNow()
-
+	// t.SkipNow()
+	config.Settings.Search.UseAspiration = true
 	uh := NewUciHandler()
 	var result string
-
 	result = uh.Command("uci")
 	result = uh.Command("isready")
-	result = uh.Command("position startpos moves a2a3 d7d5 g1f3 g8f6 g2g3 g7g6 f1g2 f8g7 d2d3 e8g8 e1g1 c7c6 b1c3 f8e8 e2e4 e7e5 f3d2 d5e4 d2e4 f6e4 c3e4 c8e6 c1e3 d8c7 a1c1 b8d7 e4g5 e6d5 g2h3 d7f6 c2c4 d5e6 g5e6 f7e6 h3g2 a8d8 d1b3 b7b6 h2h3 f6d7 b3c2 c6c5 g3g4 d7b8 c2a4 c7d7 a4d7 d8d7 g2e4 d7c7 b2b4 c5b4 a3b4 b8c6 e4c6 c7c6 c4c5 e8d8 f1d1 c6c7 d1d2 h7h6 h3h4 b6c5 b4c5 d8b8 g4g5 b8b4 c1c4 b4c4 d3c4 h6g5 h4g5 g7f8 d2d8 g8f7 d8a8 f8c5 e3c5 c7c5 a8a7 f7g8 a7a8 g8g7 a8a7 g7f8 g1f1 e5e4 f1e2 c5c4 a7a8 f8f7 a8a7 f7f8 a7a8 f8e7 a8a7 e7d6 a7g7 d6e5 g7g6 c4c2 e2e3 c2c3 e3d2 c3f3 d2e2 f3a3 g6g8 a3a2 e2e3 a2a3 e3e2 a3a2")
-	result = uh.Command("go ponder wtime 20394 btime 22577 winc 1000 binc 1000")
+	result = uh.Command("position startpos moves d2d4 g7g6 e2e4 d7d5 e4d5 d8d5 b1c3 d5d8 f1c4 f8g7 c1f4 g8h6 d1d2 h6f5 e1c1 e8g8 g1e2 c7c6 h2h4 b8d7")
+	result = uh.Command("go wtime 119969 btime 119925")
 	assert.True(t, uh.mySearch.IsSearching())
 	uh.mySearch.WaitWhileSearching()
 	time.Sleep(2 * time.Second)

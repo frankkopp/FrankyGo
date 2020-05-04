@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 // Package transpositiontable implements a transposition table (cache)
 // data structure and functionality for a chess engine search.
@@ -42,7 +42,6 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
-	"github.com/frankkopp/FrankyGo/internal/assert"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/internal/position"
 	. "github.com/frankkopp/FrankyGo/internal/types"
@@ -239,11 +238,6 @@ func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, val
 		entryDataPtr.MateThreat = mateThreat
 		return
 	}
-
-	if assert.DEBUG {
-		assert.Assert(tt.Stats.numberOfPuts == (tt.numberOfEntries+tt.Stats.numberOfCollisions+tt.Stats.numberOfUpdates),
-			"TT:put - stat values do not match")
-	}
 }
 
 // Clear clears all entries of the tt
@@ -281,14 +275,6 @@ func (tt *TtTable) Len() uint64 {
 	return tt.numberOfEntries
 }
 
-// ///////////////////////////////////////////////////////////
-// Private
-// ///////////////////////////////////////////////////////////
-
-// hash generates the internal hash key for the data array
-func (tt *TtTable) hash(key position.Key) uint64 {
-	return uint64(key) & tt.hashKeyMask
-}
 
 // AgeEntries ages each entry in the tt
 // Creates a number of go routines with processes each
@@ -319,4 +305,13 @@ func (tt *TtTable) AgeEntries() {
 	}
 	elapsed := time.Since(startTime)
 	tt.log.Debug(out.Sprintf("Aged %d entries of %d in %d ms\n", tt.numberOfEntries, len(tt.data), elapsed.Milliseconds()))
+}
+
+// ///////////////////////////////////////////////////////////
+// Private
+// ///////////////////////////////////////////////////////////
+
+// hash generates the internal hash key for the data array
+func (tt *TtTable) hash(key position.Key) uint64 {
+	return uint64(key) & tt.hashKeyMask
 }
