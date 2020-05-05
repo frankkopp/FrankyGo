@@ -79,15 +79,15 @@ type Search struct {
 	hasResult         bool
 	currentPosition   *position.Position
 	searchLimits      *Limits
+	lastUciUpdateTime time.Time
 	timeLimit         time.Duration
 	extraTime         time.Duration
 	nodesVisited      uint64
-	mg                []*movegen.Movegen
-	pv                []*moveslice.MoveSlice
 	rootMoves         *moveslice.MoveSlice
 	hadBookMove       bool
-	lastUciUpdateTime time.Time
 	statistics        Statistics
+	pv                []*moveslice.MoveSlice
+	mg                []*movegen.Movegen
 }
 
 // //////////////////////////////////////////////////////
@@ -116,12 +116,12 @@ func NewSearch() *Search {
 		timeLimit:         0,
 		extraTime:         0,
 		nodesVisited:      0,
-		mg:                nil,
-		pv:                nil,
 		rootMoves:         nil,
 		hadBookMove:       false,
 		lastUciUpdateTime: time.Time{},
 		statistics:        Statistics{},
+		pv:                nil,
+		mg:                nil,
 	}
 	return s
 }
