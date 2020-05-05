@@ -94,11 +94,11 @@ func LmpMovesSearched(depth int) int {
 	return lmp[depth]
 }
 
-// futility pruning - array with margins per depth left
+// futility pruning - array with margins per depth left.
 var fp = [7]types.Value{0, 100, 200, 300, 500, 900, 1200}
 // Crafty values: {  0, 100, 150, 200,  250,  300,  400,  500, 600, 700, 800, 900, 1000, 1100, 1200, 1300 }
 
-// reverse futility pruning - array with margins per depth left.
+// reverse futility pruning - array with margins per depth left
 var rfp = [4]types.Value{0, 200, 400, 800}
 
 // aspiration steps

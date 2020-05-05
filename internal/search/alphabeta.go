@@ -53,6 +53,8 @@ var trace = false
 // a start value by doing a 3 ply normal search and expand the search window in
 // in 3 steps to the maximal window if search value returns outside of the window.
 func (s *Search) aspirationSearch(p *position.Position, depth int, bestValue Value) Value {
+	trace := true
+
 	if trace {
 		s.log.Debugf("Aspiration for depth %d: START best=%d", depth, bestValue)
 	}
@@ -85,7 +87,8 @@ func (s *Search) aspirationSearch(p *position.Position, depth int, bestValue Val
 			// add some extra time because of fail low
 			// we might have found a strong opponent's move
 			s.addExtraTime(1.3)
-			alpha = Max(bestValue-aspirationSteps[i], ValueMin)
+			alpha = ValueMin
+			// alpha = Max(bestValue-aspirationSteps[i], ValueMin)
 			s.statistics.AspirationResearches++
 			s.statistics.CurrentExtraSearchDepth = 0
 		} else if value >= beta {
