@@ -158,7 +158,7 @@ func TestTiming(t *testing.T) {
 	sl := NewSearchLimits()
 	// sl.Depth = 10
 	sl.TimeControl = true
-	sl.MoveTime = 30 * time.Second
+	sl.MoveTime = 300 * time.Second
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
 	out.Println("TT  : ", s.tt.String())
