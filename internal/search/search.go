@@ -535,7 +535,7 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 			ttEntry := s.tt.Probe(position.ZobristKey())
 			if ttEntry != nil { // tt hit
 				s.statistics.TTHit++
-				result.PonderMove = ttEntry.Move
+				result.PonderMove = ttEntry.Move()
 				s.log.Debugf(out.Sprintf("Using ponder move from hash: %s", result.PonderMove.StringUci()))
 			}
 		}

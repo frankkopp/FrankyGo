@@ -1,28 +1,28 @@
-/*
- * FrankyGo - UCI chess engine in GO for learning purposes
- *
- * MIT License
- *
- * Copyright (c) 2018-2020 Frank Kopp
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+//
+// FrankyGo - UCI chess engine in GO for learning purposes
+//
+// MIT License
+//
+// Copyright (c) 2018-2020 Frank Kopp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
 
 // Package searchtreesize provides data structures and functionality to
 // test the size of the search tree when certain heuristics and prunings
@@ -48,7 +48,7 @@ var out = message.NewPrinter(language.German)
 
 // singleTest holds the result data for a single test
 // A single test is one fen with one set of feature executing
-// one search according to the settings (depth odr time).
+// one search according to the settings (depth odr time)
 type singleTest struct {
 	Name     string
 	Nodes    uint64
@@ -63,14 +63,14 @@ type singleTest struct {
 	Pv       moveslice.MoveSlice
 }
 
-// result is representing a series of single tests for a single position (FEN).
+// result is representing a series of single tests for a single position (FEN)
 type result struct {
 	Fen   string
 	Tests []singleTest
 }
 
 // testSums is a helper data structure to sum up all results from a list of
-// single tests for a set of features to create a total reports at the end.
+// single tests for a set of features to create a total reports at the end
 type testSums struct {
 	SumCounter uint64
 	SumNodes   uint64
@@ -106,7 +106,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().MTDfSearches
+	ptrToSpecial = &s.Statistics().Evaluations
 	ptrToSpecial2 = &s.Statistics().BetaCuts
 
 	// Base
@@ -152,9 +152,14 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseIID = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "BASE"))
 
+	Settings.Search.UseHistoryCounter = true
+	Settings.Search.UseCounterMoves = true
+
 	// SEE for qsearch
 	Settings.Search.UseSEE = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "SEE"))
+
+	Settings.Search.UseRazoring = true
 
 	// Reverse Futility
 	Settings.Search.UseRFP = true
@@ -176,22 +181,18 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// Futility
 	Settings.Search.UseFP = true
+	Settings.Search.UseQFP = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "FP"))
 
 	// Late Move Reduction
 	Settings.Search.UseLmr = true
 	// Late Move Pruning
 	Settings.Search.UseLmp = true
-	Settings.Search.UseHistoryCounter = true
-	Settings.Search.UseCounterMoves = true
+
 	r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
 
-	Settings.Search.UseAspiration = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "ASP"))
-	Settings.Search.UseAspiration = false
-
-	Settings.Search.UseMTDf = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "MTDf"))
+	Settings.Search.UseEvalTT = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "EVALTT"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -336,14 +337,14 @@ func turnOffFeatures() {
 	Settings.Search.UseTTMove = false
 	Settings.Search.UseTTValue = false
 	Settings.Search.UseQSTT = false
+	Settings.Search.UseEvalTT = false
 	Settings.Search.UseIID = false
 	Settings.Search.UsePVS = false
-	Settings.Search.UseAspiration = false
-	Settings.Search.UseMTDf = false
 	Settings.Search.UseKiller = false
 	Settings.Search.UseHistoryCounter = false
 	Settings.Search.UseCounterMoves = false
 	Settings.Search.UseMDP = false
+	Settings.Search.UseRazoring = false
 	Settings.Search.UseNullMove = false
 	Settings.Search.UseExt = false
 	Settings.Search.UseExtAddDepth = false
@@ -351,6 +352,7 @@ func turnOffFeatures() {
 	Settings.Search.UseThreatExt = false
 	Settings.Search.UseRFP = false
 	Settings.Search.UseFP = false
+	Settings.Search.UseQFP = false
 	Settings.Search.UseLmr = false
 	Settings.Search.UseLmp = false
 }

@@ -211,6 +211,7 @@ func (e *Evaluator) evaluate() Value {
 
 	// value is always from the view of the next player
 	valueFromScore := e.value()
+
 	return e.finalEval(valueFromScore)
 }
 
