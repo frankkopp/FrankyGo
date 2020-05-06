@@ -197,7 +197,6 @@ func TestBitboardDiagDown(t *testing.T) {
 
 func TestBitboardLsbMsb(t *testing.T) {
 
-
 	tests := []struct {
 		bitboard Bitboard
 		lsb      Square
@@ -364,7 +363,6 @@ func TestBitboardShift(t *testing.T) {
 
 func TestBitboardInit(t *testing.T) {
 
-
 	// Square bitboards
 	assert.Equal(t, SqA1.bitboard().String(), "0000000000000000000000000000000000000000000000000000000000000001")
 	assert.Equal(t, SqH8.bitboard().String(), "1000000000000000000000000000000000000000000000000000000000000000")
@@ -396,7 +394,6 @@ func TestBitboardInit(t *testing.T) {
 
 func TestBitboardFileDistance(t *testing.T) {
 
-
 	tests := []struct {
 		f1   File
 		f2   File
@@ -422,7 +419,6 @@ func TestBitboardFileDistance(t *testing.T) {
 }
 
 func TestBitboardSquareDistance(t *testing.T) {
-
 
 	tests := []struct {
 		s1   Square
@@ -450,7 +446,6 @@ func TestBitboardSquareDistance(t *testing.T) {
 }
 
 func TestBitboardRotateBb(t *testing.T) {
-
 
 	bitboard := FileA_Bb | Rank8_Bb | DiagDownH1
 

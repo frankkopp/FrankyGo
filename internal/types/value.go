@@ -78,7 +78,7 @@ func Max(x, y Value) Value {
 
 func (v Value) String() string {
 	var os strings.Builder
-	if  v.IsCheckMateValue() {
+	if v.IsCheckMateValue() {
 		os.WriteString("mate ")
 		if v < ValueZero {
 			os.WriteString("-")
@@ -94,5 +94,3 @@ func (v Value) String() string {
 	}
 	return os.String()
 }
-
-

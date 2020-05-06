@@ -62,10 +62,10 @@ func TestPiece_ValueOf(t *testing.T) {
 		p    Piece
 		want Value
 	}{
-		{ "White King", WhiteKing, 2000},
-		{ "White King", BlackKing, 2000},
-		{ "White King", WhiteBishop, 330},
-		{ "White King", BlackKnight, 320},
+		{"White King", WhiteKing, 2000},
+		{"White King", BlackKing, 2000},
+		{"White King", WhiteBishop, 330},
+		{"White King", BlackKnight, 320},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

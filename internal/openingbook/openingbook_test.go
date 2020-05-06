@@ -66,7 +66,7 @@ func TestMain(m *testing.M) {
 
 func TestReadingFile(t *testing.T) {
 	b := NewBook()
-	folder,_ := util.ResolveFolder(config.Settings.Search.BookPath)
+	folder, _ := util.ResolveFolder(config.Settings.Search.BookPath)
 	file := filepath.Join(folder, "superbook.pgn")
 	lines, err := b.readFile(file)
 	assert.NoError(t, err, "Reading file threw error: %s", err)
@@ -75,7 +75,7 @@ func TestReadingFile(t *testing.T) {
 
 func TestReadingNonExistingFile(t *testing.T) {
 	b := NewBook()
-	folder,_ := util.ResolveFolder(config.Settings.Search.BookPath)
+	folder, _ := util.ResolveFolder(config.Settings.Search.BookPath)
 	file := filepath.Join(folder, "abc.pgn")
 	_, err := b.readFile(file)
 	assert.Error(t, err, "Reading file should throw error: %s", err)
@@ -298,7 +298,7 @@ func TestProcessingPGNCacheSmall(t *testing.T) {
 
 	for _, p := range entry.Moves {
 		ne, _ := book.GetEntry(position.Key(p.NextEntry))
-		out.Printf("%s ==> %#v (%d)\n", Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter )
+		out.Printf("%s ==> %#v (%d)\n", Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter)
 	}
 }
 
@@ -330,7 +330,7 @@ func TestProcessingPGNCacheLarge(t *testing.T) {
 
 	for _, p := range entry.Moves {
 		ne, _ := book.GetEntry(position.Key(p.NextEntry))
-		out.Printf("%s ==> %#v (%d)\n", Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter )
+		out.Printf("%s ==> %#v (%d)\n", Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter)
 	}
 
 	pos.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))

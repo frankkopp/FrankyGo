@@ -69,59 +69,55 @@ func TestEntrySize(t *testing.T) {
 		move:  0,
 		value: 0,
 		eval:  0,
-		depth: 0,
-		age:   0,
-		vtype: 0,
+		vmeta: 0,
 	}
-	logTest.Debugf("Size of e.Key = %d bytes", unsafe.Sizeof(e.key))
-	logTest.Debugf("Size of e.Move = %d bytes", unsafe.Sizeof(e.move))
-	logTest.Debugf("Size of e.Value = %d bytes", unsafe.Sizeof(e.value))
-	logTest.Debugf("Size of e.Eval = %d bytes", unsafe.Sizeof(e.eval))
-	logTest.Debugf("Size of e.Depth = %d bytes", unsafe.Sizeof(e.depth))
-	logTest.Debugf("Size of e.Age = %d bytes", unsafe.Sizeof(e.age))
-	logTest.Debugf("Size of e.Type = %d bytes", unsafe.Sizeof(e.vtype))
-	assert.EqualValues(t, 24, unsafe.Sizeof(e))
-	logTest.Debugf("Size of Entry %d bytes", unsafe.Sizeof(e))
+	logTest.Debugf("Size of e.key   = %d bytes", unsafe.Sizeof(e.key))
+	logTest.Debugf("Size of e.move  = %d bytes", unsafe.Sizeof(e.move))
+	logTest.Debugf("Size of e.eval  = %d bytes", unsafe.Sizeof(e.eval))
+	logTest.Debugf("Size of e.value = %d bytes", unsafe.Sizeof(e.value))
+	logTest.Debugf("Size of e.vmeta = %d bytes", unsafe.Sizeof(e.vmeta))
+	assert.EqualValues(t, 16, unsafe.Sizeof(e))
+	logTest.Debugf("Size of Entry   = %d bytes", unsafe.Sizeof(e))
 }
 
 func TestNew(t *testing.T) {
 
 	tt := NewTtTable(2)
-	assert.Equal(t, uint64(0x10000), tt.maxNumberOfEntries)
-	assert.Equal(t, 0x10000, cap(tt.data))
+	assert.Equal(t, uint64(0x20000), tt.maxNumberOfEntries)
+	assert.Equal(t, 0x20000, cap(tt.data))
 	logTest.Debug(tt.String())
 
 	tt = NewTtTable(64)
-	assert.Equal(t, uint64(0x200000), tt.maxNumberOfEntries)
-	assert.Equal(t, 0x200000, cap(tt.data))
+	assert.Equal(t, uint64(0x400000), tt.maxNumberOfEntries)
+	assert.Equal(t, 0x400000, cap(tt.data))
 
 	tt = NewTtTable(100)
 	assert.Equal(t, uint64(0x400000), tt.maxNumberOfEntries)
 	assert.Equal(t, 0x400000, cap(tt.data))
 
 	tt = NewTtTable(4_096)
-	assert.Equal(t, uint64(0x8000000), tt.maxNumberOfEntries)
-	assert.Equal(t, 0x8000000, cap(tt.data))
+	assert.Equal(t, uint64(0x10000000), tt.maxNumberOfEntries)
+	assert.Equal(t, 0x10000000, cap(tt.data))
 
 	// Too much for Travis
 	// tt = NewTtTable(35_000)
-	// assert.Equal(t, uint64(0x40000000), tt.maxNumberOfEntries)
-	// assert.Equal(t, 0x40000000, cap(tt.data))
-	// assert.Equal(t, 0x40000000, len(tt.data))
-	// assert.Equal(t, uint64(0x600000000), tt.sizeInByte)
+	// assert.Equal(t, uint64(0x80000000), tt.maxNumberOfEntries)
+	// assert.Equal(t, 0x80000000, cap(tt.data))
+	// assert.Equal(t, 0x80000000, len(tt.data))
+	// assert.Equal(t, uint64(0x800000000), tt.sizeInByte)
 	// for i := range tt.data {
-	// 	tt.data[i].Key = position.Key(i)
+	// 	tt.data[i].key = position.Key(i)
 	// }
-	// assert.Equal(t, position.Key(0), tt.data[0].Key)
-	// assert.Equal(t, position.Key(1_073_741_823), tt.data[1_073_741_823].Key)
+	// assert.Equal(t, position.Key(0), tt.data[0].key)
+	// assert.Equal(t, position.Key(0x80000000-1), tt.data[0x80000000-1].key)
 }
 
 func TestGetAndProbe(t *testing.T) {
 	// setup
 
 	tt := NewTtTable(64)
-	assert.Equal(t, uint64(0x200000), tt.maxNumberOfEntries)
-	assert.Equal(t, 0x200000, cap(tt.data))
+	assert.Equal(t, uint64(0x400000), tt.maxNumberOfEntries)
+	assert.Equal(t, 0x400000, cap(tt.data))
 
 	pos := position.NewPosition()
 	move := CreateMove(SqE2, SqE4, Normal, PtNone)
@@ -130,9 +126,7 @@ func TestGetAndProbe(t *testing.T) {
 		move:  uint16(move),
 		value: int16(ValueNA),
 		eval:  int16(ValueNA),
-		depth: 5,
-		age:   1,
-		vtype: Vnone,
+		vmeta: uint16(5<<depthShift) + uint16(Vnone<<vtypeShift) + 1,
 	}
 	tt.numberOfEntries++
 
@@ -140,21 +134,21 @@ func TestGetAndProbe(t *testing.T) {
 	e := tt.GetEntry(pos.ZobristKey())
 	assert.Equal(t, pos.ZobristKey(), e.key)
 	assert.Equal(t, move, e.Move())
-	assert.EqualValues(t, 5, e.depth)
-	assert.EqualValues(t, 1, e.age)
-	assert.Equal(t, Vnone, e.vtype)
+	assert.EqualValues(t, 5, e.Depth())
+	assert.EqualValues(t, 1, e.Age())
+	assert.Equal(t, Vnone, e.Vtype())
 
 	// age must be reduced by 1
 	e = tt.Probe(pos.ZobristKey())
 	assert.Equal(t, pos.ZobristKey(), e.key)
 	assert.Equal(t, move, e.Move())
-	assert.EqualValues(t, 5, e.depth)
-	assert.EqualValues(t, 0, e.age)
-	assert.Equal(t, Vnone, e.vtype)
+	assert.EqualValues(t, 5, e.Depth())
+	assert.EqualValues(t, 0, e.Age())
+	assert.Equal(t, Vnone, e.Vtype())
 
 	// age does not go below 0
 	e = tt.Probe(pos.ZobristKey())
-	assert.EqualValues(t, 0, e.age)
+	assert.EqualValues(t, 0, e.Age())
 
 	// not in tt
 	pos.DoMove(move)
@@ -173,18 +167,16 @@ func TestClear(t *testing.T) {
 		move:  uint16(move),
 		value: int16(ValueNA),
 		eval:  int16(ValueNA),
-		depth: 5,
-		age:   1,
-		vtype: Vnone,
+		vmeta: uint16(5<<depthShift) + uint16(Vnone<<vtypeShift) + 1,
 	}
 	tt.numberOfEntries++
 
 	e := tt.Probe(pos.ZobristKey())
 	assert.Equal(t, pos.ZobristKey(), e.key)
 	assert.Equal(t, move, e.Move())
-	assert.EqualValues(t, 5, e.depth)
-	assert.EqualValues(t, 0, e.age)
-	assert.Equal(t, Vnone, e.vtype)
+	assert.EqualValues(t, 5, e.Depth())
+	assert.EqualValues(t, 0, e.Age())
+	assert.Equal(t, Vnone, e.Vtype())
 	assert.EqualValues(t, 1, tt.numberOfEntries)
 
 	tt.Clear()
@@ -204,27 +196,27 @@ func TestAge(t *testing.T) {
 	for i := range tt.data {
 		tt.numberOfEntries++
 		tt.data[i].key = position.Key(i)
-		tt.data[i].age++
+		tt.data[i].increaseAge()
 	}
-	tt.data[0].age = 0
+	tt.data[0].decreaseAge()
 	tt.numberOfEntries--
 	elapsed := time.Since(startTime)
 	logTest.Debug(out.Sprintf("TT of %d elements filled in %d ms\n", len(tt.data), elapsed.Milliseconds()))
 	logTest.Debug(tt.String())
 
 	// test
-	assert.EqualValues(t, 0, tt.GetEntry(0).age)
-	assert.EqualValues(t, 1, tt.GetEntry(1).age)
-	assert.EqualValues(t, 1, tt.GetEntry(1_000).age)
-	assert.EqualValues(t, 1, tt.GetEntry(position.Key(tt.maxNumberOfEntries-1)).age)
+	assert.EqualValues(t, 0, tt.GetEntry(0).Age())
+	assert.EqualValues(t, 1, tt.GetEntry(1).Age())
+	assert.EqualValues(t, 1, tt.GetEntry(1_000).Age())
+	assert.EqualValues(t, 1, tt.GetEntry(position.Key(tt.maxNumberOfEntries-1)).Age())
 
 	logTest.Debug("Aging entries")
 	tt.AgeEntries()
 
-	assert.EqualValues(t, 0, tt.GetEntry(0).age)
-	assert.EqualValues(t, 2, tt.GetEntry(1).age)
-	assert.EqualValues(t, 2, tt.GetEntry(1_000).age)
-	assert.EqualValues(t, 2, tt.GetEntry(position.Key(tt.maxNumberOfEntries-1)).age)
+	assert.EqualValues(t, 0, tt.GetEntry(0).Age())
+	assert.EqualValues(t, 2, tt.GetEntry(1).Age())
+	assert.EqualValues(t, 2, tt.GetEntry(1_000).Age())
+	assert.EqualValues(t, 2, tt.GetEntry(position.Key(tt.maxNumberOfEntries-1)).Age())
 }
 
 func TestPut(t *testing.T) {
@@ -240,10 +232,10 @@ func TestPut(t *testing.T) {
 	e := tt.Probe(111)
 	assert.EqualValues(t, 111, e.key)
 	assert.EqualValues(t, move, e.Move())
-	assert.EqualValues(t, 111, e.value)
-	assert.EqualValues(t, 4, e.depth)
-	assert.EqualValues(t, ALPHA, e.vtype)
-	assert.EqualValues(t, 0, e.age)
+	assert.EqualValues(t, 111, e.Value())
+	assert.EqualValues(t, 4, e.Depth())
+	assert.EqualValues(t, ALPHA, e.Vtype())
+	assert.EqualValues(t, 0, e.Age())
 
 	// test of put update and probe
 	tt.Put(111, move, 5, Value(112), BETA, ValueNA)
@@ -254,10 +246,10 @@ func TestPut(t *testing.T) {
 	e = tt.Probe(111)
 	assert.EqualValues(t, 111, e.key)
 	assert.EqualValues(t, move, e.Move())
-	assert.EqualValues(t, 112, e.value)
-	assert.EqualValues(t, 5, e.depth)
-	assert.EqualValues(t, BETA, e.vtype)
-	assert.EqualValues(t, 0, e.age)
+	assert.EqualValues(t, 112, e.Value())
+	assert.EqualValues(t, 5, e.Depth())
+	assert.EqualValues(t, BETA, e.Vtype())
+	assert.EqualValues(t, 0, e.Age())
 
 	// test of collision
 	collisionKey := position.Key(111 + tt.maxNumberOfEntries)
@@ -271,9 +263,9 @@ func TestPut(t *testing.T) {
 	assert.EqualValues(t, collisionKey, e.key)
 	assert.EqualValues(t, move, e.Move())
 	assert.EqualValues(t, 113, e.value)
-	assert.EqualValues(t, 6, e.depth)
-	assert.EqualValues(t, EXACT, e.vtype)
-	assert.EqualValues(t, 0, e.age)
+	assert.EqualValues(t, 6, e.Depth())
+	assert.EqualValues(t, EXACT, e.Vtype())
+	assert.EqualValues(t, 0, e.Age())
 
 	// test of collision lower depth
 	collisionKey2 := position.Key(111 + (tt.maxNumberOfEntries << 1))
@@ -288,12 +280,16 @@ func TestPut(t *testing.T) {
 	e = tt.Probe(collisionKey)
 	assert.EqualValues(t, collisionKey, e.key)
 	assert.EqualValues(t, move, e.Move())
-	assert.EqualValues(t, 113, e.value)
-	assert.EqualValues(t, 6, e.depth)
-	assert.EqualValues(t, EXACT, e.vtype)
-	assert.EqualValues(t, 0, e.age)
+	assert.EqualValues(t, 113, e.Value())
+	assert.EqualValues(t, 6, e.Depth())
+	assert.EqualValues(t, EXACT, e.Vtype())
+	assert.EqualValues(t, 0, e.Age())
 }
 
+// 6.5.2020
+// TT: size 1.024 MB max entries 67.108.864 of size 16 Bytes entries 67.108.864 (100%) puts 400.000.000 updates 0 collisions 332.891.136 overwrites 134.217.728 probes 400.000.000 hits 100.663.296 (25%) misses 299.336.704 (74%)
+// TimingTT took 862.0297ms for 100.000.000 iterations (1 put 1 probe)
+// 1 put/probes in 8 ns: 116.005.283 tts
 func TestTimingTTe(t *testing.T) {
 
 	if testing.Short() {
@@ -305,7 +301,7 @@ func TestTimingTTe(t *testing.T) {
 	move := CreateMove(SqE2, SqE4, Normal, PtNone)
 
 	const rounds = 5
-	const iterations uint64 = 50_000_000
+	const iterations uint64 = 100_000_000
 
 	for r := 1; r <= rounds; r++ {
 		out.Printf("Round %d\n", r)
@@ -318,7 +314,7 @@ func TestTimingTTe(t *testing.T) {
 			tt.Put(key+position.Key(i), move, depth, value, valueType, ValueNA)
 		}
 		for i := uint64(0); i < iterations; i++ {
-			key := position.Key(key + position.Key(2*i))
+			key := key + position.Key(2*i)
 			_ = tt.Probe(key)
 		}
 		elapsed := time.Since(start)
@@ -330,3 +326,4 @@ func TestTimingTTe(t *testing.T) {
 
 	}
 }
+

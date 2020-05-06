@@ -198,4 +198,3 @@ func TestSearchDev(t *testing.T) {
 	search.StartSearch(*p, *sl)
 	search.WaitWhileSearching()
 }
-

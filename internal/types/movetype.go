@@ -41,11 +41,16 @@ const (
 // String returns a string representing the move type
 func (t MoveType) String() string {
 	switch t {
-	case Normal: return "n"
-	case Promotion: return "p"
-	case EnPassant: return "e"
-	case Castling: return "c"
-	default: return "-"
+	case Normal:
+		return "n"
+	case Promotion:
+		return "p"
+	case EnPassant:
+		return "e"
+	case Castling:
+		return "c"
+	default:
+		return "-"
 	}
 }
 
