@@ -56,7 +56,7 @@ type Limits struct {
 	MoveTime    time.Duration
 
 	// parameter
-	MovesToGo   int
+	MovesToGo int
 }
 
 // NewSearchLimits creates a new empty Limits

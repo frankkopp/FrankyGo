@@ -108,7 +108,7 @@ func TestMoveArrayPushBack(t *testing.T) {
 
 func TestMoveArrayPopBack(t *testing.T) {
 	ma := NewMoveSlice(MaxMoves)
-	assert.Panics(t, func(){ ma.PopBack() })
+	assert.Panics(t, func() { ma.PopBack() })
 
 	ma.PushBack(e2e4)
 	ma.PushBack(d7d5)
@@ -132,7 +132,6 @@ func TestMoveArrayPopBack(t *testing.T) {
 	// }
 }
 
-
 func TestMoveArrayPushFront(t *testing.T) {
 	ma := NewMoveSlice(MaxMoves)
 	ma.PushFront(e2e4)
@@ -153,7 +152,7 @@ func TestMoveArrayPushFront(t *testing.T) {
 
 func TestMoveArrayPopFront(t *testing.T) {
 	ma := NewMoveSlice(MaxMoves)
-	assert.Panics(t, func(){ ma.PopFront() })
+	assert.Panics(t, func() { ma.PopFront() })
 	ma.PushFront(e2e4)
 	ma.PushFront(d7d5)
 	ma.PushFront(e4d5)
@@ -293,7 +292,6 @@ func TestMoveArraySortRandom(t *testing.T) {
 		tmp = ma.At(i)
 	}
 }
-
 
 func TestMoveArrayFilter(t *testing.T) {
 	ma := NewMoveSlice(MaxMoves)

@@ -75,7 +75,7 @@ func TestCreateMoveValue(t *testing.T) {
 	}{
 		{"e2e4", args{SqE2, SqE4, Normal, PtNone, Value(111)}, Move(990380828)},
 		{"e1g1 castling", args{SqE1, SqG1, Castling, PtNone, Value(222)}, Move(997703942)},
-		{"a2a1Q", args{SqA2, SqA1, Promotion, Queen,  Value(999)}, Move(1048605184)},
+		{"a2a1Q", args{SqA2, SqA1, Promotion, Queen, Value(999)}, Move(1048605184)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

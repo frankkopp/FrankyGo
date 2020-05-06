@@ -52,21 +52,30 @@ var out = message.NewPrinter(language.German)
 
 // TtEntry struct is the data structure for each entry in the transposition
 // table. Each entry has 16-bytes (128-bits).
-// TODO: Test more compact storage - performance??
 type TtEntry struct {
+	// struct is partially bit encoded to make it more compact
+	// and stay <= 16 byte
 	key   position.Key // 64-bit Zobrist Key
 	move  uint16       // 16-bit move part of a Move - convert with Move(e.Move)
 	eval  int16        // 16-bit evaluation value by static evaluator
 	value int16        // 16-bit value during search
-	// vmeta uint16	   // 16-bit depth 7-bit, age 3-bit, vtype 2-bit
-	depth int8      // 7-bit 0-127 0b01111111
-	age   int8      // 3-bit 0-7   0b00000111 0=used 1=generated, not used, >1 older generation
-	vtype ValueType // 2-bit None, Exact, Alpha (upper), Beta (lower)
+	vmeta uint16       // 16-bit depth 7-bit, vtype 2-bit, age 3-bit
+	// depth 7-bit 0-127
+	// vtype 3-bit 0-7   0=used 1=generated, not used, >1 older generation
+	// age 2-bit None, Exact, Alpha (upper), Beta (lower)
 }
 
 const (
+	ageMask    = uint16(0b0000_0000_0000_0111)
+	vtypeMask  = uint16(0b0000_0000_0001_1000)
+	vtypeShift = uint16(3)
+	depthMask  = uint16(0b0000_1111_1110_0000)
+	depthShift = uint16(5)
+)
+
+const (
 	// TtEntrySize is the size in bytes for each TtEntry
-	TtEntrySize = 24 // 24 bytes
+	TtEntrySize = 16 // 16 bytes
 
 	// MaxSizeInMB maximal memory usage of tt
 	MaxSizeInMB = 65_536
@@ -165,10 +174,7 @@ func (tt *TtTable) Probe(key position.Key) *TtEntry {
 	tt.Stats.numberOfProbes++
 	e := &tt.data[tt.hash(key)]
 	if e.key == key {
-		e.age--
-		if e.age < 0 {
-			e.age = 0
-		}
+		e.decreaseAge()
 		tt.Stats.numberOfHits++
 		return e
 	}
@@ -195,11 +201,9 @@ func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, val
 		tt.numberOfEntries++
 		entryDataPtr.key = key
 		entryDataPtr.move = uint16(move) //  & 0x0000FFFF)
-		entryDataPtr.value = int16(value)
 		entryDataPtr.eval = int16(eval)
-		entryDataPtr.depth = depth
-		entryDataPtr.age = 1
-		entryDataPtr.vtype = valueType
+		entryDataPtr.value = int16(value)
+		entryDataPtr.vmeta = uint16(depth)<<depthShift + uint16(valueType)<<vtypeShift + uint16(1)
 		return
 	}
 
@@ -209,16 +213,14 @@ func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, val
 		// overwrite if
 		// - the new entry's depth is higher
 		// - the new entry's depth is same and the previous entry is old (is aged)
-		if depth > entryDataPtr.depth ||
-			(depth == entryDataPtr.depth && entryDataPtr.age > 1) {
+		if depth > entryDataPtr.Depth() ||
+			(depth == entryDataPtr.Depth() && entryDataPtr.Age() > 1) {
 			tt.Stats.numberOfOverwrites++
 			entryDataPtr.key = key
 			entryDataPtr.move = uint16(move) //  & 0x0000FFFF)
-			entryDataPtr.value = int16(value)
 			entryDataPtr.eval = int16(eval)
-			entryDataPtr.depth = depth
-			entryDataPtr.age = 1
-			entryDataPtr.vtype = valueType
+			entryDataPtr.value = int16(value)
+			entryDataPtr.vmeta = uint16(depth)<<depthShift + uint16(valueType)<<vtypeShift + uint16(1)
 		}
 		return
 	}
@@ -238,10 +240,8 @@ func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, val
 		}
 		if value != ValueNA { // preserver
 			entryDataPtr.value = int16(value)
-			entryDataPtr.vtype = valueType
-			entryDataPtr.depth = depth
+			entryDataPtr.vmeta = uint16(depth)<<depthShift + uint16(valueType)<<vtypeShift + uint16(1)
 		}
-		entryDataPtr.age = 1
 		return
 	}
 }
@@ -301,7 +301,7 @@ func (tt *TtTable) AgeEntries() {
 				}
 				for n := start; n < end; n++ {
 					if tt.data[n].key != 0 {
-						tt.data[n].age++
+						tt.data[n].increaseAge()
 					}
 				}
 			}(i)
@@ -319,6 +319,20 @@ func (tt *TtTable) AgeEntries() {
 // hash generates the internal hash key for the data array
 func (tt *TtTable) hash(key position.Key) uint64 {
 	return uint64(key) & tt.hashKeyMask
+}
+
+func (e *TtEntry) decreaseAge() {
+	// age is stored in the last 2 bits --> we can just decrease
+	if e.Age() > 0 {
+		e.vmeta--
+	}
+}
+
+func (e *TtEntry) increaseAge() {
+	// age is stored in the last 2 bits --> we can just increase
+	if e.Age() <= 7 {
+		e.vmeta++
+	}
 }
 
 // ///////////////////////////////////////////////////////////
@@ -342,13 +356,14 @@ func (e *TtEntry) Eval() Value {
 }
 
 func (e *TtEntry) Depth() int8 {
-	return e.depth
+	return int8((e.vmeta & depthMask) >> depthShift)
 }
 
 func (e *TtEntry) Age() int8 {
-	return e.age
+	// last 3 bits
+	return int8(e.vmeta & ageMask)
 }
 
 func (e *TtEntry) Vtype() ValueType {
-	return e.vtype
+	return ValueType((e.vmeta & vtypeMask) >> vtypeShift)
 }

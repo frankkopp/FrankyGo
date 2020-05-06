@@ -98,7 +98,7 @@ func initMagics(table *[]Bitboard, magics *[64]Magic, directions *[4]Direction) 
 		// until we find the one that passes the verification test.
 		// TODO: understand this better
 		for i := 0; i < size; {
-			for m.Magic = 0;; {
+			for m.Magic = 0; ; {
 				m.Magic = Bitboard(rng.sparseRand())
 				if ((m.Magic * m.Mask) >> 56).PopCount() < 6 {
 					break

@@ -881,8 +881,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 
 	// ///////////////////////////////////////////////////////
 	// MOVE LOOP
-	for move := myMg.GetNextMove(p, mode, hasCheck);
-		move != MoveNone; move = myMg.GetNextMove(p, mode, hasCheck) {
+	for move := myMg.GetNextMove(p, mode, hasCheck); move != MoveNone; move = myMg.GetNextMove(p, mode, hasCheck) {
 
 		givesCheck := p.GivesCheck(move)
 
