@@ -56,11 +56,12 @@ var out = message.NewPrinter(language.German)
 type TtEntry struct {
 	key   position.Key // 64-bit Zobrist Key
 	move  uint16       // 16-bit move part of a Move - convert with Move(e.Move)
-	value int16        // 16-bit value during search
 	eval  int16        // 16-bit evaluation value by static evaluator
-	depth int8         // 7-bit 0-127 0b01111111
-	age   int8         // 3-bit 0-7   0b00000111 0=used 1=generated, not used, >1 older generation
-	vtype ValueType    // 2-bit None, Exact, Alpha (upper), Beta (lower)
+	value int16        // 16-bit value during search
+	// vmeta uint16	   // 16-bit depth 7-bit, age 3-bit, vtype 2-bit
+	depth int8      // 7-bit 0-127 0b01111111
+	age   int8      // 3-bit 0-7   0b00000111 0=used 1=generated, not used, >1 older generation
+	vtype ValueType // 2-bit None, Exact, Alpha (upper), Beta (lower)
 }
 
 const (

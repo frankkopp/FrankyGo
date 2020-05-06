@@ -728,13 +728,14 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			bestNodeValue = ValueDraw
 		}
 		// this is in any case an exact value
+		staticEval = bestNodeValue
 		ttType = EXACT
 	}
 
 	// Store TT
 	// Store search result for this node into the transposition table
 	if Settings.Search.UseTT {
-		s.storeTT(p, depth, ply, bestNodeMove, bestNodeValue, ttType, ValueNA)
+		s.storeTT(p, depth, ply, bestNodeMove, bestNodeValue, ttType, staticEval)
 	}
 
 	return bestNodeValue
@@ -826,10 +827,6 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 		// get an evaluation for the position
 		if staticEval == ValueNA {
 			staticEval = s.evaluate(p)
-			// Storing this value might save us calls to eval on the same position.
-			if Settings.Search.UseTT && Settings.Search.UseEvalTT {
-				s.storeTT(p, 0, ply, MoveNone, ValueNA, Vnone, staticEval)
-			}
 		}
 		// Quiescence StandPat
 		// Use evaluation as a standing pat (lower bound)

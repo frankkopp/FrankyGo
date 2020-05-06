@@ -105,7 +105,7 @@ func TestTimingTTSize(t *testing.T) {
 	config.SearchLogLevel = 2
 	config.Settings.Search.UseBook = false
 
-	for _, fen := range testdata.Fens[0:10] {
+	for _, fen := range testdata.Fens[10:30] {
 		out.Println(fen)
 		var results []string
 		for ttSize := 1; ttSize < 10_000; ttSize = ttSize * 2 {
@@ -117,9 +117,9 @@ func TestTimingTTSize(t *testing.T) {
 			// p := position.NewPosition()
 			p := position.NewPosition(fen)
 			sl := NewSearchLimits()
-			sl.Depth = 8
-			// sl.TimeControl = true
-			sl.MoveTime = 10 * time.Second
+			sl.Depth = 0
+			sl.TimeControl = true
+			sl.MoveTime = 5 * time.Second
 			s.StartSearch(*p, *sl)
 			s.WaitWhileSearching()
 			nps := util.Nps(s.nodesVisited, s.lastSearchResult.SearchTime)
