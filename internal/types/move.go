@@ -149,7 +149,7 @@ func (m Move) String() string {
 		return "Move: { MoveNone }"
 	}
 	return fmt.Sprintf("Move: { %-5s  type:%1s  prom:%1s  value:%-6d  (%d) }",
-		m.StringUci(), m.MoveType().String(), m.PromotionType().Char(),m.ValueOf(), m)
+		m.StringUci(), m.MoveType().String(), m.PromotionType().Char(), m.ValueOf(), m)
 }
 
 // StringUci string representation of a move which is UCI compatible
@@ -206,4 +206,3 @@ const (
 	moveMask     Move = 0xFFFF               // first 16-bit
 	valueMask    Move = 0xFFFF << valueShift // second 16-bit
 )
-

@@ -59,7 +59,6 @@ func TestResolveCreateFolder(t *testing.T) {
 	// assert.EqualValues(t, expected, resolvedFolder)
 	// assert.EqualValues(t, nil, err)
 
-
 	// file = "./LICENSE"
 	// expected = filepath.Clean(filepath.Join(os.TempDir(), "LICENSE"))
 	// resolvedFolder, err = ResolveCreateFolder(file)

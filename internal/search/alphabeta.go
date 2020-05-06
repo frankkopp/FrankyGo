@@ -320,6 +320,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	bestNodeMove := MoveNone // used to store in the TT
 	ttMove := MoveNone
 	ttType := ALPHA
+	staticEval := ValueNA
 	matethreat := false
 
 	// TT Lookup
@@ -343,18 +344,18 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		ttEntry = s.tt.Probe(p.ZobristKey())
 		if ttEntry != nil { // tt hit
 			s.statistics.TTHit++
-			ttMove = ttEntry.Move.MoveOf()
-			if int(ttEntry.Depth) >= depth {
-				ttValue := valueFromTT(ttEntry.Move.ValueOf(), ply)
+			ttMove = ttEntry.Move()
+			if int(ttEntry.Depth()) >= depth {
+				ttValue := valueFromTT(ttEntry.Value(), ply)
 				cut := false
 				switch {
 				case !ttValue.IsValid():
 					cut = false
-				case ttEntry.Type == EXACT:
+				case ttEntry.Vtype() == EXACT:
 					cut = true
-				case ttEntry.Type == ALPHA && ttValue <= alpha:
+				case ttEntry.Vtype() == ALPHA && ttValue <= alpha:
 					cut = true
-				case ttEntry.Type == BETA && ttValue >= beta:
+				case ttEntry.Vtype() == BETA && ttValue >= beta:
 					cut = true
 				}
 				if cut && Settings.Search.UseTTValue {
@@ -365,16 +366,22 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 					s.statistics.TTNoCuts++
 				}
 			}
+			// if we have a static eval stored we can reuse it
+			if ttEntry.Eval() != ValueNA {
+				staticEval = ttEntry.Eval()
+			}
 		} else {
 			s.statistics.TTMiss++
 		}
 	}
 
 	// get an evaluation for the position
-	staticEval := ValueNA
-	if !hasCheck {
-		staticEval = s.evaluate(p, ply)
-		// TODO: Consider storing in TT
+	if !hasCheck && staticEval == ValueNA {
+		staticEval = s.evaluate(p)
+		// Storing this value might save us calls to eval on the same position.
+		if Settings.Search.UseTT && Settings.Search.UseEvalTT {
+			s.storeTT(p, 0, ply, MoveNone, ValueNA, Vnone, staticEval)
+		}
 	}
 
 	// Razoring from Stockfish
@@ -475,7 +482,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 				s.statistics.NullMoveCuts++
 				// Store TT
 				if Settings.Search.UseTT {
-					s.storeTT(p, depth, ply, ttMove, nValue, BETA)
+					s.storeTT(p, depth, ply, ttMove, nValue, BETA, staticEval)
 				}
 				return nValue
 			}
@@ -544,8 +551,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 
 	// ///////////////////////////////////////////////////////
 	// MOVE LOOP
-	for move := myMg.GetNextMove(p, movegen.GenAll, hasCheck);
-		move != MoveNone; move = myMg.GetNextMove(p, movegen.GenAll, hasCheck) {
+	for move := myMg.GetNextMove(p, movegen.GenAll, hasCheck); move != MoveNone; move = myMg.GetNextMove(p, movegen.GenAll, hasCheck) {
 
 		from := move.From()
 		to := move.To()
@@ -853,13 +859,14 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			bestNodeValue = ValueDraw
 		}
 		// this is in any case an exact value
+		staticEval = bestNodeValue
 		ttType = EXACT
 	}
 
 	// Store TT
 	// Store search result for this node into the transposition table
 	if Settings.Search.UseTT {
-		s.storeTT(p, depth, ply, bestNodeMove, bestNodeValue, ttType)
+		s.storeTT(p, depth, ply, bestNodeMove, bestNodeValue, ttType, staticEval)
 	}
 
 	return bestNodeValue
@@ -886,7 +893,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	// if we have deactivated qsearch or we have reached our maximum depth
 	// we evaluate the position and return the value
 	if !Settings.Search.UseQuiescence || ply >= MaxDepth {
-		return s.evaluate(p, ply)
+		return s.evaluate(p)
 	}
 
 	// Mate Distance Pruning
@@ -906,6 +913,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	bestNodeMove := MoveNone
 	ttType := ALPHA
 	ttMove := MoveNone
+	staticEval := ValueNA
 	hasCheck := p.HasCheck()
 
 	// for MTDf we do not have PVS and therefore don't
@@ -941,17 +949,17 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 		ttEntry = s.tt.Probe(p.ZobristKey())
 		if ttEntry != nil { // tt hit
 			s.statistics.TTHit++
-			ttMove = ttEntry.Move.MoveOf()
-			ttValue := valueFromTT(ttEntry.Move.ValueOf(), ply)
+			ttMove = ttEntry.Move()
+			ttValue := valueFromTT(ttEntry.Value(), ply)
 			cut := false
 			switch {
 			case !ttValue.IsValid():
 				cut = false
-			case ttEntry.Type == EXACT:
+			case ttEntry.Vtype() == EXACT:
 				cut = true
-			case ttEntry.Type == ALPHA && ttValue <= alpha:
+			case ttEntry.Vtype() == ALPHA && ttValue <= alpha:
 				cut = true
-			case ttEntry.Type == BETA && ttValue >= beta:
+			case ttEntry.Vtype() == BETA && ttValue >= beta:
 				cut = true
 			}
 			if cut && Settings.Search.UseTTValue {
@@ -960,9 +968,41 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 			} else {
 				s.statistics.TTNoCuts++
 			}
+			// if we have a static eval stored we can reuse it
+			// maybe not necessary as we will have a staticEval
+			// if not in check. ANd for check we do another search
+			// anyway.
+			if ttEntry.Eval() != ValueNA {
+				staticEval = ttEntry.Eval()
+			}
 		} else {
 			s.statistics.TTMiss++
 		}
+	}
+
+	// if in check we simply do a normal search (all moves) in qsearch
+	if !hasCheck {
+		// get an evaluation for the position
+		if staticEval == ValueNA {
+			staticEval = s.evaluate(p)
+		}
+		// Quiescence StandPat
+		// Use evaluation as a standing pat (lower bound)
+		// https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
+		// Assumption is that there is at least on move which would improve the
+		// current position. So if we are already >beta we don't need to look at it.
+		if Settings.Search.UseQSStandpat && staticEval > alpha {
+			if staticEval >= beta {
+				s.statistics.StandpatCuts++
+				// Storing this value might save us calls to eval on the same position.
+				if Settings.Search.UseTT && Settings.Search.UseEvalTT {
+					s.storeTT(p, 0, ply, MoveNone, ValueNA, Vnone, staticEval)
+				}
+				return staticEval
+			}
+			alpha = staticEval
+		}
+		bestNodeValue = staticEval
 	}
 
 	// prepare node search
@@ -999,8 +1039,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 
 	// ///////////////////////////////////////////////////////
 	// MOVE LOOP
-	for move := myMg.GetNextMove(p, mode, hasCheck);
-		move != MoveNone; move = myMg.GetNextMove(p, mode, hasCheck) {
+	for move := myMg.GetNextMove(p, mode, hasCheck); move != MoveNone; move = myMg.GetNextMove(p, mode, hasCheck) {
 
 		givesCheck := p.GivesCheck(move)
 
@@ -1131,7 +1170,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 
 	// Store TT
 	if Settings.Search.UseTT && Settings.Search.UseQSTT {
-		s.storeTT(p, 1, ply, bestNodeMove, bestNodeValue, ttType)
+		s.storeTT(p, 1, ply, bestNodeMove, bestNodeValue, ttType, staticEval)
 	}
 
 	return bestNodeValue
@@ -1141,38 +1180,10 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 // generated call the evaluation heuristic on the position.
 // This gives us a numerical value of this quiet position which we will return
 // back to the search.
-func (s *Search) evaluate(position *position.Position, ply int) Value {
+func (s *Search) evaluate(p *position.Position) Value {
 	s.statistics.LeafPositionsEvaluated++
-
-	var value = ValueNA
-
-	// We can try to see if TT also helps with already evaluated positions.
-	// This is currently deactivated in the config defaults.
-	if Settings.Search.UseTT && Settings.Search.UseEvalTT {
-		ttEntry := s.tt.Probe(position.ZobristKey())
-		if ttEntry != nil { // tt hit
-			s.statistics.TTHit++
-			s.statistics.EvaluationsFromTT++
-			value = valueFromTT(ttEntry.Move.ValueOf(), ply)
-		}
-	}
-
-	if value == ValueNA {
-		s.statistics.Evaluations++
-		value = s.eval.Evaluate(position)
-	}
-
-	// Storing this value might save us calls to eval on the same position.
-	// as we only have a depth of 0 we expects this not to last very long in the
-	// TT and the time impact of probing and storing might be too expensive.
-	// As our current eval function is very simple it definitely is not worth
-	// the effort. With a more expensive eval function this might change.
-	// This is currently deactivated in the config defaults.
-	if Settings.Search.UseTT && Settings.Search.UseEvalTT {
-		s.storeTT(position, 0, ply, MoveNone, value, EXACT)
-	}
-
-	return value
+	s.statistics.Evaluations++
+	return s.eval.Evaluate(p)
 }
 
 // reduce the number of moves searched in quiescence search by trying
@@ -1205,8 +1216,8 @@ func savePV(move Move, src *moveslice.MoveSlice, dest *moveslice.MoveSlice) {
 }
 
 // storeTT stores a position into the TT
-func (s *Search) storeTT(p *position.Position, depth int, ply int, move Move, value Value, valueType ValueType) {
-	s.tt.Put(p.ZobristKey(), move, int8(depth), valueToTT(value, ply), valueType, false)
+func (s *Search) storeTT(p *position.Position, depth int, ply int, move Move, value Value, valueType ValueType, eval Value) {
+	s.tt.Put(p.ZobristKey(), move, int8(depth), valueToTT(value, ply), valueType, eval)
 }
 
 // getPVLine fills the given pv move list with the pv move starting from the given
@@ -1218,9 +1229,9 @@ func (s *Search) getPVLine(p *position.Position, pv *moveslice.MoveSlice, depth 
 	pv.Clear()
 	counter := 0
 	ttMatch := s.tt.GetEntry(p.ZobristKey())
-	for ttMatch != nil && ttMatch.Move != MoveNone && counter < depth {
-		pv.PushBack(ttMatch.Move.MoveOf())
-		p.DoMove(ttMatch.Move.MoveOf())
+	for ttMatch != nil && ttMatch.Move() != MoveNone && counter < depth {
+		pv.PushBack(ttMatch.Move())
+		p.DoMove(ttMatch.Move())
 		counter++
 		ttMatch = s.tt.GetEntry(p.ZobristKey())
 	}

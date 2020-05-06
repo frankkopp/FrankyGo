@@ -41,7 +41,7 @@ import (
 
 // UciDriver the defines an interface for the search to be able to send
 // uci protocol messages through a uciHandler which implements this interface
-type UciDriver interface{
+type UciDriver interface {
 	SendReadyOk()
 	SendInfoString(info string)
 	SendIterationEndInfo(depth int, seldepth int, value types.Value, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice)
