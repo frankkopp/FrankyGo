@@ -52,18 +52,20 @@ var out = message.NewPrinter(language.German)
 
 // TtEntry struct is the data structure for each entry in the transposition
 // table. Each entry has 16-bytes (128-bits).
+// TODO: Test more compact storage - performance??
 type TtEntry struct {
-	Key        position.Key // 64-bit Zobrist Key
-	Move       Move         // 32-bit Move and value
-	Depth      int8         // 7-bit 0-127 0b01111111
-	Age        int8         // 3-bit 0-7   0b00000111 0=used 1=generated, not used, >1 older generation
-	Type       ValueType    // 2-bit None, Exact, Alpha (upper), Beta (lower)
-	MateThreat bool         // 1-bit
+	key   position.Key // 64-bit Zobrist Key
+	move  uint16       // 16-bit move part of a Move - convert with Move(e.Move)
+	value int16        // 16-bit value during search
+	eval  int16        // 16-bit evaluation value by static evaluator
+	depth int8         // 7-bit 0-127 0b01111111
+	age   int8         // 3-bit 0-7   0b00000111 0=used 1=generated, not used, >1 older generation
+	vtype ValueType    // 2-bit None, Exact, Alpha (upper), Beta (lower)
 }
 
 const (
 	// TtEntrySize is the size in bytes for each TtEntry
-	TtEntrySize = 16 // 16 bytes
+	TtEntrySize = 24 // 24 bytes
 
 	// MaxSizeInMB maximal memory usage of tt
 	MaxSizeInMB = 65_536
@@ -150,7 +152,7 @@ func (tt *TtTable) Resize(sizeInMByte int) {
 // Does not change statistics.
 func (tt *TtTable) GetEntry(key position.Key) *TtEntry {
 	e := &tt.data[tt.hash(key)]
-	if e.Key == key {
+	if e.key == key {
 		return e
 	}
 	return nil
@@ -161,10 +163,10 @@ func (tt *TtTable) GetEntry(key position.Key) *TtEntry {
 func (tt *TtTable) Probe(key position.Key) *TtEntry {
 	tt.Stats.numberOfProbes++
 	e := &tt.data[tt.hash(key)]
-	if e.Key == key {
-		e.Age--
-		if e.Age < 0 {
-			e.Age = 0
+	if e.key == key {
+		e.age--
+		if e.age < 0 {
+			e.age = 0
 		}
 		tt.Stats.numberOfHits++
 		return e
@@ -174,7 +176,7 @@ func (tt *TtTable) Probe(key position.Key) *TtEntry {
 }
 
 // Put an TtEntry into the tt. Encodes value into the move.
-func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, valueType ValueType, mateThreat bool) {
+func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, valueType ValueType, eval Value) {
 
 	// if the size of the TT = 0 we
 	// do not store anything
@@ -184,58 +186,61 @@ func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, val
 
 	// read the entries for this hash
 	entryDataPtr := &tt.data[tt.hash(key)]
-	// encode value into the move if it is a valid value (min < v < max)
-	if value.IsValid() {
-		move = move.SetValue(value)
-	} else {
-		tt.log.Warningf("TT Put: Tried to store an invalid Value into the TT %s (%d)", value.String(), int(value))
-	}
 
 	tt.Stats.numberOfPuts++
 
 	// NewTtTable entry
-	if entryDataPtr.Key == 0 {
+	if entryDataPtr.key == 0 {
 		tt.numberOfEntries++
-		entryDataPtr.Key = key
-		entryDataPtr.Move = move
-		entryDataPtr.Depth = depth
-		entryDataPtr.Age = 1
-		entryDataPtr.Type = valueType
-		entryDataPtr.MateThreat = mateThreat
+		entryDataPtr.key = key
+		entryDataPtr.move = uint16(move) //  & 0x0000FFFF)
+		entryDataPtr.value = int16(value)
+		entryDataPtr.eval = int16(eval)
+		entryDataPtr.depth = depth
+		entryDataPtr.age = 1
+		entryDataPtr.vtype = valueType
 		return
 	}
 
 	// Same hash but different position
-	if entryDataPtr.Key != key {
+	if entryDataPtr.key != key {
 		tt.Stats.numberOfCollisions++
 		// overwrite if
 		// - the new entry's depth is higher
 		// - the new entry's depth is same and the previous entry is old (is aged)
-		if depth > entryDataPtr.Depth ||
-			(depth == entryDataPtr.Depth && entryDataPtr.Age > 1) {
+		if depth > entryDataPtr.depth ||
+			(depth == entryDataPtr.depth && entryDataPtr.age > 1) {
 			tt.Stats.numberOfOverwrites++
-			entryDataPtr.Key = key
-			entryDataPtr.Move = move
-			entryDataPtr.Depth = depth
-			entryDataPtr.Age = 1
-			entryDataPtr.Type = valueType
-			entryDataPtr.MateThreat = mateThreat
+			entryDataPtr.key = key
+			entryDataPtr.move = uint16(move) //  & 0x0000FFFF)
+			entryDataPtr.value = int16(value)
+			entryDataPtr.eval = int16(eval)
+			entryDataPtr.depth = depth
+			entryDataPtr.age = 1
+			entryDataPtr.vtype = valueType
 		}
 		return
 	}
 
 	// Same hash and same position -> update entry?
-	if entryDataPtr.Key == key {
+	if entryDataPtr.key == key {
 		tt.Stats.numberOfUpdates++
 		// we always update as the stored moved can't be any good otherwise
 		// we would have found this during the search in a previous probe
 		// and we would not have come to store it again
-		entryDataPtr.Key = key
-		entryDataPtr.Move = move
-		entryDataPtr.Depth = depth
-		entryDataPtr.Age = 1
-		entryDataPtr.Type = valueType
-		entryDataPtr.MateThreat = mateThreat
+		entryDataPtr.key = key
+		if move != MoveNone { // preserve an existing move if we store with MoveNone
+			entryDataPtr.move = uint16(move) //  & 0x0000FFFF)
+		}
+		if eval != ValueNA { // preserve
+			entryDataPtr.eval = int16(eval)
+		}
+		if value != ValueNA { // preserver
+			entryDataPtr.value = int16(value)
+			entryDataPtr.vtype = valueType
+			entryDataPtr.depth = depth
+		}
+		entryDataPtr.age = 1
 		return
 	}
 }
@@ -247,7 +252,7 @@ func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, val
 // while searching.
 func (tt *TtTable) Clear() {
 	// Create new slice/array - garbage collections takes care of cleanup
-	tt.data = make([]TtEntry, tt.maxNumberOfEntries, tt.maxNumberOfEntries)
+	tt.data = make([]TtEntry, tt.maxNumberOfEntries)
 	tt.numberOfEntries = 0
 	tt.Stats = TtStats{}
 }
@@ -294,8 +299,8 @@ func (tt *TtTable) AgeEntries() {
 					end = tt.maxNumberOfEntries
 				}
 				for n := start; n < end; n++ {
-					if tt.data[n].Key != 0 {
-						tt.data[n].Age++
+					if tt.data[n].key != 0 {
+						tt.data[n].age++
 					}
 				}
 			}(i)
@@ -313,4 +318,36 @@ func (tt *TtTable) AgeEntries() {
 // hash generates the internal hash key for the data array
 func (tt *TtTable) hash(key position.Key) uint64 {
 	return uint64(key) & tt.hashKeyMask
+}
+
+// ///////////////////////////////////////////////////////////
+// Getter
+// ///////////////////////////////////////////////////////////
+
+func (e *TtEntry) Key() position.Key {
+	return e.key
+}
+
+func (e *TtEntry) Move() Move {
+	return Move(e.move)
+}
+
+func (e *TtEntry) Value() Value {
+	return Value(e.value)
+}
+
+func (e *TtEntry) Eval() Value {
+	return Value(e.eval)
+}
+
+func (e *TtEntry) Depth() int8 {
+	return e.depth
+}
+
+func (e *TtEntry) Age() int8 {
+	return e.age
+}
+
+func (e *TtEntry) Vtype() ValueType {
+	return e.vtype
 }

@@ -119,7 +119,7 @@ func init() {
 	Settings.Search.UseTTMove = true
 	Settings.Search.UseTTValue = true
 	Settings.Search.UseQSTT = true
-	Settings.Search.UseEvalTT = false
+	Settings.Search.UseEvalTT = true
 
 	Settings.Search.UseMDP = true
 	Settings.Search.UseRazoring = true

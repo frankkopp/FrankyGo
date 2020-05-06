@@ -59,8 +59,8 @@ type Statistics struct {
 	LmrResearches uint64
 	LmrReductions uint64
 
-	Evaluations       uint64
-	EvaluationsFromTT uint64
+	Evaluations uint64
+	EvalFromTT  uint64
 
 	TTHit      uint64
 	TTMiss     uint64

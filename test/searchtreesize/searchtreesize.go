@@ -106,7 +106,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().QFpPrunings
+	ptrToSpecial = &s.Statistics().Evaluations
 	ptrToSpecial2 = &s.Statistics().BetaCuts
 
 	// Base
@@ -159,6 +159,8 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseSEE = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "SEE"))
 
+	Settings.Search.UseRazoring = true
+
 	// Reverse Futility
 	Settings.Search.UseRFP = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "RFP"))
@@ -179,6 +181,7 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// Futility
 	Settings.Search.UseFP = true
+	Settings.Search.UseQFP = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "FP"))
 
 	// Late Move Reduction
@@ -188,11 +191,8 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
 
-	Settings.Search.UseQFP = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "QFP"))
-
-	Settings.Search.UseRazoring = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "RAZOR"))
+	Settings.Search.UseEvalTT = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "EVALTT"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -337,6 +337,7 @@ func turnOffFeatures() {
 	Settings.Search.UseTTMove = false
 	Settings.Search.UseTTValue = false
 	Settings.Search.UseQSTT = false
+	Settings.Search.UseEvalTT = false
 	Settings.Search.UseIID = false
 	Settings.Search.UsePVS = false
 	Settings.Search.UseKiller = false
