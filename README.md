@@ -237,6 +237,7 @@ Command line options:
     - Pawn Structure Cache
     
 - DONE:
+    - Static evaluation values are stored in the TT separately from dynamic values
 
 ### v1.0.0 (done)
 - DONE:

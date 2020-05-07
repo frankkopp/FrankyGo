@@ -253,6 +253,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			}
 			// if we have a static eval stored we can reuse it
 			if ttEntry.Eval() != ValueNA {
+				s.statistics.EvalFromTT++
 				staticEval = ttEntry.Eval()
 			}
 		} else {
@@ -277,6 +278,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		staticEval != ValueNA &&
 		staticEval <= alpha-Value(Settings.Search.RazorMargin) {
 
+		s.statistics.Razorings++
 		return s.qsearch(p, ply, alpha, beta, isPV)
 	}
 
@@ -815,6 +817,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 			// if not in check. ANd for check we do another search
 			// anyway.
 			if ttEntry.Eval() != ValueNA {
+				s.statistics.EvalFromTT++
 				staticEval = ttEntry.Eval()
 			}
 		} else {

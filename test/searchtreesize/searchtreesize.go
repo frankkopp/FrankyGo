@@ -191,11 +191,8 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
 
-	Settings.Search.UseEvalTT = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "EVALTT"))
-
-	Settings.Search.UseRootTT = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "ROOTTT"))
+	Settings.Search.UseQSTT = false
+	r.Tests = append(r.Tests, measure(s, sl, p, "-QSTT"))
 
 	// Settings.Search.UseTT = false
 	// r.Tests = append(r.Tests, measure(s, sl, p, "NoTT"))
@@ -344,7 +341,6 @@ func turnOffFeatures() {
 	Settings.Search.UseTTValue = false
 	Settings.Search.UseQSTT = false
 	Settings.Search.UseEvalTT = false
-	Settings.Search.UseRootTT = false
 	Settings.Search.UseIID = false
 	Settings.Search.UsePVS = false
 	Settings.Search.UseKiller = false
