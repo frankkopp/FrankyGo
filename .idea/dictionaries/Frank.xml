@@ -22,6 +22,7 @@
       <w>fide</w>
       <w>foldername</w>
       <w>frankkopp</w>
+      <w>golog</w>
       <w>hashful</w>
       <w>hashfull</w>
       <w>isready</w>
@@ -81,7 +82,9 @@
       <w>vbeta</w>
       <w>vexact</w>
       <w>vlength</w>
+      <w>vmeta</w>
       <w>vnone</w>
+      <w>vtype</w>
       <w>winc</w>
       <w>wtime</w>
       <w>xboard</w>

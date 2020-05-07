@@ -37,8 +37,10 @@ import (
 
 // Statistics are extra data and stats not essential for a functioning search
 type Statistics struct {
-	QFpPrunings uint64
+	Evaluations uint64
+	EvalFromTT  uint64
 
+	QFpPrunings          uint64
 	BestMoveChange       uint64
 	AspirationResearches uint64
 
@@ -58,9 +60,6 @@ type Statistics struct {
 	LmpCuts       uint64
 	LmrResearches uint64
 	LmrReductions uint64
-
-	Evaluations       uint64
-	EvaluationsFromTT uint64
 
 	TTHit      uint64
 	TTMiss     uint64

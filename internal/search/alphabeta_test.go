@@ -78,7 +78,7 @@ func TestDevelopAndTest(t *testing.T) {
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 
 	config.Settings.Search.UseBook = false
-	config.Settings.Search.UseQFP = true
+	config.Settings.Search.UseEvalTT = true
 
 	s := NewSearch()
 	// "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
@@ -105,7 +105,7 @@ func TestTimingTTSize(t *testing.T) {
 	config.SearchLogLevel = 2
 	config.Settings.Search.UseBook = false
 
-	for _, fen := range testdata.Fens[0:10] {
+	for _, fen := range testdata.Fens[10:30] {
 		out.Println(fen)
 		var results []string
 		for ttSize := 1; ttSize < 10_000; ttSize = ttSize * 2 {
@@ -117,9 +117,9 @@ func TestTimingTTSize(t *testing.T) {
 			// p := position.NewPosition()
 			p := position.NewPosition(fen)
 			sl := NewSearchLimits()
-			sl.Depth = 8
-			// sl.TimeControl = true
-			sl.MoveTime = 10 * time.Second
+			sl.Depth = 0
+			sl.TimeControl = true
+			sl.MoveTime = 5 * time.Second
 			s.StartSearch(*p, *sl)
 			s.WaitWhileSearching()
 			nps := util.Nps(s.nodesVisited, s.lastSearchResult.SearchTime)
@@ -148,7 +148,6 @@ func TestTiming(t *testing.T) {
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 
 	config.Settings.Search.UseBook = false
-	config.Settings.Search.UseQFP = true
 
 	s := NewSearch()
 	// "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
@@ -159,7 +158,7 @@ func TestTiming(t *testing.T) {
 	sl := NewSearchLimits()
 	// sl.Depth = 10
 	sl.TimeControl = true
-	sl.MoveTime = 60 * time.Second
+	sl.MoveTime = 300 * time.Second
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
 	out.Println("TT  : ", s.tt.String())

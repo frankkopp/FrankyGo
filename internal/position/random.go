@@ -46,7 +46,7 @@ type random struct {
 
 // NewRandom creates a random object with a seed.
 // Seed must not be negative or zero.
-func NewRandom( seed uint64) random {
+func NewRandom(seed uint64) random {
 	if seed == 0 {
 		panic("Seed of random cannot be 0")
 	}

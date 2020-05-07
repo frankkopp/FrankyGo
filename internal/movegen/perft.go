@@ -99,7 +99,7 @@ func (perft *Perft) StartPerft(fen string, depth int, onDemandFlag bool) {
 	out.Printf("FEN: %s\n", fen)
 	out.Printf("-----------------------------------------\n")
 
-	result := uint64(0)
+	var result uint64
 
 	// the actual perft call
 	start := time.Now()

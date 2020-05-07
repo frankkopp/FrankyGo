@@ -36,7 +36,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 var logTest *logging.Logger
 
 // make tests run in the projects root directory
@@ -85,4 +84,3 @@ func BenchmarkMin64(b *testing.B) {
 	}
 	result = tmp
 }
-

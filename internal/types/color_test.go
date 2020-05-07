@@ -45,9 +45,9 @@ func TestColor_IsValid(t *testing.T) {
 		c    Color
 		want bool
 	}{
-		{ "White", White, true},
-		{ "Black", Black, true},
-		{ "No Color", Color(2), false},
+		{"White", White, true},
+		{"Black", Black, true},
+		{"No Color", Color(2), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

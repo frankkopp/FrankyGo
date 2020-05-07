@@ -50,6 +50,7 @@ func TestFeatureTests(t *testing.T) {
 		config.Settings.Search.UsePromNonQuiet = true
 
 		config.Settings.Search.UseTT = true
+		config.Settings.Search.UseEvalTT = true
 		config.Settings.Search.TTSize = 256
 		config.Settings.Search.UseTTValue = true
 		config.Settings.Search.UseQSTT = true

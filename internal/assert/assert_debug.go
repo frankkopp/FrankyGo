@@ -35,7 +35,7 @@ import (
 	"fmt"
 )
 
-func init()  {
+func init() {
 	// fmt.Println("DEBUG MODE")
 }
 
