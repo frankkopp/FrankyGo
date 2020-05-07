@@ -37,32 +37,33 @@ import (
 
 // Statistics are extra data and stats not essential for a functioning search
 type Statistics struct {
+	TTHit  uint64
+	TTMiss uint64
+
 	Evaluations uint64
 	EvalFromTT  uint64
 
-	QFpPrunings          uint64
 	BestMoveChange       uint64
 	AspirationResearches uint64
 
 	BetaCuts    uint64
 	BetaCuts1st uint64
 
+	Razorings   uint64
 	RfpPrunings uint64
+	QFpPrunings uint64
 	FpPrunings  uint64
 
-	ThreatExtension uint64
-	NMPMateAlpha    uint64
-	NMPMateBeta     uint64
+	NMPMateAlpha uint64
+	NMPMateBeta  uint64
 
-	CheckExtension uint64
-	CheckInQS      uint64
+	ThreatExtension uint64
+	CheckExtension  uint64
 
 	LmpCuts       uint64
 	LmrResearches uint64
 	LmrReductions uint64
 
-	TTHit      uint64
-	TTMiss     uint64
 	TTMoveUsed uint64
 	NoTTMove   uint64
 	TTCuts     uint64
@@ -79,6 +80,7 @@ type Statistics struct {
 	NullMoveCuts           uint64
 	StandpatCuts           uint64
 	Mdp                    uint64
+	CheckInQS              uint64
 
 	CurrentIterationDepth    int
 	CurrentSearchDepth       int
