@@ -48,7 +48,7 @@ var out = message.NewPrinter(language.German)
 
 // singleTest holds the result data for a single test
 // A single test is one fen with one set of feature executing
-// one search according to the settings (depth odr time).
+// one search according to the settings (depth odr time)
 type singleTest struct {
 	Name     string
 	Nodes    uint64
@@ -63,14 +63,14 @@ type singleTest struct {
 	Pv       moveslice.MoveSlice
 }
 
-// result is representing a series of single tests for a single position (FEN).
+// result is representing a series of single tests for a single position (FEN)
 type result struct {
 	Fen   string
 	Tests []singleTest
 }
 
 // testSums is a helper data structure to sum up all results from a list of
-// single tests for a set of features to create a total reports at the end.
+// single tests for a set of features to create a total reports at the end
 type testSums struct {
 	SumCounter uint64
 	SumNodes   uint64
@@ -183,30 +183,22 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseFP = true
 	Settings.Search.UseQFP = true
 	// r.Tests = append(r.Tests, measure(s, sl, p, "FP"))
-	Settings.Search.UseQFP = true
-
-	// r.Tests = append(r.Tests, measure(s, sl, p, "QFP"))
-
-	Settings.Search.UseRazoring = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "RAZOR"))
 
 	// Late Move Reduction
 	Settings.Search.UseLmr = true
 	// Late Move Pruning
 	Settings.Search.UseLmp = true
 
-	Settings.Search.UseEvalTT = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "EVALTT"))
-
 	r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
 
-	Settings.Search.UseAspiration = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "ASP"))
+	Settings.Search.UseEvalTT = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "EVALTT"))
 
-	Settings.Search.UseAspiration = false
-	Settings.Search.UsePVS = false
-	Settings.Search.UseMTDf = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "MTDf"))
+	Settings.Search.UseRootTT = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "ROOTTT"))
+
+	// Settings.Search.UseTT = false
+	// r.Tests = append(r.Tests, measure(s, sl, p, "NoTT"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -352,10 +344,9 @@ func turnOffFeatures() {
 	Settings.Search.UseTTValue = false
 	Settings.Search.UseQSTT = false
 	Settings.Search.UseEvalTT = false
+	Settings.Search.UseRootTT = false
 	Settings.Search.UseIID = false
 	Settings.Search.UsePVS = false
-	Settings.Search.UseAspiration = false
-	Settings.Search.UseMTDf = false
 	Settings.Search.UseKiller = false
 	Settings.Search.UseHistoryCounter = false
 	Settings.Search.UseCounterMoves = false

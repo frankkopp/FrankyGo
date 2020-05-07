@@ -41,7 +41,7 @@ func BenchmarkAtomicBool(b *testing.B) {
 }
 
 func BenchmarkBool(b *testing.B) {
-	bool2 := Result
+	bool2 := Result // nolint:ineffassign
 	for i := 0; i < b.N; i++ {
 		bool2 = !Result
 		Result = bool2
