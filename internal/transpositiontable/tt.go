@@ -50,33 +50,7 @@ import (
 
 var out = message.NewPrinter(language.German)
 
-// TtEntry struct is the data structure for each entry in the transposition
-// table. Each entry has 16-bytes (128-bits).
-type TtEntry struct {
-	// struct is partially bit encoded to make it more compact
-	// and stay <= 16 byte
-	key   position.Key // 64-bit Zobrist Key
-	move  uint16       // 16-bit move part of a Move - convert with Move(e.Move)
-	eval  int16        // 16-bit evaluation value by static evaluator
-	value int16        // 16-bit value during search
-	vmeta uint16       // 16-bit depth 7-bit, vtype 2-bit, age 3-bit
-	// depth 7-bit 0-127
-	// vtype 3-bit 0-7   0=used 1=generated, not used, >1 older generation
-	// age 2-bit None, Exact, Alpha (upper), Beta (lower)
-}
-
 const (
-	ageMask    = uint16(0b0000_0000_0000_0111)
-	vtypeMask  = uint16(0b0000_0000_0001_1000)
-	vtypeShift = uint16(3)
-	depthMask  = uint16(0b0000_1111_1110_0000)
-	depthShift = uint16(5)
-)
-
-const (
-	// TtEntrySize is the size in bytes for each TtEntry
-	TtEntrySize = 16 // 16 bytes
-
 	// MaxSizeInMB maximal memory usage of tt
 	MaxSizeInMB = 65_536
 )
@@ -148,7 +122,7 @@ func (tt *TtTable) Resize(sizeInMByte int) {
 	tt.sizeInByte = tt.maxNumberOfEntries * TtEntrySize
 
 	// Create new slice/array - garbage collections takes care of cleanup
-	tt.data = make([]TtEntry, tt.maxNumberOfEntries, tt.maxNumberOfEntries)
+	tt.data = make([]TtEntry, tt.maxNumberOfEntries)
 
 	tt.log.Info(out.Sprintf("TT Size %d MByte, Capacity %d entries (size=%dByte) (Requested were %d MBytes)",
 		tt.sizeInByte/MB, tt.maxNumberOfEntries, unsafe.Sizeof(TtEntry{}), sizeInMByte))
@@ -321,49 +295,4 @@ func (tt *TtTable) hash(key position.Key) uint64 {
 	return uint64(key) & tt.hashKeyMask
 }
 
-func (e *TtEntry) decreaseAge() {
-	// age is stored in the last 2 bits --> we can just decrease
-	if e.Age() > 0 {
-		e.vmeta--
-	}
-}
 
-func (e *TtEntry) increaseAge() {
-	// age is stored in the last 2 bits --> we can just increase
-	if e.Age() <= 7 {
-		e.vmeta++
-	}
-}
-
-// ///////////////////////////////////////////////////////////
-// Getter
-// ///////////////////////////////////////////////////////////
-
-func (e *TtEntry) Key() position.Key {
-	return e.key
-}
-
-func (e *TtEntry) Move() Move {
-	return Move(e.move)
-}
-
-func (e *TtEntry) Value() Value {
-	return Value(e.value)
-}
-
-func (e *TtEntry) Eval() Value {
-	return Value(e.eval)
-}
-
-func (e *TtEntry) Depth() int8 {
-	return int8((e.vmeta & depthMask) >> depthShift)
-}
-
-func (e *TtEntry) Age() int8 {
-	// last 3 bits
-	return int8(e.vmeta & ageMask)
-}
-
-func (e *TtEntry) Vtype() ValueType {
-	return ValueType((e.vmeta & vtypeMask) >> vtypeShift)
-}
