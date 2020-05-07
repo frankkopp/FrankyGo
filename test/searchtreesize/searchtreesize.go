@@ -195,20 +195,18 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// Late Move Pruning
 	Settings.Search.UseLmp = true
 
-	r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
+	Settings.Search.UseEvalTT = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "EVALTT"))
 
+	r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
 
 	Settings.Search.UseAspiration = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "ASP"))
 
+	Settings.Search.UseAspiration = false
+	Settings.Search.UsePVS = false
 	Settings.Search.UseMTDf = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "MTDf"))
-
-	Settings.Search.UseEvalTT = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "EVALTT"))
-
-	Settings.Search.UseTT = false
-	r.Tests = append(r.Tests, measure(s, sl, p, "NoTT"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////

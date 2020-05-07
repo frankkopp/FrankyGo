@@ -126,6 +126,8 @@ func (s *Search) aspirationSearch(p *position.Position, depth int, bestValue Val
 // the minimax value is found.
 // https://askeplaat.wordpress.com/534-2/mtdf-algorithm/
 func (s *Search) mtdf(p *position.Position, depth int, bestValue Value) Value {
+	trace := true
+
 	value := bestValue
 	upperbound := ValueMax
 	lowerbound := ValueMin
@@ -240,6 +242,7 @@ func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta V
 			bestNodeValue = value
 			// we have a new best move and pv[0][0] - store pv+1 tp pv
 			savePV(m, s.pv[1], s.pv[0])
+			s.statistics.BestMoveChange++
 			if value > alpha {
 				// fail high in root only when using aspiration search
 				if value >= beta {
@@ -248,7 +251,6 @@ func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta V
 				}
 				// value is < beta
 				// always the case when not using aspiration search
-				s.statistics.BestMoveChange++
 				alpha = bestNodeValue
 			}
 		}
@@ -777,9 +779,9 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 
 			// for MTDf we need to have this here to get
 			// a pv line. Is this correct at all?
-			if Settings.Search.UseMTDf {
-				savePV(move, s.pv[ply+1], s.pv[ply])
-			}
+			// if Settings.Search.UseMTDf {
+			// 	savePV(move, s.pv[ply+1], s.pv[ply])
+			// }
 
 			// Did we find a better move than in previous nodes in ply
 			// then this is our new PV and best move for this ply.
@@ -827,9 +829,10 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 				// We found a move between alpha and beta which means we
 				// really have found the best move so far in the ply which
 				// can be forced (opponent can't avoid it).
-				if !Settings.Search.UseMTDf {
-					savePV(move, s.pv[ply+1], s.pv[ply])
-				}
+				// if !Settings.Search.UseMTDf {
+				savePV(move, s.pv[ply+1], s.pv[ply])
+				// }
+
 				// We raise alpha so the successive searches in this ply
 				// need to find even better moves or dismiss the moves.
 				alpha = value
@@ -924,10 +927,9 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	}
 
 	// if in check we simply do a normal search (all moves) in qsearch
-	staticEval := ValueNA
 	if !hasCheck {
 		// get an evaluation for the position
-		staticEval = s.evaluate(p, ply)
+		staticEval = s.evaluate(p)
 		// Quiescence StandPat
 		// Use evaluation as a standing pat (lower bound)
 		// https://www.chessprogramming.org/Quiescence_Search#Standing_Pat

@@ -406,13 +406,13 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 //  IDEA in case of a severe drop of the score it is wise
 //   to allocate some more time, as the first alternative is often
 //   a bad capture, delaying the loss instead of preventing it
-func (s *Search) iterativeDeepening(position *position.Position) *Result {
+func (s *Search) iterativeDeepening(p *position.Position) *Result {
 
 	// prepare search result
 	var result *Result
 
 	// check repetition and 50 moves
-	if s.checkDrawRepAnd50(position, 2) {
+	if s.checkDrawRepAnd50(p, 2) {
 		msg := "Search called on DRAW by Repetition or 50-moves-rule"
 		s.sendInfoStringToUci(msg)
 		s.log.Warning(msg)
@@ -421,11 +421,11 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 	}
 
 	// generate all legal root moves
-	s.rootMoves = s.mg[0].GenerateLegalMoves(position, movegen.GenAll)
+	s.rootMoves = s.mg[0].GenerateLegalMoves(p, movegen.GenAll)
 
 	// check if there are legal moves - if not it's mate or stalemate
 	if s.rootMoves.Len() == 0 {
-		if position.HasCheck() {
+		if p.HasCheck() {
 			s.statistics.Checkmates++
 			msg := "Search called on a mate position"
 			s.sendInfoStringToUci(msg)
@@ -482,13 +482,13 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 		switch {
 		// ASPIRATION SEARCH
 		case config.Settings.Search.UseAspiration && iterationDepth > 3:
-			bestValue = s.aspirationSearch(position, iterationDepth, bestValue)
+			bestValue = s.aspirationSearch(p, iterationDepth, bestValue)
 		// MTD(f) SEARCH
 		case config.Settings.Search.UseMTDf && iterationDepth > 3:
-			bestValue = s.mtdf(position, iterationDepth, bestValue)
+			bestValue = s.mtdf(p, iterationDepth, bestValue)
 		// PVS SEARCH (or pure ALPHA BETA when PVS deactivated)
 		default:
-			bestValue = s.rootSearch(position, iterationDepth, alpha, beta)
+			bestValue = s.rootSearch(p, iterationDepth, alpha, beta)
 		}
 		// ###########################################
 
@@ -502,6 +502,16 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 			s.rootMoves.Sort()
 			s.statistics.CurrentBestRootMove = s.pv[0].At(0)
 			s.statistics.CurrentBestRootMoveValue = s.pv[0].At(0).ValueOf()
+
+			if config.Settings.Search.UseMTDf {
+				pvnew := moveslice.NewMoveSlice(s.pv[0].Len())
+				p.DoMove(s.pv[0].At(0))
+				s.getPVLine(p, pvnew, iterationDepth)
+				p.UndoMove()
+				pvnew.PushFront(s.pv[0].At(0))
+				s.log.Debugf("PV line: %s", pvnew.StringUci())
+			}
+
 			// update UCI GUI
 			s.sendIterationEndInfoToUci()
 		} else {
@@ -531,8 +541,8 @@ func (s *Search) iterativeDeepening(position *position.Position) *Result {
 		// we do not have a ponder move in the pv list
 		// so let's check the TT
 		if config.Settings.Search.UseTT {
-			position.DoMove(result.BestMove)
-			ttEntry := s.tt.Probe(position.ZobristKey())
+			p.DoMove(result.BestMove)
+			ttEntry := s.tt.Probe(p.ZobristKey())
 			if ttEntry != nil { // tt hit
 				s.statistics.TTHit++
 				result.PonderMove = ttEntry.Move()
