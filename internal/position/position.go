@@ -213,7 +213,8 @@ func (p *Position) DoMove(m Move) {
 	} // DEBUG
 
 	// Save state of board for undo
-	// this helps the compiler to prove that it is in bounds for the several updates we do after
+	// this tmp helps the compiler to prove that it is
+	// in bounds for the several updates we do after
 	tmpHistoryCounter := p.historyCounter
 	// update existing history entry to not create and allocate a new one
 	p.history[tmpHistoryCounter].zobristKey = p.zobristKey

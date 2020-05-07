@@ -143,6 +143,8 @@ func TestTimingTTSize(t *testing.T) {
 // NPS :  2.677.839 (evasion move gen)
 // v0.8.0 27.4.2020
 // NPS :  2.475.123.
+// v1.1.0 7.5.2020
+// NPS :  1.935.496
 func TestTiming(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
@@ -167,7 +169,7 @@ func TestTiming(t *testing.T) {
 	sl := NewSearchLimits()
 	// sl.Depth = 10
 	sl.TimeControl = true
-	sl.MoveTime = 300 * time.Second
+	sl.MoveTime = 30 * time.Second
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
 	out.Println("TT  : ", s.tt.String())

@@ -156,13 +156,14 @@ func ResolveFolder(folder string) (string, error) {
 		log.Println("Testing home")
 	}
 	dir, err = os.UserHomeDir()
-	if folderExists(filepath.Join(dir, folder)) {
-		if debug {
-			log.Println("Found relative to USER HOME")
+	if err == nil {
+		if folderExists(filepath.Join(dir, folder)) {
+			if debug {
+				log.Println("Found relative to USER HOME")
+			}
+			return filepath.Clean(filepath.Join(dir, folder)), nil
 		}
-		return filepath.Clean(filepath.Join(dir, folder)), nil
 	}
-
 	if debug {
 		log.Println("Folder not found", folder)
 	}
