@@ -329,10 +329,7 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 		s.pv = append(s.pv, moveslice.NewMoveSlice(MaxDepth+1))
 	}
 
-	s.log.Infof("Search using: PVS=%t ASP=%t MTDf=%t",
-		config.Settings.Search.UsePVS,
-		config.Settings.Search.UseAspiration,
-		config.Settings.Search.UseMTDf)
+	s.log.Infof("Search using: PVS=%t ASP=%t", config.Settings.Search.UsePVS, config.Settings.Search.UseAspiration)
 
 	// release the init phase lock to signal the calling go routine
 	// waiting in StartSearch() to return

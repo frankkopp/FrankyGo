@@ -78,10 +78,6 @@ func TestDevelopAndTest(t *testing.T) {
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 
 	config.Settings.Search.UseBook = false
-	config.Settings.Search.UsePVS = true
-	config.Settings.Search.UseAspiration = true
-	config.Settings.Search.UseMTDf = false
-	config.Settings.Search.UseEvalTT = true
 
 	s := NewSearch()
 	// "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
@@ -145,6 +141,8 @@ func TestTimingTTSize(t *testing.T) {
 // NPS :  2.475.123.
 // v1.1.0 7.5.2020
 // NPS :  1.935.496
+// v1.1.0 10.5. Asp
+// NPS :  2.181.181
 func TestTiming(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
@@ -154,11 +152,6 @@ func TestTiming(t *testing.T) {
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 
 	config.Settings.Search.UseBook = false
-	config.Settings.Search.TTSize = 512
-
-	config.Settings.Search.UsePVS = false
-	config.Settings.Search.UseAspiration = false
-	config.Settings.Search.UseMTDf = true
 
 	s := NewSearch()
 	// "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"

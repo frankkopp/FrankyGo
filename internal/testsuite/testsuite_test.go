@@ -165,9 +165,6 @@ func TestNewTestSuite(t *testing.T) {
 // Test time: 35.4837035s
 // Configuration: Search Config:
 func TestRunTestSuiteTest(t *testing.T) {
-	config.Settings.Search.UsePVS = false
-	config.Settings.Search.UseAspiration = false
-	config.Settings.Search.UseMTDf = true
 	ts, _ := NewTestSuite("test/testdata/testsets/franky_tests.epd", 3*time.Second, 0)
 	ts.RunTests()
 }
@@ -267,9 +264,6 @@ func TestZugzwangTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UsePVS = false
-	config.Settings.Search.UseAspiration = false
-	config.Settings.Search.UseMTDf = true
 	ts, _ := NewTestSuite("test/testdata/testsets/nullMoveZugZwangTest.epd", 10*time.Second, 0)
 	ts.RunTests()
 }
@@ -357,9 +351,6 @@ func TestMateTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UsePVS = false
-	config.Settings.Search.UseAspiration = false
-	config.Settings.Search.UseMTDf = true
 	ts, _ := NewTestSuite("test/testdata/testsets/mate_test_suite.epd", 15*time.Second, 0)
 	ts.RunTests()
 }
@@ -390,9 +381,6 @@ func TestWACTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UsePVS = false
-	config.Settings.Search.UseAspiration = false
-	config.Settings.Search.UseMTDf = true
 	ts, _ := NewTestSuite("test/testdata/testsets/wac.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
@@ -436,9 +424,6 @@ func TestCraftyTests(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	config.Settings.Search.UsePVS = false
-	config.Settings.Search.UseAspiration = false
-	config.Settings.Search.UseMTDf = true
 	ts, _ := NewTestSuite("test/testdata/testsets/crafty_test.epd", 5*time.Second, 0)
 	ts.RunTests()
 }
@@ -482,7 +467,6 @@ func TestECMTests(t *testing.T) {
 	}
 	config.Settings.Search.UsePVS = true
 	config.Settings.Search.UseAspiration = false
-	config.Settings.Search.UseMTDf = false
 	// Summary:
 	// EPD File:   test/testdata/testsets/ecm98.epd
 	// SearchTime: 5.000 ms
@@ -497,7 +481,6 @@ func TestECMTests(t *testing.T) {
 	ts.RunTests()
 	config.Settings.Search.UsePVS = true
 	config.Settings.Search.UseAspiration = true
-	config.Settings.Search.UseMTDf = false
 	// Summary:
 	// EPD File:   test/testdata/testsets/ecm98.epd
 	// SearchTime: 5.000 ms
@@ -510,21 +493,6 @@ func TestECMTests(t *testing.T) {
 	// Test time: 1h4m11.001542203s
 	ts1, _ := NewTestSuite("test/testdata/testsets/ecm98.epd", 5*time.Second, 0)
 	ts1.RunTests()
-	config.Settings.Search.UsePVS = false
-	config.Settings.Search.UseAspiration = false
-	config.Settings.Search.UseMTDf = true
-	// Summary:
-	// EPD File:   test/testdata/testsets/ecm98.epd
-	// SearchTime: 5.000 ms
-	// MaxDepth:   0
-	// Date:       2020-05-02 15:59:24.341412 +0200 CEST
-	// Successful: 560 (72 %)
-	// Failed:     209 (27 %)
-	// Skipped:    0   (0 %)
-	// Not tested: 0   (0 %)
-	// Test time: 1h4m11.311020444s
-	ts2, _ := NewTestSuite("test/testdata/testsets/ecm98.epd", 5*time.Second, 0)
-	ts2.RunTests()
 }
 
 func TestStressTests(t *testing.T) {

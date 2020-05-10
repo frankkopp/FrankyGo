@@ -205,7 +205,6 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	Settings.Search.UsePVS = false
 	Settings.Search.UseAspiration = false
-	Settings.Search.UseMTDf = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "MTDf"))
 
 	// TESTS
@@ -355,7 +354,6 @@ func turnOffFeatures() {
 	Settings.Search.UseIID = false
 	Settings.Search.UsePVS = false
 	Settings.Search.UseAspiration = false
-	Settings.Search.UseMTDf = false
 	Settings.Search.UseKiller = false
 	Settings.Search.UseHistoryCounter = false
 	Settings.Search.UseCounterMoves = false
