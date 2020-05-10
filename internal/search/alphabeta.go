@@ -87,8 +87,8 @@ func (s *Search) aspirationSearch(p *position.Position, depth int, bestValue Val
 			// add some extra time because of fail low
 			// we might have found a strong opponent's move
 			s.addExtraTime(1.3)
-			alpha = ValueMin
-			// alpha = Max(bestValue-aspirationSteps[i], ValueMin)
+			// if we fail low test show it is best to immediately open up the window full
+			alpha = ValueMin // alpha = Max(bestValue-aspirationSteps[i], ValueMin)
 			s.statistics.AspirationResearches++
 			s.statistics.CurrentExtraSearchDepth = 0
 		} else if value >= beta {
@@ -779,12 +779,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			bestNodeValue = value
 			bestNodeMove = move
 
-			// for MTDf we need to have this here to get
-			// a pv line. Is this correct at all?
-			// if Settings.Search.UseMTDf {
-			// 	savePV(move, s.pv[ply+1], s.pv[ply])
-			// }
-
 			// Did we find a better move than in previous nodes in ply
 			// then this is our new PV and best move for this ply.
 			// If we never find a better alpha this means all moves in
@@ -831,9 +825,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 				// We found a move between alpha and beta which means we
 				// really have found the best move so far in the ply which
 				// can be forced (opponent can't avoid it).
-				// if !Settings.Search.UseMTDf {
 				savePV(move, s.pv[ply+1], s.pv[ply])
-				// }
 
 				// We raise alpha so the successive searches in this ply
 				// need to find even better moves or dismiss the moves.
@@ -1120,11 +1112,6 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 		if value > bestNodeValue {
 			bestNodeValue = value
 			bestNodeMove = move
-			// for MTDf we need to have this here to get
-			// a pv line. Is this correct at all?
-			if Settings.Search.UseMTDf {
-				savePV(move, s.pv[ply+1], s.pv[ply])
-			}
 			if value > alpha {
 				if value >= beta {
 					s.statistics.BetaCuts++
@@ -1143,9 +1130,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 					ttType = BETA
 					break
 				}
-				if !Settings.Search.UseMTDf {
-					savePV(move, s.pv[ply+1], s.pv[ply])
-				}
+				savePV(move, s.pv[ply+1], s.pv[ply])
 				alpha = value
 				ttType = EXACT
 			}
