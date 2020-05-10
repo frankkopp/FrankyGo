@@ -43,7 +43,6 @@ import (
 	"golang.org/x/text/message"
 
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
-	"github.com/frankkopp/FrankyGo/internal/position"
 	. "github.com/frankkopp/FrankyGo/internal/types"
 	"github.com/frankkopp/FrankyGo/internal/util"
 )
@@ -134,7 +133,7 @@ func (tt *TtTable) Resize(sizeInMByte int) {
 // equal pointer to entry will be returned. Otherwise
 // nil will be returned.
 // Does not change statistics.
-func (tt *TtTable) GetEntry(key position.Key) *TtEntry {
+func (tt *TtTable) GetEntry(key Key) *TtEntry {
 	e := &tt.data[tt.hash(key)]
 	if e.key == key {
 		return e
@@ -144,7 +143,7 @@ func (tt *TtTable) GetEntry(key position.Key) *TtEntry {
 
 // Probe returns a pointer to the corresponding tt entry
 // or nil if it was not found. Decreases TtEntry.Age by 1.
-func (tt *TtTable) Probe(key position.Key) *TtEntry {
+func (tt *TtTable) Probe(key Key) *TtEntry {
 	tt.Stats.numberOfProbes++
 	e := &tt.data[tt.hash(key)]
 	if e.key == key {
@@ -157,7 +156,7 @@ func (tt *TtTable) Probe(key position.Key) *TtEntry {
 }
 
 // Put an TtEntry into the tt. Encodes value into the move.
-func (tt *TtTable) Put(key position.Key, move Move, depth int8, value Value, valueType ValueType, eval Value) {
+func (tt *TtTable) Put(key Key, move Move, depth int8, value Value, valueType ValueType, eval Value) {
 
 	// if the size of the TT = 0 we
 	// do not store anything
@@ -291,7 +290,7 @@ func (tt *TtTable) AgeEntries() {
 // ///////////////////////////////////////////////////////////
 
 // hash generates the internal hash key for the data array
-func (tt *TtTable) hash(key position.Key) uint64 {
+func (tt *TtTable) hash(key Key) uint64 {
 	return uint64(key) & tt.hashKeyMask
 }
 

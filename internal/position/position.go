@@ -64,10 +64,6 @@ const (
 	StartFen string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 )
 
-// Key is used for zobrist keys in chess positions.
-// Zobrist keys need all 64 bits for distribution
-type Key uint64
-
 // Position
 // This struct represents the chess board and its position.
 // It uses a 8x8 piece board and bitboards, a stack for undo moves, zobrist keys

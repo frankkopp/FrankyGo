@@ -27,46 +27,49 @@
 package config
 
 type evalConfiguration struct {
-	UsePawnCache  bool
-	PawnCacheSize int
 
 	// evaluation values
 	UseLazyEval       bool
-	LazyEvalThreshold int
+	LazyEvalThreshold int16
 
-	Tempo int
+	Tempo int16
 
 	UseAttacksInEval bool
 
+	UsePawnEval   bool
+	UsePawnCache  bool
+	PawnCacheSize int
+
 	UseMobility   bool
-	MobilityBonus int
+	MobilityBonus int16
 
 	UseAdvancedPieceEval bool
-	BishopPairBonus      int
-	MinorBehindPawnBonus int
-	BishopPawnMalus      int
-	BishopCenterAimBonus int
-	BishopBlockedMalus   int
-	RookOnQueenFileBonus int
-	RookOnOpenFileBonus  int
-	RookTrappedMalus     int
-	KingRingAttacksBonus int
+	BishopPairBonus      int16
+	MinorBehindPawnBonus int16
+	BishopPawnMalus      int16
+	BishopCenterAimBonus int16
+	BishopBlockedMalus   int16
+	RookOnQueenFileBonus int16
+	RookOnOpenFileBonus  int16
+	RookTrappedMalus     int16
+	KingRingAttacksBonus int16
 
 	UseKingEval       bool
-	KingDangerMalus   int
-	KingDefenderBonus int
+	KingDangerMalus   int16
+	KingDefenderBonus int16
 }
 
 // sets defaults which might be overwritten by config file.
 func init() {
-	Settings.Eval.UsePawnCache = false // not implemented yet
-	Settings.Eval.PawnCacheSize = 64   // not implemented yet
-
 	Settings.Eval.UseLazyEval = false
 	Settings.Eval.LazyEvalThreshold = 700
 
 	// evaluation value
 	Settings.Eval.Tempo = 34
+
+	Settings.Eval.UsePawnEval = true
+	Settings.Eval.UsePawnCache = true // not implemented yet
+	Settings.Eval.PawnCacheSize = 64  // not implemented yet
 
 	Settings.Eval.UseAttacksInEval = false
 

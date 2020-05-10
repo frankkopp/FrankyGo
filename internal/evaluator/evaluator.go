@@ -64,6 +64,8 @@ type Evaluator struct {
 	score Score
 
 	attacks *attacks2.Attacks
+
+	pawnCache *pawnCache
 }
 
 // to avoid object creation and memory allocation
@@ -71,21 +73,22 @@ type Evaluator struct {
 var tmpScore = Score{}
 
 // pre-computed list.
-var threshold [GamePhaseMax + 1]int
+var threshold [GamePhaseMax + 1]int16
 
 // initialize pre-computed values.
 func init() {
 	for i := 0; i <= GamePhaseMax; i++ {
 		gamePhaseFactor := float64(i) / GamePhaseMax
-		threshold[i] = Settings.Eval.LazyEvalThreshold + int(float64(Settings.Eval.LazyEvalThreshold)*gamePhaseFactor)
+		threshold[i] = Settings.Eval.LazyEvalThreshold + int16(float64(Settings.Eval.LazyEvalThreshold)*gamePhaseFactor)
 	}
 }
 
 // NewEvaluator creates a new instance of an Evaluator.
 func NewEvaluator() *Evaluator {
 	return &Evaluator{
-		log:     myLogging.GetLog(),
-		attacks: attacks2.NewAttacks(),
+		log:       myLogging.GetLog(),
+		attacks:   attacks2.NewAttacks(),
+		pawnCache: newPawnCache(),
 	}
 }
 
@@ -147,12 +150,12 @@ func (e *Evaluator) evaluate() Value {
 	// have a dedicated configurable weight to adjust and test
 
 	// Material
-	e.score.MidGameValue = int(e.position.Material(White) - e.position.Material(Black))
+	e.score.MidGameValue = int16(e.position.Material(White) - e.position.Material(Black))
 	e.score.EndGameValue = e.score.MidGameValue
 
 	// Positional values
-	e.score.MidGameValue += int(e.position.PsqMidValue(White) - e.position.PsqMidValue(Black))
-	e.score.EndGameValue += int(e.position.PsqEndValue(White) - e.position.PsqEndValue(Black))
+	e.score.MidGameValue += int16(e.position.PsqMidValue(White) - e.position.PsqMidValue(Black))
+	e.score.EndGameValue += int16(e.position.PsqEndValue(White) - e.position.PsqEndValue(Black))
 
 	// early exit
 	// arbitrary threshold - in early phases (game phase = 1.0) this is doubled
@@ -161,7 +164,7 @@ func (e *Evaluator) evaluate() Value {
 	if Settings.Eval.UseLazyEval {
 		valueFromScore := e.value()
 		th := threshold[e.position.GamePhase()]
-		value := util.Abs(int(valueFromScore))
+		value := util.Abs16(int16(valueFromScore))
 		if value > th {
 			return e.finalEval(valueFromScore)
 		}
@@ -177,18 +180,20 @@ func (e *Evaluator) evaluate() Value {
 	}
 
 	// evaluate pawns
-	// TODO
+	if Settings.Eval.UsePawnEval {
+		e.score.Add(e.evaluatePawns())
+	}
 
 	// evaluate pieces - builds attacks and mobility
 	if Settings.Eval.UseAdvancedPieceEval {
-		e.score.Add(*e.evalPiece(White, Knight))
-		e.score.Sub(*e.evalPiece(Black, Knight))
-		e.score.Add(*e.evalPiece(White, Bishop))
-		e.score.Sub(*e.evalPiece(Black, Bishop))
-		e.score.Add(*e.evalPiece(White, Rook))
-		e.score.Sub(*e.evalPiece(Black, Rook))
-		e.score.Add(*e.evalPiece(White, Queen))
-		e.score.Sub(*e.evalPiece(Black, Queen))
+		e.score.Add(e.evalPiece(White, Knight))
+		e.score.Sub(e.evalPiece(Black, Knight))
+		e.score.Add(e.evalPiece(White, Bishop))
+		e.score.Sub(e.evalPiece(Black, Bishop))
+		e.score.Add(e.evalPiece(White, Rook))
+		e.score.Sub(e.evalPiece(Black, Rook))
+		e.score.Add(e.evalPiece(White, Queen))
+		e.score.Sub(e.evalPiece(Black, Queen))
 	}
 
 	// mobility
@@ -199,8 +204,8 @@ func (e *Evaluator) evaluate() Value {
 
 	// evaluate king
 	if Settings.Eval.UseKingEval {
-		e.score.Add(*e.evalKing(White))
-		e.score.Sub(*e.evalKing(Black))
+		e.score.Add(e.evalKing(White))
+		e.score.Sub(e.evalKing(Black))
 	}
 
 	// TEMPO Bonus for the side to move (helps with evaluation alternation -
@@ -237,10 +242,10 @@ func (e *Evaluator) evalKing(c Color) *Score {
 		ourDefence := e.kingRing[us] & e.attacks.All[us]
 		// malus for difference between attacker and defender
 		if enemyAttacks > ourDefence {
-			tmpScore.MidGameValue -= (enemyAttacks.PopCount() - ourDefence.PopCount()) * Settings.Eval.KingDangerMalus
+			tmpScore.MidGameValue -= int16(enemyAttacks.PopCount()-ourDefence.PopCount()) * Settings.Eval.KingDangerMalus
 			tmpScore.EndGameValue -= tmpScore.MidGameValue
 		} else {
-			tmpScore.MidGameValue += (ourDefence.PopCount() - enemyAttacks.PopCount()) * Settings.Eval.KingDefenderBonus
+			tmpScore.MidGameValue += int16(ourDefence.PopCount()-enemyAttacks.PopCount()) * Settings.Eval.KingDefenderBonus
 			tmpScore.EndGameValue += tmpScore.MidGameValue
 		}
 
@@ -327,17 +332,17 @@ func (e *Evaluator) bishopEval(us Color, them Color, sq Square) {
 
 	// malus for pawns on same color - worse in end game
 	if SquaresBb(White).Has(sq) { // on white square
-		popCount := (e.position.PiecesBb(us, Pawn) & SquaresBb(White)).PopCount()
+		popCount := int16((e.position.PiecesBb(us, Pawn) & SquaresBb(White)).PopCount())
 		// s.MidGameValue -= 0
 		tmpScore.EndGameValue -= Settings.Eval.BishopPawnMalus * popCount
 	} else { // on black square
-		popCount := (e.position.PiecesBb(us, Pawn) & SquaresBb(Black)).PopCount()
+		popCount := int16((e.position.PiecesBb(us, Pawn) & SquaresBb(Black)).PopCount())
 		// s.MidGameValue -= 0
 		tmpScore.EndGameValue -= Settings.Eval.BishopPawnMalus * popCount
 	}
 
 	// long diagonal / seeing center
-	popCount := (GetAttacksBb(Bishop, sq, BbZero) & CenterSquares).PopCount()
+	popCount := int16((GetAttacksBb(Bishop, sq, BbZero) & CenterSquares).PopCount())
 	tmpScore.MidGameValue += Settings.Eval.BishopCenterAimBonus * popCount
 	// s.EndGameValue += 0
 
