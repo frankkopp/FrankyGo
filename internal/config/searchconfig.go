@@ -46,7 +46,6 @@ type searchConfiguration struct {
 	// main search algorithm
 	UsePVS        bool
 	UseAspiration bool // not yet implemented
-	UseMTDf       bool // not yet implemented
 
 	// Move ordering
 	UseIID            bool
@@ -104,7 +103,6 @@ func init() {
 
 	Settings.Search.UsePVS = true
 	Settings.Search.UseAspiration = false
-	Settings.Search.UseMTDf = false
 
 	Settings.Search.UseIID = true
 	Settings.Search.UseKiller = true

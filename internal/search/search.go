@@ -482,9 +482,6 @@ func (s *Search) iterativeDeepening(p *position.Position) *Result {
 		// ASPIRATION SEARCH
 		case config.Settings.Search.UseAspiration && iterationDepth > 3:
 			bestValue = s.aspirationSearch(p, iterationDepth, bestValue)
-		// MTD(f) SEARCH
-		case config.Settings.Search.UseMTDf && iterationDepth > 3:
-			bestValue = s.mtdf(p, iterationDepth, bestValue)
 		// PVS SEARCH (or pure ALPHA BETA when PVS deactivated)
 		default:
 			bestValue = s.rootSearch(p, iterationDepth, alpha, beta)
@@ -501,16 +498,6 @@ func (s *Search) iterativeDeepening(p *position.Position) *Result {
 			s.rootMoves.Sort()
 			s.statistics.CurrentBestRootMove = s.pv[0].At(0)
 			s.statistics.CurrentBestRootMoveValue = s.pv[0].At(0).ValueOf()
-
-			if config.Settings.Search.UseMTDf {
-				pvnew := moveslice.NewMoveSlice(s.pv[0].Len())
-				p.DoMove(s.pv[0].At(0))
-				s.getPVLine(p, pvnew, iterationDepth)
-				p.UndoMove()
-				pvnew.PushFront(s.pv[0].At(0))
-				s.log.Debugf("PV line: %s", pvnew.StringUci())
-			}
-
 			// update UCI GUI
 			s.sendIterationEndInfoToUci()
 		} else {

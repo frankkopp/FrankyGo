@@ -54,7 +54,6 @@ func init() {
 
 		"Use_PVS":  {NameID: "Use_PVS", HandlerFunc: usePvs, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePVS), CurrentValue: strconv.FormatBool(Settings.Search.UsePVS)},
 		"Use_ASP":  {NameID: "Use_ASP", HandlerFunc: useAsp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseAspiration), CurrentValue: strconv.FormatBool(Settings.Search.UseAspiration)},
-		"Use_MTDf": {NameID: "Use_MTDf", HandlerFunc: useMtdf, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseMTDf), CurrentValue: strconv.FormatBool(Settings.Search.UseMTDf)},
 
 		"Use_IID":         {NameID: "Use_IID", HandlerFunc: useIID, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseIID), CurrentValue: strconv.FormatBool(Settings.Search.UseIID)},
 		"Use_Killer":      {NameID: "Use_Killer", HandlerFunc: useKiller, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseKiller), CurrentValue: strconv.FormatBool(Settings.Search.UseKiller)},
@@ -97,7 +96,6 @@ func init() {
 
 		"Use_PVS",
 		"Use_ASP",
-		"Use_MTDf",
 
 		"Use_IID",
 		"Use_Killer",
@@ -285,12 +283,6 @@ func useAsp(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseAspiration = v
 	log.Debugf("Set Use Aspiration Search to %v", Settings.Search.UseAspiration)
-}
-
-func useMtdf(u *UciHandler, o *uciOption) {
-	v, _ := strconv.ParseBool(o.CurrentValue)
-	Settings.Search.UseMTDf = v
-	log.Debugf("Set Use MDTf Search to %v", Settings.Search.UseMTDf)
 }
 
 func useMdp(u *UciHandler, o *uciOption) {
