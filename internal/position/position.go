@@ -81,6 +81,10 @@ type Position struct {
 	// state variables change.
 	zobristKey Key
 
+	// we also maintain a zobrist key for all pawns to support a pawn
+	// evaluation table
+	pawnKey Key
+
 	// Board State
 	// unique chess position (exception is 3-fold repetition
 	// which is also not represented in a FEN string)
@@ -130,6 +134,7 @@ type Position struct {
 
 type historyState struct {
 	zobristKey      Key
+	pawnKey         Key
 	move            Move
 	fromPiece       Piece
 	capturedPiece   Piece
@@ -218,6 +223,7 @@ func (p *Position) DoMove(m Move) {
 	tmpHistoryCounter := p.historyCounter
 	// update existing history entry to not create and allocate a new one
 	p.history[tmpHistoryCounter].zobristKey = p.zobristKey
+	p.history[tmpHistoryCounter].pawnKey = p.pawnKey
 	p.history[tmpHistoryCounter].move = m
 	p.history[tmpHistoryCounter].fromPiece = fromPc
 	p.history[tmpHistoryCounter].capturedPiece = targetPc
@@ -302,6 +308,7 @@ func (p *Position) UndoMove() {
 	p.enPassantSquare = p.history[tmpHistoryCounter].enpassantSquare
 	p.halfMoveClock = p.history[tmpHistoryCounter].halfMoveClock
 	p.hasCheckFlag = p.history[tmpHistoryCounter].hasCheckFlag
+	p.pawnKey = p.history[tmpHistoryCounter].pawnKey
 	p.zobristKey = p.history[tmpHistoryCounter].zobristKey
 }
 
@@ -317,6 +324,7 @@ func (p *Position) DoNullMove() {
 	tmpHistoryCounter := p.historyCounter
 	// update existing history entry to not create and allocate a new one
 	p.history[tmpHistoryCounter].zobristKey = p.zobristKey
+	p.history[tmpHistoryCounter].pawnKey = p.pawnKey
 	p.history[tmpHistoryCounter].move = MoveNone
 	p.history[tmpHistoryCounter].fromPiece = PieceNone
 	p.history[tmpHistoryCounter].capturedPiece = PieceNone
@@ -353,6 +361,7 @@ func (p *Position) UndoNullMove() {
 	p.enPassantSquare = p.history[tmpHistoryCounter].enpassantSquare
 	p.halfMoveClock = p.history[tmpHistoryCounter].halfMoveClock
 	p.hasCheckFlag = p.history[tmpHistoryCounter].hasCheckFlag
+	p.pawnKey = p.history[tmpHistoryCounter].pawnKey
 	p.zobristKey = p.history[tmpHistoryCounter].zobristKey
 }
 
@@ -853,6 +862,9 @@ func (p *Position) putPiece(piece Piece, square Square) {
 	p.occupiedBb[color].PushSquare(square)
 	// zobrist
 	p.zobristKey ^= zobristBase.pieces[piece][square]
+	if pieceType == Pawn {
+		p.pawnKey ^= zobristBase.pieces[piece][square]
+	}
 	// game phase
 	p.gamePhase += pieceType.GamePhaseValue()
 	if p.gamePhase > GamePhaseMax {
@@ -879,6 +891,9 @@ func (p *Position) removePiece(square Square) Piece {
 	p.occupiedBb[color].PopSquare(square)
 	// zobrist
 	p.zobristKey ^= zobristBase.pieces[removed][square]
+	if pieceType == Pawn {
+		p.pawnKey ^= zobristBase.pieces[removed][square]
+	}
 	// game phase
 	p.gamePhase -= pieceType.GamePhaseValue()
 	if p.gamePhase < 0 {
@@ -1103,6 +1118,11 @@ func (p *Position) setupBoard(fen string) error {
 // ZobristKey returns the current zobrist key for this position
 func (p *Position) ZobristKey() Key {
 	return p.zobristKey
+}
+
+// PawnKey returns the current zobrist key all pawns for this position
+func (p *Position) PawnKey() Key {
+	return p.pawnKey
 }
 
 // NextPlayer returns the next player as Color for the position

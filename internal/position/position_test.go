@@ -136,21 +136,34 @@ func TestPositionEquality(t *testing.T) {
 }
 
 func TestPosition_DoUndoMove(t *testing.T) {
-
 	p := NewPosition()
 	startZobrist := p.ZobristKey()
+	startPawnZobrist := p.PawnKey()
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.DoMove(CreateMove(SqD7, SqD5, Normal, PtNone))
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.DoMove(CreateMove(SqE4, SqD5, Normal, PtNone))
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.DoMove(CreateMove(SqD8, SqD5, Normal, PtNone))
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.DoMove(CreateMove(SqB1, SqC3, Normal, PtNone))
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
+	logTest.Debug("")
 	p.UndoMove()
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.UndoMove()
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.UndoMove()
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.UndoMove()
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.UndoMove()
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	assert.Equal(t, StartFen, p.StringFen())
 	assert.Equal(t, startZobrist, p.ZobristKey())
+	assert.Equal(t, startPawnZobrist, p.PawnKey())
 }
 
 func TestPosition_DoMoveNormal(t *testing.T) {
@@ -596,7 +609,7 @@ func TestPosition_CheckInsufficientMaterial(t *testing.T) {
 //
 //noinspection GoUnhandledErrorResult
 func TestTimingDoUndo(t *testing.T) {
-	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
+	defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
 
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
