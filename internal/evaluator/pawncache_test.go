@@ -42,7 +42,7 @@ func TestSize(t *testing.T) {
 	assert.EqualValues(t, 16, sizeof)
 }
 
-func Test_newPawnCache(t *testing.T) {
+func TestNewPawnCache(t *testing.T) {
 	pc := newPawnCache()
 	assert.EqualValues(t, 0, pc.len())
 	assert.EqualValues(t, 0, pc.hits)
@@ -108,4 +108,15 @@ func TestPutGet(t *testing.T) {
 	assert.EqualValues(t, 0, pc.hits)
 	assert.EqualValues(t, 0, pc.misses)
 	assert.EqualValues(t, 0, pc.replace)
+}
+
+func TestPawnBitboards(t *testing.T) {
+	e := NewEvaluator()
+	p := position.NewPosition("r3k2r/1ppn3p/2q1q1nb/4P2N/2q1Pp2/B5RP/pbp2PP1/1R4K1 w kq - 0 1")
+	e.InitEval(p)
+	e.evaluatePawns()
+
+	p = position.NewPosition("1r4k1/PBP2pp1/b5rp/2Q1pP2/4p2n/2Q1Q1NB/1PPN3P/R3K2R w - - 0 1")
+	e.InitEval(p)
+	e.evaluatePawns()
 }
