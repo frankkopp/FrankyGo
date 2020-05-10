@@ -1,4 +1,3 @@
-//
 // FrankyGo - UCI chess engine in GO for learning purposes
 //
 // MIT License
@@ -41,6 +40,16 @@ type Bitboard uint64
 // square to bitboard array.
 func (sq Square) Bb() Bitboard {
 	return sqBb[sq]
+}
+
+// FileBb returns a Bitboard of the file of this square
+func (sq Square) FileBb() Bitboard {
+	return sqToFileBb[sq]
+}
+
+// RankBb returns a Bitboard of the rank of this square
+func (sq Square) RankBb() Bitboard {
+	return sqToRankBb[sq]
 }
 
 // PushSquare sets the corresponding bit of the bitboard for the square

@@ -46,10 +46,71 @@ func (e *Evaluator) evaluatePawns() *Score {
 	}
 
 	// no cache hit - calculate
-	// DEBUG
-	//  Prototype
-	tmpScore.MidGameValue = int16(e.position.PiecesBb(White, Pawn).PopCount() - e.position.PiecesBb(Black, Pawn).PopCount())
-	tmpScore.EndGameValue = tmpScore.MidGameValue
+	for c := White; c <= Black; c++ {
+
+		out.Println(c.String())
+
+		ourPawns := e.position.PiecesBb(c, Pawn)
+		theirPawns := e.position.PiecesBb(c.Flip(), Pawn)
+
+		isolated := BbZero
+		doubled := BbZero
+		passed := BbZero
+		blocked := BbZero
+		phalanx := BbZero // both pawns are counted
+		supported := BbZero
+
+		pawns := ourPawns
+		for pawns != 0 {
+			square := pawns.PopLsb()
+			neighbours := ourPawns & square.NeighbourFilesMask()
+
+			// isolated pawns
+			if neighbours == BbZero {
+				isolated |= square.Bb()
+			}
+
+			// get a mask for the forward squares
+			var rayForward Bitboard
+			if c == White {
+				rayForward = square.Ray(N)
+			} else {
+				rayForward = square.Ray(S)
+			}
+
+			// doubled pawn
+			if ourPawns&rayForward != BbZero {
+				doubled |= square.Bb()
+			}
+
+			// passed pawns - no opp pawns in front or on neighbouring
+			// files and also no own pawns in front
+			if (theirPawns&square.PassedPawnMask(c))|(ourPawns&rayForward) == BbZero {
+				passed |= square.Bb()
+			}
+
+			// blocked pawns
+			if ((ourPawns | theirPawns) & rayForward) != BbZero {
+				blocked |= square.Bb()
+			}
+
+			// pawns as neighbours in a row = phalanx
+			phalanx |= ourPawns & neighbours & square.RankBb()
+
+			// pawn as neighbours in the row forward = supported pawns
+			if ourPawns&neighbours&square.To(-c.MoveDirection()).RankBb() != BbZero {
+				supported |= square.Bb()
+			}
+		}
+
+		// out.Printf("Isolated :\n%s", isolated.StringBoard())
+		// out.Printf("Doubled  :\n%s", doubled.StringBoard())
+		// out.Printf("Passed   :\n%s", passed.StringBoard())
+		// out.Printf("Blocked  :\n%s", blocked.StringBoard())
+		// out.Printf("Phalanx  :\n%s", phalanx.StringBoard())
+		// out.Printf("Supported:\n%s", supported.StringBoard())
+
+	}
 
 	// store in cache
 	if Settings.Eval.UsePawnCache {
