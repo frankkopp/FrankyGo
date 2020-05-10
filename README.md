@@ -63,6 +63,7 @@ implemented but deactivated as they need a lot of testing and tuning.
 * Search as PVS AlphaBeta search
     * all UCI search modes 
     * Iterative Deepening
+    * Aspiration Search
     * Pondering
     * Quiescence
     * SEE for deciding on good qsearch moves
@@ -231,12 +232,12 @@ Command line options:
 ## Versions
 ### v1.1.0 (in progress)
 - TODO: 
-    - Aspiration as option
     - MTDf as option
     - Better Evaluation and testing
     - Pawn Structure Cache
     
 - DONE:
+    - Aspiration Search
     - Static evaluation values are stored in the TT separately from dynamic values
 
 ### v1.0.0 (done)

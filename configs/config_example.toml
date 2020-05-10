@@ -36,7 +36,6 @@ UsePromNonQuiet = true
 #algorithm
 UsePVS = true
 UseAspiration = false
-UseMTDf       = false
 
 # move sorting
 UseIID = true

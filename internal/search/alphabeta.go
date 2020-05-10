@@ -53,8 +53,6 @@ var trace = false
 // a start value by doing a 3 ply normal search and expand the search window in
 // in 3 steps to the maximal window if search value returns outside of the window.
 func (s *Search) aspirationSearch(p *position.Position, depth int, bestValue Value) Value {
-	trace := true
-
 	if trace {
 		s.log.Debugf("Aspiration for depth %d: START best=%d", depth, bestValue)
 	}
@@ -112,55 +110,6 @@ func (s *Search) aspirationSearch(p *position.Position, depth int, bestValue Val
 	// With a fully open search window of the last step we can accept
 	// partial searches as well. Root move values are usable and can
 	// be sorted to find the best move.
-	return value
-}
-
-// MTD(f)
-// The algorithm works by calling an AlphaBetaWithMemory search a number
-// of times with a search window of zero size. The search works by zooming
-// in on the minimax value. Each AlphaBeta call returns a bound on the
-// minimax value. The bounds are stored in upperbound and lowerbound,
-// forming an interval around the true minimax value for that search depth.
-// Plus and minus INFINITY is shorthand for values outside the range
-// of leaf values. When both the upper and the lower bound collide,
-// the minimax value is found.
-// https://askeplaat.wordpress.com/534-2/mtdf-algorithm/
-func (s *Search) mtdf(p *position.Position, depth int, bestValue Value) Value {
-	trace := true
-
-	value := bestValue
-	upperbound := ValueMax
-	lowerbound := ValueMin
-	for {
-		var beta Value
-		if value == lowerbound {
-			beta = value + 1
-		} else {
-			beta = value
-		}
-		s.statistics.MTDfSearches++
-		if trace {
-			s.log.Debugf("MTDf d=%d alpha=%d beta=%d nodes=%d", depth, beta-1, beta, s.nodesVisited)
-		}
-		value = s.rootSearch(p, depth, beta-1, beta)
-		if value < beta {
-			if trace {
-				s.log.Debugf("MTDf value %d < beta %d ==> upperbound = value", value, beta)
-			}
-			upperbound = value
-		} else {
-			if trace {
-				s.log.Debugf("MTDf value %d >= beta %d ==> lowerbound = value", value, beta)
-			}
-			lowerbound = value
-		}
-		if trace {
-			s.log.Debugf("MTDf lowerbound %d upperbound %d", lowerbound, upperbound)
-		}
-		if lowerbound >= upperbound {
-			break
-		}
-	}
 	return value
 }
 
@@ -268,7 +217,7 @@ func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta V
 	// best move or we use the best move from the previous
 	// iteration in which case we would not understand why
 	// we failed low (opponent had a good move?)
-	if Settings.Search.UseAspiration || Settings.Search.UseMTDf {
+	if Settings.Search.UseAspiration {
 		if bestNodeValue < alpha {
 			s.log.Debugf("Aspiration FAIL LOW IN ROOT value=%d", bestNodeValue)
 		}
@@ -338,9 +287,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	// this branch and return the value.
 	// Alpha or Beta entries will only be used if they improve
 	// the current values.
-	// TODO: Some engines treat the cut for alpha and beta nodes
-	//  differently for PV and non PV nodes - needs more testing
-	//  if this is relevant
 	var ttEntry *transpositiontable.TtEntry
 	if Settings.Search.UseTT {
 		ttEntry = s.tt.Probe(p.ZobristKey())
@@ -397,13 +343,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 
 		s.statistics.Razorings++
 		return s.qsearch(p, ply, alpha, beta, isPV)
-	}
-
-	// for MTDf we do not have PVS and therefore don't
-	// have non PV nodes - to use prunings we set this PVS
-	// non PV flag to false.
-	if Settings.Search.UseMTDf {
-		isPV = false
 	}
 
 	// Reverse Futility Pruning, (RFP, Static Null Move Pruning)
@@ -657,8 +596,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			// This is a typical forward pruning technique
 			// which might lead to errors.
 			// Limited Razoring / Extended FP are covered by this.
-			// TODO: needs testing and tuning
-			// TODO: Crafty excepts moves were passed pawns are far ahead.
 			if Settings.Search.UseFP && depth < 7 {
 				futilityMargin := fp[depth]
 				if staticEval+moveGain+futilityMargin <= alpha {
@@ -672,7 +609,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 
 			// LMP - Late Move Pruning
 			// aka Move Count Based Pruning
-			// TODO: dangerous needs testing and tuning
 			if Settings.Search.UseLmp {
 				if movesSearched >= LmpMovesSearched(depth) {
 					s.statistics.LmpCuts++
@@ -690,7 +626,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			// newDepth is the "standard" new depth (depth - 1)
 			// lmrDepth is set to newDepth and only reduced
 			// if conditions apply.
-			// TODO: needs testing and tuning
 			if Settings.Search.UseLmr {
 				// compute reduction from depth and move searched
 				if depth >= Settings.Search.LmrDepth &&
@@ -913,13 +848,6 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	staticEval := ValueNA
 	hasCheck := p.HasCheck()
 
-	// for MTDf we do not have PVS and therefore don't
-	// have non PV nodes - to use prunings we set this PVS
-	// non PV flag to false.
-	if Settings.Search.UseMTDf {
-		isPV = false
-	}
-
 	// if in check we simply do a normal search (all moves) in qsearch
 	if !hasCheck {
 		// get an evaluation for the position
@@ -1040,7 +968,6 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 
 		givesCheck := p.GivesCheck(move)
 
-		// TODO: Testing
 		// ///////////////////////////////////////////////////////
 		// Forward Pruning
 		// FP will only be done when the move is not
