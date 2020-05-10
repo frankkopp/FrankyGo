@@ -43,7 +43,7 @@ type Attacks struct {
 	log *logging.Logger
 
 	// the position key for which the attacks have been calculated
-	Zobrist position.Key
+	Zobrist Key
 	// bitboards of attacked/defended squares for each color and each from square
 	// to get attackers us &^ ownPieces or & ownPieces for defenders
 	From [ColorLength][SqLength]Bitboard
@@ -57,7 +57,7 @@ type Attacks struct {
 	// to get attackers us &^ ownPieces or & ownPieces for defenders
 	Piece [ColorLength][PtLength]Bitboard
 	// sum of possible moves for each color (moves to ownPieces already excluded)
-	Mobility [ColorLength]int
+	Mobility [ColorLength]int16
 	// pawn attacks - squares attacked by pawn of the given color
 	Pawns [ColorLength]Bitboard
 	// pawn double - squares which are attacked twice by pawns of the given color
@@ -141,7 +141,7 @@ func (a *Attacks) nonPawnAttacks(p *position.Position) {
 					toSq := tmp.PopLsb() // attacked square
 					a.To[c][toSq].PushSquare(psq)
 				}
-				a.Mobility[c] += (attacks &^ myPieces).PopCount()
+				a.Mobility[c] += int16((attacks &^ myPieces).PopCount())
 			}
 		}
 	}

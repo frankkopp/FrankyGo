@@ -27,7 +27,6 @@
 package transpositiontable
 
 import (
-	"github.com/frankkopp/FrankyGo/internal/position"
 	. "github.com/frankkopp/FrankyGo/internal/types"
 )
 
@@ -36,11 +35,11 @@ import (
 type TtEntry struct {
 	// struct is partially bit encoded to make it more compact
 	// and stay <= 16 byte
-	key   position.Key // 64-bit Zobrist Key
-	move  uint16       // 16-bit move part of a Move - convert with Move(e.Move)
-	eval  int16        // 16-bit evaluation value by static evaluator
-	value int16        // 16-bit value during search
-	vmeta uint16       // 16-bit depth 7-bit, vtype 2-bit, age 3-bit
+	key   Key    // 64-bit Zobrist Key
+	move  uint16 // 16-bit move part of a Move - convert with Move(e.Move)
+	eval  int16  // 16-bit evaluation value by static evaluator
+	value int16  // 16-bit value during search
+	vmeta uint16 // 16-bit depth 7-bit, vtype 2-bit, age 3-bit
 	// depth 7-bit 0-127
 	// vtype 3-bit 0-7   0=used 1=generated, not used, >1 older generation
 	// age 2-bit None, Exact, Alpha (upper), Beta (lower)
@@ -71,7 +70,7 @@ func (e *TtEntry) increaseAge() {
 	}
 }
 
-func (e *TtEntry) Key() position.Key {
+func (e *TtEntry) Key() Key {
 	return e.key
 }
 

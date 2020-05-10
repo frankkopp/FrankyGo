@@ -195,7 +195,7 @@ func TestAge(t *testing.T) {
 	startTime := time.Now()
 	for i := range tt.data {
 		tt.numberOfEntries++
-		tt.data[i].key = position.Key(i)
+		tt.data[i].key = Key(i)
 		tt.data[i].increaseAge()
 	}
 	tt.data[0].decreaseAge()
@@ -208,7 +208,7 @@ func TestAge(t *testing.T) {
 	assert.EqualValues(t, 0, tt.GetEntry(0).Age())
 	assert.EqualValues(t, 1, tt.GetEntry(1).Age())
 	assert.EqualValues(t, 1, tt.GetEntry(1_000).Age())
-	assert.EqualValues(t, 1, tt.GetEntry(position.Key(tt.maxNumberOfEntries-1)).Age())
+	assert.EqualValues(t, 1, tt.GetEntry(Key(tt.maxNumberOfEntries-1)).Age())
 
 	logTest.Debug("Aging entries")
 	tt.AgeEntries()
@@ -216,7 +216,7 @@ func TestAge(t *testing.T) {
 	assert.EqualValues(t, 0, tt.GetEntry(0).Age())
 	assert.EqualValues(t, 2, tt.GetEntry(1).Age())
 	assert.EqualValues(t, 2, tt.GetEntry(1_000).Age())
-	assert.EqualValues(t, 2, tt.GetEntry(position.Key(tt.maxNumberOfEntries-1)).Age())
+	assert.EqualValues(t, 2, tt.GetEntry(Key(tt.maxNumberOfEntries-1)).Age())
 }
 
 func TestPut(t *testing.T) {
@@ -252,7 +252,7 @@ func TestPut(t *testing.T) {
 	assert.EqualValues(t, 0, e.Age())
 
 	// test of collision
-	collisionKey := position.Key(111 + tt.maxNumberOfEntries)
+	collisionKey := Key(111 + tt.maxNumberOfEntries)
 	tt.Put(collisionKey, move, 6, Value(113), EXACT, ValueNA)
 	assert.EqualValues(t, 1, tt.Len())
 	assert.EqualValues(t, 3, tt.Stats.numberOfPuts)
@@ -268,7 +268,7 @@ func TestPut(t *testing.T) {
 	assert.EqualValues(t, 0, e.Age())
 
 	// test of collision lower depth
-	collisionKey2 := position.Key(111 + (tt.maxNumberOfEntries << 1))
+	collisionKey2 := Key(111 + (tt.maxNumberOfEntries << 1))
 	tt.Put(collisionKey2, move, 4, Value(114), BETA, ValueNA)
 	assert.EqualValues(t, 1, tt.Len())
 	assert.EqualValues(t, 4, tt.Stats.numberOfPuts)
@@ -305,16 +305,16 @@ func TestTimingTTe(t *testing.T) {
 
 	for r := 1; r <= rounds; r++ {
 		out.Printf("Round %d\n", r)
-		key := position.Key(rand.Uint64())
+		key := Key(rand.Uint64())
 		depth := int8(rand.Int31n(128))
 		value := Value(rand.Int31n(int32(ValueMax)))
 		valueType := ValueType(rand.Int31n(4))
 		start := time.Now()
 		for i := uint64(0); i < iterations; i++ {
-			tt.Put(key+position.Key(i), move, depth, value, valueType, ValueNA)
+			tt.Put(key+Key(i), move, depth, value, valueType, ValueNA)
 		}
 		for i := uint64(0); i < iterations; i++ {
-			key := key + position.Key(2*i)
+			key := key + Key(2*i)
 			_ = tt.Probe(key)
 		}
 		elapsed := time.Since(start)

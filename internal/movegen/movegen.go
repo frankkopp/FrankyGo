@@ -56,7 +56,7 @@ type Movegen struct {
 	legalMoves       *moveslice.MoveSlice
 
 	onDemandMoves          *moveslice.MoveSlice
-	currentODZobrist       position.Key
+	currentODZobrist       Key
 	onDemandEvasionTargets Bitboard
 	currentODStage         int8
 	takeIndex              int

@@ -131,6 +131,7 @@ func (s *Search) NewGame() {
 	s.StopSearch()
 	if s.tt != nil {
 		s.tt.Clear()
+		s.eval = evaluator.NewEvaluator()
 		s.history = history.NewHistory()
 	}
 }

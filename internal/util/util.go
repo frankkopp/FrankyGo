@@ -46,6 +46,12 @@ func Abs(n int) int {
 	return (n ^ y) - y
 }
 
+// Abs16 - non branching Abs function for determine the absolute value of an int16
+func Abs16(n int16) int16 {
+	y := n >> 15
+	return (n ^ y) - y
+}
+
 // Abs64 - non branching Abs function for determine the absolute value of an int64
 func Abs64(n int64) int64 {
 	y := n >> 63

@@ -71,3 +71,7 @@ const (
 	// with this maximum
 	GamePhaseMax = 24
 )
+
+// Key is used for zobrist keys in chess positions.
+// Zobrist keys need all 64 bits for distribution
+type Key uint64

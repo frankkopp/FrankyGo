@@ -234,7 +234,7 @@ func (b *Book) NumberOfEntries() int {
 }
 
 // GetEntry returns a copy of the entry with the corresponding key
-func (b *Book) GetEntry(key position.Key) (BookEntry, bool) {
+func (b *Book) GetEntry(key types.Key) (BookEntry, bool) {
 	entryPtr, ok := b.bookMap[uint64(key)]
 	if ok {
 		return entryPtr, true
