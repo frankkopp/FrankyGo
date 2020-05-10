@@ -78,21 +78,21 @@ func TestDevelopAndTest(t *testing.T) {
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 
 	config.Settings.Search.UseBook = false
-	config.Settings.Search.UseEvalTT = true
 
 	s := NewSearch()
 	// "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"
 	// rnbqkbnr/ppppp1pp/5p2/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq d3 0 2
 	// kiwipete
 	// r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -
-	p := position.NewPosition("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -")
+	// 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
+	// ASP Issue: r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq - 0 1
+	p := position.NewPosition("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq - 0 1 ")
 	sl := NewSearchLimits()
-	// sl.Depth = 10
-	sl.TimeControl = true
-	sl.MoveTime = 10 * time.Second
+	sl.Depth = 10
+	// sl.TimeControl = true
+	// sl.MoveTime = 10 * time.Second
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
-	out.Println("TT  : ", s.tt.String())
 	out.Println("NPS : ", util.Nps(s.nodesVisited, s.lastSearchResult.SearchTime))
 }
 
@@ -141,6 +141,8 @@ func TestTimingTTSize(t *testing.T) {
 // NPS :  2.475.123.
 // v1.1.0 7.5.2020
 // NPS :  1.935.496
+// v1.1.0 10.5. Asp
+// NPS :  2.181.181
 func TestTiming(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")

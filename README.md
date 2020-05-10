@@ -220,7 +220,6 @@ Command line options:
 ## Roadmap
 ### vx.x (planned)
 - TODO:
-    - Aspiration
     - MTDf
     - Better Evaluation and testing
     - Pawn Structure Cache
@@ -232,7 +231,6 @@ Command line options:
 ## Versions
 ### v1.1.0 (in progress)
 - TODO: 
-    - MTDf as option
     - Better Evaluation and testing
     - Pawn Structure Cache
     

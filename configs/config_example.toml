@@ -22,7 +22,7 @@ TTSize = 256
 UseTTMove = true
 UseTTValue = true
 UseQSTT = true
-UseEvalTT = false
+UseEvalTT = true
 
 # general search
 Ponder = true
@@ -35,7 +35,7 @@ UsePromNonQuiet = true
 
 #algorithm
 UsePVS = true
-UseAspiration = false
+UseAspiration = true
 
 # move sorting
 UseIID = true
