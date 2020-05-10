@@ -44,7 +44,7 @@ func TestSize(t *testing.T) {
 
 func Test_newPawnCache(t *testing.T) {
 	pc := newPawnCache()
-	assert.EqualValues(t, 0, pc.len)
+	assert.EqualValues(t, 0, pc.len())
 	assert.EqualValues(t, 0, pc.hits)
 	assert.EqualValues(t, 0, pc.misses)
 	assert.EqualValues(t, 0, pc.replace)
