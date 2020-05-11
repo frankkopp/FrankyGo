@@ -36,10 +36,6 @@ type evalConfiguration struct {
 
 	UseAttacksInEval bool
 
-	UsePawnEval   bool
-	UsePawnCache  bool
-	PawnCacheSize int
-
 	UseMobility   bool
 	MobilityBonus int16
 
@@ -57,6 +53,24 @@ type evalConfiguration struct {
 	UseKingEval       bool
 	KingDangerMalus   int16
 	KingDefenderBonus int16
+
+	// PAWNS
+	UsePawnEval   bool
+	UsePawnCache  bool
+	PawnCacheSize int
+
+	PawnIsolatedMidMalus  int16
+	PawnIsolatedEndMalus  int16
+	PawnDoubledMidMalus   int16
+	PawnDoubledEndMalus   int16
+	PawnPassedMidBonus    int16
+	PawnPassedEndBonus    int16
+	PawnBlockedMidMalus   int16
+	PawnBlockedEndMalus   int16
+	PawnPhalanxMidBonus   int16
+	PawnPhalanxEndBonus   int16
+	PawnSupportedMidBonus int16
+	PawnSupportedEndBonus int16
 }
 
 // sets defaults which might be overwritten by config file.
@@ -66,10 +80,6 @@ func init() {
 
 	// evaluation value
 	Settings.Eval.Tempo = 34
-
-	Settings.Eval.UsePawnEval = true
-	Settings.Eval.UsePawnCache = true // not implemented yet
-	Settings.Eval.PawnCacheSize = 64  // not implemented yet
 
 	Settings.Eval.UseAttacksInEval = false
 
@@ -91,6 +101,22 @@ func init() {
 	Settings.Eval.KingDangerMalus = 50   // number of number of attacker - defender times malus if attacker > defender
 	Settings.Eval.KingDefenderBonus = 10 // number of number of defender - attacker times bonus if attacker <= defender
 
+	Settings.Eval.UsePawnEval = true
+	Settings.Eval.UsePawnCache = true
+	Settings.Eval.PawnCacheSize = 64
+
+	Settings.Eval.PawnIsolatedMidMalus = -5
+	Settings.Eval.PawnIsolatedMidMalus = -10
+	Settings.Eval.PawnDoubledMidMalus = -5
+	Settings.Eval.PawnDoubledEndMalus = -15
+	Settings.Eval.PawnPassedMidBonus = 15
+	Settings.Eval.PawnPassedEndBonus = 30
+	Settings.Eval.PawnBlockedMidMalus = -1
+	Settings.Eval.PawnBlockedEndMalus = -10
+	Settings.Eval.PawnPhalanxMidBonus = 2
+	Settings.Eval.PawnPhalanxEndBonus = 2
+	Settings.Eval.PawnSupportedMidBonus = 5
+	Settings.Eval.PawnSupportedEndBonus = 5
 }
 
 // set defaults for configurations here in case a configuration

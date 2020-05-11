@@ -181,6 +181,7 @@ func (e *Evaluator) evaluate() Value {
 
 	// evaluate pawns
 	if Settings.Eval.UsePawnEval {
+		// white and black are handled in evaluatePawns()
 		e.score.Add(e.evaluatePawns())
 	}
 

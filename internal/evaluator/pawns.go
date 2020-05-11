@@ -47,8 +47,7 @@ func (e *Evaluator) evaluatePawns() *Score {
 
 	// no cache hit - calculate
 	for c := White; c <= Black; c++ {
-
-		out.Println(c.String())
+		// out.Println(c.String())
 
 		ourPawns := e.position.PiecesBb(c, Pawn)
 		theirPawns := e.position.PiecesBb(c.Flip(), Pawn)
@@ -104,12 +103,34 @@ func (e *Evaluator) evaluatePawns() *Score {
 		}
 
 		// out.Printf("Isolated :\n%s", isolated.StringBoard())
+		tmpMid := int16(isolated.PopCount()) * Settings.Eval.PawnIsolatedMidMalus
+		tmpEnd := int16(isolated.PopCount()) * Settings.Eval.PawnIsolatedEndMalus
 		// out.Printf("Doubled  :\n%s", doubled.StringBoard())
+		tmpMid += int16(doubled.PopCount()) * Settings.Eval.PawnDoubledMidMalus
+		tmpEnd += int16(doubled.PopCount()) * Settings.Eval.PawnDoubledEndMalus
 		// out.Printf("Passed   :\n%s", passed.StringBoard())
+		tmpMid += int16(passed.PopCount()) * Settings.Eval.PawnPassedMidBonus
+		tmpEnd += int16(passed.PopCount()) * Settings.Eval.PawnPassedEndBonus
 		// out.Printf("Blocked  :\n%s", blocked.StringBoard())
+		tmpMid += int16(blocked.PopCount()) * Settings.Eval.PawnBlockedMidMalus
+		tmpEnd += int16(blocked.PopCount()) * Settings.Eval.PawnBlockedEndMalus
 		// out.Printf("Phalanx  :\n%s", phalanx.StringBoard())
+		tmpMid += int16(phalanx.PopCount()) * Settings.Eval.PawnPhalanxMidBonus
+		tmpEnd += int16(phalanx.PopCount()) * Settings.Eval.PawnPhalanxEndBonus
 		// out.Printf("Supported:\n%s", supported.StringBoard())
+		tmpMid += int16(supported.PopCount()) * Settings.Eval.PawnSupportedMidBonus
+		tmpEnd += int16(supported.PopCount()) * Settings.Eval.PawnSupportedEndBonus
 
+		// add it to total score
+		if c == White {
+			tmpScore.MidGameValue += tmpMid
+			tmpScore.EndGameValue += tmpEnd
+		} else {
+			tmpScore.MidGameValue -= tmpMid
+			tmpScore.EndGameValue -= tmpEnd
+		}
+
+		// e.log.Debugf("Raw pawn eval for %s: mid:%d end:%d", c.String(), tmpMid, tmpEnd)
 	}
 
 	// store in cache
