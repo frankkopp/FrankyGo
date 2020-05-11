@@ -77,3 +77,41 @@ func TestEvalPiecePawns(t *testing.T) {
 	out.Printf("Pawns: %s\n", score)
 
 }
+
+func TestPawnBitboards(t *testing.T) {
+	e := NewEvaluator()
+	p := position.NewPosition("r3k2r/1ppn3p/2q1q1nb/4P2N/2q1Pp2/B5RP/pbp2PP1/1R4K1 w kq - 0 1")
+	e.InitEval(p)
+	e.evaluatePawns()
+
+	p = position.NewPosition("1r4k1/PBP2pp1/b5rp/2Q1pP2/4p2n/2Q1Q1NB/1PPN3P/R3K2R w - - 0 1")
+	e.InitEval(p)
+	e.evaluatePawns()
+}
+
+// this test does not really show reality as the cache entry will be cached in the L1 of the CPU
+// usually this would not be the case during a search and we need to test this again in real
+// world scenario.
+func Benchmark(b *testing.B) {
+	benchmarks := []struct {
+		name  string
+		cache bool
+	}{
+		{"w/o cache", false},
+		{"with cache", true},
+	}
+
+	p := position.NewPosition("r3k2r/1ppn3p/2q1q1nb/4P2N/2q1Pp2/B5RP/pbp2PP1/1R4K1 w kq - 0 1")
+	e := NewEvaluator()
+	e.InitEval(p)
+
+	for _, bm := range benchmarks {
+		Settings.Eval.UsePawnCache = bm.cache
+		b.Run(bm.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				e.evaluatePawns()
+			}
+		})
+	}
+}
+

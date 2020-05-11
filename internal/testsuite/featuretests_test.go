@@ -90,8 +90,10 @@ func TestFeatureTests(t *testing.T) {
 		config.Settings.Eval.UseLazyEval = true
 		config.Settings.Eval.LazyEvalThreshold = 700
 
-		config.Settings.Eval.UsePawnCache = false
+		config.Settings.Eval.UsePawnEval = false
+		config.Settings.Eval.UsePawnCache = true
 		config.Settings.Eval.PawnCacheSize = 64
+
 		config.Settings.Eval.UseAttacksInEval = false
 		config.Settings.Eval.UseMobility = false
 		config.Settings.Eval.MobilityBonus = 5
