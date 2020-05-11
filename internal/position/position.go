@@ -600,33 +600,43 @@ func (p *Position) HasInsufficientMaterial() bool {
 		return true
 	}
 
-	// no more pawns
-	if p.piecesBb[White][Pawn].PopCount() == 0 && p.piecesBb[Black][Pawn].PopCount() == 0 {
-		// one side has a king and a minor piece against a bare king
-		// both sides have a king and a minor piece each
-		if p.materialNonPawn[White] < 400 && p.materialNonPawn[Black] < 400 {
-			return true
-		}
-		// the weaker side has a minor piece against two knights
-		if (p.materialNonPawn[White] == 2*Knight.ValueOf() && p.materialNonPawn[Black] <= Bishop.ValueOf()) ||
-			(p.materialNonPawn[Black] == 2*Knight.ValueOf() && p.materialNonPawn[White] <= Bishop.ValueOf()) {
-			return true
-		}
-		// two bishops draw against a bishop
-		if (p.materialNonPawn[White] == 2*Bishop.ValueOf() && p.materialNonPawn[Black] == Bishop.ValueOf()) ||
-			(p.materialNonPawn[Black] == 2*Bishop.ValueOf() && p.materialNonPawn[White] == Bishop.ValueOf()) {
-			return true
-		}
-		// one side has two bishops a mate can be forced
-		if p.materialNonPawn[White] == 2*Bishop.ValueOf() || p.materialNonPawn[Black] == 2*Bishop.ValueOf() {
-			return false
-		}
-		// two minor pieces against one draw, except when the stronger side has a bishop pair
-		if (p.materialNonPawn[White] < 2*Bishop.ValueOf() && p.materialNonPawn[Black] <= Bishop.ValueOf()) ||
-			(p.materialNonPawn[White] <= Bishop.ValueOf() && p.materialNonPawn[Black] < 2*Bishop.ValueOf()) {
-			return true
-		}
+	// still a pawn, rook or a queen around
+	if p.piecesBb[White][Pawn].PopCount() != 0 ||
+		p.piecesBb[Black][Pawn].PopCount() != 0 ||
+		p.piecesBb[White][Rook].PopCount() != 0 ||
+		p.piecesBb[Black][Rook].PopCount() != 0 ||
+		p.piecesBb[White][Queen].PopCount() != 0 ||
+		p.piecesBb[Black][Queen].PopCount() != 0 {
+		return false
 	}
+
+	// no more pawns, rooks or queens
+
+	// one side has a king and a minor piece against a bare king
+	// both sides have a king and a minor piece each
+	if p.materialNonPawn[White] < 400 && p.materialNonPawn[Black] < 400 {
+		return true
+	}
+	// the weaker side has a minor piece against two knights
+	if (p.materialNonPawn[White] == 2*Knight.ValueOf() && p.materialNonPawn[Black] <= Bishop.ValueOf()) ||
+		(p.materialNonPawn[Black] == 2*Knight.ValueOf() && p.materialNonPawn[White] <= Bishop.ValueOf()) {
+		return true
+	}
+	// two bishops draw against a bishop
+	if (p.materialNonPawn[White] == 2*Bishop.ValueOf() && p.materialNonPawn[Black] == Bishop.ValueOf()) ||
+		(p.materialNonPawn[Black] == 2*Bishop.ValueOf() && p.materialNonPawn[White] == Bishop.ValueOf()) {
+		return true
+	}
+	// one side has two bishops a mate can be forced
+	if p.materialNonPawn[White] == 2*Bishop.ValueOf() || p.materialNonPawn[Black] == 2*Bishop.ValueOf() {
+		return false
+	}
+	// two minor pieces against one draw, except when the stronger side has a bishop pair
+	if (p.materialNonPawn[White] < 2*Bishop.ValueOf() && p.materialNonPawn[Black] <= Bishop.ValueOf()) ||
+		(p.materialNonPawn[White] <= Bishop.ValueOf() && p.materialNonPawn[Black] < 2*Bishop.ValueOf()) {
+		return true
+	}
+
 	return false
 }
 
