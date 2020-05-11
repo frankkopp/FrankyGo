@@ -601,6 +601,10 @@ func TestPosition_CheckInsufficientMaterial(t *testing.T) {
 	position, _ = NewPositionFen("8/8/3bk1n1/8/8/8/4K3/4N3 w - -")
 	assert.True(t, position.HasInsufficientMaterial())
 
+	// bugs
+	position, _ = NewPositionFen("8/8/8/6k1/8/4K3/8/r7 b - -")
+	assert.False(t, position.HasInsufficientMaterial())
+
 }
 
 // DoMove/UndoMove took 2.387.592.600 ns for 10.000.000 iterations with 5 do/undo pairs
