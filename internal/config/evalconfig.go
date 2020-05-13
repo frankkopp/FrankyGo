@@ -105,18 +105,18 @@ func init() {
 	Settings.Eval.UsePawnCache = true
 	Settings.Eval.PawnCacheSize = 64
 
-	Settings.Eval.PawnIsolatedMidMalus = -5
 	Settings.Eval.PawnIsolatedMidMalus = -10
-	Settings.Eval.PawnDoubledMidMalus = -5
-	Settings.Eval.PawnDoubledEndMalus = -15
-	Settings.Eval.PawnPassedMidBonus = 15
-	Settings.Eval.PawnPassedEndBonus = 30
-	Settings.Eval.PawnBlockedMidMalus = -1
-	Settings.Eval.PawnBlockedEndMalus = -10
-	Settings.Eval.PawnPhalanxMidBonus = 2
-	Settings.Eval.PawnPhalanxEndBonus = 2
-	Settings.Eval.PawnSupportedMidBonus = 5
-	Settings.Eval.PawnSupportedEndBonus = 5
+	Settings.Eval.PawnIsolatedEndMalus = -20
+	Settings.Eval.PawnDoubledMidMalus = -10
+	Settings.Eval.PawnDoubledEndMalus = -30
+	Settings.Eval.PawnPassedMidBonus = 20
+	Settings.Eval.PawnPassedEndBonus = 40
+	Settings.Eval.PawnBlockedMidMalus = -2
+	Settings.Eval.PawnBlockedEndMalus = -20
+	Settings.Eval.PawnPhalanxMidBonus = 4
+	Settings.Eval.PawnPhalanxEndBonus = 4
+	Settings.Eval.PawnSupportedMidBonus = 10
+	Settings.Eval.PawnSupportedEndBonus = 15
 }
 
 // set defaults for configurations here in case a configuration

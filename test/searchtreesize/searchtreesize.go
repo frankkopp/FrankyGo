@@ -107,105 +107,68 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	// define which special data pointer to collect
 	ptrToSpecial = &s.Statistics().Evaluations
-	ptrToSpecial2 = &s.Statistics().BetaCuts
+	ptrToSpecial2 = &s.Statistics().EvalFromTT
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
 
 	// + Quiescence
 	Settings.Search.UseQuiescence = true
+	Settings.Search.UseSEE = true
 	Settings.Search.UsePromNonQuiet = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "Base+QS"))
-
-	// + QS Standpat
 	Settings.Search.UseQSStandpat = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "Standpat"))
 
 	// + TT
 	Settings.Search.UseTT = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
-
-	// + TTValue
-	Settings.Search.UseTTValue = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
-
-	// + QS TT
 	Settings.Search.UseQSTT = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "QSTT"))
-
-	// + MDP
-	Settings.Search.UseMDP = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "MDP"))
-
-	// PVS
-	Settings.Search.UsePVS = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "PVS"))
-
-	// PVS
-	Settings.Search.UseKiller = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "Killer"))
-
+	Settings.Search.UseTTValue = true
 	Settings.Search.UseTTMove = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "TTMove"))
 
-	// IID
+	// Algorithm
+	Settings.Search.UsePVS = true
+	// Settings.Search.UseAspiration = true
+
+	// Move Sorting
 	Settings.Search.UseIID = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "BASE"))
-
+	Settings.Search.UseKiller = true
 	Settings.Search.UseHistoryCounter = true
 	Settings.Search.UseCounterMoves = true
 
-	// SEE for qsearch
-	Settings.Search.UseSEE = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "SEE"))
-
+	// Prunings
+	Settings.Search.UseMDP = true
 	Settings.Search.UseRazoring = true
-
-	// Reverse Futility
 	Settings.Search.UseRFP = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "RFP"))
-
-	// Null Move
 	Settings.Search.UseNullMove = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "NMP"))
 
 	// Extensions
 	Settings.Search.UseExt = true
 	Settings.Search.UseExtAddDepth = true
-
 	Settings.Search.UseCheckExt = true
+	Settings.Search.UseThreatExt = false
 	// r.Tests = append(r.Tests, measure(s, sl, p, "CHECK"))
-
-	// Settings.Search.UseThreatExt = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "THREAT"))
 
 	// Futility
 	Settings.Search.UseFP = true
 	Settings.Search.UseQFP = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "FP"))
-	Settings.Search.UseQFP = true
-
-	// r.Tests = append(r.Tests, measure(s, sl, p, "QFP"))
-
-	Settings.Search.UseRazoring = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "RAZOR"))
-
-	// Late Move Reduction
+	// Late Moves
 	Settings.Search.UseLmr = true
-	// Late Move Pruning
 	Settings.Search.UseLmp = true
-
-	Settings.Search.UseEvalTT = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "EVALTT"))
 
 	r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
 
-	Settings.Search.UseAspiration = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "ASP"))
+	Settings.Eval.UseLazyEval = true
+	Settings.Eval.UsePawnEval = true
+	Settings.Eval.UsePawnCache = true
+	Settings.Eval.PawnCacheSize = 32
+	Settings.Eval.UseAttacksInEval = true
+	Settings.Eval.UseMobility = true
+	Settings.Eval.UseAdvancedPieceEval = true
+	Settings.Eval.UseKingEval = true
 
-	Settings.Search.UsePVS = false
-	Settings.Search.UseAspiration = false
-	r.Tests = append(r.Tests, measure(s, sl, p, "MTDf"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "Eval"))
+
+	Settings.Search.UseEvalTT = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "EvalTT"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -369,4 +332,13 @@ func turnOffFeatures() {
 	Settings.Search.UseQFP = false
 	Settings.Search.UseLmr = false
 	Settings.Search.UseLmp = false
+
+	Settings.Eval.UseLazyEval = false
+	Settings.Eval.UsePawnEval = false
+	Settings.Eval.UsePawnCache = false
+	Settings.Eval.PawnCacheSize = 32
+	Settings.Eval.UseAttacksInEval = false
+	Settings.Eval.UseMobility = false
+	Settings.Eval.UseAdvancedPieceEval = false
+	Settings.Eval.UseKingEval = false
 }

@@ -87,7 +87,7 @@ rnbqk2r/pp2nppp/2pb4/3P4/3P1p2/2N2N2/PPP3PP/R1BQKB1R w KQkq - bm dxc6; id "Craft
 r1b2rk1/p3nppp/3b4/q1nP4/5p2/PBN2N2/1PP3PP/R1BQK2R w KQ - bm Ba2; id "Crafty Test Pos.87"; c0 "DEEP THOUGHT 0.02/MIKE VALVO  Game 2, On the Net 1988-9, move 14W (Ba2)";
 r3r1k1/p4ppp/b7/2bn4/2PN1p2/P7/B3N1PP/R1B1K2R w KQ - bm Kd2; id "Crafty Test Pos.88"; c0 "DEEP THOUGHT 0.02/MIKE VALVO  Game 2, On the Net 1988-9, move 21W (Kd2)";
 3r2k1/p4ppp/b7/2b5/2PN4/P4r2/BB1KN1nP/6R1 w - - bm Rxg2; id "Crafty Test Pos.89"; c0 "DEEP THOUGHT 0.02/MIKE VALVO  Game 2, On the Net 1988-9, move 28W (Rxg2)";
-pr4k1/p4p1p/6p1/2b5/P1PN1R2/8/BB1rN2P/2K5 w - - bm Kxd2; id "Crafty Test Pos.90"; c0 "DEEP THOUGHT 0.02/MIKE VALVO  Game 2, On the Net 1988-9, move 35W (Kxd2)";
+1r4k1/p4p1p/6p1/2b5/P1PN1R2/8/BB1rN2P/2K5 w - - bm Kxd2; id "Crafty Test Pos.90"; c0 "DEEP THOUGHT 0.02/MIKE VALVO  Game 2, On the Net 1988-9, move 35W (Kxd2)";
 8/p5kp/6p1/2bP1p2/P7/1r6/2NK3P/5R2 w - - bm h4; id "Crafty Test Pos.91"; c0 "DEEP THOUGHT 0.02/MIKE VALVO  Game 2, On the Net 1988-9, move 42W (h4)";
 r1bq1rk1/ppp1bppp/2n1pn2/3p4/3P1B2/4PN1P/PPPN1PP1/R2QKB1R w KQ - bm Be2; id "Crafty Test Pos.92"; c0 "HITECH/DEEP THOUGHT,  World CCC 1989, move 7W (Be2)";
 r1bq1rk1/pp5p/3bpnp1/2ppNp2/2PP4/4PN1P/PP2BPP1/R2Q1RK1 w - - bm a3; id "Crafty Test Pos.93"; c0 "HITECH/DEEP THOUGHT,  World CCC 1989, move 14W (a3)";

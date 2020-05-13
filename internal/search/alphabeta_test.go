@@ -86,11 +86,12 @@ func TestDevelopAndTest(t *testing.T) {
 	// r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -
 	// 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
 	// ASP Issue: r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq - 0 1
-	p := position.NewPosition("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq - 0 1 ")
+	// 8/8/8/6k1/8/4K3/8/r7 b - - 23 94
+	p := position.NewPosition("8/8/8/6k1/8/4K3/8/r7 b - - 23 94")
 	sl := NewSearchLimits()
-	sl.Depth = 10
-	// sl.TimeControl = true
-	// sl.MoveTime = 10 * time.Second
+	// sl.Depth = 11
+	sl.TimeControl = true
+	sl.MoveTime = 10 * time.Second
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
 	out.Println("NPS : ", util.Nps(s.nodesVisited, s.lastSearchResult.SearchTime))
@@ -152,8 +153,16 @@ func TestTiming(t *testing.T) {
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 
 	config.Settings.Search.UseBook = false
+
+	config.Settings.Search.UseTT = true
+	config.Settings.Search.UseEvalTT = true
+	config.Settings.Eval.UseLazyEval = true
 	config.Settings.Eval.UsePawnEval = true
 	config.Settings.Eval.UsePawnCache = true
+	config.Settings.Eval.UseAttacksInEval = true
+	config.Settings.Eval.UseMobility = true
+	config.Settings.Eval.UseAdvancedPieceEval = true
+	config.Settings.Eval.UseKingEval = true
 
 	s := NewSearch()
 	// "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/B5R1/p1p2PPP/1R4K1 b kq e3"

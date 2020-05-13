@@ -93,7 +93,7 @@ func (pc *pawnCache) resize(sizeInMByte int) {
 	// Create new slice/array - garbage collections takes care of cleanup
 	pc.data = make([]cacheEntry, pc.maxNumberOfEntries)
 
-	pc.log.Info(out.Sprintf("TT Size %d MByte, Capacity %d entries (size=%dByte) (Requested were %d MBytes)",
+	pc.log.Info(out.Sprintf("PawnCache Size %d MByte, Capacity %d entries (size=%dByte) (Requested were %d MBytes)",
 		pc.sizeInByte/MB, pc.maxNumberOfEntries, unsafe.Sizeof(cacheEntry{}), sizeInMByte))
 }
 

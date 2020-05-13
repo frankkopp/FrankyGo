@@ -138,5 +138,7 @@ func (e *Evaluator) evaluatePawns() *Score {
 		e.pawnCache.put(e.position.PawnKey(), &tmpScore)
 	}
 
+	// e.log.Debugf("Pawn Eval: %d/%d", tmpScore.MidGameValue, tmpScore.EndGameValue)
+
 	return &tmpScore
 }

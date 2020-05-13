@@ -85,11 +85,17 @@ func init() {
 
 // NewEvaluator creates a new instance of an Evaluator.
 func NewEvaluator() *Evaluator {
-	return &Evaluator{
+	e := &Evaluator{
 		log:       myLogging.GetLog(),
 		attacks:   attacks2.NewAttacks(),
-		pawnCache: newPawnCache(),
+		pawnCache: nil,
 	}
+	if Settings.Eval.UsePawnCache {
+		e.pawnCache = newPawnCache()
+	} else {
+		e.log.Info("Pawn Cache is disabled in configuration")
+	}
+	return e
 }
 
 // InitEval initializes data structures and values which are used several times
@@ -160,7 +166,7 @@ func (e *Evaluator) evaluate() Value {
 	// early exit
 	// arbitrary threshold - in early phases (game phase = 1.0) this is doubled
 	// in late phases it stands as it is
-	// threshold needs testing
+	// TODO: threshold needs testing
 	if Settings.Eval.UseLazyEval {
 		valueFromScore := e.value()
 		th := threshold[e.position.GamePhase()]
@@ -235,10 +241,11 @@ func (e *Evaluator) evalKing(c Color) *Score {
 	us := c
 	them := us.Flip()
 
-	// pawn shield is done in pawns
+	// pawn shield
+	// TODO
 
+	// king safety / attacks to the king and king ring
 	if Settings.Eval.UseAttacksInEval {
-		// king safety / attacks to the king and king ring
 		enemyAttacks := e.kingRing[us] & e.attacks.All[them]
 		ourDefence := e.kingRing[us] & e.attacks.All[us]
 		// malus for difference between attacker and defender

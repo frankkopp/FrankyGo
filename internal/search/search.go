@@ -104,7 +104,7 @@ func NewSearch() *Search {
 		isRunning:         semaphore.NewWeighted(int64(1)),
 		book:              nil,
 		tt:                nil,
-		eval:              evaluator.NewEvaluator(),
+		eval:              nil,
 		history:           history.NewHistory(),
 		lastSearchResult:  nil,
 		stopFlag:          false,
@@ -576,6 +576,9 @@ func (s *Search) initialize() {
 	} else {
 		s.log.Info("Transposition Table is disabled in configuration")
 	}
+
+	// init eval
+	s.eval = evaluator.NewEvaluator()
 }
 
 // stopConditions checks if stopFlag is set or if nodesVisited have

@@ -110,7 +110,6 @@ func (a *Attacks) Compute(p *position.Position) {
 	}
 	a.Zobrist = p.ZobristKey()
 	a.nonPawnAttacks(p)
-	// TODO safe time with pawn hash table?
 	a.pawnAttacks(p)
 }
 
