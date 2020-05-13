@@ -86,8 +86,12 @@ implemented but deactivated as they need a lot of testing and tuning.
 * Opening Book from PGN, SAN and Simple move list files and persistent cache
 * Evaluation
     * Very simple yet: Material, positional piece values
-    * Implemented but not yet tested/activated: Attacks, Mobility, Piece specific evaluations
-    * TODO: pawn evaluations and pawn hash table  
+    * Implemented but deactivated in config and need testing
+        * Lazy Evaluation
+        * Attacks and Mobility
+        * Piece specific evaluations
+        * Pawn structure evaluations 
+        * Pawn hash table  
 * Tests:   
     * Test framework to run EPD test suites
     * Test to determine search tree size for features
@@ -220,9 +224,8 @@ Command line options:
 ## Roadmap
 ### vx.x (planned)
 - TODO:
+    - Improve end game play
     - MTDf
-    - Better Evaluation and testing
-    - Pawn Structure Cache
     - MultiCut Pruning
     - Other Prunings
     - Continuously Performance/Profiling/Testing
@@ -232,9 +235,9 @@ Command line options:
 ### v1.1.0 (in progress)
 - TODO: 
     - Better Evaluation and testing
-    - Pawn Structure Cache
     
 - DONE:
+    - Pawn Structure Eval and Cache
     - Aspiration Search
     - Static evaluation values are stored in the TT separately from dynamic values
 
