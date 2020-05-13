@@ -76,10 +76,10 @@ type evalConfiguration struct {
 
 // sets defaults which might be overwritten by config file.
 func init() {
+
 	Settings.Eval.UseLazyEval = false
 	Settings.Eval.LazyEvalThreshold = 700
 
-	// evaluation value
 	Settings.Eval.Tempo = 34
 
 	Settings.Eval.UseAttacksInEval = false
@@ -103,8 +103,8 @@ func init() {
 	Settings.Eval.KingDangerMalus = 50   // number of number of attacker - defender times malus if attacker > defender
 	Settings.Eval.KingDefenderBonus = 10 // number of number of defender - attacker times bonus if attacker <= defender
 
-	Settings.Eval.UsePawnEval = true
-	Settings.Eval.UsePawnCache = true
+	Settings.Eval.UsePawnEval = false
+	Settings.Eval.UsePawnCache = false
 	Settings.Eval.PawnCacheSize = 64
 
 	Settings.Eval.PawnIsolatedMidMalus = -10

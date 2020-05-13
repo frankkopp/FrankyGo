@@ -168,7 +168,6 @@ func (e *Evaluator) evaluate() Value {
 	// early exit
 	// arbitrary threshold - in early phases (game phase = 1.0) this is doubled
 	// in late phases it stands as it is
-	// TODO: threshold needs testing
 	if Settings.Eval.UseLazyEval {
 		valueFromScore := e.value()
 		th := threshold[e.position.GamePhase()]

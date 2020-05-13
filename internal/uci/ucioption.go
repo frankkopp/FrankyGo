@@ -74,15 +74,12 @@ func init() {
 		"Use_CheckExt":    {NameID: "Use_CheckExt", HandlerFunc: useCheckExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseCheckExt), CurrentValue: strconv.FormatBool(Settings.Search.UseCheckExt)},
 		"Use_ThreatExt":   {NameID: "Use_ThreatExt", HandlerFunc: useThreatExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseThreatExt), CurrentValue: strconv.FormatBool(Settings.Search.UseThreatExt)},
 
-		"Eval_Lazy": {NameID: "Eval_Lazy", HandlerFunc: evalLazy, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseLazyEval), CurrentValue: strconv.FormatBool(Settings.Eval.UseLazyEval)},
-
+		"Eval_Lazy":          {NameID: "Eval_Lazy", HandlerFunc: evalLazy, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseLazyEval), CurrentValue: strconv.FormatBool(Settings.Eval.UseLazyEval)},
 		"Eval_Pawns":         {NameID: "Eval_Pawns", HandlerFunc: evalPawns, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UsePawnEval), CurrentValue: strconv.FormatBool(Settings.Eval.UsePawnEval)},
 		"Eval_PawnCache":     {NameID: "Eval_PawnCache", HandlerFunc: evalPawnCache, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UsePawnCache), CurrentValue: strconv.FormatBool(Settings.Eval.UsePawnCache)},
 		"Eval_PawnCacheSize": {NameID: "Eval_PawnCacheSize", HandlerFunc: pawnCacheSize, OptionType: Spin, DefaultValue: strconv.Itoa(Settings.Eval.PawnCacheSize), CurrentValue: strconv.Itoa(Settings.Eval.PawnCacheSize), MinValue: "0", MaxValue: "1024"},
-
-		"Eval_Mobility": {NameID: "Eval_Mobility", HandlerFunc: evalMob, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseMobility), CurrentValue: strconv.FormatBool(Settings.Eval.UseMobility)},
-
-		"Eval_AdvPiece": {NameID: "Eval_AdvPiece", HandlerFunc: evalAdv, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseAdvancedPieceEval), CurrentValue: strconv.FormatBool(Settings.Eval.UseAdvancedPieceEval)},
+		"Eval_Mobility":      {NameID: "Eval_Mobility", HandlerFunc: evalMob, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseMobility), CurrentValue: strconv.FormatBool(Settings.Eval.UseMobility)},
+		"Eval_AdvPiece":      {NameID: "Eval_AdvPiece", HandlerFunc: evalAdv, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseAdvancedPieceEval), CurrentValue: strconv.FormatBool(Settings.Eval.UseAdvancedPieceEval)},
 	}
 
 	// as Go does not let us sort maps manually (e.g. insertion order) we need a
