@@ -92,7 +92,7 @@ func TestProcessingEmpty(t *testing.T) {
 	assert.True(t, ok)
 	assert.EqualValues(t, entry.ZobristKey, startPos.ZobristKey())
 
-	entry, ok = book.GetEntry(position.Key(1234))
+	entry, ok = book.GetEntry(Key(1234))
 	assert.False(t, ok)
 	assert.True(t, entry.ZobristKey == 0)
 }
@@ -154,7 +154,7 @@ func TestProcessingSimple(t *testing.T) {
 	assert.Equal(t, 24_350, entry.Counter)
 
 	for _, p := range entry.Moves {
-		ne, _ := book.GetEntry(position.Key(p.NextEntry))
+		ne, _ := book.GetEntry(Key(p.NextEntry))
 		out.Printf("%s ==> %#v (%d)\n", Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter)
 	}
 }
@@ -186,7 +186,7 @@ func TestProcessingSANSmall(t *testing.T) {
 	assert.Equal(t, 94, entry.Counter)
 
 	for _, p := range entry.Moves {
-		ne, _ := book.GetEntry(position.Key(p.NextEntry))
+		ne, _ := book.GetEntry(Key(p.NextEntry))
 		out.Printf("%s ==> %#v (%d)\n", Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter)
 	}
 }
@@ -218,7 +218,7 @@ func TestProcessingPGNSmall(t *testing.T) {
 	assert.Equal(t, 12, entry.Counter)
 
 	for _, p := range entry.Moves {
-		ne, _ := book.GetEntry(position.Key(p.NextEntry))
+		ne, _ := book.GetEntry(Key(p.NextEntry))
 		out.Printf("%s ==> %#v (%d)\n", Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter)
 	}
 }
@@ -257,7 +257,7 @@ func TestProcessingPGNLarge(t *testing.T) {
 	assert.Equal(t, 89_615, entry.Counter)
 
 	for _, p := range entry.Moves {
-		ne, _ := book.GetEntry(position.Key(p.NextEntry))
+		ne, _ := book.GetEntry(Key(p.NextEntry))
 		out.Printf("%s ==> %#v (%d)\n", Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter)
 	}
 }
@@ -297,7 +297,7 @@ func TestProcessingPGNCacheSmall(t *testing.T) {
 	assert.Equal(t, 12, entry.Counter)
 
 	for _, p := range entry.Moves {
-		ne, _ := book.GetEntry(position.Key(p.NextEntry))
+		ne, _ := book.GetEntry(Key(p.NextEntry))
 		out.Printf("%s ==> %#v (%d)\n", Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter)
 	}
 }
@@ -329,7 +329,7 @@ func TestProcessingPGNCacheLarge(t *testing.T) {
 	assert.Equal(t, 190_775, entry.Counter)
 
 	for _, p := range entry.Moves {
-		ne, _ := book.GetEntry(position.Key(p.NextEntry))
+		ne, _ := book.GetEntry(Key(p.NextEntry))
 		out.Printf("%s ==> %#v (%d)\n", Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter)
 	}
 

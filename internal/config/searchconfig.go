@@ -102,7 +102,7 @@ func init() {
 	Settings.Search.UsePromNonQuiet = true
 
 	Settings.Search.UsePVS = true
-	Settings.Search.UseAspiration = true
+	Settings.Search.UseAspiration = false
 
 	Settings.Search.UseIID = true
 	Settings.Search.UseKiller = true

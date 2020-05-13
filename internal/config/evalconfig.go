@@ -27,45 +27,59 @@
 package config
 
 type evalConfiguration struct {
-	UsePawnCache  bool
-	PawnCacheSize int
 
 	// evaluation values
 	UseLazyEval       bool
-	LazyEvalThreshold int
+	LazyEvalThreshold int16
 
-	Tempo int
+	Tempo int16
 
 	UseAttacksInEval bool
 
 	UseMobility   bool
-	MobilityBonus int
+	MobilityBonus int16
 
 	UseAdvancedPieceEval bool
-	BishopPairBonus      int
-	MinorBehindPawnBonus int
-	BishopPawnMalus      int
-	BishopCenterAimBonus int
-	BishopBlockedMalus   int
-	RookOnQueenFileBonus int
-	RookOnOpenFileBonus  int
-	RookTrappedMalus     int
-	KingRingAttacksBonus int
+	BishopPairBonus      int16
+	MinorBehindPawnBonus int16
+	BishopPawnMalus      int16
+	BishopCenterAimBonus int16
+	BishopBlockedMalus   int16
+	RookOnQueenFileBonus int16
+	RookOnOpenFileBonus  int16
+	RookTrappedMalus     int16
+	KingRingAttacksBonus int16
 
-	UseKingEval       bool
-	KingDangerMalus   int
-	KingDefenderBonus int
+	UseKingEval               bool
+	KingCastlePawnShieldBonus int16
+	KingDangerMalus           int16
+	KingDefenderBonus         int16
+
+	// PAWNS
+	UsePawnEval   bool
+	UsePawnCache  bool
+	PawnCacheSize int
+
+	PawnIsolatedMidMalus  int16
+	PawnIsolatedEndMalus  int16
+	PawnDoubledMidMalus   int16
+	PawnDoubledEndMalus   int16
+	PawnPassedMidBonus    int16
+	PawnPassedEndBonus    int16
+	PawnBlockedMidMalus   int16
+	PawnBlockedEndMalus   int16
+	PawnPhalanxMidBonus   int16
+	PawnPhalanxEndBonus   int16
+	PawnSupportedMidBonus int16
+	PawnSupportedEndBonus int16
 }
 
 // sets defaults which might be overwritten by config file.
 func init() {
-	Settings.Eval.UsePawnCache = false // not implemented yet
-	Settings.Eval.PawnCacheSize = 64   // not implemented yet
 
 	Settings.Eval.UseLazyEval = false
 	Settings.Eval.LazyEvalThreshold = 700
 
-	// evaluation value
 	Settings.Eval.Tempo = 34
 
 	Settings.Eval.UseAttacksInEval = false
@@ -74,6 +88,7 @@ func init() {
 	Settings.Eval.MobilityBonus = 5 // per piece and attacked square
 
 	Settings.Eval.UseAdvancedPieceEval = false
+	Settings.Eval.KingCastlePawnShieldBonus = 15
 	Settings.Eval.KingRingAttacksBonus = 10 // per piece and attacked king ring square
 	Settings.Eval.MinorBehindPawnBonus = 15 // per piece and times game phase
 	Settings.Eval.BishopPairBonus = 20      // once
@@ -88,6 +103,22 @@ func init() {
 	Settings.Eval.KingDangerMalus = 50   // number of number of attacker - defender times malus if attacker > defender
 	Settings.Eval.KingDefenderBonus = 10 // number of number of defender - attacker times bonus if attacker <= defender
 
+	Settings.Eval.UsePawnEval = false
+	Settings.Eval.UsePawnCache = false
+	Settings.Eval.PawnCacheSize = 64
+
+	Settings.Eval.PawnIsolatedMidMalus = -10
+	Settings.Eval.PawnIsolatedEndMalus = -20
+	Settings.Eval.PawnDoubledMidMalus = -10
+	Settings.Eval.PawnDoubledEndMalus = -30
+	Settings.Eval.PawnPassedMidBonus = 20
+	Settings.Eval.PawnPassedEndBonus = 40
+	Settings.Eval.PawnBlockedMidMalus = -2
+	Settings.Eval.PawnBlockedEndMalus = -20
+	Settings.Eval.PawnPhalanxMidBonus = 4
+	Settings.Eval.PawnPhalanxEndBonus = 4
+	Settings.Eval.PawnSupportedMidBonus = 10
+	Settings.Eval.PawnSupportedEndBonus = 15
 }
 
 // set defaults for configurations here in case a configuration

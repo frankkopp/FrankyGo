@@ -32,20 +32,20 @@ import (
 
 // Score is a small struct for mid game and end game values
 type Score struct {
-	MidGameValue int
-	EndGameValue int
+	MidGameValue int16
+	EndGameValue int16
 }
 
 // Add adds the corresponding parts of the given score to the
 // calling score
-func (s *Score) Add(a Score) {
+func (s *Score) Add(a *Score) {
 	s.MidGameValue += a.MidGameValue
 	s.EndGameValue += a.EndGameValue
 }
 
 // Sub subtracts the corresponding parts of the given score from the
 // calling score
-func (s *Score) Sub(a Score) {
+func (s *Score) Sub(a *Score) {
 	s.MidGameValue -= a.MidGameValue
 	s.EndGameValue -= a.EndGameValue
 }

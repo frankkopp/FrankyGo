@@ -34,6 +34,7 @@ import (
 	"time"
 
 	logging2 "github.com/op/go-logging"
+	"github.com/pkg/profile"
 	"github.com/stretchr/testify/assert"
 
 	. "github.com/frankkopp/FrankyGo/internal/config"
@@ -337,19 +338,27 @@ func TestMirroredZeroEval(t *testing.T) {
 // }
 
 func TestTimingEval(t *testing.T) {
-	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
+	defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
 	// go tool pprof -http :8080 ./main ./prof.null/cpu.pprof
 
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
 
+	Settings.Eval.UseLazyEval = true
+	Settings.Eval.UsePawnEval = true
+	Settings.Eval.UsePawnCache = true
+	Settings.Eval.UseAttacksInEval = false
+	Settings.Eval.UseMobility = true
+	Settings.Eval.UseAdvancedPieceEval = true
+	Settings.Eval.UseKingEval = true
+
 	p := position.NewPosition("r1b1k2r/pppp1ppp/2n2n2/1Bb1p2q/4P3/2NP1N2/1PP2PPP/R1BQK2R w KQkq -")
 	e := NewEvaluator()
 	result := Value(0)
 
 	const rounds = 5
-	const iterations uint64 = 10_000_000
+	const iterations uint64 = 50_000_000
 
 	for r := 1; r <= rounds; r++ {
 		out.Printf("Round %d\n", r)
@@ -363,4 +372,20 @@ func TestTimingEval(t *testing.T) {
 		out.Printf("Iterations per sec %d\n", int64(iterations*1e9)/elapsed.Nanoseconds())
 	}
 	_ = result
+}
+
+func TestDevelopDebug(t *testing.T) {
+	Settings.Eval.UseLazyEval = true
+	Settings.Eval.UsePawnEval = true
+	Settings.Eval.UsePawnCache = true
+	Settings.Eval.UseAttacksInEval = true
+	Settings.Eval.UseMobility = true
+	Settings.Eval.UseAdvancedPieceEval = true
+	Settings.Eval.UseKingEval = true
+
+	p := position.NewPosition("rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2 ")
+	e := NewEvaluator()
+	e.InitEval(p)
+	v := e.evaluate()
+	out.Println("Value: ", v)
 }

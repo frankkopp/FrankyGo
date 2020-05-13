@@ -64,10 +64,6 @@ const (
 	StartFen string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 )
 
-// Key is used for zobrist keys in chess positions.
-// Zobrist keys need all 64 bits for distribution
-type Key uint64
-
 // Position
 // This struct represents the chess board and its position.
 // It uses a 8x8 piece board and bitboards, a stack for undo moves, zobrist keys
@@ -80,6 +76,10 @@ type Position struct {
 	// The zobrist key will be updated incrementally every time one of the the
 	// state variables change.
 	zobristKey Key
+
+	// we also maintain a zobrist key for all pawns to support a pawn
+	// evaluation table
+	pawnKey Key
 
 	// Board State
 	// unique chess position (exception is 3-fold repetition
@@ -130,6 +130,7 @@ type Position struct {
 
 type historyState struct {
 	zobristKey      Key
+	pawnKey         Key
 	move            Move
 	fromPiece       Piece
 	capturedPiece   Piece
@@ -218,6 +219,7 @@ func (p *Position) DoMove(m Move) {
 	tmpHistoryCounter := p.historyCounter
 	// update existing history entry to not create and allocate a new one
 	p.history[tmpHistoryCounter].zobristKey = p.zobristKey
+	p.history[tmpHistoryCounter].pawnKey = p.pawnKey
 	p.history[tmpHistoryCounter].move = m
 	p.history[tmpHistoryCounter].fromPiece = fromPc
 	p.history[tmpHistoryCounter].capturedPiece = targetPc
@@ -302,6 +304,7 @@ func (p *Position) UndoMove() {
 	p.enPassantSquare = p.history[tmpHistoryCounter].enpassantSquare
 	p.halfMoveClock = p.history[tmpHistoryCounter].halfMoveClock
 	p.hasCheckFlag = p.history[tmpHistoryCounter].hasCheckFlag
+	p.pawnKey = p.history[tmpHistoryCounter].pawnKey
 	p.zobristKey = p.history[tmpHistoryCounter].zobristKey
 }
 
@@ -317,6 +320,7 @@ func (p *Position) DoNullMove() {
 	tmpHistoryCounter := p.historyCounter
 	// update existing history entry to not create and allocate a new one
 	p.history[tmpHistoryCounter].zobristKey = p.zobristKey
+	p.history[tmpHistoryCounter].pawnKey = p.pawnKey
 	p.history[tmpHistoryCounter].move = MoveNone
 	p.history[tmpHistoryCounter].fromPiece = PieceNone
 	p.history[tmpHistoryCounter].capturedPiece = PieceNone
@@ -353,6 +357,7 @@ func (p *Position) UndoNullMove() {
 	p.enPassantSquare = p.history[tmpHistoryCounter].enpassantSquare
 	p.halfMoveClock = p.history[tmpHistoryCounter].halfMoveClock
 	p.hasCheckFlag = p.history[tmpHistoryCounter].hasCheckFlag
+	p.pawnKey = p.history[tmpHistoryCounter].pawnKey
 	p.zobristKey = p.history[tmpHistoryCounter].zobristKey
 }
 
@@ -595,33 +600,43 @@ func (p *Position) HasInsufficientMaterial() bool {
 		return true
 	}
 
-	// no more pawns
-	if p.piecesBb[White][Pawn].PopCount() == 0 && p.piecesBb[Black][Pawn].PopCount() == 0 {
-		// one side has a king and a minor piece against a bare king
-		// both sides have a king and a minor piece each
-		if p.materialNonPawn[White] < 400 && p.materialNonPawn[Black] < 400 {
-			return true
-		}
-		// the weaker side has a minor piece against two knights
-		if (p.materialNonPawn[White] == 2*Knight.ValueOf() && p.materialNonPawn[Black] <= Bishop.ValueOf()) ||
-			(p.materialNonPawn[Black] == 2*Knight.ValueOf() && p.materialNonPawn[White] <= Bishop.ValueOf()) {
-			return true
-		}
-		// two bishops draw against a bishop
-		if (p.materialNonPawn[White] == 2*Bishop.ValueOf() && p.materialNonPawn[Black] == Bishop.ValueOf()) ||
-			(p.materialNonPawn[Black] == 2*Bishop.ValueOf() && p.materialNonPawn[White] == Bishop.ValueOf()) {
-			return true
-		}
-		// one side has two bishops a mate can be forced
-		if p.materialNonPawn[White] == 2*Bishop.ValueOf() || p.materialNonPawn[Black] == 2*Bishop.ValueOf() {
-			return false
-		}
-		// two minor pieces against one draw, except when the stronger side has a bishop pair
-		if (p.materialNonPawn[White] < 2*Bishop.ValueOf() && p.materialNonPawn[Black] <= Bishop.ValueOf()) ||
-			(p.materialNonPawn[White] <= Bishop.ValueOf() && p.materialNonPawn[Black] < 2*Bishop.ValueOf()) {
-			return true
-		}
+	// still a pawn, rook or a queen around
+	if p.piecesBb[White][Pawn].PopCount() != 0 ||
+		p.piecesBb[Black][Pawn].PopCount() != 0 ||
+		p.piecesBb[White][Rook].PopCount() != 0 ||
+		p.piecesBb[Black][Rook].PopCount() != 0 ||
+		p.piecesBb[White][Queen].PopCount() != 0 ||
+		p.piecesBb[Black][Queen].PopCount() != 0 {
+		return false
 	}
+
+	// no more pawns, rooks or queens
+
+	// one side has a king and a minor piece against a bare king
+	// both sides have a king and a minor piece each
+	if p.materialNonPawn[White] < 400 && p.materialNonPawn[Black] < 400 {
+		return true
+	}
+	// the weaker side has a minor piece against two knights
+	if (p.materialNonPawn[White] == 2*Knight.ValueOf() && p.materialNonPawn[Black] <= Bishop.ValueOf()) ||
+		(p.materialNonPawn[Black] == 2*Knight.ValueOf() && p.materialNonPawn[White] <= Bishop.ValueOf()) {
+		return true
+	}
+	// two bishops draw against a bishop
+	if (p.materialNonPawn[White] == 2*Bishop.ValueOf() && p.materialNonPawn[Black] == Bishop.ValueOf()) ||
+		(p.materialNonPawn[Black] == 2*Bishop.ValueOf() && p.materialNonPawn[White] == Bishop.ValueOf()) {
+		return true
+	}
+	// one side has two bishops a mate can be forced
+	if p.materialNonPawn[White] == 2*Bishop.ValueOf() || p.materialNonPawn[Black] == 2*Bishop.ValueOf() {
+		return false
+	}
+	// two minor pieces against one draw, except when the stronger side has a bishop pair
+	if (p.materialNonPawn[White] < 2*Bishop.ValueOf() && p.materialNonPawn[Black] <= Bishop.ValueOf()) ||
+		(p.materialNonPawn[White] <= Bishop.ValueOf() && p.materialNonPawn[Black] < 2*Bishop.ValueOf()) {
+		return true
+	}
+
 	return false
 }
 
@@ -853,6 +868,9 @@ func (p *Position) putPiece(piece Piece, square Square) {
 	p.occupiedBb[color].PushSquare(square)
 	// zobrist
 	p.zobristKey ^= zobristBase.pieces[piece][square]
+	if pieceType == Pawn {
+		p.pawnKey ^= zobristBase.pieces[piece][square]
+	}
 	// game phase
 	p.gamePhase += pieceType.GamePhaseValue()
 	if p.gamePhase > GamePhaseMax {
@@ -879,6 +897,9 @@ func (p *Position) removePiece(square Square) Piece {
 	p.occupiedBb[color].PopSquare(square)
 	// zobrist
 	p.zobristKey ^= zobristBase.pieces[removed][square]
+	if pieceType == Pawn {
+		p.pawnKey ^= zobristBase.pieces[removed][square]
+	}
 	// game phase
 	p.gamePhase -= pieceType.GamePhaseValue()
 	if p.gamePhase < 0 {
@@ -1103,6 +1124,11 @@ func (p *Position) setupBoard(fen string) error {
 // ZobristKey returns the current zobrist key for this position
 func (p *Position) ZobristKey() Key {
 	return p.zobristKey
+}
+
+// PawnKey returns the current zobrist key all pawns for this position
+func (p *Position) PawnKey() Key {
+	return p.pawnKey
 }
 
 // NextPlayer returns the next player as Color for the position

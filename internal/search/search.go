@@ -104,7 +104,7 @@ func NewSearch() *Search {
 		isRunning:         semaphore.NewWeighted(int64(1)),
 		book:              nil,
 		tt:                nil,
-		eval:              evaluator.NewEvaluator(),
+		eval:              nil,
 		history:           history.NewHistory(),
 		lastSearchResult:  nil,
 		stopFlag:          false,
@@ -131,6 +131,7 @@ func (s *Search) NewGame() {
 	s.StopSearch()
 	if s.tt != nil {
 		s.tt.Clear()
+		s.eval = evaluator.NewEvaluator()
 		s.history = history.NewHistory()
 	}
 }
@@ -574,6 +575,11 @@ func (s *Search) initialize() {
 		}
 	} else {
 		s.log.Info("Transposition Table is disabled in configuration")
+	}
+
+	// init eval
+	if s.eval == nil {
+		s.eval = evaluator.NewEvaluator()
 	}
 }
 

@@ -136,21 +136,34 @@ func TestPositionEquality(t *testing.T) {
 }
 
 func TestPosition_DoUndoMove(t *testing.T) {
-
 	p := NewPosition()
 	startZobrist := p.ZobristKey()
+	startPawnZobrist := p.PawnKey()
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.DoMove(CreateMove(SqD7, SqD5, Normal, PtNone))
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.DoMove(CreateMove(SqE4, SqD5, Normal, PtNone))
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.DoMove(CreateMove(SqD8, SqD5, Normal, PtNone))
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.DoMove(CreateMove(SqB1, SqC3, Normal, PtNone))
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
+	logTest.Debug("")
 	p.UndoMove()
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.UndoMove()
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.UndoMove()
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.UndoMove()
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.UndoMove()
+	logTest.Debugf("PawnKey: %d", p.PawnKey())
 	assert.Equal(t, StartFen, p.StringFen())
 	assert.Equal(t, startZobrist, p.ZobristKey())
+	assert.Equal(t, startPawnZobrist, p.PawnKey())
 }
 
 func TestPosition_DoMoveNormal(t *testing.T) {
@@ -588,6 +601,10 @@ func TestPosition_CheckInsufficientMaterial(t *testing.T) {
 	position, _ = NewPositionFen("8/8/3bk1n1/8/8/8/4K3/4N3 w - -")
 	assert.True(t, position.HasInsufficientMaterial())
 
+	// bugs
+	position, _ = NewPositionFen("8/8/8/6k1/8/4K3/8/r7 b - -")
+	assert.False(t, position.HasInsufficientMaterial())
+
 }
 
 // DoMove/UndoMove took 2.387.592.600 ns for 10.000.000 iterations with 5 do/undo pairs
@@ -596,7 +613,7 @@ func TestPosition_CheckInsufficientMaterial(t *testing.T) {
 //
 //noinspection GoUnhandledErrorResult
 func TestTimingDoUndo(t *testing.T) {
-	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("../bin")).Stop()
+	defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
 
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
