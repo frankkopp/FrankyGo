@@ -348,7 +348,7 @@ func TestTimingEval(t *testing.T) {
 	Settings.Eval.UseLazyEval = true
 	Settings.Eval.UsePawnEval = true
 	Settings.Eval.UsePawnCache = true
-	Settings.Eval.UseAttacksInEval = true
+	Settings.Eval.UseAttacksInEval = false
 	Settings.Eval.UseMobility = true
 	Settings.Eval.UseAdvancedPieceEval = true
 	Settings.Eval.UseKingEval = true
@@ -375,15 +375,15 @@ func TestTimingEval(t *testing.T) {
 }
 
 func TestDevelopDebug(t *testing.T) {
-	Settings.Eval.UseLazyEval = false
+	Settings.Eval.UseLazyEval = true
 	Settings.Eval.UsePawnEval = true
 	Settings.Eval.UsePawnCache = true
 	Settings.Eval.UseAttacksInEval = true
-	Settings.Eval.UseMobility = false
-	Settings.Eval.UseAdvancedPieceEval = false
-	Settings.Eval.UseKingEval = false
+	Settings.Eval.UseMobility = true
+	Settings.Eval.UseAdvancedPieceEval = true
+	Settings.Eval.UseKingEval = true
 
-	p := position.NewPosition("8/8/8/6k1/8/4K3/8/r7 b - -")
+	p := position.NewPosition("rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2 ")
 	e := NewEvaluator()
 	e.InitEval(p)
 	v := e.evaluate()

@@ -50,9 +50,10 @@ type evalConfiguration struct {
 	RookTrappedMalus     int16
 	KingRingAttacksBonus int16
 
-	UseKingEval       bool
-	KingDangerMalus   int16
-	KingDefenderBonus int16
+	UseKingEval               bool
+	KingCastlePawnShieldBonus int16
+	KingDangerMalus           int16
+	KingDefenderBonus         int16
 
 	// PAWNS
 	UsePawnEval   bool
@@ -87,6 +88,7 @@ func init() {
 	Settings.Eval.MobilityBonus = 5 // per piece and attacked square
 
 	Settings.Eval.UseAdvancedPieceEval = false
+	Settings.Eval.KingCastlePawnShieldBonus = 15
 	Settings.Eval.KingRingAttacksBonus = 10 // per piece and attacked king ring square
 	Settings.Eval.MinorBehindPawnBonus = 15 // per piece and times game phase
 	Settings.Eval.BishopPairBonus = 20      // once

@@ -578,7 +578,9 @@ func (s *Search) initialize() {
 	}
 
 	// init eval
-	s.eval = evaluator.NewEvaluator()
+	if s.eval == nil {
+		s.eval = evaluator.NewEvaluator()
+	}
 }
 
 // stopConditions checks if stopFlag is set or if nodesVisited have
