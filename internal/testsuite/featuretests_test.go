@@ -39,7 +39,7 @@ func TestFeatureTests(t *testing.T) {
 	}
 
 	// setup tests
-	searchTime := 2000 * time.Millisecond
+	searchTime := 200 * time.Millisecond
 	searchDepth := 0
 
 	// Feature Settings
@@ -86,35 +86,22 @@ func TestFeatureTests(t *testing.T) {
 		config.Settings.Search.LmrMovesSearched = 3
 		config.Settings.Search.UseLmp = true
 
-		config.Settings.Eval.Tempo = 34
+		// Evaluation
+		config.Settings.Search.UseEvalTT = true
 		config.Settings.Eval.UseLazyEval = true
 		config.Settings.Eval.LazyEvalThreshold = 700
-
-		config.Settings.Eval.UsePawnEval = false
+		config.Settings.Eval.UsePawnEval = true
 		config.Settings.Eval.UsePawnCache = true
-		config.Settings.Eval.PawnCacheSize = 64
+		config.Settings.Eval.PawnCacheSize = 32
+		config.Settings.Eval.UseAttacksInEval = true
+		config.Settings.Eval.UseMobility = true
+		config.Settings.Eval.UseAdvancedPieceEval = true
+		config.Settings.Eval.UseKingEval = true
+		config.Settings.Eval.Tempo = 34
 
-		config.Settings.Eval.UseAttacksInEval = false
-		config.Settings.Eval.UseMobility = false
-		config.Settings.Eval.MobilityBonus = 5
-		config.Settings.Eval.UseAdvancedPieceEval = false
-		config.Settings.Eval.BishopPairBonus = 20
-		config.Settings.Eval.MinorBehindPawnBonus = 15
-		config.Settings.Eval.BishopPawnMalus = 5
-		config.Settings.Eval.BishopCenterAimBonus = 20
-		config.Settings.Eval.BishopBlockedMalus = 40
-		config.Settings.Eval.RookOnQueenFileBonus = 6
-		config.Settings.Eval.RookOnOpenFileBonus = 25
-		config.Settings.Eval.RookTrappedMalus = 40
-		config.Settings.Eval.KingRingAttacksBonus = 10
-		config.Settings.Eval.UseKingEval = false
-		config.Settings.Eval.KingDangerMalus = 50
-		config.Settings.Eval.KingDefenderBonus = 10
+		folder := "test/testdata/featuretests/"
+		out.Println(FeatureTests(folder, searchTime, searchDepth)) // nolint:errcheck
 	}
-
-	folder := "test/testdata/featuretests/"
-
-	out.Println(FeatureTests(folder, searchTime, searchDepth)) // nolint:errcheck
 }
 
 // ///////////////////////////////
