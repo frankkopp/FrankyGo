@@ -93,11 +93,40 @@ func TestFeatureTests(t *testing.T) {
 		config.Settings.Eval.UsePawnEval = true
 		config.Settings.Eval.UsePawnCache = true
 		config.Settings.Eval.PawnCacheSize = 32
-		config.Settings.Eval.UseAttacksInEval = true
-		config.Settings.Eval.UseMobility = true
+		config.Settings.Eval.UseAttacksInEval = false
+		config.Settings.Eval.UseMobility = false
 		config.Settings.Eval.UseAdvancedPieceEval = true
 		config.Settings.Eval.UseKingEval = true
+
+		// evaluation value
 		config.Settings.Eval.Tempo = 34
+		config.Settings.Eval.MobilityBonus = 5         // per piece and attacked square
+		config.Settings.Eval.MinorBehindPawnBonus = 15 // per piece and times game phase
+		config.Settings.Eval.BishopPairBonus = 20      // once
+		config.Settings.Eval.BishopPawnMalus = 5       // per pawn and times ~game phase
+		config.Settings.Eval.BishopCenterAimBonus = 20 // per bishop and times game phase
+		config.Settings.Eval.BishopBlockedMalus = 40   // per bishop
+		config.Settings.Eval.RookOnQueenFileBonus = 6  // per rook
+		config.Settings.Eval.RookOnOpenFileBonus = 25  // per rook and time game phase
+		config.Settings.Eval.RookTrappedMalus = 40     // per rook and time game phase
+
+		config.Settings.Eval.KingCastlePawnShieldBonus = 15
+		config.Settings.Eval.KingRingAttacksBonus = 10 // per piece and attacked king ring square
+		config.Settings.Eval.KingDangerMalus = 50      // number of number of attacker - defender times malus if attacker > defender
+		config.Settings.Eval.KingDefenderBonus = 10    // number of number of defender - attacker times bonus if attacker <= defender
+
+		config.Settings.Eval.PawnIsolatedMidMalus = -10
+		config.Settings.Eval.PawnIsolatedEndMalus = -20
+		config.Settings.Eval.PawnDoubledMidMalus = -10
+		config.Settings.Eval.PawnDoubledEndMalus = -30
+		config.Settings.Eval.PawnPassedMidBonus = 20
+		config.Settings.Eval.PawnPassedEndBonus = 40
+		config.Settings.Eval.PawnBlockedMidMalus = -2
+		config.Settings.Eval.PawnBlockedEndMalus = -20
+		config.Settings.Eval.PawnPhalanxMidBonus = 4
+		config.Settings.Eval.PawnPhalanxEndBonus = 4
+		config.Settings.Eval.PawnSupportedMidBonus = 10
+		config.Settings.Eval.PawnSupportedEndBonus = 15
 
 		folder := "test/testdata/featuretests/"
 		out.Println(FeatureTests(folder, searchTime, searchDepth)) // nolint:errcheck

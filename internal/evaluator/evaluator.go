@@ -59,6 +59,7 @@ type Evaluator struct {
 	ourKing         Square
 	theirKing       Square
 	kingRing        [ColorLength]Bitboard
+	allPieces       Bitboard
 	ourPieces       Bitboard
 
 	score Score
@@ -111,6 +112,7 @@ func (e *Evaluator) InitEval(p *position.Position) {
 	e.theirKing = e.position.KingSquare(e.them)
 	e.kingRing[e.us] = GetAttacksBb(King, e.ourKing, BbZero)
 	e.kingRing[e.them] = GetAttacksBb(King, e.theirKing, BbZero)
+	e.allPieces = e.position.OccupiedAll()
 	e.ourPieces = e.position.OccupiedBb(e.us)
 
 	// reset all values
@@ -241,8 +243,15 @@ func (e *Evaluator) evalKing(c Color) *Score {
 	us := c
 	them := us.Flip()
 
-	// pawn shield
-	// TODO
+	// pawn shield - pawns in front of a castled king get a bonus
+	// Higher bonus for middle game, lower or none in end game
+	if KingSideCastleMask(us).Has(e.position.KingSquare(us)) {
+		count := int16((ShiftBitboard(KingSideCastleMask(us), us.MoveDirection()) & e.position.PiecesBb(us, Pawn)).PopCount())
+		tmpScore.MidGameValue += count * Settings.Eval.KingCastlePawnShieldBonus
+	} else if QueenSideCastMask(us).Has(e.position.KingSquare(us)) {
+		count := int16((ShiftBitboard(QueenSideCastMask(us), us.MoveDirection()) & e.position.PiecesBb(us, Pawn)).PopCount())
+		tmpScore.MidGameValue += count * Settings.Eval.KingCastlePawnShieldBonus
+	}
 
 	// king safety / attacks to the king and king ring
 	if Settings.Eval.UseAttacksInEval {
@@ -322,11 +331,15 @@ func (e *Evaluator) rookEval(sq Square, us Color) {
 
 	// trapped by king
 	// on same row as king but on the outside from king
-	if Settings.Eval.UseAttacksInEval && e.attacks.From[us][sq].PopCount() < 3 &&
-		e.position.KingSquare(us).RankOf() == sq.RankOf() &&
-		(e.position.KingSquare(us).FileOf() < FileE) == (sq.FileOf() < e.position.KingSquare(us).FileOf()) {
-		tmpScore.MidGameValue -= Settings.Eval.RookTrappedMalus
-		// endGameValue -= 0
+	kingSquare := e.position.KingSquare(us)
+	if KingSideCastleMask(us).Has(kingSquare) {
+		if sq.RankOf() == kingSquare.RankOf() && sq > kingSquare { // east of king
+			tmpScore.MidGameValue -= Settings.Eval.RookTrappedMalus
+		}
+	} else if QueenSideCastMask(us).Has(kingSquare) {
+		if sq.RankOf() == kingSquare.RankOf() && sq < kingSquare { // west of king
+			tmpScore.MidGameValue -= Settings.Eval.RookTrappedMalus
+		}
 	}
 }
 
@@ -354,14 +367,9 @@ func (e *Evaluator) bishopEval(us Color, them Color, sq Square) {
 	tmpScore.MidGameValue += Settings.Eval.BishopCenterAimBonus * popCount
 	// s.EndGameValue += 0
 
-	// blocked by pawn - if the bishop has no attacks (no move to go) and is block
-	// by its own pawns we give a malus
-	// this is done by pretending the bishop is a pawn to use pawn's
-	// precomputed attacks
+	// bishop blocked / mobility
 	if (us == White && sq.RankOf() == Rank1) || (us == Black && sq.RankOf() == Rank8) {
-		count := (GetPawnAttacks(us, sq) & e.position.PiecesBb(us, Pawn)).PopCount()
-		count2 := GetPawnAttacks(us, sq).PopCount()
-		if count == count2 {
+		if GetAttacksBb(Bishop, sq, e.allPieces)&^e.position.OccupiedBb(us) == BbZero {
 			tmpScore.MidGameValue -= Settings.Eval.BishopBlockedMalus
 			tmpScore.EndGameValue -= Settings.Eval.BishopBlockedMalus
 		}

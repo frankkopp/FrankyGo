@@ -159,7 +159,7 @@ func TestTiming(t *testing.T) {
 	config.Settings.Eval.UseLazyEval = true
 	config.Settings.Eval.UsePawnEval = true
 	config.Settings.Eval.UsePawnCache = true
-	config.Settings.Eval.UseAttacksInEval = true
+	config.Settings.Eval.UseAttacksInEval = false
 	config.Settings.Eval.UseMobility = true
 	config.Settings.Eval.UseAdvancedPieceEval = true
 	config.Settings.Eval.UseKingEval = true
