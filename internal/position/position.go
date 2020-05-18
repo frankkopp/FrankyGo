@@ -1,4 +1,3 @@
-//
 // FrankyGo - UCI chess engine in GO for learning purposes
 //
 // MIT License
@@ -752,7 +751,7 @@ func (p *Position) StringBoard() string {
 	for r := Rank1; r <= Rank8; r++ {
 		for f := FileA; f <= FileH; f++ {
 			os.WriteString("| ")
-			os.WriteString(p.board[SquareOf(f, Rank8-r)].Char())
+			os.WriteString(p.board[SquareOf(f, Rank8-r)].UniChar())
 			os.WriteString(" ")
 		}
 		os.WriteString("|\n+---+---+---+---+---+---+---+---+\n")
