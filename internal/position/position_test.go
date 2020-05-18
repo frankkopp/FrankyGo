@@ -135,6 +135,13 @@ func TestPositionEquality(t *testing.T) {
 	assert.Equal(t, *p1, *p3)
 }
 
+func TestStringBoard(t *testing.T) {
+	p := NewPosition()
+	stringBoard := p.StringBoard()
+	fmt.Println(stringBoard)
+
+}
+
 func TestPosition_DoUndoMove(t *testing.T) {
 	p := NewPosition()
 	startZobrist := p.ZobristKey()

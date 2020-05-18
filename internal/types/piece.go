@@ -79,13 +79,21 @@ func (p Piece) String() string {
 	return string(pieceToString[p])
 }
 
-// array of string labels for piece types
+// array of string labels for pieces
 var pieceToChar = string(" KONBRQ- k*nbrq-")
 
 // Char returns a string representation of a piece type
 // where pawns are O and * for white and black
 func (p Piece) Char() string {
 	return string(pieceToChar[p])
+}
+
+// array of unicode string labels for pieces
+var pieceToUnicode = []string{" ", "♔", "♙", "♘", "♗", "♖", "♕", "-", " ", "♚", "♟", "♞", "♝", "♜", "♛", "-"}
+
+// UniChar returns a unicode string representation of the given pieces
+func (p Piece) UniChar() string {
+	return pieceToUnicode[p]
 }
 
 // MakePiece creates the piece given by color and piece type
