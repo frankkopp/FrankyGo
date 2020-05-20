@@ -5,13 +5,6 @@
       <option name="compiler" value="gc" />
     </buildTags>
   </component>
-  <component name="GoLibraries">
-    <option name="urls">
-      <list>
-        <option value="file://$MODULE_DIR$/../../../.." />
-      </list>
-    </option>
-  </component>
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.idea" />

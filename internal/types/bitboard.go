@@ -373,7 +373,7 @@ func GetAttacksBb(pt PieceType, sq Square, occupied Bitboard) Bitboard {
 	case King:
 		return pseudoAttacks[pt][sq]
 	default:
-		msg := fmt.Sprint("GetAttackBb called with piece type Pawn is not supported")
+		msg := fmt.Sprintf("GetAttackBb called with piece type %d is not supported", pt)
 		panic(msg)
 	}
 }
