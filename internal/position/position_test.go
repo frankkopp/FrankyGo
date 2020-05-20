@@ -139,35 +139,35 @@ func TestStringBoard(t *testing.T) {
 	p := NewPosition()
 	stringBoard := p.StringBoard()
 	fmt.Println(stringBoard)
-
+	assert.EqualValues(t, "+---+---+---+---+---+---+---+---+\n| ♜ | ♞ | ♝ | ♛ | ♚ | ♝ | ♞ | ♜ |\n+---+---+---+---+---+---+---+---+\n| ♟ | ♟ | ♟ | ♟ | ♟ | ♟ | ♟ | ♟ |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n|   |   |   |   |   |   |   |   |\n+---+---+---+---+---+---+---+---+\n| ♙ | ♙ | ♙ | ♙ | ♙ | ♙ | ♙ | ♙ |\n+---+---+---+---+---+---+---+---+\n| ♖ | ♘ | ♗ | ♕ | ♔ | ♗ | ♘ | ♖ |\n+---+---+---+---+---+---+---+---+\n", stringBoard)
 }
 
 func TestPosition_DoUndoMove(t *testing.T) {
 	p := NewPosition()
 	startZobrist := p.ZobristKey()
 	startPawnZobrist := p.PawnKey()
-	logTest.Debugf("PawnKey: %d", p.PawnKey())
+	// logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
-	logTest.Debugf("PawnKey: %d", p.PawnKey())
+	// logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.DoMove(CreateMove(SqD7, SqD5, Normal, PtNone))
-	logTest.Debugf("PawnKey: %d", p.PawnKey())
+	// logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.DoMove(CreateMove(SqE4, SqD5, Normal, PtNone))
-	logTest.Debugf("PawnKey: %d", p.PawnKey())
+	// logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.DoMove(CreateMove(SqD8, SqD5, Normal, PtNone))
-	logTest.Debugf("PawnKey: %d", p.PawnKey())
+	// logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.DoMove(CreateMove(SqB1, SqC3, Normal, PtNone))
-	logTest.Debugf("PawnKey: %d", p.PawnKey())
-	logTest.Debug("")
+	// logTest.Debugf("PawnKey: %d", p.PawnKey())
+	// logTest.Debug("")
 	p.UndoMove()
-	logTest.Debugf("PawnKey: %d", p.PawnKey())
+	// logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.UndoMove()
-	logTest.Debugf("PawnKey: %d", p.PawnKey())
+	// logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.UndoMove()
-	logTest.Debugf("PawnKey: %d", p.PawnKey())
+	// logTest.Debugf("PawnKey: %/d", p.PawnKey())
 	p.UndoMove()
-	logTest.Debugf("PawnKey: %d", p.PawnKey())
+	// logTest.Debugf("PawnKey: %d", p.PawnKey())
 	p.UndoMove()
-	logTest.Debugf("PawnKey: %d", p.PawnKey())
+	// logTest.Debugf("PawnKey: %d", p.PawnKey())
 	assert.Equal(t, StartFen, p.StringFen())
 	assert.Equal(t, startZobrist, p.ZobristKey())
 	assert.Equal(t, startPawnZobrist, p.PawnKey())
@@ -333,7 +333,6 @@ func TestPosition_IsAttacked(t *testing.T) {
 }
 
 func TestPosition_IsLegalMoves(t *testing.T) {
-
 	var fen string
 	var position *Position
 
@@ -348,11 +347,9 @@ func TestPosition_IsLegalMoves(t *testing.T) {
 	position, _ = NewPositionFen(fen)
 	assert.False(t, position.IsLegalMove(CreateMove(SqE8, SqG8, Castling, PtNone)))
 	assert.False(t, position.IsLegalMove(CreateMove(SqE8, SqC8, Castling, PtNone)))
-
 }
 
 func TestPosition_WasLegalMove(t *testing.T) {
-
 	var fen string
 	var position *Position
 
@@ -376,7 +373,6 @@ func TestPosition_WasLegalMove(t *testing.T) {
 }
 
 func TestPositionGivesCheck(t *testing.T) {
-
 	// DIRECT CHECKS
 
 	// Pawns
@@ -661,61 +657,8 @@ func TestTimingDoUndo(t *testing.T) {
 
 var res bool
 
-func TestTimingMatvsPop(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping test in short mode.")
-	}
-
-	const rounds = 5
-	const iterations uint64 = 1_000_000_000
-
-	p, _ := NewPositionFen("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -")
-
-	for r := 1; r <= rounds; r++ {
-		out.Printf("Round %d\n", r)
-		start := time.Now()
-		for i := uint64(0); i < iterations; i++ {
-			test := (p.materialNonPawn[White] < 2*Bishop.ValueOf() && p.materialNonPawn[Black] <= Bishop.ValueOf()) ||
-				(p.materialNonPawn[White] <= Bishop.ValueOf() && p.materialNonPawn[Black] < 2*Bishop.ValueOf())
-			res = test
-		}
-		elapsed := time.Since(start)
-		out.Printf("Test took %d ns for %d iterations\n", elapsed.Nanoseconds(), iterations)
-		out.Printf("Test took %d ns per test\n", elapsed.Nanoseconds()/int64(iterations))
-		out.Printf("Test per sec %d tps\n", iterations*1e9/uint64(elapsed.Nanoseconds()))
-	}
-}
-
-func TestTimingMatvsPop2(t *testing.T) {
-
-	if testing.Short() {
-		t.Skip("skipping test in short mode.")
-	}
-
-	const rounds = 5
-	const iterations uint64 = 1_000_000_000
-
-	p, _ := NewPositionFen("6k1/p3q2p/1n1Q2pB/8/5P2/6P1/PP5P/3R2K1 b - -")
-
-	for r := 1; r <= rounds; r++ {
-		out.Printf("Round %d\n", r)
-		start := time.Now()
-		for i := uint64(0); i < iterations; i++ {
-			test := (p.piecesBb[White][Bishop].PopCount()+p.piecesBb[White][Knight].PopCount() == 2 &&
-				p.piecesBb[Black][Bishop].PopCount()+p.piecesBb[Black][Knight].PopCount() == 1) ||
-				(p.piecesBb[Black][Bishop].PopCount()+p.piecesBb[Black][Knight].PopCount() == 2 &&
-					p.piecesBb[White][Bishop].PopCount()+p.piecesBb[White][Knight].PopCount() == 1)
-			res = test
-		}
-		elapsed := time.Since(start)
-		out.Printf("Test took %d ns for %d iterations\n", elapsed.Nanoseconds(), iterations)
-		out.Printf("Test took %d ns per test\n", elapsed.Nanoseconds()/int64(iterations))
-		out.Printf("Test per sec %d tps\n", (iterations*1e9)/uint64(elapsed.Nanoseconds()))
-	}
-}
-
 func TestTimingIsAttacked(t *testing.T) {
-	// defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
+	defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
 
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")

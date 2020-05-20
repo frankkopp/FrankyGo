@@ -80,7 +80,7 @@ func (p Piece) String() string {
 }
 
 // array of string labels for pieces
-var pieceToChar = string(" KONBRQ- k*nbrq-")
+var pieceToChar = " KONBRQ- k*nbrq-"
 
 // Char returns a string representation of a piece type
 // where pawns are O and * for white and black
