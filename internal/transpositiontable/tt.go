@@ -43,8 +43,8 @@ import (
 	"golang.org/x/text/message"
 
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
-	. "github.com/frankkopp/FrankyGo/internal/types"
 	"github.com/frankkopp/FrankyGo/internal/util"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 var out = message.NewPrinter(language.German)

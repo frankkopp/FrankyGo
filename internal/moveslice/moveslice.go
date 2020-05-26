@@ -33,7 +33,7 @@ import (
 	"strings"
 	"sync"
 
-	. "github.com/frankkopp/FrankyGo/internal/types"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 // MoveSlice represents a data structure (go slice) for Move.

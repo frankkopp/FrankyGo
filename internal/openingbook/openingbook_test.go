@@ -38,9 +38,9 @@ import (
 
 	"github.com/frankkopp/FrankyGo/internal/config"
 	"github.com/frankkopp/FrankyGo/internal/logging"
-	"github.com/frankkopp/FrankyGo/internal/position"
-	. "github.com/frankkopp/FrankyGo/internal/types"
 	"github.com/frankkopp/FrankyGo/internal/util"
+	"github.com/frankkopp/FrankyGo/pkg/position"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 var logTest *logging2.Logger

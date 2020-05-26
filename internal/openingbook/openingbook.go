@@ -54,10 +54,10 @@ import (
 	"golang.org/x/text/message"
 
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
-	"github.com/frankkopp/FrankyGo/internal/movegen"
-	"github.com/frankkopp/FrankyGo/internal/position"
-	"github.com/frankkopp/FrankyGo/internal/types"
 	"github.com/frankkopp/FrankyGo/internal/util"
+	"github.com/frankkopp/FrankyGo/pkg/movegen"
+	"github.com/frankkopp/FrankyGo/pkg/position"
+	"github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 var out = message.NewPrinter(language.German)
@@ -546,9 +546,9 @@ func (b *Book) processSingleMove(s string, mgPtr *movegen.Movegen, posPtr *posit
 	// find move in the current position or stop processing
 	var move = types.MoveNone
 	if regexUciMove.MatchString(s) {
-		move = mgPtr.GetMoveFromUci(posPtr, s)
+		move, _ = mgPtr.GetMoveFromUci(posPtr, s)
 	} else if regexSanMove.MatchString(s) {
-		move = mgPtr.GetMoveFromSan(posPtr, s)
+		move, _ = mgPtr.GetMoveFromSan(posPtr, s)
 	}
 	// if move is invalid return stop processing further matches
 	if !move.IsValid() {

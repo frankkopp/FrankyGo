@@ -49,12 +49,12 @@ import (
 
 	"github.com/frankkopp/FrankyGo/internal/config"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
-	"github.com/frankkopp/FrankyGo/internal/movegen"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
-	"github.com/frankkopp/FrankyGo/internal/position"
 	"github.com/frankkopp/FrankyGo/internal/search"
-	. "github.com/frankkopp/FrankyGo/internal/types"
 	"github.com/frankkopp/FrankyGo/internal/util"
+	"github.com/frankkopp/FrankyGo/pkg/movegen"
+	"github.com/frankkopp/FrankyGo/pkg/position"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 var out = message.NewPrinter(language.German)
@@ -411,7 +411,7 @@ func getTest(line string) *Test {
 		results := strings.Split(result, " ")
 		for _, r := range results {
 			r = strings.TrimSpace(r)
-			m := mg.GetMoveFromSan(p, r)
+			m, _ := mg.GetMoveFromSan(p, r)
 			if m != MoveNone {
 				resultMoves.PushBack(m)
 			}

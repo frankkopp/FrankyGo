@@ -47,14 +47,14 @@ import (
 
 	"github.com/frankkopp/FrankyGo/internal/config"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
-	"github.com/frankkopp/FrankyGo/internal/movegen"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
-	"github.com/frankkopp/FrankyGo/internal/position"
 	"github.com/frankkopp/FrankyGo/internal/search"
-	. "github.com/frankkopp/FrankyGo/internal/types"
 	"github.com/frankkopp/FrankyGo/internal/uciInterface"
 	"github.com/frankkopp/FrankyGo/internal/util"
 	"github.com/frankkopp/FrankyGo/internal/version"
+	"github.com/frankkopp/FrankyGo/pkg/movegen"
+	"github.com/frankkopp/FrankyGo/pkg/position"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 var out = message.NewPrinter(language.German)
@@ -365,7 +365,7 @@ func (u *UciHandler) positionCommand(tokens []string) {
 		if tokens[i] == "moves" {
 			i++
 			for i < len(tokens) && tokens[i] != "moves" {
-				move := u.myMoveGen.GetMoveFromUci(u.myPosition, tokens[i])
+				move, _ := u.myMoveGen.GetMoveFromUci(u.myPosition, tokens[i])
 				if move.IsValid() {
 					u.myPosition.DoMove(move)
 				} else {
@@ -417,7 +417,7 @@ func (u *UciHandler) readSearchLimits(tokens []string) (*search.Limits, bool) {
 		case "moves":
 			i++
 			for i < len(tokens) {
-				move := u.myMoveGen.GetMoveFromUci(u.myPosition, tokens[i])
+				move, _ := u.myMoveGen.GetMoveFromUci(u.myPosition, tokens[i])
 				if move.IsValid() {
 					searchLimits.Moves.PushBack(move)
 					i++

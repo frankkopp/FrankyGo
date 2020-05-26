@@ -34,7 +34,7 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
-	. "github.com/frankkopp/FrankyGo/internal/types"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 var out = message.NewPrinter(language.German)
