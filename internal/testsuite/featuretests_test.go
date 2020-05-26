@@ -47,7 +47,6 @@ func TestFeatureTests(t *testing.T) {
 		config.Settings.Search.UseQuiescence = true
 		config.Settings.Search.UseQSStandpat = true
 		config.Settings.Search.UseSEE = true
-		config.Settings.Search.UsePromNonQuiet = true
 
 		config.Settings.Search.UseTT = true
 		config.Settings.Search.UseEvalTT = true

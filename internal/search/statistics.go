@@ -28,7 +28,7 @@ package search
 
 import (
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
-	. "github.com/frankkopp/FrankyGo/internal/types"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 // //////////////////////////////////////////////////////

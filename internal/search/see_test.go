@@ -34,9 +34,9 @@ import (
 
 	"github.com/frankkopp/FrankyGo/internal/attacks"
 	"github.com/frankkopp/FrankyGo/internal/config"
-	"github.com/frankkopp/FrankyGo/internal/movegen"
-	"github.com/frankkopp/FrankyGo/internal/position"
-	. "github.com/frankkopp/FrankyGo/internal/types"
+	"github.com/frankkopp/FrankyGo/pkg/movegen"
+	"github.com/frankkopp/FrankyGo/pkg/position"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 func TestLeastValuablePiece(t *testing.T) {
@@ -81,31 +81,31 @@ func TestLeastValuablePiece(t *testing.T) {
 
 func TestSee(t *testing.T) {
 	p := position.NewPosition("1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - -")
-	move := movegen.NewMoveGen().GetMoveFromUci(p, "d3e5")
+	move, _ := movegen.NewMoveGen().GetMoveFromUci(p, "d3e5")
 	seeScore := see(p, move)
 	logTest.Debug("See score:", seeScore)
 	assert.EqualValues(t, -220, seeScore)
 
 	p = position.NewPosition("1k1r4/1pp4p/p7/4p3/8/P5P1/1PP4P/2K1R3 w - -")
-	move = movegen.NewMoveGen().GetMoveFromUci(p, "e1e5")
+	move, _ = movegen.NewMoveGen().GetMoveFromUci(p, "e1e5")
 	seeScore = see(p, move)
 	logTest.Debug("See score:", seeScore)
 	assert.EqualValues(t, 100, seeScore)
 
 	p = position.NewPosition("5q1k/8/8/8/RRQ2nrr/8/8/K7 w - -")
-	move = movegen.NewMoveGen().GetMoveFromUci(p, "c4f4")
+	move, _ = movegen.NewMoveGen().GetMoveFromUci(p, "c4f4")
 	seeScore = see(p, move)
 	logTest.Debug("See score:", seeScore)
 	assert.EqualValues(t, -580, seeScore)
 
 	p = position.NewPosition("k6q/3n1n2/3b4/4p3/3P1P2/3N1N2/8/K7 w - -")
-	move = movegen.NewMoveGen().GetMoveFromUci(p, "d3e5")
+	move, _ = movegen.NewMoveGen().GetMoveFromUci(p, "d3e5")
 	seeScore = see(p, move)
 	logTest.Debug("See score:", seeScore)
 	assert.EqualValues(t, 100, seeScore)
 
 	p = position.NewPosition("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R2R1K1 b kq e3")
-	move = movegen.NewMoveGen().GetMoveFromUci(p, "a2b1Q")
+	move, _ = movegen.NewMoveGen().GetMoveFromUci(p, "a2b1Q")
 	seeScore = see(p, move)
 	logTest.Debug("See score:", seeScore)
 	assert.EqualValues(t, 500, seeScore)
@@ -123,7 +123,7 @@ func TestTimingSee(t *testing.T) {
 	config.Settings.Search.UseSEE = true
 
 	p := position.NewPosition("k6q/3n1n2/3b4/4p3/3P1P2/3N1N2/8/K7 w - -")
-	move := movegen.NewMoveGen().GetMoveFromUci(p, "d3e5")
+	move, _ := movegen.NewMoveGen().GetMoveFromUci(p, "d3e5")
 
 	const rounds = 5
 	const iterations uint64 = 10_000_000

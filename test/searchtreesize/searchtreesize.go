@@ -37,10 +37,10 @@ import (
 
 	. "github.com/frankkopp/FrankyGo/internal/config"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
-	"github.com/frankkopp/FrankyGo/internal/position"
 	"github.com/frankkopp/FrankyGo/internal/search"
-	"github.com/frankkopp/FrankyGo/internal/types"
 	"github.com/frankkopp/FrankyGo/internal/util"
+	"github.com/frankkopp/FrankyGo/pkg/position"
+	"github.com/frankkopp/FrankyGo/pkg/types"
 	"github.com/frankkopp/FrankyGo/test/testdata"
 )
 
@@ -115,7 +115,6 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// + Quiescence
 	Settings.Search.UseQuiescence = true
 	Settings.Search.UseSEE = true
-	Settings.Search.UsePromNonQuiet = true
 	Settings.Search.UseQSStandpat = true
 
 	// + TT
@@ -308,7 +307,6 @@ func turnOffFeatures() {
 	Settings.Search.UseQuiescence = false
 	Settings.Search.UseQSStandpat = false
 	Settings.Search.UseSEE = false
-	Settings.Search.UsePromNonQuiet = false
 	Settings.Search.UseTT = false
 	Settings.Search.UseTTMove = false
 	Settings.Search.UseTTValue = false

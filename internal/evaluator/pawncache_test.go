@@ -32,8 +32,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/frankkopp/FrankyGo/internal/position"
-	. "github.com/frankkopp/FrankyGo/internal/types"
+	"github.com/frankkopp/FrankyGo/pkg/position"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 func TestSize(t *testing.T) {

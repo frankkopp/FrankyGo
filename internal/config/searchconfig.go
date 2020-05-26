@@ -41,7 +41,6 @@ type searchConfiguration struct {
 	UseQuiescence   bool
 	UseQSStandpat   bool
 	UseSEE          bool
-	UsePromNonQuiet bool
 
 	// main search algorithm
 	UsePVS        bool
@@ -99,7 +98,6 @@ func init() {
 	Settings.Search.UseQuiescence = true
 	Settings.Search.UseQSStandpat = true
 	Settings.Search.UseSEE = true
-	Settings.Search.UsePromNonQuiet = true
 
 	Settings.Search.UsePVS = true
 	Settings.Search.UseAspiration = false

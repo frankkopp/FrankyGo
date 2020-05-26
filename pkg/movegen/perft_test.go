@@ -32,7 +32,7 @@ import (
 	"github.com/pkg/profile"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/frankkopp/FrankyGo/internal/position"
+	"github.com/frankkopp/FrankyGo/pkg/position"
 )
 
 // ///////////////////////////////////////////////////////////////

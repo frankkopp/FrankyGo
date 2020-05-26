@@ -29,7 +29,7 @@ package search
 import (
 	"math"
 
-	"github.com/frankkopp/FrankyGo/internal/types"
+	"github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 // This file contain data structures and functions to support the search with
