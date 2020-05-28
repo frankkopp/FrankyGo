@@ -27,20 +27,17 @@
 package attacks
 
 import (
-	"github.com/op/go-logging"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
-	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
-	"github.com/frankkopp/FrankyGo/internal/position"
-	. "github.com/frankkopp/FrankyGo/internal/types"
+	"github.com/frankkopp/FrankyGo/pkg/position"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 var out = message.NewPrinter(language.German)
 
 // Attacks is a data structure to store all attacks and defends of a position.
 type Attacks struct {
-	log *logging.Logger
 
 	// the position key for which the attacks have been calculated
 	Zobrist Key
@@ -66,9 +63,7 @@ type Attacks struct {
 
 // NewAttacks creates a new instance of Attacks.
 func NewAttacks() *Attacks {
-	return &Attacks{
-		log: myLogging.GetLog(),
-	}
+	return &Attacks{}
 }
 
 // Clear resets all fields of the Attacks instance without
@@ -105,7 +100,6 @@ func (a *Attacks) Clear() {
 // stored attacks are untouched.
 func (a *Attacks) Compute(p *position.Position) {
 	if p.ZobristKey() == a.Zobrist {
-		a.log.Debugf("attacks compute: position was already computed")
 		return
 	}
 	a.Zobrist = p.ZobristKey()

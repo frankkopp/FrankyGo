@@ -39,14 +39,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/op/go-logging"
-
-	"github.com/frankkopp/FrankyGo/internal/assert"
-	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
-	. "github.com/frankkopp/FrankyGo/internal/types"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
-
-var log *logging.Logger
 
 var initialized = false
 
@@ -169,12 +163,8 @@ func NewPosition(fen ...string) *Position {
 // as board position
 // It returns nil and an error if the fen was invalid.
 func NewPositionFen(fen string) (*Position, error) {
-	if log == nil {
-		log = myLogging.GetLog()
-	}
 	p := &Position{}
 	if e := p.setupBoard(fen); e != nil {
-		log.Errorf("fen for position setup not valid and position can't be created: %s", e)
 		return nil, e
 	}
 	return p, nil
@@ -189,19 +179,15 @@ func (p *Position) DoMove(m Move) {
 		switch {
 		case !m.IsValid():
 			msg := fmt.Sprintf("Position DoMove: Invalid move %s", m.String())
-			log.Criticalf(msg)
 			panic(msg)
 		case p.board[m.From()] == PieceNone:
 			msg := fmt.Sprintf("Position DoMove: No piece on %s for move %s", p.board[m.From()].String(), m.StringUci())
-			log.Criticalf(msg)
 			panic(msg)
 		case p.board[m.From()].ColorOf() != p.nextPlayer:
 			msg := fmt.Sprintf("Position DoMove: Piece to move does not belong to next player %s", p.board[m.From()].String())
-			log.Criticalf(msg)
 			panic(msg)
 		case p.board[m.To()].TypeOf() == King:
 			msg := fmt.Sprintf("Position DoMove: King cannot be captured!")
-			log.Criticalf(msg)
 			panic(msg)
 		}
 	} // DEBUG
@@ -244,10 +230,6 @@ func (p *Position) DoMove(m Move) {
 
 // UndoMove resets the position to a state before the last move has been made
 func (p *Position) UndoMove() {
-	if assert.DEBUG {
-		assert.Assert(p.historyCounter > 0, "Position UndoMove: Cannot undo initial position")
-	}
-
 	// Restore state part 1
 	p.historyCounter--
 	p.nextHalfMoveNumber--

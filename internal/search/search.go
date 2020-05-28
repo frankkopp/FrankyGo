@@ -40,14 +40,14 @@ import (
 	"github.com/frankkopp/FrankyGo/internal/evaluator"
 	"github.com/frankkopp/FrankyGo/internal/history"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
-	"github.com/frankkopp/FrankyGo/internal/movegen"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
 	"github.com/frankkopp/FrankyGo/internal/openingbook"
-	"github.com/frankkopp/FrankyGo/internal/position"
 	"github.com/frankkopp/FrankyGo/internal/transpositiontable"
-	. "github.com/frankkopp/FrankyGo/internal/types"
 	"github.com/frankkopp/FrankyGo/internal/uciInterface"
 	"github.com/frankkopp/FrankyGo/internal/util"
+	"github.com/frankkopp/FrankyGo/pkg/movegen"
+	"github.com/frankkopp/FrankyGo/pkg/position"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 var out = message.NewPrinter(language.German)

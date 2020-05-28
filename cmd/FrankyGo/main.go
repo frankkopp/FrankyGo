@@ -39,13 +39,13 @@ import (
 
 	"github.com/frankkopp/FrankyGo/internal/config"
 	"github.com/frankkopp/FrankyGo/internal/logging"
-	"github.com/frankkopp/FrankyGo/internal/movegen"
-	"github.com/frankkopp/FrankyGo/internal/position"
 	"github.com/frankkopp/FrankyGo/internal/search"
 	"github.com/frankkopp/FrankyGo/internal/testsuite"
 	"github.com/frankkopp/FrankyGo/internal/uci"
 	"github.com/frankkopp/FrankyGo/internal/util"
 	"github.com/frankkopp/FrankyGo/internal/version"
+	"github.com/frankkopp/FrankyGo/pkg/movegen"
+	"github.com/frankkopp/FrankyGo/pkg/position"
 )
 
 var out = message.NewPrinter(language.German)

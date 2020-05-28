@@ -27,7 +27,7 @@
 package transpositiontable
 
 import (
-	. "github.com/frankkopp/FrankyGo/internal/types"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 // TtEntry struct is the data structure for each entry in the transposition

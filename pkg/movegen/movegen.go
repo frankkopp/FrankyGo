@@ -32,21 +32,16 @@ package movegen
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
-	"github.com/op/go-logging"
-
 	"github.com/frankkopp/FrankyGo/internal/attacks"
-	"github.com/frankkopp/FrankyGo/internal/config"
 	"github.com/frankkopp/FrankyGo/internal/history"
-	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
-	"github.com/frankkopp/FrankyGo/internal/position"
-	. "github.com/frankkopp/FrankyGo/internal/types"
+	"github.com/frankkopp/FrankyGo/pkg/position"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
-
-var log *logging.Logger
 
 // Movegen data structure. Create new move generator via
 //  movegen.NewMoveGen()
@@ -94,9 +89,6 @@ const (
 // For a deep copy use:
 //  moveslice.MoveSlice.Clone()
 func NewMoveGen() *Movegen {
-	if log == nil {
-		log = myLogging.GetLog()
-	}
 	tmpMg := &Movegen{
 		pseudoLegalMoves: moveslice.NewMoveSlice(MaxMoves),
 		legalMoves:       moveslice.NewMoveSlice(MaxMoves),
@@ -453,10 +445,10 @@ var regexUciMove = regexp.MustCompile("([a-h][1-8][a-h][1-8])([NBRQnbrq])?")
 //
 // As this uses string creation and comparison this is not very efficient.
 // Use only when performance is not critical.
-func (mg *Movegen) GetMoveFromUci(posPtr *position.Position, uciMove string) Move {
+func (mg *Movegen) GetMoveFromUci(posPtr *position.Position, uciMove string) (Move, error) {
 	matches := regexUciMove.FindStringSubmatch(uciMove)
 	if matches == nil {
-		return MoveNone
+		return MoveNone, fmt.Errorf("provided uci move string does not match uci move pattern")
 	}
 
 	// get the parts from the pattern match
@@ -473,11 +465,12 @@ func (mg *Movegen) GetMoveFromUci(posPtr *position.Position, uciMove string) Mov
 	for _, m := range *mg.legalMoves {
 		if m.StringUci() == movePart+promotionPart {
 			// move found
-			return m
+			return m, nil
 		}
 	}
 	// move not found
-	return MoveNone
+	return MoveNone, fmt.Errorf("UCI move not valid! UCI move %s not found on position: %s", uciMove, posPtr.StringFen())
+
 }
 
 var regexSanMove = regexp.MustCompile("([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O-O-O|O-O)(=?([NBRQ]))?([!?+#]*)?")
@@ -488,10 +481,10 @@ var regexSanMove = regexp.MustCompile("([NBRQK])?([a-h])?([1-8])?x?([a-h][1-8]|O
 //
 // As this uses string creation and comparison this is not very efficient.
 // Use only when performance is not critical.
-func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Move {
+func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) (Move, error) {
 	matches := regexSanMove.FindStringSubmatch(sanMove)
 	if matches == nil {
-		return MoveNone
+		return MoveNone, fmt.Errorf("provided san move string does not match san move pattern")
 	}
 
 	// get parts
@@ -523,8 +516,7 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 			case SqC8: // black queen side
 				castlingString = "O-O-O"
 			default:
-				log.Error("Move type CASTLING but wrong to square: %s %s", castlingString, kingToSquare.String())
-				continue
+				log.Panicf("Move type CASTLING but wrong to square: %s %s", castlingString, kingToSquare.String())
 			}
 			if castlingString == toSquare {
 				moveFromSAN = genMove
@@ -567,16 +559,13 @@ func (mg *Movegen) GetMoveFromSan(posPtr *position.Position, sanMove string) Mov
 		}
 	}
 
-	// we should only have one move here
+	// we should only have one move here or none was found to match the SAN string
 	if movesFound > 1 {
-		log.Warningf("SAN move %s is ambiguous (%d matches) on %s!", sanMove, movesFound, posPtr.StringFen())
+		return MoveNone, fmt.Errorf("SAN move %s is ambiguous (%d matches) on %s", sanMove, movesFound, posPtr.StringFen())
 	} else if movesFound == 0 || !moveFromSAN.IsValid() {
-		log.Warningf("SAN move not valid! SAN move %s not found on position: %s", sanMove, posPtr.StringFen())
-	} else {
-		return moveFromSAN
+		return MoveNone, fmt.Errorf("SAN move not valid! SAN move %s not found on position: %s", sanMove, posPtr.StringFen())
 	}
-	// no move found
-	return MoveNone
+	return moveFromSAN, nil
 }
 
 // ValidateMove validates if a move is a valid legal move on the given position
@@ -857,8 +846,7 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 			}
 		}
 
-		// if this is enabled we treat Queen and Knight promotions as non quiet moves
-		if config.Settings.Search.UsePromNonQuiet {
+		// we treat Queen and Knight promotions as non quiet moves
 			promMoves := ShiftBitboard(myPawns, nextPlayer.MoveDirection()) &
 				^position.OccupiedAll() &
 				nextPlayer.PromotionRankBb()
@@ -874,7 +862,6 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Queen, value+Queen.ValueOf()))
 				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Knight, value+Knight.ValueOf()))
 			}
-		}
 	}
 
 	// non captures
@@ -905,13 +892,7 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 			fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection())
 			// value for non captures is lowered by 10k
 			value := Value(-10_000)
-			// if this is enabled we treat Queen and Knight promotions as non quiet moves
-			// and they are generated there
-			if !config.Settings.Search.UsePromNonQuiet {
-				// add the possible promotion moves to the move list and also add value of the promoted piece type
-				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Queen, value+Queen.ValueOf()))
-				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Knight, value+Knight.ValueOf()))
-			}
+			// we treat Queen and Knight promotions as non quiet moves and they are generated above
 			// rook and bishops are usually redundant to queen promotion (except in stale mate situations)
 			// therefore we give them lower sort order
 			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Rook, value+Rook.ValueOf()-Value(2000)))

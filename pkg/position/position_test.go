@@ -41,7 +41,7 @@ import (
 
 	"github.com/frankkopp/FrankyGo/internal/config"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
-	. "github.com/frankkopp/FrankyGo/internal/types"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 
 	"github.com/stretchr/testify/assert"
 )

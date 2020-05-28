@@ -28,7 +28,7 @@ package evaluator
 
 import (
 	. "github.com/frankkopp/FrankyGo/internal/config"
-	. "github.com/frankkopp/FrankyGo/internal/types"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 func (e *Evaluator) evaluatePawns() *Score {

@@ -28,8 +28,8 @@ package search
 
 import (
 	"github.com/frankkopp/FrankyGo/internal/attacks"
-	"github.com/frankkopp/FrankyGo/internal/position"
-	. "github.com/frankkopp/FrankyGo/internal/types"
+	"github.com/frankkopp/FrankyGo/pkg/position"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 func see(p *position.Position, move Move) Value {

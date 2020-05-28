@@ -27,7 +27,7 @@
 package position
 
 import (
-	. "github.com/frankkopp/FrankyGo/internal/types"
+	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
 // helper data structure for Zobrist IDs for chess positions
