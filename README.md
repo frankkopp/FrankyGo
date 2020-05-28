@@ -237,6 +237,7 @@ Command line options:
     - Better Evaluation and testing
     
 - DONE:
+    - Package structure changed to allow usage of position, movegen and types externally
     - Pawn Structure Eval and Cache
     - Aspiration Search
     - Static evaluation values are stored in the TT separately from dynamic values
