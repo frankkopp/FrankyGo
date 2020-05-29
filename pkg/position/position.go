@@ -39,6 +39,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/frankkopp/FrankyGo/internal/util"
 	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
@@ -161,7 +162,8 @@ func NewPosition(fen ...string) *Position {
 
 // NewPositionFen creates a new position with the given fen string
 // as board position
-// It returns nil and an error if the fen was invalid.
+// It returns nil and an error if the fen was invalid. This should
+// be used if testing the fen for validity is required.
 func NewPositionFen(fen string) (*Position, error) {
 	p := &Position{}
 	if e := p.setupBoard(fen); e != nil {
@@ -193,7 +195,7 @@ func (p *Position) DoMove(m Move) {
 	} // DEBUG
 
 	// Save state of board for undo
-	// this tmp helps the compiler to prove that it is
+	// this tmp helps the compiler to prove that the array is
 	// in bounds for the several updates we do after
 	tmpHistoryCounter := p.historyCounter
 	// update existing history entry to not create and allocate a new one
@@ -234,7 +236,7 @@ func (p *Position) UndoMove() {
 	p.historyCounter--
 	p.nextHalfMoveNumber--
 	p.nextPlayer = p.nextPlayer.Flip()
-	// this helps the compiler to prove that it is in bounds
+	// this helps the compiler to prove that the array is in bounds
 	// for the several updates we do after
 	tmpHistoryCounter := p.historyCounter
 	move := p.history[p.historyCounter].move
@@ -291,7 +293,8 @@ func (p *Position) UndoMove() {
 // and zobristBeforeNull == zobristAfterNull but positionBeforeNull != positionAfterNull.
 func (p *Position) DoNullMove() {
 	// Save state of board for undo
-	// this helps the compiler to prove that it is in bounds for the several updates we do after
+	// this helps the compiler to prove that the array is
+	// in bounds for the several updates we do after
 	tmpHistoryCounter := p.historyCounter
 	// update existing history entry to not create and allocate a new one
 	p.history[tmpHistoryCounter].zobristKey = p.zobristKey
@@ -325,8 +328,8 @@ func (p *Position) UndoNullMove() {
 	p.historyCounter--
 	p.nextHalfMoveNumber--
 	p.nextPlayer = p.nextPlayer.Flip()
-	// this helps the compiler to prove that it is in bounds
-	// for the several updates we do after
+	// this helps the compiler to prove that the array is
+	// in bounds for the several updates we do after
 	tmpHistoryCounter := p.historyCounter
 	p.castlingRights = p.history[tmpHistoryCounter].castlingRights
 	p.enPassantSquare = p.history[tmpHistoryCounter].enpassantSquare
@@ -565,10 +568,6 @@ func (p *Position) CheckRepetitions(reps int) bool {
 // possible, e.g. the opponent needs to support a mate by mistake)
 func (p *Position) HasInsufficientMaterial() bool {
 
-	// we use material value as minor pieces knights and bishops
-	// have different values and it is assumed that this is faster
-	// then a pop count on a bitboard - not empirically tested
-
 	// no material
 	// both sides have a bare king
 	if p.material[White]+p.material[Black] == 0 {
@@ -755,8 +754,8 @@ func (p *Position) doNormalMove(fromSq Square, toSq Square, targetPc Piece, from
 		p.removePiece(toSq)
 		p.halfMoveClock = 0 // reset half move clock because of capture
 	} else if fromPc.TypeOf() == Pawn {
-		p.halfMoveClock = 0                    // reset half move clock because of pawn move
-		if SquareDistance(fromSq, toSq) == 2 { // pawn double - set en passant
+		p.halfMoveClock = 0                        // reset half move clock because of pawn move
+		if util.Abs(int(fromSq)-int(toSq)) == 16 { // pawn double - set en passant
 			// set new en passant target field - always one "behind" the toSquare
 			p.enPassantSquare = toSq.To(myColor.Flip().MoveDirection())
 			p.zobristKey ^= zobristBase.enPassantFile[p.enPassantSquare.FileOf()] // in
@@ -975,33 +974,48 @@ func (p *Position) setupBoard(fen string) error {
 		return err
 	}
 
-	// fen string starts at a8 and runs to h8
-	// with / jumping to file A of next lower rank
-	currentSquare := SqA8
+	// a fen start at A8 - which is file==0 and rank==7
+	file := 0
+	rank := 7
 
 	// loop over fen characters
 	for _, c := range fenParts[0] {
 		if number, e := strconv.Atoi(string(c)); e == nil { // is number
-			currentSquare = Square(int(currentSquare) + (number * int(East)))
+			file += number
+			if file > 8 {
+				return fmt.Errorf("too many squares (%d) in rank %d:  %s", file, rank+1, fenParts[0])
+			}
 		} else if string(c) == "/" { // find rank separator
-			if currentSquare == SqNone {
-				currentSquare = SqA7
-			} else {
-				currentSquare = currentSquare.To(South).To(South)
+			if file < 8 {
+				return fmt.Errorf("not enough squares (%d) in rank %d:  %s", file, rank+1, fenParts[0])
+			}
+			if file > 8 {
+				return fmt.Errorf("too many squares (%d) in rank %d:  %s", file, rank+1, fenParts[0])
+			}
+			// reset file counter and decrease rank
+			file = 0
+			rank--
+			if rank < 0 {
+				return fmt.Errorf("too many ranks (%d):  %s", 8-rank, fenParts[0])
 			}
 		} else { // find piece type
 			piece := PieceFromChar(string(c))
 			if piece == PieceNone {
-				err := errors.New(fmt.Sprintf("invalid piece character: %s", string(c)))
-				return err
+				return fmt.Errorf("invalid piece character '%s' in %s", string(c), fenParts[0])
+			}
+			if file > 7 {
+				return fmt.Errorf("too many squares (%d) in rank %d:  %s", file+1, rank+1, fenParts[0])
+			}
+			currentSquare := SquareOf(File(file), Rank(rank))
+			if !currentSquare.IsValid() {
+				return fmt.Errorf("invalid square %d (%s): %s", currentSquare, currentSquare.String(), fenParts[0])
 			}
 			p.putPiece(piece, currentSquare)
-			currentSquare++
+			file++
 		}
 	}
-	if currentSquare != SqA2 { // after h1++ we reach a2 - a2 needs to be last current square
-		err := errors.New("not reached last square (h1) after reading fen")
-		return err
+	if file != 8 || rank != 0 { // after h1++ we reach a2 - a2 needs to be last current square
+		return fmt.Errorf("not reached last square (file=%d, rank=%d) after reading fen", file, rank)
 	}
 
 	// set defaults
