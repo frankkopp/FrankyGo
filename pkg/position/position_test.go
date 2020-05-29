@@ -41,6 +41,7 @@ import (
 
 	"github.com/frankkopp/FrankyGo/internal/config"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
+	"github.com/frankkopp/FrankyGo/internal/util"
 	. "github.com/frankkopp/FrankyGo/pkg/types"
 
 	"github.com/stretchr/testify/assert"
@@ -715,5 +716,33 @@ func TestTimingWasLegal(t *testing.T) {
 		out.Printf("Test took %s for %d iterations\n", elapsed, iterations)
 		out.Printf("Test took %d ns per test\n", elapsed.Nanoseconds()/int64(iterations))
 		out.Printf("Tests per sec %d tps\n", iterations*1e9/uint64(elapsed.Nanoseconds()))
+	}
+}
+
+// test to determine faster way to find pawn doubles
+func BenchmarkSquareDistance(b *testing.B) {
+	var res bool
+	benchmarks := []struct {
+		name string
+		f    func(sq1 Square, sq2 Square) bool
+	}{
+		{"sqDist", func(sq1 Square, sq2 Square) bool {
+			return SquareDistance(sq1, sq2) == 2
+		}},
+		{"sqDiff", func(sq1 Square, sq2 Square) bool {
+			return util.Abs(int(sq1) - int(sq2)) == 16
+		}},
+	}
+	for _, bm := range benchmarks {
+		b.Run(bm.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for i := 0; i < 64; i++ {
+					for j := 0; j < 64; j++ {
+						res = bm.f(Square(i), Square(j))
+					}
+				}
+			}
+		})
+		_ = res
 	}
 }

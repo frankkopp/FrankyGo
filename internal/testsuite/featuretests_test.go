@@ -54,7 +54,7 @@ func TestFeatureTests(t *testing.T) {
 		config.Settings.Search.UseTTValue = true
 		config.Settings.Search.UseQSTT = true
 
-		config.Settings.Search.UsePVS = false
+		config.Settings.Search.UsePVS = true
 		config.Settings.Search.UseAspiration = false
 
 		config.Settings.Search.UseTTMove = true
