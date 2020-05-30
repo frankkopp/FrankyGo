@@ -51,7 +51,7 @@ var trace = false
 // AspirationSearch tries to achieve more beta cut offs by searching with a narrow
 // search window around an expected value for the search. We establish
 // a start value by doing a 3 ply normal search and expand the search window in
-// in 3 steps to the maximal window if search value returns outside of the window.
+// in several steps to the maximal window if search value returns outside of the window.
 func (s *Search) aspirationSearch(p *position.Position, depth int, bestValue Value) Value {
 	if trace {
 		s.log.Debugf("Aspiration for depth %d: START best=%d", depth, bestValue)
@@ -75,7 +75,7 @@ func (s *Search) aspirationSearch(p *position.Position, depth int, bestValue Val
 		if s.stopConditions() && (value <= alpha || value >= beta) {
 			return ValueNA
 		}
-		// check if value was within in window or expand the window
+		// check if value was within the window or expand the window
 		if value <= alpha {
 			// FAIL LOW - decrease upper bound
 			if trace {
@@ -85,7 +85,7 @@ func (s *Search) aspirationSearch(p *position.Position, depth int, bestValue Val
 			// add some extra time because of fail low
 			// we might have found a strong opponent's move
 			s.addExtraTime(1.3)
-			// if we fail low test show it is best to immediately open up the window full
+			// if we fail low tests show it is best to immediately open up the window full
 			alpha = ValueMin // alpha = Max(bestValue-aspirationSteps[i], ValueMin)
 			s.statistics.AspirationResearches++
 			s.statistics.CurrentExtraSearchDepth = 0
@@ -143,10 +143,10 @@ func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta V
 	for i, m := range *s.rootMoves {
 
 		p.DoMove(m)
-		s.nodesVisited++
 		s.statistics.CurrentVariation.PushBack(m)
 		s.statistics.CurrentRootMoveIndex = i
 		s.statistics.CurrentRootMove = m
+		s.nodesVisited++
 
 		// check repetition and 50 moves
 		if s.checkDrawRepAnd50(p, 2) {
@@ -364,8 +364,8 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 
 	// NULL MOVE PRUNING
 	// https://www.chessprogramming.org/Null_Move_Pruning
-	// Under the assumption the in most chess position it would be better
-	// do make a move than to not make a move we can assume that if
+	// Under the assumption that in most chess position it would be better
+	// do make a move than to not make a move we assume that if
 	// our positional value after a null move is already above beta (>beta)
 	// it would be above beta when doing a move in any case.
 	// Certain situations need to be considered though:
@@ -376,7 +376,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		if doNull &&
 			!isPV &&
 			depth >= Settings.Search.NmpDepth &&
-			p.MaterialNonPawn(us) > 0 &&
+			p.MaterialNonPawn(us) > 0 &&  // to reduce risk of zugzwang
 			!hasCheck {
 			// possible other criteria: eval > beta
 
@@ -664,7 +664,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 
 			// ///////////////////////////////////////////////////////
 			// PVS
-			// First move in Node will be search with the full window. Due to move
+			// First move in Node will be searched with the full window. Due to move
 			// ordering we assume this is the PV. Every other move is searched with
 			// a null window as we only try to prove that the move is bad (<alpha)
 			// or that the move is too good (>beta). If this prove fails we need
@@ -720,7 +720,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			// this node are worse then other moves in other nodes which
 			// raised alpha - meaning we have a better move from another
 			// node we would play. We will return alpha and store a alpha
-			// node in TT with no best move for TT.
+			// node in TT.
 			if value > alpha {
 				// If we found a move that is better or equal than beta
 				// this means that the opponent can/will avoid this
@@ -783,7 +783,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	// If we did not have at least one legal move
 	// then we might have a mate or stalemate
 	if movesSearched == 0 && !s.stopConditions() {
-		if p.HasCheck() { // mate
+		if hasCheck { // mate
 			s.statistics.Checkmates++
 			bestNodeValue = -ValueCheckMate + Value(ply)
 		} else { // stalemate
@@ -847,25 +847,6 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	ttMove := MoveNone
 	staticEval := ValueNA
 	hasCheck := p.HasCheck()
-
-	// if in check we simply do a normal search (all moves) in qsearch
-	if !hasCheck {
-		// get an evaluation for the position
-		staticEval = s.evaluate(p)
-		// Quiescence StandPat
-		// Use evaluation as a standing pat (lower bound)
-		// https://www.chessprogramming.org/Quiescence_Search#Standing_Pat
-		// Assumption is that there is at least on move which would improve the
-		// current position. So if we are already >beta we don't need to look at it.
-		if Settings.Search.UseQSStandpat && staticEval > alpha {
-			if staticEval >= beta {
-				s.statistics.StandpatCuts++
-				return staticEval
-			}
-			alpha = staticEval
-		}
-		bestNodeValue = staticEval
-	}
 
 	// TT Lookup
 	var ttEntry *transpositiontable.TtEntry
@@ -953,7 +934,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	movesSearched := 0
 
 	// if in check we search all moves
-	// this is in fact a search extension for checks
+	// this is in fact a search extension as we look at all moves
 	var mode movegen.GenMode
 	if hasCheck {
 		s.statistics.CheckInQS++
@@ -979,7 +960,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 			move != (*myMg.KillerMoves())[1] &&
 			move.MoveType() != Promotion &&
 			!hasCheck && // pre move
-			!givesCheck { // from pre move null move check
+			!givesCheck {
 
 			// to check in futility pruning what material delta we have
 			moveGain := p.GetPiece(move.To()).ValueOf()
@@ -1072,7 +1053,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	if movesSearched == 0 && !s.stopConditions() {
 		// if we have a mate we had a check before and therefore
 		// generated all moves. We can be sure this is a mate.
-		if p.HasCheck() {
+		if hasCheck {
 			s.statistics.Checkmates++
 			bestNodeValue = -ValueCheckMate + Value(ply)
 			ttType = EXACT
@@ -1104,8 +1085,7 @@ func (s *Search) evaluate(p *position.Position) Value {
 }
 
 // reduce the number of moves searched in quiescence search by trying
-// to only look at good captures. Might be improved with SEE in the
-// future
+// to only look at good captures.
 func (s *Search) goodCapture(p *position.Position, move Move) bool {
 	if Settings.Search.UseSEE {
 		// Check SEE score of higher value pieces to low value pieces

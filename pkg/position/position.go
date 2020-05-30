@@ -43,14 +43,9 @@ import (
 	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
-var initialized = false
-
 // initialize package
 func init() {
-	if !initialized {
-		initZobrist()
-		initialized = true
-	}
+	initZobrist()
 }
 
 const (
@@ -92,14 +87,8 @@ type Position struct {
 	nextHalfMoveNumber int
 	// piece bitboards
 	piecesBb [ColorLength][PtLength]Bitboard
-	// occupied bitboards with rotations
+	// occupied bitboards
 	occupiedBb [ColorLength]Bitboard
-
-	// not used any more as we use the magic bitboards any more
-	// occupiedBbR90 [ColorLength]Bitboard
-	// occupiedBbL90 [ColorLength]Bitboard
-	// occupiedBbR45 [ColorLength]Bitboard
-	// occupiedBbL45 [ColorLength]Bitboard
 
 	// history information for undo and repetition detection
 	historyCounter int
@@ -116,7 +105,7 @@ type Position struct {
 	// Game phase value
 	gamePhase int
 
-	// caches a hasCheck and hasMate Flag for the current position. Will be set
+	// caches a hasCheck Flag for the current position. Will be set
 	// after a call to hasCheck() and reset to TBD every time a move is made or
 	// unmade.
 	hasCheckFlag int
@@ -401,53 +390,9 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 	return false
 }
 
-// IsLegalMove tests a move if it is legal on the current position.
-// Basically tests if the king would be left in check after the move
-// or if the king crosses an attacked square during castling.
-func (p *Position) IsLegalMove(move Move) bool {
-	// king is not allowed to pass a square which is attacked by opponent
-	if move.MoveType() == Castling {
-		// castling not allowed when in check
-		// we can simply check the from square of the castling move
-		// and check if the current opponent attacks it. Castling would not
-		// be possible if the attack would be influenced by the castling
-		// itself.
-		if p.IsAttacked(move.From(), p.nextPlayer.Flip()) {
-			return false
-		}
-		// castling crossing attacked square?
-		switch move.To() {
-		case SqG1:
-			if p.IsAttacked(SqF1, p.nextPlayer.Flip()) {
-				return false
-			}
-		case SqC1:
-			if p.IsAttacked(SqD1, p.nextPlayer.Flip()) {
-				return false
-			}
-		case SqG8:
-			if p.IsAttacked(SqF8, p.nextPlayer.Flip()) {
-				return false
-			}
-		case SqC8:
-			if p.IsAttacked(SqD8, p.nextPlayer.Flip()) {
-				return false
-			}
-		default:
-			break
-		}
-	}
-	// make the move on the position
-	// then check if the move leaves the king in check
-	p.DoMove(move)
-	legal := !p.IsAttacked(p.kingSquare[p.nextPlayer.Flip()], p.nextPlayer)
-	p.UndoMove()
-	return legal
-}
-
 // WasLegalMove tests if the last move was legal. Basically tests if
 // the king is now in check or if the king crossed an attacked square
-// during castling or of there was a castling although in check.
+// during castling or if there was a castling although in check.
 // If the position does not have a last move (history empty) this
 // will only check if the king of the opponent is attacked e.g. could
 // now be captured by the next player.
@@ -494,6 +439,55 @@ func (p *Position) WasLegalMove() bool {
 	return true
 }
 
+// IsLegalMove tests a move if it is legal on the current position.
+// Basically tests if the king would be left in check after the move
+// or if the king crosses an attacked square during castling.
+func (p *Position) IsLegalMove(move Move) bool {
+	// king is not allowed to pass a square which is attacked by opponent
+	if move.MoveType() == Castling {
+		// castling not allowed when in check
+		// we can simply check the from square of the castling move
+		// and check if the current opponent attacks it. Castling would not
+		// be possible if the attack would be influenced by the castling
+		// itself.
+		if p.IsAttacked(move.From(), p.nextPlayer.Flip()) {
+			return false
+		}
+		// castling crossing attacked square?
+		switch move.To() {
+		case SqG1:
+			if p.IsAttacked(SqF1, p.nextPlayer.Flip()) {
+				return false
+			}
+		case SqC1:
+			if p.IsAttacked(SqD1, p.nextPlayer.Flip()) {
+				return false
+			}
+		case SqG8:
+			if p.IsAttacked(SqF8, p.nextPlayer.Flip()) {
+				return false
+			}
+		case SqC8:
+			if p.IsAttacked(SqD8, p.nextPlayer.Flip()) {
+				return false
+			}
+		default:
+			break
+		}
+	}
+	// make the move on the position
+	// then check if the move leaves the king in check
+	// This could probably be implemented a bit more efficient by
+	// not having to call DoMove/UndoMove similar to GivesCheck() but
+	// IsLegalMove is not used during normal search. The only usage
+	// is in HasLegalMoves which is used in perft.go to check for
+	// mate. So this simple implementation is sufficient.
+	p.DoMove(move)
+	legal := !p.IsAttacked(p.kingSquare[p.nextPlayer.Flip()], p.nextPlayer)
+	p.UndoMove()
+	return legal
+}
+
 // HasCheck returns true if the next player is threatened by a check
 // (king is attacked).
 // This is cached for the current position. Multiple calls to this
@@ -509,6 +503,89 @@ func (p *Position) HasCheck() bool {
 		p.hasCheckFlag = flagFalse
 	}
 	return check
+}
+
+// GivesCheck determines if the given move will give check to the opponent
+// of p.NextPlayer() and returns true if so.
+func (p *Position) GivesCheck(move Move) bool {
+
+	us := p.nextPlayer
+	them := us.Flip()
+
+	// opponents king square
+	kingSq := p.kingSquare[them]
+
+	// move details
+	fromSq := move.From()
+	toSq := move.To()
+	fromPc := p.board[fromSq]
+	fromPt := fromPc.TypeOf()
+	epTargetSq := SqNone
+	moveType := move.MoveType()
+
+	switch moveType {
+	case Promotion:
+		// promotion moves - use new piece type
+		fromPt = move.PromotionType()
+	case Castling:
+		// set the target square to the rook square and
+		// piece type to ROOK. King can't give check
+		// also no revealed check possible in castling
+		fromPt = Rook
+		switch toSq {
+		case SqG1: // white king side castle
+			toSq = SqF1
+		case SqC1: // white queen side castle
+			toSq = SqD1
+		case SqG8: // black king side castle
+			toSq = SqF8
+		case SqC8: // black queen side castle
+			toSq = SqD8
+		}
+	case EnPassant:
+		// set en passant capture square
+		epTargetSq = toSq.To(them.MoveDirection())
+	}
+
+	// get all pieces to check occupied intermediate squares
+	boardAfterMove := p.OccupiedAll()
+
+	// adapt board by moving the piece on the bitboard
+	boardAfterMove.PopSquare(fromSq)
+	boardAfterMove.PushSquare(toSq)
+	if moveType == EnPassant {
+		boardAfterMove.PopSquare(epTargetSq)
+	}
+
+	// Find direct checks
+	switch fromPt {
+	case Pawn:
+		if GetPawnAttacks(us, toSq).Has(kingSq) {
+			return true
+		}
+	case King:
+	// ignore - can't give check
+	default:
+		if GetAttacksBb(fromPt, toSq, boardAfterMove).Has(kingSq) {
+			return true
+		}
+	}
+
+	// revealed checks
+	// we only need to check for rook, bishop and queens
+	// knight and pawn attacks can't be revealed
+	// exception is en passant where the captured piece can reveal check
+	switch {
+	case GetAttacksBb(Bishop, kingSq, boardAfterMove)&p.piecesBb[us][Bishop] > 0:
+		return true
+	case GetAttacksBb(Rook, kingSq, boardAfterMove)&p.piecesBb[us][Rook] > 0:
+		return true
+	case GetAttacksBb(Queen, kingSq, boardAfterMove)&p.piecesBb[us][Queen] > 0:
+		return true
+	}
+
+	// we did not find a check
+	return false
 }
 
 // IsCapturingMove determines if a move on this position is a capturing move
@@ -611,89 +688,6 @@ func (p *Position) HasInsufficientMaterial() bool {
 		return true
 	}
 
-	return false
-}
-
-// GivesCheck determines if the given move will give check to the opponent
-// of p.NextPlayer() and returns true if so.
-func (p *Position) GivesCheck(move Move) bool {
-
-	us := p.nextPlayer
-	them := us.Flip()
-
-	// opponents king square
-	kingSq := p.kingSquare[them]
-
-	// move details
-	fromSq := move.From()
-	toSq := move.To()
-	fromPc := p.board[fromSq]
-	fromPt := fromPc.TypeOf()
-	epTargetSq := SqNone
-	moveType := move.MoveType()
-
-	switch moveType {
-	case Promotion:
-		// promotion moves - use new piece type
-		fromPt = move.PromotionType()
-	case Castling:
-		// set the target square to the rook square and
-		// piece type to ROOK. King can't give check
-		// also no revealed check possible in castling
-		fromPt = Rook
-		switch toSq {
-		case SqG1: // white king side castle
-			toSq = SqF1
-		case SqC1: // white queen side castle
-			toSq = SqD1
-		case SqG8: // black king side castle
-			toSq = SqF8
-		case SqC8: // black queen side castle
-			toSq = SqD8
-		}
-	case EnPassant:
-		// set en passant capture square
-		epTargetSq = toSq.To(them.MoveDirection())
-	}
-
-	// get all pieces to check occupied intermediate squares
-	boardAfterMove := p.OccupiedAll()
-
-	// adapt board by moving the piece on the bitboard
-	boardAfterMove.PopSquare(fromSq)
-	boardAfterMove.PushSquare(toSq)
-	if moveType == EnPassant {
-		boardAfterMove.PopSquare(epTargetSq)
-	}
-
-	// Find direct checks
-	switch fromPt {
-	case Pawn:
-		if GetPawnAttacks(us, toSq).Has(kingSq) {
-			return true
-		}
-	case King:
-	// ignore - can't give check
-	default:
-		if GetAttacksBb(fromPt, toSq, boardAfterMove).Has(kingSq) {
-			return true
-		}
-	}
-
-	// revealed checks
-	// we only need to check for rook, bishop and queens
-	// knight and pawn attacks can't be revealed
-	// exception is en passant where the captured piece can reveal check
-	switch {
-	case GetAttacksBb(Bishop, kingSq, boardAfterMove)&p.piecesBb[us][Bishop] > 0:
-		return true
-	case GetAttacksBb(Rook, kingSq, boardAfterMove)&p.piecesBb[us][Rook] > 0:
-		return true
-	case GetAttacksBb(Queen, kingSq, boardAfterMove)&p.piecesBb[us][Queen] > 0:
-		return true
-	}
-
-	// we did not find a check
 	return false
 }
 

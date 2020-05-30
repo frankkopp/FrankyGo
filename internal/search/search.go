@@ -283,7 +283,6 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	s.timeLimit = 0
 	s.extraTime = 0
 	s.nodesVisited = 0
-	// s.history = history.NewHistory()
 	s.statistics = Statistics{}
 	s.lastUciUpdateTime = s.startTime
 	s.initialize()
@@ -318,7 +317,11 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 		s.log.Info("Transposition Table: Not using TT")
 	}
 
+	s.log.Infof("Search using: PVS=%t ASP=%t", config.Settings.Search.UsePVS, config.Settings.Search.UseAspiration)
+
 	// Initialize ply based data
+	// move generators for each ply
+	// pv move list for each ply
 	s.mg = make([]*movegen.Movegen, 0, MaxDepth+1)
 	s.pv = make([]*moveslice.MoveSlice, 0, MaxDepth+1)
 	for i := 0; i <= MaxDepth; i++ {
@@ -329,8 +332,6 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 		s.mg = append(s.mg, newMoveGen)
 		s.pv = append(s.pv, moveslice.NewMoveSlice(MaxDepth+1))
 	}
-
-	s.log.Infof("Search using: PVS=%t ASP=%t", config.Settings.Search.UsePVS, config.Settings.Search.UseAspiration)
 
 	// release the init phase lock to signal the calling go routine
 	// waiting in StartSearch() to return
@@ -344,10 +345,12 @@ func (s *Search) run(position *position.Position, sl *Limits) {
 	} else {
 		// create result based on book move
 		searchResult = &Result{BestMove: bookMove, BookMove: true}
+		// Flag to signal search that we had at least one book move.
+		// Search might decide to use this to extend search time.
 		s.hadBookMove = true
 	}
 
-	// If we arrive here during Ponder of Infinite mode and the search is not
+	// If we arrive here during Ponder mode or Infinite mode and the search is not
 	// stopped it means that the search was finished before it has been stopped
 	// by stopSearchFlag or ponderhit,
 	// We wait here until search has completed.
@@ -505,7 +508,7 @@ func (s *Search) iterativeDeepening(p *position.Position) *Result {
 	// ### END OF Iterative Deepening
 	// ###########################################
 
-	// update searchResult here
+	// update searchResult
 	// best move is pv[0][0] - we need to make sure this array entry exists at this time
 	// best value is pv[0][0].valueOf
 	result = &Result{
@@ -595,7 +598,7 @@ func (s *Search) stopConditions() bool {
 	return s.stopFlag
 }
 
-// setupSearchLimits reports to log.debug on search limits for the search
+// setupSearchLimits reports to log on search limits for the search
 // and sets up time control.
 func (s *Search) setupSearchLimits(position *position.Position, sl *Limits) {
 	if sl.Infinite {
