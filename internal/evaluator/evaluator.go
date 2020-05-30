@@ -45,7 +45,7 @@ import (
 
 var out = message.NewPrinter(language.German)
 
-// Evaluator  represents a data structure and functionality fo
+// Evaluator  represents a data structure and functionality for
 // evaluating chess positions by using various evaluation
 // heuristics like material, positional values, pawn structure, etc.
 //  Create a new instance with NewEvaluator()
