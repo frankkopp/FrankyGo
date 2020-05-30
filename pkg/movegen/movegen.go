@@ -67,6 +67,10 @@ type Movegen struct {
 // //////////////////////////////////////////////////////
 
 // GenMode generation modes for on demand move generation.
+//  GenZero     GenMode = 0b00
+//	GenNonQuiet GenMode = 0b01
+//	GenQuiet    GenMode = 0b10
+//	GenAll      GenMode = 0b11
 type GenMode int
 
 // GenMode generation modes for on demand move generation.
@@ -125,7 +129,7 @@ func NewMoveGen() *Movegen {
 // The idea of evasion is to avoid generating moves which are obviously not getting the
 // king out of check. This may reduce the total number of generated moves but there might
 // still be a few non legal moves. This is the case if considering and calculating all
-// possible scenarios is more expensive than to just generate the move and dismiss is later.
+// possible scenarios is more expensive than to just generate the move and dismiss it later.
 // Because of beta cuts off we quite often will never have to check the full legality
 // of these moves anyway.
 func (mg *Movegen) GeneratePseudoLegalMoves(p *position.Position, mode GenMode, evasion bool) *moveslice.MoveSlice {
@@ -204,7 +208,7 @@ func (mg *Movegen) GenerateLegalMoves(position *position.Position, mode GenMode)
 // The idea of evasion is to avoid generating moves which are obviously not getting the
 // king out of check. This may reduce the total number of generated moves but there might
 // still be a few non legal moves. This is the case if considering and calculating all
-// possible scenarios is more expensive than to just generate the move and dismiss is later.
+// possible scenarios is more expensive than to just generate the move and dismiss it later.
 // Because of beta cuts off we quite often will never have to check the full legality
 // of these moves anyway.
 func (mg *Movegen) GetNextMove(p *position.Position, mode GenMode, evasion bool) Move {
@@ -231,7 +235,7 @@ func (mg *Movegen) GetNextMove(p *position.Position, mode GenMode, evasion bool)
 	// without removing the element from the vector which would
 	// be expensive as all elements would have to be shifted.
 	// (although our Moveslice class can handle this efficiently
-	// through a similar mechanism)
+	// through a similar mechanism of Go slices)
 
 	// If the list is currently empty and we have not generated all moves yet
 	// generate the next batch until we have new moves or there are no more
@@ -259,7 +263,7 @@ func (mg *Movegen) GetNextMove(p *position.Position, mode GenMode, evasion bool)
 			mg.takeIndex++
 
 			// We found the pv move and skipped it.
-			// No need to check this for this generation cycle
+			// No need to check this again for this generation cycle
 			mg.pvMovePushed = false
 
 			// PV move last in move list
@@ -270,7 +274,7 @@ func (mg *Movegen) GetNextMove(p *position.Position, mode GenMode, evasion bool)
 				// Otherwise we return the move below.
 				mg.takeIndex = 0
 				mg.onDemandMoves.Clear()
-				mg.fillOnDemandMoveList(p, mode, false)
+				mg.fillOnDemandMoveList(p, mode, evasion)
 				// no more moves - return MOVE_NONE
 				if mg.onDemandMoves.Len() == 0 {
 					return MoveNone
@@ -278,10 +282,9 @@ func (mg *Movegen) GetNextMove(p *position.Position, mode GenMode, evasion bool)
 			}
 		}
 
-		// we have at least one move in the list and
-		// it is not the pvMove. Increase the takeIndex
-		// and return the move
-		// (remove internal sort value)
+		// we have at least one move in the list and it is not the
+		// pvMove. Increase the takeIndex and return the move.
+		// Also remove internal sort value before returning the move.
 		move := (*mg.onDemandMoves)[mg.takeIndex].MoveOf()
 		mg.takeIndex++
 		if mg.takeIndex >= mg.onDemandMoves.Len() {
@@ -298,7 +301,7 @@ func (mg *Movegen) GetNextMove(p *position.Position, mode GenMode, evasion bool)
 }
 
 // ResetOnDemand resets the move on demand generator to start fresh.
-// Also deletes Killer and PV moves.
+// Also deletes PV moves.
 func (mg *Movegen) ResetOnDemand() {
 	mg.onDemandMoves.Clear()
 	mg.onDemandEvasionTargets = BbZero
@@ -652,15 +655,15 @@ func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode, evas
 			} else {
 				mg.currentODStage = od4
 			}
-		case od1: // capture
+		case od1: // pawns: capture and high value promotion
 			mg.generatePawnMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
 			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = od2
-		case od2:
+		case od2: // officer capture
 			mg.generateMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
 			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = od3
-		case od3:
+		case od3: // king captures
 			mg.generateKingMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
 			mg.currentODStage = od4
 		case od4:
@@ -669,21 +672,21 @@ func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode, evas
 			} else {
 				mg.currentODStage = odEnd
 			}
-		case od5: // non capture
+		case od5: // pawn: non capture
 			mg.generatePawnMoves(p, GenQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
 			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = od6
-		case od6:
+		case od6: // castling
 			if !evasion { // no castlings when in check
 				mg.generateCastling(p, GenQuiet, mg.onDemandMoves)
 				mg.updateSortValues(p, mg.onDemandMoves)
 			}
 			mg.currentODStage = od7
-		case od7:
+		case od7: // officer non capture
 			mg.generateMoves(p, GenQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
 			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = od8
-		case od8:
+		case od8: // king non capture
 			mg.generateKingMoves(p, GenQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
 			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = odEnd
@@ -700,6 +703,10 @@ func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode, evas
 // Move order heuristics based on history data.
 func (mg *Movegen) updateSortValues(p *position.Position, moveList *moveslice.MoveSlice) {
 	us := p.NextPlayer()
+	// iterate over all available moves and update the
+	// sort value if the move is the PV or a Killer move.
+	// Also update the sort value for history and counter
+	// move significance.
 	for i := 0; i < len(*moveList); i++ {
 		move := &(*moveList)[i]
 		switch {
@@ -785,10 +792,7 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 		// the backward shift for the from-Square.
 		// All moves get sort values so that sort order should be:
 		//   captures: most value victim least value attacker - promotion piece value
-		//   non captures: killer (TBD), promotions, castling, normal moves (position value)
-		// Values for sorting are descending - the most valuable move has the highest value.
-		// Values are not compatible to position evaluation values outside of the move
-		// generator.
+		//   non captures: promotions, castling, normal moves (position value)
 
 		// When we are in check only evasion moves are generated. E.g. all moves need to
 		// target these evasion squares. That is either capturing the attacker or blocking
@@ -797,12 +801,15 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 		var tmpCaptures, promCaptures Bitboard
 
 		for _, dir := range []Direction{West, East} {
-			// normal pawn captures - promotions first
+			// all pawn captures
 			tmpCaptures = ShiftBitboard(myPawns, nextPlayer.MoveDirection()+dir) & oppPieces
+
+			// filter evasion targets if in check
 			if evasion {
 				tmpCaptures &= evasionTargets
 			}
 
+			// normal pawn captures - promotions first
 			promCaptures = tmpCaptures & nextPlayer.PromotionRankBb()
 			// promotion captures
 			for promCaptures != 0 {
@@ -814,7 +821,7 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Queen, value+Queen.ValueOf()))
 				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Knight, value+Knight.ValueOf()))
 				// rook and bishops are usually redundant to queen promotion (except in stale mate situations)
-				// therefore we give them lower sort order
+				// therefore we give them a lower sort order
 				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Rook, value+Rook.ValueOf()-Value(2000)))
 				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Bishop, value+Bishop.ValueOf()-Value(2000)))
 			}
@@ -847,21 +854,19 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 		}
 
 		// we treat Queen and Knight promotions as non quiet moves
-			promMoves := ShiftBitboard(myPawns, nextPlayer.MoveDirection()) &
-				^position.OccupiedAll() &
-				nextPlayer.PromotionRankBb()
-			if evasion {
-				promMoves &= evasionTargets
-			}
-			for promMoves != 0 {
-				toSquare := promMoves.PopLsb()
-				fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection())
-				// value for non captures is lowered by 10k
-				value := -Pawn.ValueOf()
-				// add the possible promotion moves to the move list and also add value of the promoted piece type
-				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Queen, value+Queen.ValueOf()))
-				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Knight, value+Knight.ValueOf()))
-			}
+		promMoves := ShiftBitboard(myPawns, nextPlayer.MoveDirection()) &
+			^position.OccupiedAll() &
+			nextPlayer.PromotionRankBb()
+		if evasion {
+			promMoves &= evasionTargets
+		}
+		for promMoves != 0 {
+			toSquare := promMoves.PopLsb()
+			fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection())
+			value := -Pawn.ValueOf()
+			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Queen, value+Queen.ValueOf()))
+			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Knight, value+Knight.ValueOf()))
+		}
 	}
 
 	// non captures
@@ -880,6 +885,7 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 		// pawns double - check step two to unoccupied squares
 		tmpMovesDouble := ShiftBitboard(tmpMoves&nextPlayer.PawnDoubleRank(), nextPlayer.MoveDirection()) & ^position.OccupiedAll()
 
+		// filter evasion targets if in check
 		if evasion {
 			tmpMoves &= evasionTargets
 			tmpMovesDouble &= evasionTargets
@@ -901,8 +907,7 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 		// double pawn steps
 		for tmpMovesDouble != 0 {
 			toSquare := tmpMovesDouble.PopLsb()
-			fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection()).
-				To(nextPlayer.Flip().MoveDirection())
+			fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection()).To(nextPlayer.Flip().MoveDirection())
 			value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
 			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 		}
@@ -1000,11 +1005,7 @@ func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, evas
 	gamePhase := position.GamePhase()
 	occupiedBb := position.OccupiedAll()
 
-	// loop through all piece types, get pseudo attacks for the piece and
-	// AND it with the opponents pieces.
-	// For sliding pieces check if there are other pieces in between the
-	// piece and the target square. If free this is a valid move (or
-	// capture)
+	// Loop through all piece types, get attacks for the piece.
 	// When we are in check (evasion=true) only evasion moves are generated. E.g. all
 	// moves need to target these evasion squares. That is either capturing the
 	// attacker or blocking a sliding attacker.
