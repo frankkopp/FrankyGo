@@ -51,6 +51,7 @@ const (
 	FileG    File = iota
 	FileH    File = iota
 	FileNone File = iota
+	FileLength    = FileNone
 )
 
 // IsValid checks if f represents a valid file
