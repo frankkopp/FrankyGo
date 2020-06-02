@@ -41,6 +41,11 @@ const (
 	Castling  MoveType = 3
 )
 
+// IsValid checks if t is a valid move type
+func (t MoveType) IsValid() bool {
+	return t < 4
+}
+
 // String returns a string representing the move type
 func (t MoveType) String() string {
 	switch t {
@@ -55,9 +60,4 @@ func (t MoveType) String() string {
 	default:
 		return "-"
 	}
-}
-
-// IsValid checks if t is a valid move type
-func (t MoveType) IsValid() bool {
-	return t < 4
 }
