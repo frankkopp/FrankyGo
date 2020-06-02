@@ -36,8 +36,17 @@ import (
 // Bitboard is a 64 bit unsigned int with 1 bit for each square on the board
 type Bitboard uint64
 
-// Bb returns a Bitboard of the square by accessing the pre calculated
-// square to bitboard array.
+// Bb returns a Bitboard of the given file
+func (f File) Bb() Bitboard {
+	return fileBb[f]
+}
+
+// Bb returns a Bitboard of the given rank
+func (r Rank) Bb() Bitboard {
+	return rankBb[r]
+}
+
+// Bb returns a Bitboard of the square
 func (sq Square) Bb() Bitboard {
 	return sqBb[sq]
 }
@@ -53,30 +62,30 @@ func (sq Square) RankBb() Bitboard {
 }
 
 // PushSquare sets the corresponding bit of the bitboard for the square
-func PushSquare(b Bitboard, s Square) Bitboard {
-	return b | s.Bb()
+func PushSquare(b Bitboard, sq Square) Bitboard {
+	return b | sqBb[sq]
 }
 
 // PushSquare sets the corresponding bit of the bitboard for the square
-func (b *Bitboard) PushSquare(s Square) Bitboard {
-	*b |= s.Bb()
+func (b *Bitboard) PushSquare(sq Square) Bitboard {
+	*b |= sqBb[sq]
 	return *b
 }
 
 // PopSquare removes the corresponding bit of the bitboard for the square
-func PopSquare(b Bitboard, s Square) Bitboard {
-	return b &^ s.Bb()
+func PopSquare(b Bitboard, sq Square) Bitboard {
+	return b &^ sqBb[sq]
 }
 
 // PopSquare removes the corresponding bit of the bitboard for the square
-func (b *Bitboard) PopSquare(s Square) Bitboard {
-	*b = *b &^ s.Bb()
+func (b *Bitboard) PopSquare(sq Square) Bitboard {
+	*b = *b &^ sqBb[sq]
 	return *b
 }
 
 // Has tests if a square (bit) is set
-func (b Bitboard) Has(s Square) bool {
-	return b&sqBb[s] != 0
+func (b Bitboard) Has(sq Square) bool {
+	return b&sqBb[sq] != 0
 }
 
 // ShiftBitboard shifting all bits of a bitboard in the given direction by 1 square

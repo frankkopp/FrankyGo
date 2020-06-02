@@ -52,22 +52,6 @@ const (
 )
 
 // array of string labels for piece types
-var pieceTypeToString = [PtLength]string{"NOPIECE", "King", "Pawn", "Knight", "Bishop", "Rook", "Queen"}
-
-// String returns a string representation of a piece type
-func (pt PieceType) String() string {
-	return pieceTypeToString[pt]
-}
-
-// array of string labels for piece types
-var pieceTypeToChar = string("-KPNBRQ")
-
-// Char returns a single char string representation of a piece type
-func (pt PieceType) Char() string {
-	return string(pieceTypeToChar[pt])
-}
-
-// array of string labels for piece types
 var gamePhaseValue = [PtLength]int{0, 0, 0, 1, 1, 2, 4}
 
 // GamePhaseValue returns a value for calculating game phase
@@ -88,4 +72,20 @@ func (pt PieceType) ValueOf() Value {
 // IsValid check if pt is a valid piece type
 func (pt PieceType) IsValid() bool {
 	return pt > 0 && pt < 7
+}
+
+// array of string labels for piece types
+var pieceTypeToString = [PtLength]string{"NOPIECE", "King", "Pawn", "Knight", "Bishop", "Rook", "Queen"}
+
+// String returns a string representation of a piece type
+func (pt PieceType) String() string {
+	return pieceTypeToString[pt]
+}
+
+// array of string labels for piece types
+var pieceTypeToChar = "-KPNBRQ"
+
+// Char returns a single char string representation of a piece type
+func (pt PieceType) Char() string {
+	return string(pieceTypeToChar[pt])
 }

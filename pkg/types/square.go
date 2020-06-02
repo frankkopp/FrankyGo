@@ -28,8 +28,6 @@ package types
 
 import (
 	"fmt"
-
-	"github.com/frankkopp/FrankyGo/internal/assert"
 )
 
 // Square represent exactly on square on a chess board.
@@ -131,24 +129,12 @@ func (sq Square) RankOf() Rank {
 // MakeSquare returns a square based on the string given or SqNone if
 // no valid square could be read from the string
 func MakeSquare(s string) Square {
-	if assert.DEBUG {
-		assert.Assert(len(s) == 2, "square string is not 2 characters long")
-	}
 	file := File(s[0] - 'a')
 	rank := Rank(s[1] - '1')
 	if !file.IsValid() || !rank.IsValid() {
 		return SqNone
 	}
 	return SquareOf(file, rank)
-}
-
-// String returns a string of the file letter and rank number (e.g. e5)
-// if the sq is not a valid square returns "-"
-func (sq Square) String() string {
-	if !sq.IsValid() {
-		return "-"
-	}
-	return sq.FileOf().String() + sq.RankOf().String()
 }
 
 // SquareOf returns a square from file and rank
@@ -185,6 +171,19 @@ func (sq Square) To(d Direction) Square {
 		panic(fmt.Sprintf("Invalid direction %d", d))
 	}
 }
+
+// String returns a string of the file letter and rank number (e.g. e5)
+// if the sq is not a valid square returns "-"
+func (sq Square) String() string {
+	if !sq.IsValid() {
+		return "-"
+	}
+	return sq.FileOf().String() + sq.RankOf().String()
+}
+
+// ///////////////////////////////////////
+// Initialization
+// ///////////////////////////////////////
 
 var sqTo [SqLength][8]Square
 

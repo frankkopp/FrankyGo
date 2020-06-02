@@ -70,31 +70,6 @@ const (
 	PieceLength Piece = 16
 )
 
-// array of string labels for piece types
-var pieceToString = string(" KPNBRQ- kpnbrq-")
-
-// String returns a string representation of a piece type
-func (p Piece) String() string {
-	return string(pieceToString[p])
-}
-
-// array of string labels for pieces
-var pieceToChar = " KONBRQ- k*nbrq-"
-
-// Char returns a string representation of a piece type
-// where pawns are O and * for white and black
-func (p Piece) Char() string {
-	return string(pieceToChar[p])
-}
-
-// array of unicode string labels for pieces
-var pieceToUnicode = []string{" ", "♔", "♙", "♘", "♗", "♖", "♕", "-", " ", "♚", "♟", "♞", "♝", "♜", "♛", "-"}
-
-// UniChar returns a unicode string representation of the given pieces
-func (p Piece) UniChar() string {
-	return pieceToUnicode[p]
-}
-
 // MakePiece creates the piece given by color and piece type
 func MakePiece(c Color, pt PieceType) Piece {
 	return Piece((int(c) << 3) + int(pt))
@@ -128,4 +103,29 @@ func PieceFromChar(s string) Piece {
 		return PieceNone
 	}
 	return Piece(index)
+}
+
+// array of string labels for piece types
+var pieceToString = string(" KPNBRQ- kpnbrq-")
+
+// String returns a string representation of a piece type
+func (p Piece) String() string {
+	return string(pieceToString[p])
+}
+
+// array of string labels for pieces
+var pieceToChar = " KONBRQ- k*nbrq-"
+
+// Char returns a string representation of a piece type
+// where pawns are O and * for white and black
+func (p Piece) Char() string {
+	return string(pieceToChar[p])
+}
+
+// array of unicode string labels for pieces
+var pieceToUnicode = []string{" ", "♔", "♙", "♘", "♗", "♖", "♕", "-", " ", "♚", "♟", "♞", "♝", "♜", "♛", "-"}
+
+// UniChar returns a unicode string representation of the given pieces
+func (p Piece) UniChar() string {
+	return pieceToUnicode[p]
 }

@@ -42,26 +42,21 @@ type Rank uint8
 // Rank represents a chess board rank 1-8
 //noinspection GoUnusedConst
 const (
-	Rank1      Rank = iota
-	Rank2      Rank = iota
-	Rank3      Rank = iota
-	Rank4      Rank = iota
-	Rank5      Rank = iota
-	Rank6      Rank = iota
-	Rank7      Rank = iota
-	Rank8      Rank = iota
-	RankNone   Rank = iota
+	Rank1      Rank = 0
+	Rank2      Rank = 1
+	Rank3      Rank = 2
+	Rank4      Rank = 3
+	Rank5      Rank = 4
+	Rank6      Rank = 5
+	Rank7      Rank = 6
+	Rank8      Rank = 7
+	RankNone   Rank = 8
 	RankLength      = RankNone
 )
 
 // IsValid checks if f represents a valid file
 func (r Rank) IsValid() bool {
 	return r < RankNone
-}
-
-// Bb returns a Bitboard of the given rank
-func (r Rank) Bb() Bitboard {
-	return rankBb[r]
 }
 
 const rankLabels string = "12345678"

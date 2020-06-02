@@ -42,15 +42,15 @@ type File uint8
 // File represents a chess board file a-h
 //noinspection GoUnusedConst
 const (
-	FileA    File = iota
-	FileB    File = iota
-	FileC    File = iota
-	FileD    File = iota
-	FileE    File = iota
-	FileF    File = iota
-	FileG    File = iota
-	FileH    File = iota
-	FileNone File = iota
+	FileA    File = 0
+	FileB    File = 1
+	FileC    File = 2
+	FileD    File = 3
+	FileE    File = 4
+	FileF    File = 5
+	FileG    File = 6
+	FileH    File = 7
+	FileNone File = 8
 	FileLength    = FileNone
 )
 
@@ -60,11 +60,6 @@ func (f File) IsValid() bool {
 }
 
 const fileLabels string = "abcdefgh"
-
-// Bb returns a Bitboard of the given file
-func (f File) Bb() Bitboard {
-	return fileBb[f]
-}
 
 // String returns a string letter for the file (e.g. a - h)
 // if f is not a valid file returns "-"
