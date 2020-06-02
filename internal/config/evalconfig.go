@@ -1,4 +1,4 @@
-//
+ //
 // FrankyGo - UCI chess engine in GO for learning purposes
 //
 // MIT License
