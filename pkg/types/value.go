@@ -34,6 +34,15 @@ import (
 )
 
 // Value represents the positional value of a chess position
+// 	ValueZero               Value = 0
+//	ValueDraw               Value = 0
+//	ValueOne                Value = 1
+//	ValueInf                Value = 15_000
+//	ValueNA                       = -ValueInf - 1
+//	ValueMax                Value = 10_000
+//	ValueMin                      = -ValueMax
+//	ValueCheckMate                = ValueMax
+//	ValueCheckMateThreshold       = ValueCheckMate - MaxDepth - 1
 type Value int16
 
 // Constants for values

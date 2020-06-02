@@ -31,11 +31,6 @@ import (
 )
 
 // Piece is a set of constants for pieces in chess
-type Piece int8
-
-// Pieces are a set of constants to represent the different pieces
-// of a chess game.
-//
 // Can be used with masks:
 //  No Piece = 0
 //  White Piece is a non zero value with piece & 0b1000 == 0
@@ -54,6 +49,10 @@ type Piece int8
 //  BlackRook  = 0b1101
 //  BlackQueen = 0b1110
 //  PieceLength= 0b10000
+type Piece int8
+
+// Pieces are a set of constants to represent the different pieces
+// of a chess game.
 const (
 	PieceNone   Piece = 0
 	WhiteKing   Piece = 1

@@ -27,6 +27,11 @@
 package types
 
 // ValueType is a set of constants for value types used in search and TtTable
+//  Vnone   ValueType = 0
+//	EXACT   ValueType = 1
+//	ALPHA   ValueType = 2 // upper bound
+//	BETA    ValueType = 3 // lower bound
+//	Vlength int       = 4
 type ValueType int8
 
 // ValueType is a set of constants for value types used in search and TtTable

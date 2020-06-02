@@ -35,6 +35,17 @@ import (
 
 // Move is a 32bit unsigned int type for encoding chess moves as a primitive data type
 // 16 bits for move encoding - 16 bits for sort value
+//  MoveNone Move = 0
+//  BITMAP 32-bit
+//  |-value ------------------------|-Move -------------------------|
+//  3 3 2 2 2 2 2 2 2 2 2 2 1 1 1 1 | 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0
+//  1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 | 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
+//  --------------------------------|--------------------------------
+//                                  |                     1 1 1 1 1 1  to
+//                                  |         1 1 1 1 1 1              from
+//                                  |     1 1                          promotion piece type (pt-2 > 0-3)
+//                                  | 1 1                              move type
+//  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |                                  move sort value
 type Move uint32
 
 const (
@@ -46,12 +57,6 @@ const (
 func CreateMove(from Square, to Square, t MoveType, promType PieceType) Move {
 	if promType < Knight {
 		promType = Knight
-	}
-	if assert.DEBUG {
-		assert.Assert(from.IsValid(), "Invalid From square")
-		assert.Assert(to.IsValid(), "Invalid To square")
-		assert.Assert(t.IsValid(), "Invalid MoveType")
-		assert.Assert(promType.IsValid(), "Invalid promotion PieceType")
 	}
 	// promType will be reduced to 2 bits (4 values) Knight, Bishop, Rook, Queen
 	// therefore we subtract the Knight value from the promType to get
@@ -66,12 +71,6 @@ func CreateMove(from Square, to Square, t MoveType, promType PieceType) Move {
 func CreateMoveValue(from Square, to Square, t MoveType, promType PieceType, value Value) Move {
 	if promType < Knight {
 		promType = Knight
-	}
-	if assert.DEBUG {
-		assert.Assert(from.IsValid(), "Invalid From square")
-		assert.Assert(to.IsValid(), "Invalid To square")
-		assert.Assert(t.IsValid(), "Invalid MoveType")
-		assert.Assert(promType.IsValid(), "Invalid promotion PieceType")
 	}
 	// promType will be reduced to 2 bits (4 values) Knight, Bishop, Rook, Queen
 	// therefore we subtract the Knight value from the promType to get
@@ -182,15 +181,15 @@ func (m Move) StringBits() string {
 /* @formatter:off
    BITMAP 32-bit
    |-value ------------------------|-Move -------------------------|
-   3	3	2	2	2	2	2	2	2	2	2	2	1	1	1	1 | 1	1	1	1	1	1	0	0	0	0	0	0	0	0	0	0
-   1	0	9	8	7	6	5	4	3	2	1	0	9	8	7	6	| 5	4	3	2	1	0	9	8	7	6	5	4	3	2	1	0
+   3 3 2 2 2 2 2 2 2 2 2 2 1 1 1 1 | 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0
+   1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 | 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
    --------------------------------|--------------------------------
-   																| 										1	1	1	1	1	1  to
-   																| 				1	1	1	1	1	1						   from
-   																| 		1	1												   promotion piece type (pt-2 > 0-3)
-   																| 1	1														   move type
-   1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	| 														   move sort value
-*/// @formatter:on
+                                   |                     1 1 1 1 1 1  to
+                                   |         1 1 1 1 1 1              from
+                                   |     1 1                          promotion piece type (pt-2 > 0-3)
+                                   | 1 1                              move type
+   1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |                                  move sort value
+*/ // @formatter:on
 
 const (
 	fromShift     uint = 6

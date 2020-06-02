@@ -27,8 +27,11 @@
 package types
 
 // MoveType is used for the different move types we use to encode moves.
-// Values are Normal, Promotion, EnPassant, Castling
-type MoveType uint
+//  Normal    MoveType = 0
+//	Promotion MoveType = 1
+//	EnPassant MoveType = 2
+//	Castling  MoveType = 3
+type MoveType uint8
 
 // MoveType constants
 const (
