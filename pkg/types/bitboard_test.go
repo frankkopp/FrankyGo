@@ -444,90 +444,90 @@ func TestBitboardSquareDistance(t *testing.T) {
 		assert.Equal(t, test.dist, got)
 	}
 }
-
-func TestBitboardRotateBb(t *testing.T) {
-
-	bitboard := FileA_Bb | Rank8_Bb | DiagDownH1
-
-	rotatedBb := RotateR90(bitboard)
-	if verbose {
-		fmt.Printf("%s\n%s\n", bitboard.StringBoard(), bitboard.StringGrouped())
-	}
-	if verbose {
-		fmt.Printf("%s\n%s\n", rotatedBb.StringBoard(), rotatedBb.StringGrouped())
-	}
-	assert.Equal(t, Bitboard(18428906217826189953), rotatedBb)
-
-	rotatedBb = RotateL90(bitboard)
-	if verbose {
-		fmt.Printf("%s\n%s\n", bitboard.StringBoard(), bitboard.StringGrouped())
-	}
-	if verbose {
-		fmt.Printf("%s\n%s\n", rotatedBb.StringBoard(), rotatedBb.StringGrouped())
-	}
-	assert.Equal(t, Bitboard(9313761861428380671), rotatedBb)
-
-	bitboard = DiagUpA1
-	rotatedBb = RotateR45(bitboard)
-	if verbose {
-		fmt.Printf("%s\n%s\n", bitboard.StringBoard(), bitboard.StringGrouped())
-	}
-	if verbose {
-		fmt.Printf("%s\n%s\n", rotatedBb.StringBoard(), rotatedBb.StringGrouped())
-	}
-	assert.Equal(t, Bitboard(68451041280), rotatedBb)
-
-	bitboard = DiagDownH1
-	rotatedBb = RotateL45(bitboard)
-	if verbose {
-		fmt.Printf("%s\n%s\n", bitboard.StringBoard(), bitboard.StringGrouped())
-	}
-	if verbose {
-		fmt.Printf("%s\n%s\n", rotatedBb.StringBoard(), rotatedBb.StringGrouped())
-	}
-	assert.Equal(t, Bitboard(68451041280), rotatedBb)
-}
-
-func TestBitboardRotateSq(t *testing.T) {
-
-	tests := []struct {
-		rotation string
-		square   Square
-		expected Square
-	}{
-		{"R90", SqA1, SqA8},
-		{"R90", SqD8, SqH5},
-		{"L90", SqH8, SqA8},
-		{"L90", SqH2, SqG8},
-		{"R45", SqH8, SqD5},
-		{"L45", SqH1, SqD5},
-		{"R45", SqC7, SqA8},
-		{"L45", SqB3, SqH1},
-	}
-
-	for _, test := range tests {
-		bitboard := test.square.Bb()
-		rotated := SqNone
-		switch test.rotation {
-		case "R90":
-			rotated = RotateSquareR90(test.square)
-		case "L90":
-			rotated = RotateSquareL90(test.square)
-		case "R45":
-			rotated = RotateSquareR45(test.square)
-		case "L45":
-			rotated = RotateSquareL45(test.square)
-		}
-		rotatedBb := rotated.Bb()
-		if verbose {
-			fmt.Printf("Input   : %s\n%s\n%s\n", test.rotation, bitboard.StringBoard(), bitboard.StringGrouped())
-		}
-		if verbose {
-			fmt.Printf("Rotation: %s\n%s\n%s\n", test.rotation, rotatedBb.StringBoard(), rotatedBb.StringGrouped())
-		}
-		assert.Equal(t, test.expected, rotated)
-	}
-}
+//
+// func TestBitboardRotateBb(t *testing.T) {
+//
+// 	bitboard := FileA_Bb | Rank8_Bb | DiagDownH1
+//
+// 	rotatedBb := RotateR90(bitboard)
+// 	if verbose {
+// 		fmt.Printf("%s\n%s\n", bitboard.StringBoard(), bitboard.StringGrouped())
+// 	}
+// 	if verbose {
+// 		fmt.Printf("%s\n%s\n", rotatedBb.StringBoard(), rotatedBb.StringGrouped())
+// 	}
+// 	assert.Equal(t, Bitboard(18428906217826189953), rotatedBb)
+//
+// 	rotatedBb = RotateL90(bitboard)
+// 	if verbose {
+// 		fmt.Printf("%s\n%s\n", bitboard.StringBoard(), bitboard.StringGrouped())
+// 	}
+// 	if verbose {
+// 		fmt.Printf("%s\n%s\n", rotatedBb.StringBoard(), rotatedBb.StringGrouped())
+// 	}
+// 	assert.Equal(t, Bitboard(9313761861428380671), rotatedBb)
+//
+// 	bitboard = DiagUpA1
+// 	rotatedBb = RotateR45(bitboard)
+// 	if verbose {
+// 		fmt.Printf("%s\n%s\n", bitboard.StringBoard(), bitboard.StringGrouped())
+// 	}
+// 	if verbose {
+// 		fmt.Printf("%s\n%s\n", rotatedBb.StringBoard(), rotatedBb.StringGrouped())
+// 	}
+// 	assert.Equal(t, Bitboard(68451041280), rotatedBb)
+//
+// 	bitboard = DiagDownH1
+// 	rotatedBb = RotateL45(bitboard)
+// 	if verbose {
+// 		fmt.Printf("%s\n%s\n", bitboard.StringBoard(), bitboard.StringGrouped())
+// 	}
+// 	if verbose {
+// 		fmt.Printf("%s\n%s\n", rotatedBb.StringBoard(), rotatedBb.StringGrouped())
+// 	}
+// 	assert.Equal(t, Bitboard(68451041280), rotatedBb)
+// }
+//
+// func TestBitboardRotateSq(t *testing.T) {
+//
+// 	tests := []struct {
+// 		rotation string
+// 		square   Square
+// 		expected Square
+// 	}{
+// 		{"R90", SqA1, SqA8},
+// 		{"R90", SqD8, SqH5},
+// 		{"L90", SqH8, SqA8},
+// 		{"L90", SqH2, SqG8},
+// 		{"R45", SqH8, SqD5},
+// 		{"L45", SqH1, SqD5},
+// 		{"R45", SqC7, SqA8},
+// 		{"L45", SqB3, SqH1},
+// 	}
+//
+// 	for _, test := range tests {
+// 		bitboard := test.square.Bb()
+// 		rotated := SqNone
+// 		switch test.rotation {
+// 		case "R90":
+// 			rotated = RotateSquareR90(test.square)
+// 		case "L90":
+// 			rotated = RotateSquareL90(test.square)
+// 		case "R45":
+// 			rotated = RotateSquareR45(test.square)
+// 		case "L45":
+// 			rotated = RotateSquareL45(test.square)
+// 		}
+// 		rotatedBb := rotated.Bb()
+// 		if verbose {
+// 			fmt.Printf("Input   : %s\n%s\n%s\n", test.rotation, bitboard.StringBoard(), bitboard.StringGrouped())
+// 		}
+// 		if verbose {
+// 			fmt.Printf("Rotation: %s\n%s\n%s\n", test.rotation, rotatedBb.StringBoard(), rotatedBb.StringGrouped())
+// 		}
+// 		assert.Equal(t, test.expected, rotated)
+// 	}
+// }
 
 // //////////////////////////////////////////////////////////////////////////
 // benchmarks
@@ -555,117 +555,6 @@ func BenchmarkSqBbArrayCache(b *testing.B) {
 		}
 	}
 	result = bb
-}
-
-func Test_GetMovesOnRank(t *testing.T) {
-
-	tests := []struct {
-		name    string
-		square  Square
-		blocker Bitboard
-		want    Bitboard
-	}{
-		{"Empty Rank e4", SqE4, 0, PopSquare(Rank4_Bb, SqE4)},
-		{"Rank e4 Blocker B4 G4", SqE4, sqBb[SqB4] | sqBb[SqG4], sqBb[SqB4] | sqBb[SqC4] | sqBb[SqD4] | sqBb[SqF4] | sqBb[SqG4]},
-		{"Rank a8 Blocker C8", SqA8, sqBb[SqC8] | sqBb[SqF8], sqBb[SqB8] | sqBb[SqC8]},
-		{"Rank f1 Blocker -E1 G1-", SqF1, PopSquare(Rank1_Bb, SqF1), sqBb[SqE1] | sqBb[SqG1]},
-		{"Rank f1 Blocker -E1 G1-", SqF1, Rank1_Bb, sqBb[SqE1] | sqBb[SqG1]},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := GetMovesOnRank(tt.square, tt.blocker); got != tt.want {
-				t.Errorf("Moves bits = %v, want %v", got.StringGrouped(), tt.want.StringGrouped())
-			}
-		})
-	}
-}
-
-func TestGetMovesOnFile(t *testing.T) {
-
-	tests := []struct {
-		name    string
-		square  Square
-		blocker Bitboard
-		want    Bitboard
-	}{
-		{"Square e4 empty file", SqE4, 0, PopSquare(FileE_Bb, SqE4)},
-		{"Square e4 blocker e2 e6", SqE4, sqBb[SqE2] | sqBb[SqE6], sqBb[SqE2] | sqBb[SqE3] | sqBb[SqE5] | sqBb[SqE6]},
-		{"Square a2 blocker a1 a7", SqA2, sqBb[SqA1] | sqBb[SqA7], sqBb[SqA1] | sqBb[SqA3] | sqBb[SqA4] | sqBb[SqA5] | sqBb[SqA6] | sqBb[SqA7]},
-		{"Square h4 blocker file h", SqH4, FileH_Bb, sqBb[SqH3] | sqBb[SqH5]},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := GetMovesOnFile(tt.square, tt.blocker); got != tt.want {
-				t.Errorf("Moves bits = %v, want %v", got.StringGrouped(), tt.want.StringGrouped())
-			}
-		})
-	}
-}
-
-func TestGetMovesDiagUp(t *testing.T) {
-
-	tests := []struct {
-		name    string
-		square  Square
-		blocker Bitboard
-		want    Bitboard
-	}{
-		{"Square e4 empty diag up", SqE4, 0, PopSquare(DiagUpB1, SqE4)},
-		{"Square e4 blocker c2 g6", SqE4, sqBb[SqC2] | sqBb[SqG6], sqBb[SqC2] | sqBb[SqD3] | sqBb[SqF5] | sqBb[SqG6]},
-		{"Square a2 blocker c4", SqA2, sqBb[SqC4], sqBb[SqB3] | sqBb[SqC4]},
-		{"Square e5 blocker DiagUpA1", SqE5, DiagUpA1, sqBb[SqD4] | sqBb[SqF6]},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := GetMovesDiagUp(tt.square, tt.blocker); got != tt.want {
-				t.Errorf("Moves bits = %v, want %v", got.StringGrouped(), tt.want.StringGrouped())
-			}
-		})
-	}
-}
-
-func TestGetMovesDiagDown(t *testing.T) {
-
-	tests := []struct {
-		name    string
-		square  Square
-		blocker Bitboard
-		want    Bitboard
-	}{
-		{"Square e4 empty diag down", SqE4, 0, PopSquare(DiagDownH1, SqE4)},
-		{"Square e4 blocker c6 g2", SqE4, sqBb[SqC6] | sqBb[SqG2], sqBb[SqC6] | sqBb[SqD5] | sqBb[SqF3] | sqBb[SqG2]},
-		{"Square a5 blocker c3", SqA5, sqBb[SqC3], sqBb[SqB4] | sqBb[SqC3]},
-		{"Square e5 blocker DiagDownH1", SqE5, DiagDownH2, sqBb[SqD6] | sqBb[SqF4]},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := GetMovesDiagDown(tt.square, tt.blocker); got != tt.want {
-				t.Errorf("Moves bits = %v, want %v", got.StringGrouped(), tt.want.StringGrouped())
-			}
-		})
-	}
-}
-
-func TestPseudoAttacksPreCompute(t *testing.T) {
-	tests := []struct {
-		name  string
-		piece PieceType
-		from  Square
-		want  Bitboard
-	}{
-		{"King E1", King, SqE1, sqBb[SqD1] | sqBb[SqD2] | sqBb[SqE2] | sqBb[SqF2] | sqBb[SqF1]},
-		{"King E8", King, SqE8, sqBb[SqD8] | sqBb[SqD7] | sqBb[SqE7] | sqBb[SqF7] | sqBb[SqF8]},
-		{"Bishop E5", Bishop, SqE5, PopSquare(DiagUpA1|DiagDownH2, SqE5)},
-		{"Rook E5", Rook, SqE5, PopSquare(Rank5_Bb|FileE_Bb, SqE5)},
-		{"Knight E5", Knight, SqE5, sqBb[SqD7] | sqBb[SqF7] | sqBb[SqG6] | sqBb[SqG4] | sqBb[SqF3] | sqBb[SqD3] | sqBb[SqC4] | sqBb[SqC6]},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := GetPseudoAttacks(tt.piece, tt.from); got != tt.want {
-				t.Errorf("Moves bits = %v, want %v", got.StringBoard(), tt.want.StringBoard())
-			}
-		})
-	}
 }
 
 func TestPawnAttacksPreCompute(t *testing.T) {

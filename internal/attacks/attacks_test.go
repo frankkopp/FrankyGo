@@ -188,7 +188,7 @@ func TestRevealedAttacks(t *testing.T) {
 func buildAttacks(p *position.Position, pt PieceType, sq Square) Bitboard {
 	occupiedAll := p.OccupiedAll()
 	attacks := BbZero
-	pseudoTo := GetPseudoAttacks(pt, sq) // & ^myPieces
+	pseudoTo := GetAttacksBb(pt, sq, BbZero) // & ^myPieces
 	// iterate over all target squares of the piece
 	if pt < Bishop { // king, knight
 		attacks = pseudoTo
