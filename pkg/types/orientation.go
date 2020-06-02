@@ -29,6 +29,14 @@ package types
 import "fmt"
 
 // Orientation is a set of constants for directions from a squares
+//  NW Orientation = 0
+//	N  Orientation = 1
+//	NE Orientation = 2
+//	E  Orientation = 3
+//	SE Orientation = 4
+//	S  Orientation = 5
+//	SW Orientation = 6
+//	W  Orientation = 7
 type Orientation uint8
 
 // Orientation is a set of constants for moving squares within a Bb

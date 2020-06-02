@@ -32,21 +32,27 @@ import (
 
 // CastlingRights encodes the castling state e.g. available castling
 // and defines functions to change this state
+//  CastlingNone         CastlingRights = 0                                  // 0000
+//	CastlingWhiteOO      CastlingRights = 1                                  // 0001
+//	CastlingWhiteOOO                    = CastlingWhiteOO << 1               // 0010
+//	CastlingWhite                       = CastlingWhiteOO | CastlingWhiteOOO // 0011
+//	CastlingBlackOO                     = CastlingWhiteOO << 2               // 0100
+//	CastlingBlackOOO                    = CastlingBlackOO << 1               // 1000
+//	CastlingBlack                       = CastlingBlackOO | CastlingBlackOOO // 1100
+//	CastlingAny                         = CastlingWhite | CastlingBlack      // 1111
+//	CastlingRightsLength CastlingRights = 16
 type CastlingRights uint8
 
 // Constants for Castling
 const (
-	CastlingNone CastlingRights = 0 // 0000
-
-	CastlingWhiteOO  CastlingRights = 1                                  // 0001
-	CastlingWhiteOOO                = CastlingWhiteOO << 1               // 0010
-	CastlingWhite                   = CastlingWhiteOO | CastlingWhiteOOO // 0011
-
-	CastlingBlackOO  = CastlingWhiteOO << 2               // 0100
-	CastlingBlackOOO = CastlingBlackOO << 1               // 1000
-	CastlingBlack    = CastlingBlackOO | CastlingBlackOOO // 1100
-
-	CastlingAny                         = CastlingWhite | CastlingBlack // 1111
+	CastlingNone         CastlingRights = 0                                  // 0000
+	CastlingWhiteOO      CastlingRights = 1                                  // 0001
+	CastlingWhiteOOO                    = CastlingWhiteOO << 1               // 0010
+	CastlingWhite                       = CastlingWhiteOO | CastlingWhiteOOO // 0011
+	CastlingBlackOO                     = CastlingWhiteOO << 2               // 0100
+	CastlingBlackOOO                    = CastlingBlackOO << 1               // 1000
+	CastlingBlack                       = CastlingBlackOO | CastlingBlackOOO // 1100
+	CastlingAny                         = CastlingWhite | CastlingBlack      // 1111
 	CastlingRightsLength CastlingRights = 16
 )
 

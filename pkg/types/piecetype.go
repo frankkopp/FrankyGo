@@ -27,9 +27,6 @@
 package types
 
 // PieceType is a set of constants for piece types in chess
-type PieceType int8
-
-// PieceType is a set of constants for piece types in chess
 //  test for non sliding pt & 0b0100 == 0 (must be none zero)
 //  test for sliding pt & 0b0100 == 1 (must be < 7)
 //  PtNone   = 0b0000
@@ -40,6 +37,9 @@ type PieceType int8
 //  Rook     = 0b0101 // sliding
 //  Queen    = 0b0110 // sliding
 //  PtLength = 0b0111
+type PieceType int8
+
+// PieceType is a set of constants for piece types in chess
 const (
 	PtNone   PieceType = 0b0000
 	King     PieceType = 0b0001

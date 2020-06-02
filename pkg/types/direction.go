@@ -29,6 +29,14 @@ package types
 import "fmt"
 
 // Direction is a set of constants for moving squares within a Bb
+//  North     Direction = 8
+//	East      Direction = 1
+//	South     Direction = -North
+//	West      Direction = -East
+//	Northeast Direction = North + East
+//	Southeast Direction = South + East
+//	Southwest Direction = South + West
+//	Northwest Direction = North + West
 type Direction int8
 
 // Direction is a set of constants for moving squares within a Bb
