@@ -33,6 +33,14 @@ import (
 )
 
 // Square represent exactly on square on a chess board.
+//  SqA1   Square = iota // 0
+//	SqB1   Square = iota // 1
+//	SqC1   Square = iota
+//	SqD1   Square = iota
+//  ...
+//  SqG8   Square = iota
+//	SqH8   Square = iota // 63
+//	SqNone Square = iota // 64
 type Square uint8
 
 //noinspection GoUnusedConst

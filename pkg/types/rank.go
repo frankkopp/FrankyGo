@@ -27,6 +27,16 @@
 package types
 
 // Rank represents a chess board rank 1-8
+//  Rank1      Rank = 0
+//  Rank2      Rank = 1
+//  Rank3      Rank = 2
+//  Rank4      Rank = 3
+//  Rank5      Rank = 4
+//  Rank6      Rank = 5
+//  Rank7      Rank = 6
+//  Rank8      Rank = 7
+//  RankNone   Rank = 8
+//  RankLength      = RankNone
 type Rank uint8
 
 // Rank represents a chess board rank 1-8

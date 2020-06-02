@@ -29,6 +29,8 @@ package types
 import "fmt"
 
 // Color represents constants for each chess color White and Black
+//  White       Color = 0
+//  Black       Color = 1
 type Color uint8
 
 // Constants for each color
