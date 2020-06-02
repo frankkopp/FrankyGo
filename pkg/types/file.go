@@ -27,6 +27,16 @@
 package types
 
 // File represents a chess board file a-h
+//  FileA    File = 0
+//	FileB    File = 1
+//	FileC    File = 2
+//	FileD    File = 3
+//	FileE    File = 4
+//	FileF    File = 5
+//	FileG    File = 6
+//	FileH    File = 7
+//	FileNone File = 8
+//  FileLength    = FileNone
 type File uint8
 
 // File represents a chess board file a-h
