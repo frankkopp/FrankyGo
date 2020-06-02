@@ -104,105 +104,6 @@ func ShiftBitboard(b Bitboard, d Direction) Bitboard {
 	return b
 }
 
-// GetMovesOnRank returns a Bb for all possible horizontal moves
-// on the rank of the square with the rank content (blocking pieces)
-// determined from the given pieces bitboard.
-//
-// Deprecated
-// use GetAttacksBb(pt PieceType, sq Square, occupied Bitboard)
-func GetMovesOnRank(sq Square, content Bitboard) Bitboard {
-	// content = the pieces currently on the board and maybe blocking the moves
-	// no rotation necessary for ranks - their squares are already in a row
-	// shift to the least significant bit
-	contentIdx := content >> (8 * int(sq.RankOf()))
-	// retrieve all possible moves for this square with the current content
-	// and mask with the first row to erase any other pieces
-	return movesRank[sq][contentIdx&255]
-}
-
-// GetMovesOnFileRotated Bb for all possible horizontal moves on the
-// rank of the square with the rank content (blocking pieces) determined
-// from the given L90 rotated bitboard.
-//
-// Deprecated
-// use GetAttacksBb(pt PieceType, sq Square, occupied Bitboard)
-func GetMovesOnFileRotated(sq Square, rotated Bitboard) Bitboard {
-	// shift to the lsb
-	contentIdx := rotated >> (int(sq.FileOf()) * 8)
-	// retrieve all possible moves for this square with the current content
-	// and mask with the first row to erase any other pieces not erased by shift
-	return movesFile[sq][contentIdx&255]
-}
-
-// GetMovesOnFile Bb for all possible horizontal moves on the rank of
-// the square with the rank content (blocking pieces) determined from the
-// given bitboard (not rotated - use GetMovesOnFileRotated for already rotated
-// bitboards)
-//
-// Deprecated
-// use GetAttacksBb(pt PieceType, sq Square, occupied Bitboard)
-func GetMovesOnFile(sq Square, content Bitboard) Bitboard {
-	// content = the pieces currently on the board and maybe blocking the moves
-	// rotate the content of the board to get all file squares in a row
-	return GetMovesOnFileRotated(sq, RotateL90(content))
-}
-
-// GetMovesDiagUpRotated  Bb for all possible diagonal up moves of
-// the square with the content (blocking pieces) determined from the
-// given R45 rotated bitboard.
-//
-// Deprecated
-// use GetAttacksBb(pt PieceType, sq Square, occupied Bitboard)
-func GetMovesDiagUpRotated(sq Square, rotated Bitboard) Bitboard {
-	// shift the correct row to the lsb
-	shifted := rotated >> shiftsDiagUp[sq]
-	// mask the content with the length of the diagonal to erase any other
-	// pieces which have not been erased by the shift
-	contentMasked := shifted & ((BbOne << lengthDiagUp[sq]) - 1)
-	// retrieve all possible moves for this square with the current content
-	return movesDiagUp[sq][contentMasked]
-}
-
-// GetMovesDiagUp Bb for all possible diagonal up moves of the square with
-// the content (blocking pieces) determined from the given non rotated
-// bitboard.
-//
-// Deprecated
-// use GetAttacksBb(pt PieceType, sq Square, occupied Bitboard)
-func GetMovesDiagUp(sq Square, content Bitboard) Bitboard {
-	// content = the pieces currently on the board and maybe blocking the moves
-	// rotate the content of the board to get all diagonals in a row
-	return GetMovesDiagUpRotated(sq, RotateR45(content))
-}
-
-// GetMovesDiagDownRotated Bb for all possible diagonal up moves of the square with
-// the content (blocking pieces) determined from the given L45 rotated
-// bitboard.
-//
-// Deprecated
-// use GetAttacksBb(pt PieceType, sq Square, occupied Bitboard)
-func GetMovesDiagDownRotated(sq Square, rotated Bitboard) Bitboard {
-	// shift the correct row to the lsb
-	shifted := rotated >> shiftsDiagDown[sq]
-	// mask the content with the length of the diagonal to erase any other
-	// pieces which have not been erased by the shift
-	contentMasked := shifted & ((BbOne << lengthDiagDown[sq]) - 1)
-	// retrieve all possible moves for this square with the current content
-	return movesDiagDown[sq][contentMasked]
-}
-
-// GetMovesDiagDown Bb for all possible diagonal up moves of the square with
-// the content (blocking pieces) determined from the given non rotated
-// bitboard.
-//
-// Deprecated
-// use GetAttacksBb(pt PieceType, sq Square, occupied Bitboard)
-func GetMovesDiagDown(square Square, content Bitboard) Bitboard {
-	// content = the pieces currently on the board and maybe blocking the moves
-	// rotate the content of the board to get all diagonals in a row
-	return GetMovesDiagDownRotated(square, RotateL45(content))
-}
-
 // Lsb returns the least significant bit of the 64-bit Bb.
 // This translates directly to the Square which is returned.
 // If the bitboard is empty SqNone will be returned.
@@ -241,47 +142,6 @@ func (b Bitboard) PopCount() int {
 	return bits.OnesCount64(uint64(b))
 }
 
-// String returns a string representation of the 64 bits
-func (b Bitboard) String() string {
-	return fmt.Sprintf("%-0.64b", b)
-}
-
-// StringBoard returns a string representation of the Bb
-// as a board off 8x8 squares
-func (b Bitboard) StringBoard() string {
-	var os strings.Builder
-	os.WriteString("+---+---+---+---+---+---+---+---+\n")
-	for r := Rank1; r <= Rank8; r++ {
-		for f := FileA; f <= FileH; f++ {
-			if (b & SquareOf(f, Rank8-r).Bb()) > 0 {
-				os.WriteString("| X ")
-			} else {
-				os.WriteString("|   ")
-			}
-		}
-		os.WriteString("|\n+---+---+---+---+---+---+---+---+\n")
-	}
-	return os.String()
-}
-
-// StringGrouped returns a string representation of the 64 bits grouped in 8.
-// Order is LSB to msb ==> A1 B1 ... G8 H8
-func (b Bitboard) StringGrouped() string {
-	var os strings.Builder
-	for i := 0; i < 64; i++ {
-		if i > 0 && i%8 == 0 {
-			os.WriteString(".")
-		}
-		if (b & (BbOne << i)) != 0 {
-			os.WriteString("1")
-		} else {
-			os.WriteString("0")
-		}
-	}
-	os.WriteString(fmt.Sprintf(" (%d)", b))
-	return os.String()
-}
-
 // FileDistance returns the absolute distance in squares between two files
 func FileDistance(f1 File, f2 File) int {
 	return util.Abs(int(f2) - int(f1))
@@ -305,56 +165,6 @@ func (sq Square) CenterDistance() int {
 	return centerDistance[sq]
 }
 
-// RotateR90 rotates a Bb by 90 degrees clockwise
-func RotateR90(b Bitboard) Bitboard {
-	return rotate(b, &rotateMapR90)
-}
-
-// RotateL90 rotates a Bb by 90 degrees counter clockwise
-func RotateL90(b Bitboard) Bitboard {
-	return rotate(b, &rotateMapL90)
-}
-
-// RotateR45 rotates a Bb by 45 degrees clockwise
-// to get all upward diagonals in compact block of bits
-// This is used to create a mask to find moves for
-// queen and bishop on the upward diagonal
-func RotateR45(b Bitboard) Bitboard {
-	return rotate(b, &rotateMapR45)
-}
-
-// RotateL45 rotates a Bb by 45 degrees counter clockwise
-// to get all downward diagonals in compact block of bits
-// This is used to create a mask to find moves for
-// queen and bishop on the downward diagonal
-func RotateL45(b Bitboard) Bitboard {
-	return rotate(b, &rotateMapL45)
-}
-
-// RotateSquareR90 maps squares to the sq of the rotated board. E.g. when rotating
-// clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
-func RotateSquareR90(sq Square) Square {
-	return indexMapR90[sq]
-}
-
-// RotateSquareL90 maps squares to the sq of the rotated board. E.g. when rotating
-// clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
-func RotateSquareL90(sq Square) Square {
-	return indexMapL90[sq]
-}
-
-// RotateSquareR45 maps squares to the sq of the rotated board. E.g. when rotating
-// clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
-func RotateSquareR45(sq Square) Square {
-	return indexMapR45[sq]
-}
-
-// RotateSquareL45 maps squares to the sq of the rotated board. E.g. when rotating
-// clockwise by 90 degree A1 becomes A8, A8 becomes H8, etc.
-func RotateSquareL45(sq Square) Square {
-	return indexMapL45[sq]
-}
-
 // GetAttacksBb returns a bitboard representing all the squares attacked by a
 // piece of the given type pt (not pawn) placed on 'sq'.
 // For sliding pieces this uses the pre-computed Magic Bitboard Attack arrays.
@@ -369,19 +179,13 @@ func GetAttacksBb(pt PieceType, sq Square, occupied Bitboard) Bitboard {
 	case Queen:
 		return bishopMagics[sq].Attacks[bishopMagics[sq].index(occupied)] | rookMagics[sq].Attacks[rookMagics[sq].index(occupied)]
 	case Knight:
-		return pseudoAttacks[pt][sq]
+		return nonSliderAttacks[pt][sq]
 	case King:
-		return pseudoAttacks[pt][sq]
+		return nonSliderAttacks[pt][sq]
 	default:
 		msg := fmt.Sprintf("GetAttackBb called with piece type %d is not supported", pt)
 		panic(msg)
 	}
-}
-
-// GetPseudoAttacks returns a Bb of possible attacks of a piece
-// as if on an empty board
-func GetPseudoAttacks(pt PieceType, sq Square) Bitboard {
-	return pseudoAttacks[pt][sq]
 }
 
 // GetPawnAttacks returns a Bb of possible attacks of a pawn
@@ -474,6 +278,47 @@ func SquaresBb(c Color) Bitboard {
 	return squaresBb[c]
 }
 
+// String returns a string representation of the 64 bits
+func (b Bitboard) String() string {
+	return fmt.Sprintf("%-0.64b", b)
+}
+
+// StringBoard returns a string representation of the Bb
+// as a board off 8x8 squares
+func (b Bitboard) StringBoard() string {
+	var os strings.Builder
+	os.WriteString("+---+---+---+---+---+---+---+---+\n")
+	for r := Rank1; r <= Rank8; r++ {
+		for f := FileA; f <= FileH; f++ {
+			if (b & SquareOf(f, Rank8-r).Bb()) > 0 {
+				os.WriteString("| X ")
+			} else {
+				os.WriteString("|   ")
+			}
+		}
+		os.WriteString("|\n+---+---+---+---+---+---+---+---+\n")
+	}
+	return os.String()
+}
+
+// StringGrouped returns a string representation of the 64 bits grouped in 8.
+// Order is LSB to msb ==> A1 B1 ... G8 H8
+func (b Bitboard) StringGrouped() string {
+	var os strings.Builder
+	for i := 0; i < 64; i++ {
+		if i > 0 && i%8 == 0 {
+			os.WriteString(".")
+		}
+		if (b & (BbOne << i)) != 0 {
+			os.WriteString("1")
+		} else {
+			os.WriteString("0")
+		}
+	}
+	os.WriteString(fmt.Sprintf(" (%d)", b))
+	return os.String()
+}
+
 // Various constant bitboards
 const (
 	BbZero = Bitboard(0)
@@ -544,195 +389,47 @@ const (
 // Private
 // ////////////////////
 
-// Rotates a Bb using a mapping array which holds the position of
-// the square in the rotated board indexed by the square.
-// Basically the array tells bit x to move to bit y
-func rotate(b Bitboard, rotationMap *[SqLength]int) Bitboard {
-	rotated := BbZero
-	for sq := SqA1; sq < SqNone; sq++ {
-		if (b & sqBb[Square(rotationMap[sq])]) != 0 {
-			rotated |= sqBb[sq]
-		}
-	}
-	return rotated
-}
-
 // ////////////////////
 // Pre compute helpers
 
 // Returns a Bb of the square by shifting the
 // square onto an empty bitboards.
-// Usually one would use Bb() after initializing with InitBb
+// Usually one would use sq.Bb()
 func (sq Square) bitboard() Bitboard {
 	return Bitboard(uint64(1) << sq)
 }
 
 // helper arrays
 var (
-	// Used to pre compute an indexMap for rotated boards
-	rotateMapR90 = [SqLength]int{
-		7, 15, 23, 31, 39, 47, 55, 63,
-		6, 14, 22, 30, 38, 46, 54, 62,
-		5, 13, 21, 29, 37, 45, 53, 61,
-		4, 12, 20, 28, 36, 44, 52, 60,
-		3, 11, 19, 27, 35, 43, 51, 59,
-		2, 10, 18, 26, 34, 42, 50, 58,
-		1, 9, 17, 25, 33, 41, 49, 57,
-		0, 8, 16, 24, 32, 40, 48, 56}
-
-	// Used to pre compute an indexMap for rotated boards
-	rotateMapL90 = [SqLength]int{
-		56, 48, 40, 32, 24, 16, 8, 0,
-		57, 49, 41, 33, 25, 17, 9, 1,
-		58, 50, 42, 34, 26, 18, 10, 2,
-		59, 51, 43, 35, 27, 19, 11, 3,
-		60, 52, 44, 36, 28, 20, 12, 4,
-		61, 53, 45, 37, 29, 21, 13, 5,
-		62, 54, 46, 38, 30, 22, 14, 6,
-		63, 55, 47, 39, 31, 23, 15, 7}
-
-	// Used to pre compute an indexMap for rotated boards
-	rotateMapR45 = [SqLength]int{
-		7,
-		6, 15,
-		5, 14, 23,
-		4, 13, 22, 31,
-		3, 12, 21, 30, 39,
-		2, 11, 20, 29, 38, 47,
-		1, 10, 19, 28, 37, 46, 55,
-		0, 9, 18, 27, 36, 45, 54, 63,
-		8, 17, 26, 35, 44, 53, 62,
-		16, 25, 34, 43, 52, 61,
-		24, 33, 42, 51, 60,
-		32, 41, 50, 59,
-		40, 49, 58,
-		48, 57,
-		56}
-
-	// Used to pre compute an indexMap for rotated boards
-	rotateMapL45 = [SqLength]int{
-		0,
-		8, 1,
-		16, 9, 2,
-		24, 17, 10, 3,
-		32, 25, 18, 11, 4,
-		40, 33, 26, 19, 12, 5,
-		48, 41, 34, 27, 20, 13, 6,
-		56, 49, 42, 35, 28, 21, 14, 7,
-		57, 50, 43, 36, 29, 22, 15,
-		58, 51, 44, 37, 30, 23,
-		59, 52, 45, 38, 31,
-		60, 53, 46, 39,
-		61, 54, 47,
-		62, 55,
-		63}
-
-	// Used to pre compute an indexMap for diagonals
-	lengthDiagUp = [SqLength]int{
-		8, 7, 6, 5, 4, 3, 2, 1,
-		7, 8, 7, 6, 5, 4, 3, 2,
-		6, 7, 8, 7, 6, 5, 4, 3,
-		5, 6, 7, 8, 7, 6, 5, 4,
-		4, 5, 6, 7, 8, 7, 6, 5,
-		3, 4, 5, 6, 7, 8, 7, 6,
-		2, 3, 4, 5, 6, 7, 8, 7,
-		1, 2, 3, 4, 5, 6, 7, 8}
-
-	// Used to pre compute an indexMap for diagonals
-	lengthDiagDown = [SqLength]int{
-		1, 2, 3, 4, 5, 6, 7, 8,
-		2, 3, 4, 5, 6, 7, 8, 7,
-		3, 4, 5, 6, 7, 8, 7, 6,
-		4, 5, 6, 7, 8, 7, 6, 5,
-		5, 6, 7, 8, 7, 6, 5, 4,
-		6, 7, 8, 7, 6, 5, 4, 3,
-		7, 8, 7, 6, 5, 4, 3, 2,
-		8, 7, 6, 5, 4, 3, 2, 1}
-
-	shiftsDiagUp = [SqLength]int{
-		28, 21, 15, 10, 6, 3, 1, 0,
-		36, 28, 21, 15, 10, 6, 3, 1,
-		43, 36, 28, 21, 15, 10, 6, 3,
-		49, 43, 36, 28, 21, 15, 10, 6,
-		54, 49, 43, 36, 28, 21, 15, 10,
-		58, 54, 49, 43, 36, 28, 21, 15,
-		61, 58, 54, 49, 43, 36, 28, 21,
-		63, 61, 58, 54, 49, 43, 36, 28}
-
-	shiftsDiagDown = [SqLength]int{
-		0, 1, 3, 6, 10, 15, 21, 28,
-		1, 3, 6, 10, 15, 21, 28, 36,
-		3, 6, 10, 15, 21, 28, 36, 43,
-		6, 10, 15, 21, 28, 36, 43, 49,
-		10, 15, 21, 28, 36, 43, 49, 54,
-		15, 21, 28, 36, 43, 49, 54, 58,
-		21, 28, 36, 43, 49, 54, 58, 61,
-		28, 36, 43, 49, 54, 58, 61, 63}
-
-	// Reverse index to quickly calculate the index of a square in the rotated board
-	indexMapR90 = [SqLength]Square{}
-	// Reverse index to quickly calculate the index of a square in the rotated board
-	indexMapL90 = [SqLength]Square{}
-	// Reverse index to quickly calculate the index of a square in the rotated board
-	indexMapR45 = [SqLength]Square{}
-	// Reverse index to quickly calculate the index of a square in the rotated board
-	indexMapL45 = [SqLength]Square{}
-
 	// Internal pre computed square to square bitboard array.
-	// Needs to be initialized with initBb()
 	sqBb [SqLength]Bitboard
 
-	// Internal pre computed square to file bitboard array.
-	// Needs to be initialized with initBb()
-	sqToFileBb [SqLength]Bitboard
-
-	// Internal pre computed square to rank bitboard array.
-	// Needs to be initialized with initBb()
-	sqToRankBb [SqLength]Bitboard
-
-	// Internal pre computed square to diag up bitboard array.
-	// Needs to be initialized with initBb()
-	sqDiagUpBb [SqLength]Bitboard
-
-	// Internal pre computed square to diag down bitboard array.
-	// Needs to be initialized with initBb()
-	sqDiagDownBb [SqLength]Bitboard
-
 	// Internal pre computed rank bitboard array.
-	// Needs to be initialized with initBb()
 	rankBb [8]Bitboard
 
 	// Internal pre computed file bitboard array.
-	// Needs to be initialized with initBb()
 	fileBb [8]Bitboard
+
+	// Internal pre computed square to file bitboard array.
+	sqToFileBb [SqLength]Bitboard
+
+	// Internal pre computed square to rank bitboard array.
+	sqToRankBb [SqLength]Bitboard
+
+	// Internal pre computed square to diag up bitboard array.
+	sqDiagUpBb [SqLength]Bitboard
+
+	// Internal pre computed square to diag down bitboard array.
+	sqDiagDownBb [SqLength]Bitboard
 
 	// Internal pre computed index for quick square distance lookup
 	squareDistance [SqLength][SqLength]int
-
-	// Internal pre computed index to map possible moves on a rank
-	// for each square and board occupation of this rank
-	movesRank [SqLength][256]Bitboard
-
-	// Internal pre computed index to map possible moves on a file
-	// for each square and board occupation of this file
-	// (needs rotating and masking the index)
-	movesFile [SqLength][256]Bitboard
-
-	// Internal pre computed index to map possible moves on a up diagonal
-	// for each square and board occupation of this up diagonal
-	// (needs rotating and masking the index)
-	movesDiagUp [SqLength][256]Bitboard
-
-	// Internal pre computed index to map possible moves on a down diagonal
-	// for each square and board occupation of this down diagonal
-	// (needs rotating and masking the index)
-	movesDiagDown [SqLength][256]Bitboard
 
 	// Internal Bb for pawn attacks for each color for each square
 	pawnAttacks [2][SqLength]Bitboard
 
 	// Internal Bb for attacks for each piece for each square
-	pseudoAttacks [PtLength][SqLength]Bitboard
+	nonSliderAttacks [PtLength][SqLength]Bitboard
 
 	// magic bitboards - rook attacks
 	rookTable  []Bitboard
@@ -784,37 +481,20 @@ var (
 // ///////////////////////////////////////
 
 // Pre computes various bitboards to avoid runtime calculation
+// OBS: The order is important as some initializations depend on others
 func initBb() {
-	squareBitboardsPreCompute()
 	rankFileBbPreCompute()
-	castleMasksPreCompute()
+	squareBitboardsPreCompute()
 	squareDistancePreCompute()
-	movesRankPreCompute()
-	movesFilePreCompute()
-	movesDiagUpPreCompute()
-	movesDiagDownPreCompute()
-	pseudoAttacksPreCompute()
+	nonSlidingAttacksPreCompute()
+	initMagicBitboards()
 	neighbourMasksPreCompute()
 	raysPreCompute()
 	intermediatePreCompute()
 	maskPassedPawnsPreCompute()
-	squareColorsPreCompute()
 	centerDistancePreCompute()
-	initMagicBitboards()
-}
-
-// start calculating the magic bitboards
-// Taken from Stockfish and
-// from  https://www.chessprogramming.org/Magic_Bitboards
-func initMagicBitboards() {
-	rookDirections := [4]Direction{North, East, South, West}
-	bishopDirections := [4]Direction{Northeast, Southeast, Southwest, Northwest}
-
-	rookTable = make([]Bitboard, 0x19000, 0x19000)
-	bishopTable = make([]Bitboard, 0x1480, 0x1480)
-
-	initMagics(&rookTable, &rookMagics, &rookDirections)
-	initMagics(&bishopTable, &bishopMagics, &bishopDirections)
+	castleMasksPreCompute()
+	squareColorsPreCompute()
 }
 
 func rankFileBbPreCompute() {
@@ -824,19 +504,6 @@ func rankFileBbPreCompute() {
 	for i := FileA; i <= FileH; i++ {
 		fileBb[i] = FileA_Bb << i
 	}
-}
-
-func castleMasksPreCompute() {
-	kingSideCastleMask[White] = sqBb[SqF1] | sqBb[SqG1] | sqBb[SqH1]
-	kingSideCastleMask[Black] = sqBb[SqF8] | sqBb[SqG8] | sqBb[SqH8]
-	queenSideCastleMask[White] = sqBb[SqD1] | sqBb[SqC1] | sqBb[SqB1] | sqBb[SqA1]
-	queenSideCastleMask[Black] = sqBb[SqD8] | sqBb[SqC8] | sqBb[SqB8] | sqBb[SqA8]
-	castlingRights[SqE1] = CastlingWhite
-	castlingRights[SqA1] = CastlingWhiteOOO
-	castlingRights[SqH1] = CastlingWhiteOO
-	castlingRights[SqE8] = CastlingBlack
-	castlingRights[SqA8] = CastlingBlackOOO
-	castlingRights[SqH8] = CastlingBlackOO
 }
 
 func squareBitboardsPreCompute() {
@@ -884,98 +551,60 @@ func squareBitboardsPreCompute() {
 		} else if DiagDownA1&sq.bitboard() > 0 { sqDiagDownBb[sq] = DiagDownA1
 		}
 		// @formatter:on
-
-		// Reverse index to quickly calculate the index of a sq in the rotated board
-		indexMapR90[rotateMapR90[sq]] = sq
-		indexMapL90[rotateMapL90[sq]] = sq
-		indexMapR45[rotateMapR45[sq]] = sq
-		indexMapL45[rotateMapL45[sq]] = sq
 	}
 }
 
-// pre computes distances to center squares by quadrant
-func centerDistancePreCompute() {
-	for square := SqA1; square <= SqH8; square++ {
-		// left upper quadrant
-		if (sqBb[square] & ranksNorthMask[27] & filesWestMask[36]) != 0 {
-			centerDistance[square] = squareDistance[square][SqD5]
-			// right upper quadrant
-		} else if (sqBb[square] & ranksNorthMask[28] & filesEastMask[35]) != 0 {
-			centerDistance[square] = squareDistance[square][SqE5]
-			// left lower quadrant
-		} else if (sqBb[square] & ranksSouthMask[35] & filesWestMask[28]) != 0 {
-			centerDistance[square] = squareDistance[square][SqD4]
-			// right lower quadrant
-		} else if (sqBb[square] & ranksSouthMask[36] & filesEastMask[27]) != 0 {
-			centerDistance[square] = squareDistance[square][SqE4]
+// Distance between squares index
+func squareDistancePreCompute() {
+	for sq1 := SqA1; sq1 <= SqH8; sq1++ {
+		for sq2 := SqA1; sq2 <= SqH8; sq2++ {
+			if sq1 != sq2 {
+				squareDistance[sq1][sq2] = util.Max(FileDistance(sq1.FileOf(), sq2.FileOf()), RankDistance(sq1.RankOf(), sq2.RankOf()))
+			}
 		}
 	}
 }
 
-// masks for each square color (good for bishops vs bishops or pawns)
-func squareColorsPreCompute() {
-	for square := SqA1; square <= SqH8; square++ {
-		f := square.FileOf()
-		r := square.RankOf()
-		if (int(f)+int(r))%2 == 0 {
-			squaresBb[Black] |= BbOne << square
-		} else {
-			squaresBb[White] |= BbOne << square
-		}
-	}
-}
+// pre compute all possible attacked sq per color, piece and sq
+func nonSlidingAttacksPreCompute() {
+	// steps for kings, pawns, knight for WHITE - negate to get BLACK
+	var steps = [][]Direction{
+		{},
+		{Northwest, North, Northeast, East}, // king
+		{Northwest, Northeast},              // pawn
+		{West + Northwest, East + Northeast, North + Northwest, North + Northeast}} // knight
 
-// pre computes passed pawn masks
-func maskPassedPawnsPreCompute() {
-	for square := SqA1; square <= SqH8; square++ {
-		f := square.FileOf()
-		r := square.RankOf()
-		// white pawn - ignore that pawns can'*t be on all squares
-		passedPawnMask[White][square] |= rays[N][square]
-		if f < 7 && r < 7 {
-			passedPawnMask[White][square] |= rays[N][square.To(East)]
-		}
-		if f > 0 && r < 7 {
-			passedPawnMask[White][square] |= rays[N][square.To(West)]
-		}
-		// black pawn - ignore that pawns can'*t be on all squares
-		passedPawnMask[Black][square] |= rays[S][square]
-		if f < 7 && r > 0 {
-			passedPawnMask[Black][square] |= rays[S][square.To(East)]
-		}
-		if f > 0 && r > 0 {
-			passedPawnMask[Black][square] |= rays[S][square.To(West)]
-		}
-	}
-}
-
-// mask for intermediate squares in between two squares
-func intermediatePreCompute() {
-	for from := SqA1; from <= SqH8; from++ {
-		for to := SqA1; to <= SqH8; to++ {
-			toBB := sqBb[to]
-			for o := 0; o < 8; o++ {
-				if rays[Orientation(o)][from]&toBB != BbZero {
-					intermediate[from][to] |=
-						rays[Orientation(o)][from] & ^rays[Orientation(o)][to] & ^toBB
+	// non-sliding attacks
+	for c := White; c <= Black; c++ {
+		for _, pt := range []PieceType{King, Pawn, Knight} {
+			for s := SqA1; s <= SqH8; s++ {
+				for i := 0; i < len(steps[pt]); i++ {
+					to := Square(int(s) + c.Direction()*int(steps[pt][i]))
+					if to.IsValid() && squareDistance[s][to] < 3 { // no wrap around board edges
+						if pt == Pawn {
+							pawnAttacks[c][s] |= sqBb[to]
+						} else {
+							nonSliderAttacks[pt][s] |= sqBb[to]
+						}
+					}
 				}
 			}
 		}
 	}
 }
 
-func raysPreCompute() {
-	for sq := SqA1; sq <= SqH8; sq++ {
-		rays[N][sq] = pseudoAttacks[Rook][sq] & ranksNorthMask[sq]
-		rays[E][sq] = pseudoAttacks[Rook][sq] & filesEastMask[sq]
-		rays[S][sq] = pseudoAttacks[Rook][sq] & ranksSouthMask[sq]
-		rays[W][sq] = pseudoAttacks[Rook][sq] & filesWestMask[sq]
+// start calculating the magic bitboards
+// Taken from Stockfish and
+// from  https://www.chessprogramming.org/Magic_Bitboards
+func initMagicBitboards() {
+	rookDirections := [4]Direction{North, East, South, West}
+	bishopDirections := [4]Direction{Northeast, Southeast, Southwest, Northwest}
 
-		rays[NW][sq] = pseudoAttacks[Bishop][sq] & filesWestMask[sq] & ranksNorthMask[sq]
-		rays[NE][sq] = pseudoAttacks[Bishop][sq] & filesEastMask[sq] & ranksNorthMask[sq]
-		rays[SE][sq] = pseudoAttacks[Bishop][sq] & filesEastMask[sq] & ranksSouthMask[sq]
-		rays[SW][sq] = pseudoAttacks[Bishop][sq] & filesWestMask[sq] & ranksSouthMask[sq]
-	}
+	rookTable = make([]Bitboard, 0x19000, 0x19000)
+	bishopTable = make([]Bitboard, 0x1480, 0x1480)
+
+	initMagics(&rookTable, &rookMagics, &rookDirections)
+	initMagics(&bishopTable, &bishopMagics, &bishopDirections)
 }
 
 // masks for files and ranks left, right, up and down from sq
@@ -1009,175 +638,96 @@ func neighbourMasksPreCompute() {
 	}
 }
 
-// Distance between squares index
-func squareDistancePreCompute() {
-	for sq1 := SqA1; sq1 <= SqH8; sq1++ {
-		for sq2 := SqA1; sq2 <= SqH8; sq2++ {
-			if sq1 != sq2 {
-				squareDistance[sq1][sq2] =
-					util.Max(FileDistance(sq1.FileOf(), sq2.FileOf()), RankDistance(sq1.RankOf(), sq2.RankOf()))
+func raysPreCompute() {
+	for sq := SqA1; sq <= SqH8; sq++ {
+		rays[N][sq] = GetAttacksBb(Rook, sq, BbZero) & ranksNorthMask[sq]
+		rays[E][sq] = GetAttacksBb(Rook, sq, BbZero) & filesEastMask[sq]
+		rays[S][sq] = GetAttacksBb(Rook, sq, BbZero) & ranksSouthMask[sq]
+		rays[W][sq] = GetAttacksBb(Rook, sq, BbZero) & filesWestMask[sq]
+		rays[NW][sq] = GetAttacksBb(Bishop, sq, BbZero) & filesWestMask[sq] & ranksNorthMask[sq]
+		rays[NE][sq] = GetAttacksBb(Bishop, sq, BbZero) & filesEastMask[sq] & ranksNorthMask[sq]
+		rays[SE][sq] = GetAttacksBb(Bishop, sq, BbZero) & filesEastMask[sq] & ranksSouthMask[sq]
+		rays[SW][sq] = GetAttacksBb(Bishop, sq, BbZero) & filesWestMask[sq] & ranksSouthMask[sq]
+	}
+}
+
+// mask for intermediate squares in between two squares
+func intermediatePreCompute() {
+	for from := SqA1; from <= SqH8; from++ {
+		for to := SqA1; to <= SqH8; to++ {
+			toBB := sqBb[to]
+			for o := 0; o < 8; o++ {
+				if rays[Orientation(o)][from]&toBB != BbZero {
+					intermediate[from][to] |= rays[Orientation(o)][from] &^ rays[Orientation(o)][to] &^ toBB
+				}
 			}
 		}
 	}
 }
 
-// pre compute all possible attacked sq per color, piece and sq
-func pseudoAttacksPreCompute() {
-	// steps for kings, pawns, knight for WHITE - negate to get BLACK
-	var steps = [][]Direction{
-		{},
-		{Northwest, North, Northeast, East}, // king
-		{Northwest, Northeast},              // pawn
-		{West + Northwest, East + Northeast, North + Northwest, North + Northeast}} // knight
-
-	// non-sliding attacks
-	for c := White; c <= Black; c++ {
-		for _, pt := range []PieceType{King, Pawn, Knight} {
-			for s := SqA1; s <= SqH8; s++ {
-				for i := 0; i < len(steps[pt]); i++ {
-					to := Square(int(s) + c.Direction()*int(steps[pt][i]))
-					if to.IsValid() && squareDistance[s][to] < 3 { // no wrap around board edges
-						if pt == Pawn {
-							pawnAttacks[c][s] |= sqBb[to]
-						} else {
-							pseudoAttacks[pt][s] |= sqBb[to]
-						}
-					}
-				}
-			}
-		}
-	}
-
-	// sliding pieces pseudo attacks
+// pre computes passed pawn masks
+func maskPassedPawnsPreCompute() {
 	for square := SqA1; square <= SqH8; square++ {
-		pseudoAttacks[Bishop][square] |= movesDiagUp[square][0]
-		pseudoAttacks[Bishop][square] |= movesDiagDown[square][0]
-		pseudoAttacks[Rook][square] |= movesFile[square][0]
-		pseudoAttacks[Rook][square] |= movesRank[square][0]
-		pseudoAttacks[Queen][square] |= pseudoAttacks[Bishop][square] | pseudoAttacks[Rook][square]
+		f := square.FileOf()
+		r := square.RankOf()
+		// white pawn - ignore that pawns can'*t be on all squares
+		passedPawnMask[White][square] |= rays[N][square]
+		if f < 7 && r < 7 {
+			passedPawnMask[White][square] |= rays[N][square.To(East)]
+		}
+		if f > 0 && r < 7 {
+			passedPawnMask[White][square] |= rays[N][square.To(West)]
+		}
+		// black pawn - ignore that pawns can'*t be on all squares
+		passedPawnMask[Black][square] |= rays[S][square]
+		if f < 7 && r > 0 {
+			passedPawnMask[Black][square] |= rays[S][square.To(East)]
+		}
+		if f > 0 && r > 0 {
+			passedPawnMask[Black][square] |= rays[S][square.To(West)]
+		}
 	}
 }
 
-// Pre-compute attacks and moves on a an empty board (pseudo attacks)
-func movesDiagDownPreCompute() {
-	// All sliding attacks with blocker - down diag sliders
-	// Shamefully copied from Beowulf :)
+// pre computes distances to center squares by quadrant
+func centerDistancePreCompute() {
 	for square := SqA1; square <= SqH8; square++ {
-		file := square.FileOf()
-		rank := square.RankOf()
-		// Get the far left hand square on this diagonal
-		diagstart := Square(7*(util.Min(int(file), 7-int(rank))) + int(square))
-		dsfile := diagstart.FileOf()
-		dl := lengthDiagDown[square]
-		// Loop through all possible occupations of this diagonal line
-		for j := 0; j < (1 << dl); j++ {
-			var mask, mask2 Bitboard
-			// Calculate possible target squares
-			for x := int(file) - int(dsfile) - 1; x >= 0; x-- {
-				mask += BbOne << x
-				if (j & (1 << x)) != 0 {
-					break
-				}
-			}
-			for x := int(file) - int(dsfile) + 1; x < dl; x++ {
-				mask += BbOne << x
-				if (j & (1 << x)) != 0 {
-					break
-				}
-			}
-			/* Rotate the target line back onto the required diagonal */
-			for x := 0; x < dl; x++ {
-				mask2 += ((mask >> x) & 1) << (int(diagstart) - (7 * x))
-			}
-			movesDiagDown[square][j] = mask2
+		// left upper quadrant
+		if (sqBb[square] & ranksNorthMask[27] & filesWestMask[36]) != 0 {
+			centerDistance[square] = squareDistance[square][SqD5]
+			// right upper quadrant
+		} else if (sqBb[square] & ranksNorthMask[28] & filesEastMask[35]) != 0 {
+			centerDistance[square] = squareDistance[square][SqE5]
+			// left lower quadrant
+		} else if (sqBb[square] & ranksSouthMask[35] & filesWestMask[28]) != 0 {
+			centerDistance[square] = squareDistance[square][SqD4]
+			// right lower quadrant
+		} else if (sqBb[square] & ranksSouthMask[36] & filesEastMask[27]) != 0 {
+			centerDistance[square] = squareDistance[square][SqE4]
 		}
 	}
 }
 
-// Pre-compute attacks and moves on a an empty board (pseudo attacks)
-func movesDiagUpPreCompute() {
-	// All sliding attacks with blocker - up diag sliders
-	// Shamefully copied from Beowulf :)
+func castleMasksPreCompute() {
+	kingSideCastleMask[White] = sqBb[SqF1] | sqBb[SqG1] | sqBb[SqH1]
+	kingSideCastleMask[Black] = sqBb[SqF8] | sqBb[SqG8] | sqBb[SqH8]
+	queenSideCastleMask[White] = sqBb[SqD1] | sqBb[SqC1] | sqBb[SqB1] | sqBb[SqA1]
+	queenSideCastleMask[Black] = sqBb[SqD8] | sqBb[SqC8] | sqBb[SqB8] | sqBb[SqA8]
+	castlingRights[SqE1] = CastlingWhite
+	castlingRights[SqA1] = CastlingWhiteOOO
+	castlingRights[SqH1] = CastlingWhiteOO
+	castlingRights[SqE8] = CastlingBlack
+	castlingRights[SqA8] = CastlingBlackOOO
+	castlingRights[SqH8] = CastlingBlackOO
+}
+
+// masks for each square color (good for bishops vs bishops or pawns)
+func squareColorsPreCompute() {
 	for square := SqA1; square <= SqH8; square++ {
-		file := square.FileOf()
-		rank := square.RankOf()
-		// Get the far left hand square on this diagonal
-		diagstart := square - Square(9*util.Min(int(file), int(rank)))
-		dsfile := diagstart.FileOf()
-		dl := lengthDiagUp[square]
-		// Loop through all possible occupations of this diagonal line
-		for sq := 0; sq < (1 << dl); sq++ {
-			var mask, mask2 Bitboard
-			/* Calculate possible target squares */
-			for b1 := int(file) - int(dsfile) - 1; b1 >= 0; b1-- {
-				mask += BbOne << b1
-				if (sq & (1 << b1)) != 0 {
-					break
-				}
-			}
-			for b2 := int(file) - int(dsfile) + 1; b2 < dl; b2++ {
-				mask += BbOne << b2
-				if (sq & (1 << b2)) != 0 {
-					break
-				}
-			}
-			/* Rotate target squares back */
-			for x := 0; x < dl; x++ {
-				mask2 += ((mask >> x) & 1) << (int(diagstart) + (9 * x))
-			}
-			movesDiagUp[square][sq] = mask2
-		}
-	}
-}
-
-// Pre-compute attacks and moves on a an empty board (pseudo attacks)
-func movesFilePreCompute() {
-	// All sliding attacks with blocker - vertical
-	// Shamefully copied from Beowulf :)
-	for rank := int(Rank1); rank <= int(Rank8); rank++ {
-		for j := 0; j < 256; j++ {
-			mask := BbZero
-			for x := 6 - rank; x >= 0; x-- {
-				mask += BbOne << (8 * (7 - x))
-				if (j & (1 << x)) != 0 {
-					break
-				}
-			}
-			for x := 8 - rank; x < 8; x++ {
-				mask += BbOne << (8 * (7 - x))
-				if (j & (1 << x)) != 0 {
-					break
-				}
-			}
-			for file := int(FileA); file <= int(FileH); file++ {
-				movesFile[(rank*8)+file][j] = mask << file
-			}
-		}
-	}
-}
-
-// Pre-compute attacks and moves on a an empty board (pseudo attacks)
-func movesRankPreCompute() {
-	// All sliding attacks with blockers - horizontal
-	// Shamefully copied from Beowulf :)
-	for file := int(FileA); file <= int(FileH); file++ {
-		for j := 0; j < 256; j++ {
-			mask := BbZero
-			for x := file - 1; x >= 0; x-- {
-				mask += BbOne << x
-				if (j & (1 << x)) != 0 {
-					break
-				}
-			}
-			for x := file + 1; x < 8; x++ {
-				mask += BbOne << x
-				if (j & (1 << x)) != 0 {
-					break
-				}
-			}
-			for rank := int(Rank1); rank <= int(Rank8); rank++ {
-				movesRank[(rank*8)+file][j] = mask << (rank * 8)
-			}
+		if (int(square.FileOf())+int(square.RankOf()))%2 == 0 {
+			squaresBb[Black] |= BbOne << square
+		} else {
+			squaresBb[White] |= BbOne << square
 		}
 	}
 }
