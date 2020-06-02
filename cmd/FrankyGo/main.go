@@ -60,6 +60,7 @@ func main() {
 	logLvl := flag.String("loglvl", "", "standard log level\n(critical|error|warning|notice|info|debug)")
 	searchlogLvl := flag.String("searchloglvl", "", "search log level\n(critical|error|warning|notice|info|debug)")
 	logPath := flag.String("logpath", ".", "path where to write log files to")
+	nobook := flag.Bool("nobook", false, "no opening book is used")
 	bookPath := flag.String("bookpath", ".", "path to opening book files")
 	bookFile := flag.String("bookfile", "", "opening book file\nprovide path if file is not in same directory as executable\nPlease also provide bookFormat otherwise this will be ignored")
 	bookFormat := flag.String("bookFormat", "", "format of opening book\n(Simple|San|Pgn)")
@@ -101,13 +102,18 @@ func main() {
 		config.SearchLogLevel = lvl
 	}
 
-	// set book path if provided as cmd line option
-	if *bookPath != "" {
-		config.Settings.Search.BookPath = *bookPath
-	}
-	if *bookFile != "" && *bookFormat != "" {
-		config.Settings.Search.BookFile = *bookFile
-		config.Settings.Search.BookFormat = *bookFormat
+	// using opening book switch
+	if *nobook {
+		config.Settings.Search.UseBook = false
+	} else {
+		// set book path if provided as cmd line option
+		if *bookPath != "" {
+			config.Settings.Search.BookPath = *bookPath
+		}
+		if *bookFile != "" && *bookFormat != "" {
+			config.Settings.Search.BookFile = *bookFile
+			config.Settings.Search.BookFormat = *bookFormat
+		}
 	}
 
 	// resetting log level auf standard log - required  as most packages include
