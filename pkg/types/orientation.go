@@ -58,8 +58,8 @@ func (o Orientation) IsValid() bool {
 }
 
 // String returns a string representation of a Orientation (e.g. N, E, ...,NW,...)
-func (d Orientation) String() string {
-	switch d {
+func (o Orientation) String() string {
+	switch o {
 	case N:
 		return "N"
 	case E:
@@ -77,6 +77,6 @@ func (d Orientation) String() string {
 	case NW:
 		return "NW"
 	default:
-		panic(fmt.Sprintf("Invalid orientation %d", d))
+		panic(fmt.Sprintf("Invalid orientation %d", o))
 	}
 }

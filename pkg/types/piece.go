@@ -35,21 +35,21 @@ import (
 //  No Piece = 0
 //  White Piece is a non zero value with piece & 0b1000 == 0
 //  Black Piece is a non zero value with piece & 0b1000 == 1
-//  PieceNone  = 0b0000
-//  WhiteKing  = 0b0001
-//  WhitePawn  = 0b0010
-//  WhiteKnight= 0b0011
-//  WhiteBishop= 0b0100
-//  WhiteRook  = 0b0101
-//  WhiteQueen = 0b0110
-//  BlackKing  = 0b1001
-//  BlackPawn  = 0b1010
-//  BlackKnight= 0b1011
-//  BlackBishop= 0b1100
-//  BlackRook  = 0b1101
-//  BlackQueen = 0b1110
+//  PieceNone  = 0b00000
+//  WhiteKing  = 0b00001
+//  WhitePawn  = 0b00010
+//  WhiteKnight= 0b00011
+//  WhiteBishop= 0b00100
+//  WhiteRook  = 0b00101
+//  WhiteQueen = 0b00110
+//  BlackKing  = 0b01001
+//  BlackPawn  = 0b01010
+//  BlackKnight= 0b01011
+//  BlackBishop= 0b01100
+//  BlackRook  = 0b01101
+//  BlackQueen = 0b01110
 //  PieceLength= 0b10000
-type Piece int8
+type Piece uint8
 
 // Pieces are a set of constants to represent the different pieces
 // of a chess game.
@@ -70,9 +70,9 @@ const (
 	PieceLength Piece = 16
 )
 
-// MakePiece creates the piece given by color and piece type
-func MakePiece(c Color, pt PieceType) Piece {
-	return Piece((int(c) << 3) + int(pt))
+// IsValid check if pt is a valid piece type
+func (p Piece) IsValid() bool {
+	return p < 15 && p != 7 && p != 8
 }
 
 // ColorOf returns the color of the given piece */
@@ -89,6 +89,11 @@ func (p Piece) TypeOf() PieceType {
 // by adding the number of certain piece type times this value
 func (p Piece) ValueOf() Value {
 	return pieceTypeValue[p.TypeOf()]
+}
+
+// MakePiece creates the piece given by color and piece type
+func MakePiece(c Color, pt PieceType) Piece {
+	return Piece((int(c) << 3) + int(pt))
 }
 
 // PieceFromChar returns the Piece corresponding to the given character.
