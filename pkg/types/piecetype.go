@@ -27,8 +27,8 @@
 package types
 
 // PieceType is a set of constants for piece types in chess
-//  test for non sliding pt & 0b0100 == 0 (must be none zero)
-//  test for sliding pt & 0b0100 == 1 (must be < 7)
+//  test for non sliding pt & 0b0100 == 0 (must also be none zero)
+//  test for sliding pt & 0b0100 == 1 (must also be < 7)
 //  PtNone   = 0b0000
 //  King     = 0b0001 // non sliding
 //  Pawn     = 0b0010 // non sliding
@@ -37,7 +37,7 @@ package types
 //  Rook     = 0b0101 // sliding
 //  Queen    = 0b0110 // sliding
 //  PtLength = 0b0111
-type PieceType int8
+type PieceType uint8
 
 // PieceType is a set of constants for piece types in chess
 const (
@@ -51,7 +51,12 @@ const (
 	PtLength PieceType = 0b0111
 )
 
-// array of string labels for piece types
+// IsValid check if pt is a valid piece type
+func (pt PieceType) IsValid() bool {
+	return pt < 7
+}
+
+// array of values for each piece type when calculating game phase
 var gamePhaseValue = [PtLength]int{0, 0, 0, 1, 1, 2, 4}
 
 // GamePhaseValue returns a value for calculating game phase
@@ -60,18 +65,12 @@ func (pt PieceType) GamePhaseValue() int {
 	return gamePhaseValue[pt]
 }
 
-// array of string labels for piece types
+// array of static values of each piece type
 var pieceTypeValue = [PtLength]Value{0, 2000, 100, 320, 330, 500, 900}
 
-// ValueOf returns a value for calculating game phase
-// by adding the number of certain piece type times this value
+// ValueOf returns a static value for the piece type
 func (pt PieceType) ValueOf() Value {
 	return pieceTypeValue[pt]
-}
-
-// IsValid check if pt is a valid piece type
-func (pt PieceType) IsValid() bool {
-	return pt > 0 && pt < 7
 }
 
 // array of string labels for piece types

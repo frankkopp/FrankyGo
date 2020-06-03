@@ -134,6 +134,16 @@ func TestPositionEquality(t *testing.T) {
 	assert.Equal(t, *p1, *p2)              // p2 from which p3 is copied is unchanged
 	p3.castlingRights.Add(CastlingWhiteOO) // undo change
 	assert.Equal(t, *p1, *p3)
+
+	// copy
+	p2.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
+	var p4 = *p2
+	assert.NotEqual(t, *p1, p4)
+	assert.Equal(t, *p2, p4) // p2 from which p3 is copied is unchanged
+	p4.UndoMove()
+	assert.EqualValues(t, p1.ZobristKey(), p4.ZobristKey())
+	assert.NotEqual(t, *p1, p4) // DoMove/UndoMove changes history entry and therefore !=
+
 }
 
 func TestStringBoard(t *testing.T) {
@@ -730,7 +740,7 @@ func BenchmarkSquareDistance(b *testing.B) {
 			return SquareDistance(sq1, sq2) == 2
 		}},
 		{"sqDiff", func(sq1 Square, sq2 Square) bool {
-			return util.Abs(int(sq1) - int(sq2)) == 16
+			return util.Abs(int(sq1)-int(sq2)) == 16
 		}},
 	}
 	for _, bm := range benchmarks {

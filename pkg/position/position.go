@@ -220,6 +220,12 @@ func (p *Position) DoMove(m Move) {
 }
 
 // UndoMove resets the position to a state before the last move has been made
+// The history entry will be changed but the history counter reset. So in effect
+// the external view on the position is unchanged (e.g. fenBeforeDoMove == fenAfterUndoMove
+// and zobristBeforeDoMove == zobristAfterUndoMove but positionBeforeDoMove != positionAfterUndoMove
+// If positionBeforeDoMove == positionAfterUndoMove would be required this function would have
+// to be changed to reset the history entry as well. Currently this is not necessary
+// and therefore we spare the time to do this.
 func (p *Position) UndoMove() {
 	// Restore state part 1
 	p.historyCounter--
