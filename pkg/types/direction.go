@@ -52,6 +52,7 @@ const (
 	Northwest Direction = North + West
 )
 
+// Directions is an array of all directions to be able to loop over all directions
 var Directions = [8]Direction{North, East, South, West, Northeast, Southeast, Southwest, Northwest}
 
 // String returns a string representation of a Direction (e.g. N, E, ...,NW,...)
