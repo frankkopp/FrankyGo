@@ -43,71 +43,71 @@ type Square uint8
 
 //noinspection GoUnusedConst
 const (
-	SqA1   Square = iota // 0
-	SqB1   Square = iota // 1
-	SqC1   Square = iota
-	SqD1   Square = iota
-	SqE1   Square = iota
-	SqF1   Square = iota
-	SqG1   Square = iota
-	SqH1   Square = iota
-	SqA2   Square = iota
-	SqB2   Square = iota
-	SqC2   Square = iota
-	SqD2   Square = iota
-	SqE2   Square = iota
-	SqF2   Square = iota
-	SqG2   Square = iota
-	SqH2   Square = iota
-	SqA3   Square = iota
-	SqB3   Square = iota
-	SqC3   Square = iota
-	SqD3   Square = iota
-	SqE3   Square = iota
-	SqF3   Square = iota
-	SqG3   Square = iota
-	SqH3   Square = iota
-	SqA4   Square = iota
-	SqB4   Square = iota
-	SqC4   Square = iota
-	SqD4   Square = iota
-	SqE4   Square = iota
-	SqF4   Square = iota
-	SqG4   Square = iota
-	SqH4   Square = iota
-	SqA5   Square = iota
-	SqB5   Square = iota
-	SqC5   Square = iota
-	SqD5   Square = iota
-	SqE5   Square = iota
-	SqF5   Square = iota
-	SqG5   Square = iota
-	SqH5   Square = iota
-	SqA6   Square = iota
-	SqB6   Square = iota
-	SqC6   Square = iota
-	SqD6   Square = iota
-	SqE6   Square = iota
-	SqF6   Square = iota
-	SqG6   Square = iota
-	SqH6   Square = iota
-	SqA7   Square = iota
-	SqB7   Square = iota
-	SqC7   Square = iota
-	SqD7   Square = iota
-	SqE7   Square = iota
-	SqF7   Square = iota
-	SqG7   Square = iota
-	SqH7   Square = iota
-	SqA8   Square = iota
-	SqB8   Square = iota
-	SqC8   Square = iota
-	SqD8   Square = iota
-	SqE8   Square = iota
-	SqF8   Square = iota
-	SqG8   Square = iota
-	SqH8   Square = iota // 63
-	SqNone Square = iota // 64
+	SqA1 Square = iota // 0
+	SqB1               // 1
+	SqC1               // 2
+	SqD1
+	SqE1
+	SqF1
+	SqG1
+	SqH1
+	SqA2
+	SqB2
+	SqC2
+	SqD2
+	SqE2
+	SqF2
+	SqG2
+	SqH2
+	SqA3
+	SqB3
+	SqC3
+	SqD3
+	SqE3
+	SqF3
+	SqG3
+	SqH3
+	SqA4
+	SqB4
+	SqC4
+	SqD4
+	SqE4
+	SqF4
+	SqG4
+	SqH4
+	SqA5
+	SqB5
+	SqC5
+	SqD5
+	SqE5
+	SqF5
+	SqG5
+	SqH5
+	SqA6
+	SqB6
+	SqC6
+	SqD6
+	SqE6
+	SqF6
+	SqG6
+	SqH6
+	SqA7
+	SqB7
+	SqC7
+	SqD7
+	SqE7
+	SqF7
+	SqG7
+	SqH7
+	SqA8
+	SqB8
+	SqC8
+	SqD8
+	SqE8
+	SqF8
+	SqG8
+	SqH8   // 63
+	SqNone // 64
 )
 
 // IsValid checks a value of type square if it represents a valid
