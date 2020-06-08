@@ -229,6 +229,11 @@ Command line options:
     - Tuning and Testing of all search features and parameters
 
 ## Versions
+### v1.0.1 (done)
+- FIX:
+    - MoveGen hasLegalMove did not check pawn doubles but necessary when pawn double blocks attacker i an otherwise
+    - nearly mate position.
+     
 ### v1.0.0 (done)
 - DONE:
     - change default behavior for log files so running the executable without logs folder works smoothly

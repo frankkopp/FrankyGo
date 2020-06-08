@@ -101,7 +101,7 @@ func TestStandardPerft(t *testing.T) {
 //noinspection GoImportUsedAsName
 func TestStandardPerftOd(t *testing.T) {
 
-	maxDepth := 6
+	maxDepth := 5
 	var perft Perft
 	assert := assert.New(t)
 
