@@ -326,10 +326,7 @@ func (mg *Movegen) StoreKiller(move Move) {
 	moveOf := move.MoveOf()
 	if mg.killerMoves[0] == moveOf {
 		return
-	} else if mg.killerMoves[1] == moveOf { // if in second slot move it to first
-		mg.killerMoves[1] = mg.killerMoves[0]
-		mg.killerMoves[0] = moveOf
-	} else {
+	} else { // if in second slot or not there at all move it to first
 		// add it to first slot und move first to second
 		mg.killerMoves[1] = mg.killerMoves[0]
 		mg.killerMoves[0] = moveOf
@@ -367,10 +364,20 @@ func (mg *Movegen) HasLegalMove(position *position.Position) bool {
 	opponentBb := position.OccupiedBb(us.Flip())
 
 	// PAWN
-	// pawn pushes - check step one to unoccupied squares
-	// don't have to test double steps as they would be redundant to single steps
-	// for the purpose of finding at least one legal move
-	tmpMoves = ShiftBitboard(myPawns, us.MoveDirection()) &^ occupiedBb
+	// pawns - check step one to unoccupied squares
+	tmpMoves = ShiftBitboard(myPawns, us.MoveDirection()) & ^position.OccupiedAll()
+	// pawns double - check step two to unoccupied squares
+	tmpMovesDouble := ShiftBitboard(tmpMoves&us.PawnDoubleRank(), us.MoveDirection()) & ^position.OccupiedAll()
+	// double pawn steps
+	for tmpMovesDouble != 0 {
+		toSquare := tmpMovesDouble.PopLsb()
+		fromSquare := toSquare.To(us.Flip().MoveDirection()).To(us.Flip().MoveDirection())
+		if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
+			return true
+		}
+	}
+	// normal single pawn steps
+	tmpMoves &= ^us.PromotionRankBb()
 	for tmpMoves != 0 {
 		toSquare := tmpMoves.PopLsb()
 		fromSquare := toSquare.To(us.Flip().MoveDirection())
@@ -404,7 +411,7 @@ func (mg *Movegen) HasLegalMove(position *position.Position) bool {
 		pieces := position.PiecesBb(us, pt)
 		for pieces != 0 {
 			fromSquare := pieces.PopLsb()
-			moves := GetAttacksBb(pt, fromSquare, occupiedBb)
+			moves := GetAttacksBb(pt, fromSquare, occupiedBb) &^ usBb
 			for moves != 0 {
 				toSquare := moves.PopLsb()
 				if position.IsLegalMove(CreateMove(fromSquare, toSquare, Normal, PtNone)) {
@@ -665,6 +672,7 @@ func (mg *Movegen) fillOnDemandMoveList(p *position.Position, mode GenMode, evas
 			mg.currentODStage = od3
 		case od3: // king captures
 			mg.generateKingMoves(p, GenNonQuiet, evasion, mg.onDemandEvasionTargets, mg.onDemandMoves)
+			mg.updateSortValues(p, mg.onDemandMoves)
 			mg.currentODStage = od4
 		case od4:
 			if mode&GenQuiet != 0 {
@@ -854,9 +862,7 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 		}
 
 		// we treat Queen and Knight promotions as non quiet moves
-		promMoves := ShiftBitboard(myPawns, nextPlayer.MoveDirection()) &
-			^position.OccupiedAll() &
-			nextPlayer.PromotionRankBb()
+		promMoves := ShiftBitboard(myPawns, nextPlayer.MoveDirection()) &^position.OccupiedAll() &	nextPlayer.PromotionRankBb()
 		if evasion {
 			promMoves &= evasionTargets
 		}
@@ -957,7 +963,7 @@ func (mg *Movegen) generateKingMoves(p *position.Position, mode GenMode, evasion
 	kingSquareBb := p.PiecesBb(us, King)
 	fromSquare := kingSquareBb.PopLsb()
 
-	// pseudo attacks include all moves no matter if the king would be in check
+	// attacks include all moves no matter if the king would be in check
 	pseudoMoves := GetAttacksBb(King, fromSquare, BbZero)
 
 	// captures
