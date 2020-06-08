@@ -621,6 +621,7 @@ func TestPosition_CheckInsufficientMaterial(t *testing.T) {
 
 }
 
+// Startpos
 // DoMove/UndoMove took 2.387.592.600 ns for 10.000.000 iterations with 5 do/undo pairs
 // DoMove/UndoMove took 47 ns per do/undo pair
 // Positions per sec 20.941.596 pps
@@ -634,25 +635,38 @@ func TestTimingDoUndo(t *testing.T) {
 	}
 
 	const rounds = 5
-	const iterations uint64 = 10_000_000
+	const iterations uint64 = 20_000_000
+
+	// position for each move type
+	// fxe3 enpassant
+	// fxe3 normal capture
+	// o-o castling
+	// Rc1 normal non capturing
+	// c1Q promotion
+	p := NewPosition("r3k2r/1ppn3p/4q1n1/8/4Pp2/3R4/p1p2PPP/R5K1 b kq e3 0 1")
+	m1 := CreateMove(SqF4, SqE3, EnPassant, PtNone)
+	m2 := CreateMove(SqF2, SqE3, Normal, PtNone)
+	m3 := CreateMove(SqE8, SqG8, Castling, PtNone)
+	m4 := CreateMove(SqD3, SqC3, Normal, PtNone)
+	m5 := CreateMove(SqC2, SqC1, Promotion, Queen)
 
 	// prepare moves
-	e2e4 := CreateMove(SqE2, SqE4, Normal, PtNone)
-	d7d5 := CreateMove(SqD7, SqD5, Normal, PtNone)
-	e4d5 := CreateMove(SqE4, SqD5, Normal, PtNone)
-	d8d5 := CreateMove(SqD8, SqD5, Normal, PtNone)
-	b1c3 := CreateMove(SqB1, SqC3, Normal, PtNone)
+	// p := NewPosition()
+	// m1 := CreateMove(SqE2, SqE4, Normal, PtNone)
+	// m2 := CreateMove(SqD7, SqD5, Normal, PtNone)
+	// m3 := CreateMove(SqE4, SqD5, Normal, PtNone)
+	// m4 := CreateMove(SqD8, SqD5, Normal, PtNone)
+	// m5 := CreateMove(SqB1, SqC3, Normal, PtNone)
 
 	for r := 1; r <= rounds; r++ {
 		out.Printf("Round %d\n", r)
-		p := NewPosition()
 		start := time.Now()
 		for i := uint64(0); i < iterations; i++ {
-			p.DoMove(e2e4)
-			p.DoMove(d7d5)
-			p.DoMove(e4d5)
-			p.DoMove(d8d5)
-			p.DoMove(b1c3)
+			p.DoMove(m1)
+			p.DoMove(m2)
+			p.DoMove(m3)
+			p.DoMove(m4)
+			p.DoMove(m5)
 			p.UndoMove()
 			p.UndoMove()
 			p.UndoMove()
@@ -660,7 +674,7 @@ func TestTimingDoUndo(t *testing.T) {
 			p.UndoMove()
 		}
 		elapsed := time.Since(start)
-		out.Printf("DoMove/UndoMove took %d ns for %d iterations with 5 do/undo pairs\n", elapsed.Nanoseconds(), iterations)
+		out.Printf("DoMove/UndoMove took %s for %d iterations with 5 do/undo pairs\n", elapsed, iterations)
 		out.Printf("DoMove/UndoMove took %d ns per do/undo pair\n", elapsed.Nanoseconds()/int64(iterations*5))
 		out.Printf("Positions per sec %d pps\n", int64(iterations*5*1e9)/elapsed.Nanoseconds())
 	}

@@ -169,9 +169,9 @@ func (perft *Perft) miniMax(depth int, p *position.Position, mgListPtr *[]*Moveg
 				}
 				if p.HasCheck() {
 					perft.CheckCounter++
-				}
-				if !movegens[0].HasLegalMove(p) {
-					perft.CheckMateCounter++
+					if !movegens[0].HasLegalMove(p) {
+						perft.CheckMateCounter++
+					}
 				}
 			}
 			p.UndoMove()
@@ -219,9 +219,9 @@ func (perft *Perft) miniMaxOD(depth int, p *position.Position, mgListPtr *[]*Mov
 				}
 				if p.HasCheck() {
 					perft.CheckCounter++
-				}
-				if !movegens[0].HasLegalMove(p) {
-					perft.CheckMateCounter++
+					if !movegens[0].HasLegalMove(p) {
+						perft.CheckMateCounter++
+					}
 				}
 			}
 			p.UndoMove()

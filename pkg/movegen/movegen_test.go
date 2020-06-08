@@ -87,18 +87,6 @@ func TestMovegenGeneratePawnMoves(t *testing.T) {
 	mg.generatePawnMoves(pos, GenAll, false, BbZero, &moves)
 	assert.Equal(t, 25, moves.Len())
 
-	moves.Clear()
-	mg.generatePawnMoves(pos, GenNonQuiet, false, BbZero, &moves)
-	assert.Equal(t, 11, moves.Len())
-
-	moves.Clear()
-	mg.generatePawnMoves(pos, GenQuiet, false, BbZero, &moves)
-	assert.Equal(t, 14, moves.Len())
-
-	moves.Clear()
-	mg.generatePawnMoves(pos, GenAll, false, BbZero, &moves)
-	assert.Equal(t, 25, moves.Len())
-
 	// moves.Sort()
 	// fmt.Printf("Moves: %d\n", moves.Len())
 	// l := moves.Len()
@@ -459,8 +447,6 @@ func TestMovegenGetMoveFromSan(t *testing.T) {
 }
 
 func TestOnDemandKillerPv(t *testing.T) {
-
-
 	mg := NewMoveGen()
 	var moves = moveslice.NewMoveSlice(100)
 
@@ -545,6 +531,8 @@ func TestEvasion(t *testing.T) {
 	mg := NewMoveGen()
 	var p *position.Position
 	var pseudoLegalMoves, evasionMoves, legalMoves *moveslice.MoveSlice
+
+	// TODO: real tests
 
 	p = position.NewPosition("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq -")
 	pseudoLegalMoves = mg.GeneratePseudoLegalMoves(p, GenAll, false).Clone()
