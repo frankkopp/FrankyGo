@@ -773,12 +773,15 @@ func (mg *Movegen) getEvasionTargets(p *position.Position) Bitboard {
 	evasionTargets := attacks.AttacksTo(p, ourKing, us.Flip())
 	// we can only block attacks of sliders of there is not more
 	// than one attacker
-	if evasionTargets.PopCount() == 1 {
+	popCount := evasionTargets.PopCount()
+	if popCount == 1 {
 		atck := evasionTargets.Lsb()
 		// sliding pieces
 		if p.GetPiece(atck).TypeOf() > Knight {
 			evasionTargets |= Intermediate(atck, ourKing)
 		}
+	} else if popCount > 1 {
+		evasionTargets = BbZero
 	}
 	return evasionTargets
 }
