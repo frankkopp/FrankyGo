@@ -29,7 +29,6 @@ package movegen
 import (
 	"testing"
 
-	"github.com/pkg/profile"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/frankkopp/FrankyGo/pkg/position"
@@ -101,11 +100,11 @@ func TestStandardPerft(t *testing.T) {
 // Finished PERFT Test for Depth 6
 //noinspection GoImportUsedAsName
 func TestStandardPerftOd(t *testing.T) {
-	defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
+	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 
-	startDepth := 7
-	maxDepth := 7
+	startDepth := 1
+	maxDepth := 6
 	var perft Perft
 	assert := assert.New(t)
 
