@@ -656,6 +656,8 @@ func TestTimingOnDemandMoveGen(t *testing.T) {
 // GeneratePseudoLegalMoves took 1.655.000.800 ns for 1.000.000 iterations
 // 86.000.000 moves generated in 1.655 ns: 51.963.721 mps.
 func TestTimingOnDemandRealMoveGen(t *testing.T) {
+	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
+
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}

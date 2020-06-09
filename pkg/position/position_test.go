@@ -628,14 +628,14 @@ func TestPosition_CheckInsufficientMaterial(t *testing.T) {
 //
 //noinspection GoUnhandledErrorResult
 func TestTimingDoUndo(t *testing.T) {
-	defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
+	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
 
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
 
 	const rounds = 5
-	const iterations uint64 = 20_000_000
+	const iterations uint64 = 50_000_000
 
 	// position for each move type
 	// fxe3 enpassant
@@ -649,14 +649,6 @@ func TestTimingDoUndo(t *testing.T) {
 	m3 := CreateMove(SqE8, SqG8, Castling, PtNone)
 	m4 := CreateMove(SqD3, SqC3, Normal, PtNone)
 	m5 := CreateMove(SqC2, SqC1, Promotion, Queen)
-
-	// prepare moves
-	// p := NewPosition()
-	// m1 := CreateMove(SqE2, SqE4, Normal, PtNone)
-	// m2 := CreateMove(SqD7, SqD5, Normal, PtNone)
-	// m3 := CreateMove(SqE4, SqD5, Normal, PtNone)
-	// m4 := CreateMove(SqD8, SqD5, Normal, PtNone)
-	// m5 := CreateMove(SqB1, SqC3, Normal, PtNone)
 
 	for r := 1; r <= rounds; r++ {
 		out.Printf("Round %d\n", r)

@@ -213,6 +213,7 @@ func (perft *Perft) miniMaxOD(depth int, p *position.Position, mgListPtr *[]*Mov
 				}
 				if castling {
 					perft.CastleCounter++
+					// out.Printf("Last: %-5s Move: %-5s   Fen: %s\n", p.LastMove().StringUci(), move.StringUci(), p.StringFen())
 				}
 				if promotion {
 					perft.PromotionCounter++
