@@ -40,52 +40,6 @@ import (
 
 // Performing PERFT Test for Depth 6
 // -----------------------------------------
-// Time         : 24.895 ms
-// NPS          : 4.782.381 nps (from 4.486.000 without evasions)
-// Results:
-//   Nodes     : 119.060.324
-//   Captures  : 2.812.008
-//   EnPassant : 5.248
-//   Checks    : 809.099
-//   CheckMates: 10.828
-//   Castles   : 0
-//   Promotions: 0
-// -----------------------------------------
-// Finished PERFT Test for Depth 6
-//noinspection GoImportUsedAsName
-func TestStandardPerft(t *testing.T) {
-
-	maxDepth := 6
-	var perft Perft
-	assert := assert.New(t)
-
-	var results = [10][6]uint64{
-		// @formatter:off
-		// N             Nodes         Captures           EP          Checks           Mates
-		{0, 1, 0, 0, 0, 0},
-		{1, 20, 0, 0, 0, 0},
-		{2, 400, 0, 0, 0, 0},
-		{3, 8_902, 34, 0, 12, 0},
-		{4, 197_281, 1_576, 0, 469, 8},
-		{5, 4_865_609, 82_719, 258, 27_351, 347},
-		{6, 119_060_324, 2_812_008, 5_248, 809_099, 10_828},
-		{7, 3_195_901_860, 108_329_926, 319_617, 33_103_848, 435_767},
-		{8, 84_998_978_956, 3_523_740_106, 7_187_977, 968_981_593, 9_852_036},
-		{9, 2_439_530_234_167, 125_208_536_153, 319_496_827, 36_095_901_903, 400_191_963}}
-	// @formatter:on
-
-	for i := 1; i <= maxDepth; i++ {
-		perft.StartPerft(position.StartFen, i, false)
-		assert.Equal(results[i][1], perft.Nodes)
-		assert.Equal(results[i][2], perft.CaptureCounter)
-		assert.Equal(results[i][3], perft.EnpassantCounter)
-		assert.Equal(results[i][4], perft.CheckCounter)
-		assert.Equal(results[i][5], perft.CheckMateCounter)
-	}
-}
-
-// Performing PERFT Test for Depth 6
-// -----------------------------------------
 // Time         : 24.368 ms
 // NPS          : 4.885.745 nps
 // Results:
@@ -125,6 +79,52 @@ func TestStandardPerftOd(t *testing.T) {
 
 	for i := startDepth; i <= maxDepth; i++ {
 		perft.StartPerft(position.StartFen, i, true)
+		assert.Equal(results[i][1], perft.Nodes)
+		assert.Equal(results[i][2], perft.CaptureCounter)
+		assert.Equal(results[i][3], perft.EnpassantCounter)
+		assert.Equal(results[i][4], perft.CheckCounter)
+		assert.Equal(results[i][5], perft.CheckMateCounter)
+	}
+}
+
+// Performing PERFT Test for Depth 6
+// -----------------------------------------
+// Time         : 24.895 ms
+// NPS          : 4.782.381 nps (from 4.486.000 without evasions)
+// Results:
+//   Nodes     : 119.060.324
+//   Captures  : 2.812.008
+//   EnPassant : 5.248
+//   Checks    : 809.099
+//   CheckMates: 10.828
+//   Castles   : 0
+//   Promotions: 0
+// -----------------------------------------
+// Finished PERFT Test for Depth 6
+//noinspection GoImportUsedAsName
+func TestStandardPerft(t *testing.T) {
+
+	maxDepth := 6
+	var perft Perft
+	assert := assert.New(t)
+
+	var results = [10][6]uint64{
+		// @formatter:off
+		// N             Nodes         Captures           EP          Checks           Mates
+		{0, 1, 0, 0, 0, 0},
+		{1, 20, 0, 0, 0, 0},
+		{2, 400, 0, 0, 0, 0},
+		{3, 8_902, 34, 0, 12, 0},
+		{4, 197_281, 1_576, 0, 469, 8},
+		{5, 4_865_609, 82_719, 258, 27_351, 347},
+		{6, 119_060_324, 2_812_008, 5_248, 809_099, 10_828},
+		{7, 3_195_901_860, 108_329_926, 319_617, 33_103_848, 435_767},
+		{8, 84_998_978_956, 3_523_740_106, 7_187_977, 968_981_593, 9_852_036},
+		{9, 2_439_530_234_167, 125_208_536_153, 319_496_827, 36_095_901_903, 400_191_963}}
+	// @formatter:on
+
+	for i := 1; i <= maxDepth; i++ {
+		perft.StartPerft(position.StartFen, i, false)
 		assert.Equal(results[i][1], perft.Nodes)
 		assert.Equal(results[i][2], perft.CaptureCounter)
 		assert.Equal(results[i][3], perft.EnpassantCounter)

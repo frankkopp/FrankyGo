@@ -56,6 +56,9 @@ const (
 	CastlingRightsLength CastlingRights = 16
 )
 
+// array to store all possible CastlingRights for squares which impact castlings
+var castlingRights [SqLength]CastlingRights
+
 // Has checks if the state has the bit for the Castling right set and
 // therefore this castling is available
 func (cr CastlingRights) Has(rhs CastlingRights) bool {
@@ -68,7 +71,7 @@ func (cr *CastlingRights) Remove(rhs CastlingRights) CastlingRights {
 	return *cr
 }
 
-// Add adds a castling right ti the state
+// Add adds a castling right to the state
 func (cr *CastlingRights) Add(rhs CastlingRights) CastlingRights {
 	*cr = *cr | rhs
 	return *cr
@@ -95,3 +98,13 @@ func (cr CastlingRights) String() string {
 	}
 	return os.String()
 }
+
+func init() {
+	castlingRights[SqE1] = CastlingWhite
+	castlingRights[SqA1] = CastlingWhiteOOO
+	castlingRights[SqH1] = CastlingWhiteOO
+	castlingRights[SqE8] = CastlingBlack
+	castlingRights[SqA8] = CastlingBlackOOO
+	castlingRights[SqH8] = CastlingBlackOO
+}
+

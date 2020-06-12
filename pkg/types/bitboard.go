@@ -470,19 +470,17 @@ var (
 	// files
 	passedPawnMask [2][SqLength]Bitboard
 
-	// helper mask for supporting castling moves
-	kingSideCastleMask [2]Bitboard
-	// helper mask for supporting castling moves
-	queenSideCastleMask [2]Bitboard
-
-	// array to store all possible CastlingRights for squares which impact castlings
-	castlingRights [SqLength]CastlingRights
-
 	// mask for all white  and black squares
 	squaresBb [2]Bitboard
 
 	// array with distance of a square to the center
 	centerDistance [SqLength]int
+
+	// helper mask for supporting castling moves
+	kingSideCastleMask [2]Bitboard
+
+	// helper mask for supporting castling moves
+	queenSideCastleMask [2]Bitboard
 )
 
 // ///////////////////////////////////////
@@ -502,8 +500,8 @@ func initBb() {
 	intermediatePreCompute()
 	maskPassedPawnsPreCompute()
 	centerDistancePreCompute()
-	castleMasksPreCompute()
 	squareColorsPreCompute()
+	castleMasksPreCompute()
 }
 
 func rankFileBbPreCompute() {
@@ -717,19 +715,6 @@ func centerDistancePreCompute() {
 	}
 }
 
-func castleMasksPreCompute() {
-	kingSideCastleMask[White] = sqBb[SqF1] | sqBb[SqG1] | sqBb[SqH1]
-	kingSideCastleMask[Black] = sqBb[SqF8] | sqBb[SqG8] | sqBb[SqH8]
-	queenSideCastleMask[White] = sqBb[SqD1] | sqBb[SqC1] | sqBb[SqB1] | sqBb[SqA1]
-	queenSideCastleMask[Black] = sqBb[SqD8] | sqBb[SqC8] | sqBb[SqB8] | sqBb[SqA8]
-	castlingRights[SqE1] = CastlingWhite
-	castlingRights[SqA1] = CastlingWhiteOOO
-	castlingRights[SqH1] = CastlingWhiteOO
-	castlingRights[SqE8] = CastlingBlack
-	castlingRights[SqA8] = CastlingBlackOOO
-	castlingRights[SqH8] = CastlingBlackOO
-}
-
 // masks for each square color (good for bishops vs bishops or pawns)
 func squareColorsPreCompute() {
 	for square := SqA1; square <= SqH8; square++ {
@@ -740,3 +725,11 @@ func squareColorsPreCompute() {
 		}
 	}
 }
+
+func castleMasksPreCompute() {
+	kingSideCastleMask[White] = sqBb[SqF1] | sqBb[SqG1] | sqBb[SqH1]
+	kingSideCastleMask[Black] = sqBb[SqF8] | sqBb[SqG8] | sqBb[SqH8]
+	queenSideCastleMask[White] = sqBb[SqD1] | sqBb[SqC1] | sqBb[SqB1] | sqBb[SqA1]
+	queenSideCastleMask[Black] = sqBb[SqD8] | sqBb[SqC8] | sqBb[SqB8] | sqBb[SqA8]
+}
+
