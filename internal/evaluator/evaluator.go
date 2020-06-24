@@ -158,12 +158,16 @@ func (e *Evaluator) evaluate() Value {
 	// have a dedicated configurable weight to adjust and test
 
 	// Material
-	e.score.MidGameValue = int16(e.position.Material(White) - e.position.Material(Black))
-	e.score.EndGameValue = e.score.MidGameValue
+	if Settings.Eval.UseMaterialEval {
+		e.score.MidGameValue = int16(e.position.Material(White) - e.position.Material(Black))
+		e.score.EndGameValue = e.score.MidGameValue
+	}
 
 	// Positional values
-	e.score.MidGameValue += int16(e.position.PsqMidValue(White) - e.position.PsqMidValue(Black))
-	e.score.EndGameValue += int16(e.position.PsqEndValue(White) - e.position.PsqEndValue(Black))
+	if Settings.Eval.UsePositionalEval {
+		e.score.MidGameValue += int16(e.position.PsqMidValue(White) - e.position.PsqMidValue(Black))
+		e.score.EndGameValue += int16(e.position.PsqEndValue(White) - e.position.PsqEndValue(Black))
+	}
 
 	// early exit
 	// arbitrary threshold - in early phases (game phase = 1.0) this is doubled
