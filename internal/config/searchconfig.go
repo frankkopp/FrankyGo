@@ -38,11 +38,12 @@ type searchConfiguration struct {
 	UsePonder bool
 
 	// Quiescence search
-	UseQuiescence   bool
-	UseQSStandpat   bool
-	UseSEE          bool
+	UseQuiescence bool
+	UseQSStandpat bool
+	UseSEE        bool
 
 	// main search algorithm
+	UseAlphaBeta  bool
 	UsePVS        bool
 	UseAspiration bool // not yet implemented
 
@@ -99,6 +100,7 @@ func init() {
 	Settings.Search.UseQSStandpat = true
 	Settings.Search.UseSEE = true
 
+	Settings.Search.UseAlphaBeta = true
 	Settings.Search.UsePVS = true
 	Settings.Search.UseAspiration = false
 
