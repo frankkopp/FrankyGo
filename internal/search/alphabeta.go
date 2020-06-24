@@ -194,7 +194,7 @@ func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta V
 			s.statistics.BestMoveChange++
 			if value > alpha {
 				// fail high in root only when using aspiration search
-				if value >= beta {
+				if value >= beta && Settings.Search.UseAlphaBeta {
 					s.statistics.BetaCuts++
 					return value
 				}
@@ -242,14 +242,14 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		defer s.slog.Debugf("%0*s Ply %-2.d Depth %-2.d a:%-6.d b:%-6.d pv:%-6.v end  :  %s", ply, "", ply, depth, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
 	}
 
-	// Check if search should be stopped
-	if s.stopConditions() {
-		return ValueNA
-	}
-
 	// Enter quiescence search when depth == 0 or max ply has been reached
 	if depth == 0 || ply >= MaxDepth {
 		return s.qsearch(p, ply, alpha, beta, isPV)
+	}
+
+	// Check if search should be stopped
+	if s.stopConditions() {
+		return ValueNA
 	}
 
 	// Mate Distance Pruning
@@ -376,7 +376,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		if doNull &&
 			!isPV &&
 			depth >= Settings.Search.NmpDepth &&
-			p.MaterialNonPawn(us) > 0 &&  // to reduce risk of zugzwang
+			p.MaterialNonPawn(us) > 0 && // to reduce risk of zugzwang
 			!hasCheck {
 			// possible other criteria: eval > beta
 
@@ -495,7 +495,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	// ///////////////////////////////////////////////////////
 	// MOVE LOOP
 	for move := myMg.GetNextMove(p, movegen.GenAll, hasCheck); move != MoveNone; move = myMg.GetNextMove(p, movegen.GenAll, hasCheck) {
-
 		from := move.From()
 		to := move.To()
 		givesCheck := p.GivesCheck(move)
@@ -730,7 +729,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 				// as we cut off the rest of the search of the node here.
 				// We will safe the move as a killer to be able to search it
 				// earlier in another node of the ply.
-				if value >= beta {
+				if value >= beta && Settings.Search.UseAlphaBeta {
 					// Count beta cuts
 					s.statistics.BetaCuts++
 					// Count beta cuts on first move
@@ -1021,7 +1020,7 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 			bestNodeValue = value
 			bestNodeMove = move
 			if value > alpha {
-				if value >= beta {
+				if value >= beta && Settings.Search.UseAlphaBeta {
 					s.statistics.BetaCuts++
 					if movesSearched == 1 {
 						s.statistics.BetaCuts1st++
