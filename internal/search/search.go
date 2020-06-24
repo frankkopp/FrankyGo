@@ -131,9 +131,9 @@ func (s *Search) NewGame() {
 	s.StopSearch()
 	if s.tt != nil {
 		s.tt.Clear()
-		s.eval = evaluator.NewEvaluator()
-		s.history = history.NewHistory()
 	}
+	s.eval = evaluator.NewEvaluator()
+	s.history = history.NewHistory()
 }
 
 // StartSearch starts the search on the given position with
@@ -720,10 +720,7 @@ func (s *Search) startTimer() {
 // checks repetitions and 50-moves rule. Returns true if the position
 // has repeated itself at least the given number of times.
 func (s *Search) checkDrawRepAnd50(p *position.Position, i int) bool {
-	if p.CheckRepetitions(i) || p.HalfMoveClock() >= 100 {
-		return true
-	}
-	return false
+	return p.CheckRepetitions(i) || p.HalfMoveClock() >= 100
 }
 
 // sends the search result to the uci handler if a handler is available.
