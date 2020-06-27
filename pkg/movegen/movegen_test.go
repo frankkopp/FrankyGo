@@ -27,6 +27,7 @@
 package movegen
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"runtime"
@@ -723,4 +724,17 @@ func TestTimingGenerateMovesNew(t *testing.T) {
 		out.Printf("Iterations per sec %d\n", int64(iterations*1e9)/elapsed.Nanoseconds())
 	}
 	_ = result
+}
+
+func TestDebug(t *testing.T) {
+
+	mg := NewMoveGen()
+
+	pos := position.NewPosition("1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -")
+	moves := mg.GeneratePseudoLegalMoves(pos, GenAll, false)
+	l := mg.pseudoLegalMoves.Len()
+	for i := 0; i < l; i++ {
+		fmt.Printf("%d. %s\n", i+1, moves.At(i).String())
+	}
+	moves.Clear()
 }

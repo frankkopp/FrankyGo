@@ -296,6 +296,8 @@ func TestTimingTTe(t *testing.T) {
 		t.Skip("skipping test in short mode.")
 	}
 
+	var res *TtEntry
+
 	// setup
 	tt := NewTtTable(1_024)
 	move := CreateMove(SqE2, SqE4, Normal, PtNone)
@@ -314,8 +316,7 @@ func TestTimingTTe(t *testing.T) {
 			tt.Put(key+Key(i), move, depth, value, valueType, ValueNA)
 		}
 		for i := uint64(0); i < iterations; i++ {
-			key := key + Key(2*i)
-			_ = tt.Probe(key)
+			res = tt.Probe(key + Key(2*i))
 		}
 		elapsed := time.Since(start)
 		out.Println(tt.String())
@@ -323,7 +324,8 @@ func TestTimingTTe(t *testing.T) {
 		out.Printf("1 put/probes in %d ns: %d tts\n",
 			elapsed.Nanoseconds()/int64(iterations),
 			(iterations*uint64(time.Second.Nanoseconds()))/uint64(elapsed.Nanoseconds()))
-
 	}
+
+	_ = res;
 }
 

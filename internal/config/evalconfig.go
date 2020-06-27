@@ -28,6 +28,9 @@ package config
 
 type evalConfiguration struct {
 
+	UseMaterialEval       bool
+	UsePositionalEval       bool
+
 	// evaluation values
 	UseLazyEval       bool
 	LazyEvalThreshold int16
@@ -76,6 +79,9 @@ type evalConfiguration struct {
 
 // sets defaults which might be overwritten by config file.
 func init() {
+
+	Settings.Eval.UseMaterialEval = true
+	Settings.Eval.UsePositionalEval = false
 
 	Settings.Eval.UseLazyEval = false
 	Settings.Eval.LazyEvalThreshold = 700
