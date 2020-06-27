@@ -41,8 +41,8 @@ type TtEntry struct {
 	value int16  // 16-bit value during search
 	vmeta uint16 // 16-bit depth 7-bit, vtype 2-bit, age 3-bit
 	// depth 7-bit 0-127
-	// vtype 3-bit 0-7   0=used 1=generated, not used, >1 older generation
-	// age 2-bit None, Exact, Alpha (upper), Beta (lower)
+	// vtype 3-bit 0-7   None, Exact, Alpha (upper), Beta (lower)
+	// age 2-bit 		 0=used 1=generated, not used, >1 older generation
 }
 
 const (

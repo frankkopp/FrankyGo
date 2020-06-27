@@ -106,68 +106,77 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().Evaluations
-	ptrToSpecial2 = &s.Statistics().EvalFromTT
+	ptrToSpecial = &s.Statistics().Mdp
+	ptrToSpecial2 = &s.Statistics().Checkmates
 
 	// Base
-	// r.Tests = append(r.Tests, measure(s, sl, p, "Base"))
-
-	// + Quiescence
-	Settings.Search.UseQuiescence = true
-	Settings.Search.UseSEE = true
-	Settings.Search.UseQSStandpat = true
-
-	// + TT
-	Settings.Search.UseTT = true
-	Settings.Search.UseQSTT = true
-	Settings.Search.UseTTValue = true
-	Settings.Search.UseTTMove = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "MiniMax"))
 
 	// Algorithm
-	Settings.Search.UsePVS = true
-	// Settings.Search.UseAspiration = true
-
-	// Move Sorting
-	Settings.Search.UseIID = true
-	Settings.Search.UseKiller = true
-	Settings.Search.UseHistoryCounter = true
-	Settings.Search.UseCounterMoves = true
-
-	// Prunings
+	Settings.Search.UseAlphaBeta = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "AlphaBeta"))
+	// Settings.Search.UsePVS = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "PVS"))
+	// // Settings.Search.UseAspiration = true
+	//
+	// // Move Sorting
+	// Settings.Search.UseKiller = true
+	// Settings.Search.UseHistoryCounter = true
+	// Settings.Search.UseCounterMoves = true
+	// // Settings.Search.UseIID = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "History"))
+	//
 	Settings.Search.UseMDP = true
-	Settings.Search.UseRazoring = true
-	Settings.Search.UseRFP = true
-	Settings.Search.UseNullMove = true
-
-	// Extensions
-	Settings.Search.UseExt = true
-	Settings.Search.UseExtAddDepth = true
-	Settings.Search.UseCheckExt = true
-	Settings.Search.UseThreatExt = false
-	// r.Tests = append(r.Tests, measure(s, sl, p, "CHECK"))
-
-	// Futility
-	Settings.Search.UseFP = true
-	Settings.Search.UseQFP = true
-	// Late Moves
-	Settings.Search.UseLmr = true
-	Settings.Search.UseLmp = true
-
-	r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
-
-	Settings.Eval.UseLazyEval = true
-	Settings.Eval.UsePawnEval = true
-	Settings.Eval.UsePawnCache = true
-	Settings.Eval.PawnCacheSize = 32
-	Settings.Eval.UseAttacksInEval = true
-	Settings.Eval.UseMobility = true
-	Settings.Eval.UseAdvancedPieceEval = true
-	Settings.Eval.UseKingEval = true
-
-	r.Tests = append(r.Tests, measure(s, sl, p, "Eval"))
-
-	Settings.Search.UseEvalTT = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "EvalTT"))
+	r.Tests = append(r.Tests, measure(s, sl, p, "MDP"))
+	//
+	// // + TT
+	// Settings.Search.UseTT = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
+	// Settings.Search.UseQSTT = true
+	// Settings.Search.UseTTMove = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "PVSort"))
+	// Settings.Search.UseTTValue = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "TT Cuts"))
+	//
+	// // + Quiescence
+	// // Settings.Search.UseQuiescence = true
+	// // Settings.Search.UseSEE = true
+	// // Settings.Search.UseQSStandpat = true
+	//
+	// // Prunings
+	// Settings.Search.UseRazoring = true
+	// Settings.Search.UseRFP = true
+	// Settings.Search.UseNullMove = true
+	//
+	// // Extensions
+	// Settings.Search.UseExt = true
+	// Settings.Search.UseExtAddDepth = true
+	// Settings.Search.UseCheckExt = true
+	// Settings.Search.UseThreatExt = false
+	// // r.Tests = append(r.Tests, measure(s, sl, p, "CHECK"))
+	//
+	// // Futility
+	// Settings.Search.UseFP = true
+	// Settings.Search.UseQFP = true
+	// // Late Moves
+	// Settings.Search.UseLmr = true
+	// Settings.Search.UseLmp = true
+	//
+	// // r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
+	//
+	// Settings.Eval.UseLazyEval = true
+	// Settings.Eval.UsePawnEval = true
+	// Settings.Eval.UsePawnCache = true
+	// Settings.Eval.PawnCacheSize = 32
+	// Settings.Eval.UseAttacksInEval = true
+	// Settings.Eval.UseMobility = true
+	// Settings.Eval.UseAdvancedPieceEval = true
+	// Settings.Eval.UseKingEval = true
+	//
+	// // r.Tests = append(r.Tests, measure(s, sl, p, "Eval"))
+	//
+	// Settings.Search.UseEvalTT = true
+	// // r.Tests = append(r.Tests, measure(s, sl, p, "EvalTT"))
 
 	// TESTS
 	// /////////////////////////////////////////////////////////////////
@@ -304,20 +313,26 @@ func measure(s *search.Search, sl *search.Limits, p *position.Position, name str
 func turnOffFeatures() {
 	Settings.Search.UseBook = false
 	Settings.Search.UsePonder = false
+
 	Settings.Search.UseQuiescence = false
 	Settings.Search.UseQSStandpat = false
 	Settings.Search.UseSEE = false
+
 	Settings.Search.UseTT = false
 	Settings.Search.UseTTMove = false
 	Settings.Search.UseTTValue = false
 	Settings.Search.UseQSTT = false
 	Settings.Search.UseEvalTT = false
-	Settings.Search.UseIID = false
+
+	Settings.Search.UseAlphaBeta = false
 	Settings.Search.UsePVS = false
 	Settings.Search.UseAspiration = false
+
+	Settings.Search.UseIID = false
 	Settings.Search.UseKiller = false
 	Settings.Search.UseHistoryCounter = false
 	Settings.Search.UseCounterMoves = false
+
 	Settings.Search.UseMDP = false
 	Settings.Search.UseRazoring = false
 	Settings.Search.UseNullMove = false
