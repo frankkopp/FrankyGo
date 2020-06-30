@@ -424,7 +424,7 @@ func (s *Search) iterativeDeepening(p *position.Position) *Result {
 	s.rootMoves = s.mg[0].GenerateLegalMoves(p, movegen.GenAll)
 
 	// DEBUG
-	out.Printf("root Moves %d %s\n", s.rootMoves.Len(), s.rootMoves.StringUci());
+	out.Printf("root Moves %d %s\n", s.rootMoves.Len(), s.rootMoves.StringUci())
 
 	// check if there are legal moves - if not it's mate or stalemate
 	if s.rootMoves.Len() == 0 {
@@ -743,6 +743,7 @@ func (s *Search) sendInfoStringToUci(msg string) {
 // send UCI information about search - could be called each 500ms or so.
 func (s *Search) sendSearchUpdateToUci() {
 	// FIXME - could be too expensive
+	// TODO: current nps calculation - see CPP version
 	// also do a regular search update here
 	if time.Since(s.lastUciUpdateTime) > time.Second {
 		s.lastUciUpdateTime = time.Now()
