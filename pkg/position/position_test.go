@@ -621,10 +621,10 @@ func TestPosition_CheckInsufficientMaterial(t *testing.T) {
 
 }
 
-// Startpos
-// DoMove/UndoMove took 2.387.592.600 ns for 10.000.000 iterations with 5 do/undo pairs
-// DoMove/UndoMove took 47 ns per do/undo pair
-// Positions per sec 20.941.596 pps
+// 28.6. PC
+// DoMove/UndoMove took 13.1349397s for 50.000.000 iterations with 5 do/undo pairs
+// DoMove/UndoMove took 52 ns per do/undo pair
+// Positions per sec 19.033.205 pps
 //
 //noinspection GoUnhandledErrorResult
 func TestTimingDoUndo(t *testing.T) {

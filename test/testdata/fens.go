@@ -27,8 +27,6 @@
 package testdata
 
 var Fens = []string{
-	"1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -", // DEBUG
-
 	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -",
 	"8/1P6/6k1/8/8/8/p1K5/8 w - -",
 	"4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -",

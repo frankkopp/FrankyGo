@@ -37,28 +37,20 @@ import (
 // ///////////////////////////////////////////////////////////////
 // Perft tests from https://www.chessprogramming.org/Perft_Results
 // ///////////////////////////////////////////////////////////////
-
-// Performing PERFT Test for Depth 6
+// 28.6. PC
+// Performing PERFT Test for Depth 7
+// FEN: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 // -----------------------------------------
-// Time         : 24.368 ms
-// NPS          : 4.885.745 nps
-// Results:
-//   Nodes     : 119.060.324
-//   Captures  : 2.812.008
-//   EnPassant : 5.248
-//   Checks    : 809.099
-//   CheckMates: 10.828
-//   Castles   : 0
-//   Promotions: 0
-// -----------------------------------------
-// Finished PERFT Test for Depth 6
+// Time         : 7m13.764405s
+// NPS          : 7.367.828 nps
+//
 //noinspection GoImportUsedAsName
 func TestStandardPerftOd(t *testing.T) {
 	// defer profile.Start(profile.CPUProfile, profile.ProfilePath("./bin")).Stop()
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 
 	startDepth := 1
-	maxDepth := 6
+	maxDepth := 7
 	var perft Perft
 	assert := assert.New(t)
 

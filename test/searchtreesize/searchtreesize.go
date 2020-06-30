@@ -115,33 +115,47 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// Algorithm
 	Settings.Search.UseAlphaBeta = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "AlphaBeta"))
-	// Settings.Search.UsePVS = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "PVS"))
-	// // Settings.Search.UseAspiration = true
-	//
+
+	Settings.Search.UsePVS = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "PVS"))
+	// Settings.Search.UseAspiration = true
+
 	// // Move Sorting
-	// Settings.Search.UseKiller = true
-	// Settings.Search.UseHistoryCounter = true
-	// Settings.Search.UseCounterMoves = true
-	// // Settings.Search.UseIID = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "History"))
-	//
+	Settings.Search.UseKiller = true
+	Settings.Search.UseHistoryCounter = true
+	Settings.Search.UseCounterMoves = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "History"))
+	// Settings.Search.UseIID = true
+
 	Settings.Search.UseMDP = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "MDP"))
-	//
-	// // + TT
-	// Settings.Search.UseTT = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
-	// Settings.Search.UseQSTT = true
-	// Settings.Search.UseTTMove = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "PVSort"))
-	// Settings.Search.UseTTValue = true
-	// r.Tests = append(r.Tests, measure(s, sl, p, "TT Cuts"))
-	//
-	// // + Quiescence
-	// // Settings.Search.UseQuiescence = true
-	// // Settings.Search.UseSEE = true
-	// // Settings.Search.UseQSStandpat = true
+
+	// + TT
+	Settings.Search.UseTT = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "TT"))
+
+	Settings.Search.UseTTMove = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "PVSort"))
+
+	Settings.Search.UseTTValue = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "TT Cuts"))
+
+	Settings.Search.UseEvalTT = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "EvalTT"))
+
+	// + Quiescence
+	Settings.Search.UseQuiescence = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "QS"))
+
+	Settings.Search.UseQSTT = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "QS TT"))
+
+	Settings.Search.UseQSStandpat = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "QS Standpat"))
+
+	Settings.Search.UseSEE = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "QS SEE"))
+
 	//
 	// // Prunings
 	// Settings.Search.UseRazoring = true
