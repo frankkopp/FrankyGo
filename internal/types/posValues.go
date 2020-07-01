@@ -121,7 +121,7 @@ func initPosValues() {
 }
 
 func calcPosValueBlack(sq Square, gamePhase int, posMidTable *[SqLength]Value, posEndTable *[SqLength]Value) Value {
-	return (Value(gamePhase)*posMidTable[sq] + (Value(1-gamePhase) * posEndTable[sq])) / GamePhaseMax
+	return (Value(gamePhase)*posMidTable[sq] + (Value(GamePhaseMax-gamePhase) * posEndTable[sq])) / GamePhaseMax
 }
 
 func calcPosValueWhite(sq Square, gamePhase int, posMidTable *[SqLength]Value, posEndTable *[SqLength]Value) Value {

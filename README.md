@@ -229,10 +229,14 @@ Command line options:
     - Tuning and Testing of all search features and parameters
 
 ## Versions
+
+### v1.0.2 (done)
+- FIX:
+    - Fixed a bug in pre computation of positional values.
+
 ### v1.0.1 (done)
 - FIX:
-    - MoveGen hasLegalMove did not check pawn doubles but necessary when pawn double blocks attacker i an otherwise
-    - nearly mate position.
+    - MoveGen hasLegalMove did not check pawn doubles but necessary when pawn double blocks attacker in an otherwise near mate position.
      
 ### v1.0.0 (done)
 - DONE:
