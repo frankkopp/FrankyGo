@@ -1,4 +1,4 @@
- //
+//
 // FrankyGo - UCI chess engine in GO for learning purposes
 //
 // MIT License
@@ -27,9 +27,8 @@
 package config
 
 type evalConfiguration struct {
-
-	UseMaterialEval       bool
-	UsePositionalEval       bool
+	UseMaterialEval   bool
+	UsePositionalEval bool
 
 	// evaluation values
 	UseLazyEval       bool
@@ -81,7 +80,7 @@ type evalConfiguration struct {
 func init() {
 
 	Settings.Eval.UseMaterialEval = true
-	Settings.Eval.UsePositionalEval = false
+	Settings.Eval.UsePositionalEval = true
 
 	Settings.Eval.UseLazyEval = false
 	Settings.Eval.LazyEvalThreshold = 700

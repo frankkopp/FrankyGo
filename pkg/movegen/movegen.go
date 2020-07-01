@@ -285,7 +285,7 @@ func (mg *Movegen) GetNextMove(p *position.Position, mode GenMode, evasion bool)
 		// we have at least one move in the list and it is not the
 		// pvMove. Increase the takeIndex and return the move.
 		// Also remove internal sort value before returning the move.
-		move := (*mg.onDemandMoves)[mg.takeIndex].MoveOf()
+		move := (*mg.onDemandMoves)[mg.takeIndex] // .MoveOf()
 		mg.takeIndex++
 		if mg.takeIndex >= mg.onDemandMoves.Len() {
 			mg.takeIndex = 0
@@ -865,7 +865,7 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 		}
 
 		// we treat Queen and Knight promotions as non quiet moves
-		promMoves := ShiftBitboard(myPawns, nextPlayer.MoveDirection()) &^position.OccupiedAll() &	nextPlayer.PromotionRankBb()
+		promMoves := ShiftBitboard(myPawns, nextPlayer.MoveDirection()) &^ position.OccupiedAll() & nextPlayer.PromotionRankBb()
 		if evasion {
 			promMoves &= evasionTargets
 		}
