@@ -50,7 +50,7 @@ func TestStandardPerftOd(t *testing.T) {
 	// go tool pprof -http=localhost:8080 FrankyGo_Test.exe cpu.pprof
 
 	startDepth := 1
-	maxDepth := 7
+	maxDepth := 6
 	var perft Perft
 	assert := assert.New(t)
 
