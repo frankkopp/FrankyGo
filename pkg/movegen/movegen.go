@@ -326,11 +326,11 @@ func (mg *Movegen) StoreKiller(move Move) {
 	moveOf := move.MoveOf()
 	if mg.killerMoves[0] == moveOf {
 		return
-	} else { // if in second slot or not there at all move it to first
-		// add it to first slot und move first to second
-		mg.killerMoves[1] = mg.killerMoves[0]
-		mg.killerMoves[0] = moveOf
 	}
+	// if in second slot or not there at all move it to first
+	// add it to first slot und move first to second
+	mg.killerMoves[1] = mg.killerMoves[0]
+	mg.killerMoves[0] = moveOf
 }
 
 // SetHistoryData provides a pointer to the search's history data
@@ -750,8 +750,7 @@ func (mg *Movegen) updateSortValues(p *position.Position, moveList *moveslice.Mo
 
 			// update move sort value
 			if value > 0 { // only touch the value if it would be improved
-				preValue := move.ValueOf()
-				(*move).SetValue(preValue + value)
+				(*move).SetValue(move.ValueOf() + value)
 				// out.Printf("HistoryCount: %s = %d / %d ==> %d \n", move.StringUci(), count, preValue, preValue+value)
 			}
 		}
@@ -779,9 +778,11 @@ func (mg *Movegen) getEvasionTargets(p *position.Position) Bitboard {
 		// sliding pieces
 		if p.GetPiece(atck).TypeOf() > Knight {
 			evasionTargets |= Intermediate(atck, ourKing)
+			return evasionTargets
 		}
-	} else if popCount > 1 {
-		evasionTargets = BbZero
+	}
+	if popCount > 1 {
+		return BbZero
 	}
 	return evasionTargets
 }
