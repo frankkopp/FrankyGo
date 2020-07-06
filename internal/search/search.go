@@ -423,9 +423,6 @@ func (s *Search) iterativeDeepening(p *position.Position) *Result {
 	// generate all legal root moves
 	s.rootMoves = s.mg[0].GenerateLegalMoves(p, movegen.GenAll)
 
-	// DEBUG
-	out.Printf("root Moves %d %s\n", s.rootMoves.Len(), s.rootMoves.StringUci())
-
 	// check if there are legal moves - if not it's mate or stalemate
 	if s.rootMoves.Len() == 0 {
 		if p.HasCheck() {
@@ -491,6 +488,8 @@ func (s *Search) iterativeDeepening(p *position.Position) *Result {
 			bestValue = s.rootSearch(p, iterationDepth, alpha, beta)
 		}
 		// ###########################################
+
+		// TODO: mate search check
 
 		// check if we need to stop
 		// doing this after the first iteration ensures that

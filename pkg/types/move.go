@@ -115,6 +115,12 @@ func (m Move) ValueOf() Value {
 	return Value((m&valueMask)>>valueShift) + ValueNA
 }
 
+// ValueGreaterThan comparator - returns true if value of the move is greater than value
+// of the given move parameter
+func (m Move) ValueGreaterThan(rhs Move) bool {
+	return (m & 0xFFFF0000) > (rhs & 0xFFFF0000)
+}
+
 // SetValue encodes the given value into the high 16-bit of the move
 func (m *Move) SetValue(v Value) Move {
 	if assert.DEBUG {

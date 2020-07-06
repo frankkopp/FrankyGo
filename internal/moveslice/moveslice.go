@@ -234,7 +234,7 @@ func (ms *MoveSlice) Sort() {
 	for i := 1; i < l; i++ {
 		tmp := (*ms)[i]
 		j := i
-		for j > 0 && (tmp&0xFFFF0000) > ((*ms)[j-1]&0xFFFF0000) {
+		for j > 0 && tmp.ValueGreaterThan((*ms)[j-1]) { // (tmp&0xFFFF0000) > ((*ms)[j-1]&0xFFFF0000) {
 			(*ms)[j] = (*ms)[j-1]
 			j--
 		}
