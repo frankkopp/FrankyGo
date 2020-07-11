@@ -43,36 +43,44 @@ func init() {
 		"Use_Hash":     {NameID: "Use_Hash", HandlerFunc: useCache, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseTT), CurrentValue: strconv.FormatBool(Settings.Search.UseTT)},
 		"Hash":         {NameID: "Hash", HandlerFunc: cacheSize, OptionType: Spin, DefaultValue: strconv.Itoa(Settings.Search.TTSize), CurrentValue: strconv.Itoa(Settings.Search.TTSize), MinValue: "0", MaxValue: "65000"},
 
-		"Use_Book": {NameID: "Use_Book", HandlerFunc: useBook, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseBook), CurrentValue: strconv.FormatBool(Settings.Search.UseBook)},
+		"OwnBook": {NameID: "OwnBook", HandlerFunc: useBook, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseBook), CurrentValue: strconv.FormatBool(Settings.Search.UseBook)},
 
 		"Ponder": {NameID: "Ponder", HandlerFunc: usePonder, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePonder), CurrentValue: strconv.FormatBool(Settings.Search.UsePonder)},
 
-		"Quiescence":       {NameID: "Quiescence", HandlerFunc: useQuiescence, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQuiescence), CurrentValue: strconv.FormatBool(Settings.Search.UseQuiescence)},
-		"Use_QHash":        {NameID: "Use_QHash", HandlerFunc: useQSHash, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQSTT), CurrentValue: strconv.FormatBool(Settings.Search.UseQSTT)},
-		"Use_SEE":          {NameID: "Use_SEE", HandlerFunc: useSee, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseSEE), CurrentValue: strconv.FormatBool(Settings.Search.UseSEE)},
+		"Quiescence":      {NameID: "Quiescence", HandlerFunc: useQuiescence, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQuiescence), CurrentValue: strconv.FormatBool(Settings.Search.UseQuiescence)},
+		"Use_QHash":       {NameID: "Use_QHash", HandlerFunc: useQSHash, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQSTT), CurrentValue: strconv.FormatBool(Settings.Search.UseQSTT)},
+		"Use QS Standpat": {NameID: "Use QS Standpat", HandlerFunc: useQSStandpat, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQSStandpat), CurrentValue: strconv.FormatBool(Settings.Search.UseQSStandpat)},
+		"Use_SEE":         {NameID: "Use_SEE", HandlerFunc: useSee, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseSEE), CurrentValue: strconv.FormatBool(Settings.Search.UseSEE)},
 
-		"Use_PVS": {NameID: "Use_PVS", HandlerFunc: usePvs, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePVS), CurrentValue: strconv.FormatBool(Settings.Search.UsePVS)},
-		"Use_ASP": {NameID: "Use_ASP", HandlerFunc: useAsp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseAspiration), CurrentValue: strconv.FormatBool(Settings.Search.UseAspiration)},
+		"Use_AlphaBeta": {NameID: "Use_AlphaBeta", HandlerFunc: useAlphaBeta, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseAlphaBeta), CurrentValue: strconv.FormatBool(Settings.Search.UseAlphaBeta)},
+		"Use_PVS":       {NameID: "Use_PVS", HandlerFunc: usePvs, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UsePVS), CurrentValue: strconv.FormatBool(Settings.Search.UsePVS)},
+		"Use_ASP":       {NameID: "Use_ASP", HandlerFunc: useAsp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseAspiration), CurrentValue: strconv.FormatBool(Settings.Search.UseAspiration)},
 
+		"Use_TTMove":      {NameID: "Use_TTMove", HandlerFunc: useTTMove, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseTTMove), CurrentValue: strconv.FormatBool(Settings.Search.UseTTMove)},
 		"Use_IID":         {NameID: "Use_IID", HandlerFunc: useIID, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseIID), CurrentValue: strconv.FormatBool(Settings.Search.UseIID)},
 		"Use_Killer":      {NameID: "Use_Killer", HandlerFunc: useKiller, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseKiller), CurrentValue: strconv.FormatBool(Settings.Search.UseKiller)},
 		"Use_HistCount":   {NameID: "Use_HistCount", HandlerFunc: useHC, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseHistoryCounter), CurrentValue: strconv.FormatBool(Settings.Search.UseHistoryCounter)},
 		"Use_CounterMove": {NameID: "Use_CounterMove", HandlerFunc: useCM, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseCounterMoves), CurrentValue: strconv.FormatBool(Settings.Search.UseCounterMoves)},
 
-		"Use_Rfp":      {NameID: "Use_Rfp", HandlerFunc: useRfp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseRFP), CurrentValue: strconv.FormatBool(Settings.Search.UseRFP)},
-		"Use_Razoring": {NameID: "Use_Razoring", HandlerFunc: useRazor, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseRazoring), CurrentValue: strconv.FormatBool(Settings.Search.UseRazoring)},
-		"Use_NullMove": {NameID: "Use_NullMove", HandlerFunc: useNullMove, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseNullMove), CurrentValue: strconv.FormatBool(Settings.Search.UseNullMove)},
+		"Use_TTValue":  {NameID: "Use_TTValue", HandlerFunc: useTTValue, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseTTValue), CurrentValue: strconv.FormatBool(Settings.Search.UseTTValue)},
 		"Use_Mdp":      {NameID: "Use_Mdp", HandlerFunc: useMdp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseMDP), CurrentValue: strconv.FormatBool(Settings.Search.UseMDP)},
-		"Use_Fp":       {NameID: "Use_Fp", HandlerFunc: useFp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseFP), CurrentValue: strconv.FormatBool(Settings.Search.UseFP)},
-		"Use_Qfp":      {NameID: "Use_Qfp", HandlerFunc: useQfp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQFP), CurrentValue: strconv.FormatBool(Settings.Search.UseQFP)},
-		"Use_Lmr":      {NameID: "Use_Lmr", HandlerFunc: useLmr, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseLmr), CurrentValue: strconv.FormatBool(Settings.Search.UseLmr)},
-		"Use_Lmp":      {NameID: "Use_Lmp", HandlerFunc: useLmp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseLmp), CurrentValue: strconv.FormatBool(Settings.Search.UseLmp)},
+		"Use_Razoring": {NameID: "Use_Razoring", HandlerFunc: useRazor, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseRazoring), CurrentValue: strconv.FormatBool(Settings.Search.UseRazoring)},
+		"Razor Margin": {NameID: "Razor Margin", HandlerFunc: razorMargin, OptionType: Spin, DefaultValue: strconv.Itoa(Settings.Search.RazorMargin), CurrentValue: strconv.Itoa(Settings.Search.RazorMargin), MinValue: "-10000", MaxValue: "10000"},
+		"Use_Rfp":      {NameID: "Use_Rfp", HandlerFunc: useRfp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseRFP), CurrentValue: strconv.FormatBool(Settings.Search.UseRFP)},
+		"Use_NullMove": {NameID: "Use_NullMove", HandlerFunc: useNullMove, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseNullMove), CurrentValue: strconv.FormatBool(Settings.Search.UseNullMove)},
+
+		"Use_Fp":  {NameID: "Use_Fp", HandlerFunc: useFp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseFP), CurrentValue: strconv.FormatBool(Settings.Search.UseFP)},
+		"Use_Qfp": {NameID: "Use_Qfp", HandlerFunc: useQfp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseQFP), CurrentValue: strconv.FormatBool(Settings.Search.UseQFP)},
+		"Use_Lmr": {NameID: "Use_Lmr", HandlerFunc: useLmr, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseLmr), CurrentValue: strconv.FormatBool(Settings.Search.UseLmr)},
+		"Use_Lmp": {NameID: "Use_Lmp", HandlerFunc: useLmp, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseLmp), CurrentValue: strconv.FormatBool(Settings.Search.UseLmp)},
 
 		"Use_Ext":         {NameID: "Use_Ext", HandlerFunc: useExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseExt), CurrentValue: strconv.FormatBool(Settings.Search.UseExt)},
 		"Use_ExtAddDepth": {NameID: "Use_ExtAddDepth", HandlerFunc: useExtAddDepth, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseExtAddDepth), CurrentValue: strconv.FormatBool(Settings.Search.UseExtAddDepth)},
 		"Use_CheckExt":    {NameID: "Use_CheckExt", HandlerFunc: useCheckExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseCheckExt), CurrentValue: strconv.FormatBool(Settings.Search.UseCheckExt)},
 		"Use_ThreatExt":   {NameID: "Use_ThreatExt", HandlerFunc: useThreatExt, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseThreatExt), CurrentValue: strconv.FormatBool(Settings.Search.UseThreatExt)},
 
+		// TODO vvv
+		"Use_EvalHash":       {NameID: "Use_EvalHash", HandlerFunc: useEvalHash, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Search.UseEvalTT), CurrentValue: strconv.FormatBool(Settings.Search.UseEvalTT)},
 		"Eval_Lazy":          {NameID: "Eval_Lazy", HandlerFunc: evalLazy, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UseLazyEval), CurrentValue: strconv.FormatBool(Settings.Eval.UseLazyEval)},
 		"Eval_Pawns":         {NameID: "Eval_Pawns", HandlerFunc: evalPawns, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UsePawnEval), CurrentValue: strconv.FormatBool(Settings.Eval.UsePawnEval)},
 		"Eval_PawnCache":     {NameID: "Eval_PawnCache", HandlerFunc: evalPawnCache, OptionType: Check, DefaultValue: strconv.FormatBool(Settings.Eval.UsePawnCache), CurrentValue: strconv.FormatBool(Settings.Eval.UsePawnCache)},
@@ -85,27 +93,36 @@ func init() {
 	// list to control order of the entries
 	sortOrderUciOptions = []string{
 		"Print Config",
+
+		"OwnBook",
+
 		"Clear Hash",
 		"Use_Hash",
 		"Hash",
-		"Use_Book",
 		"Ponder",
 
 		"Quiescence",
 		"Use_QHash",
 		"Use_SEE",
+		"Use QS Standpat",
+		"Use_EvalHash",
 
+		"Use_AlphaBeta",
 		"Use_PVS",
 		"Use_ASP",
 
+		"Use_TTMove",
 		"Use_IID",
 		"Use_Killer",
 		"Use_HistCount",
 		"Use_CounterMove",
 
+		"Use_TTValue",
 		"Use_Mdp",
-		"Use_Rfp",
 		"Use_Razoring",
+		"Razor Margin",
+		"Use_Rfp",
+
 		"Use_NullMove",
 		"Use_Fp",
 		"Use_Qfp",
@@ -277,6 +294,12 @@ func useQSHash(u *UciHandler, o *uciOption) {
 	log.Debugf("Set Use Hash in Quiescence to %v", Settings.Search.UseQSTT)
 }
 
+func useAlphaBeta(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseAlphaBeta = v
+	log.Debugf("Set Use AlphaBeta Search to %v", Settings.Search.UseAlphaBeta)
+}
+
 func usePvs(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UsePVS = v
@@ -287,6 +310,18 @@ func useAsp(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseAspiration = v
 	log.Debugf("Set Use Aspiration Search to %v", Settings.Search.UseAspiration)
+}
+
+func useTTMove(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseTTMove = v
+	log.Debugf("Set Use Hash Move to %v", Settings.Search.UseTTMove)
+}
+
+func useTTValue(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseTTValue = v
+	log.Debugf("Set Use Hash Value to %v", Settings.Search.UseTTValue)
 }
 
 func useMdp(u *UciHandler, o *uciOption) {
@@ -319,6 +354,12 @@ func useRazor(u *UciHandler, o *uciOption) {
 	log.Debugf("Set Use Razoring to %v", Settings.Search.UseRazoring)
 }
 
+func razorMargin(u *UciHandler, o *uciOption) {
+	v, _ := strconv.Atoi(o.CurrentValue)
+	Settings.Search.RazorMargin = v
+	log.Debugf("Set Razor Margin to %v", Settings.Search.RazorMargin)
+}
+
 func useNullMove(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseNullMove = v
@@ -341,6 +382,12 @@ func useLmp(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseLmp = v
 	log.Debugf("Set use Late Move Pruning to %v", Settings.Search.UseLmp)
+}
+
+func useQSStandpat(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseQSStandpat = v
+	log.Debugf("Set use QS Standpat to %v", Settings.Search.UseQSStandpat)
 }
 
 func useSee(u *UciHandler, o *uciOption) {
@@ -389,6 +436,12 @@ func useQfp(u *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseQFP = v
 	log.Debugf("Set use Quiescence Futility Pruning (QFP) to %v", Settings.Search.UseQFP)
+}
+
+func useEvalHash(u *UciHandler, o *uciOption) {
+	v, _ := strconv.ParseBool(o.CurrentValue)
+	Settings.Search.UseEvalTT = v
+	log.Debugf("Set use Eval Hash to %v", Settings.Search.UseEvalTT)
 }
 
 func evalLazy(u *UciHandler, o *uciOption) {

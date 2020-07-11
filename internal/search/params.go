@@ -67,12 +67,18 @@ func init() {
 }
 
 func printLmr() {
+	out.Printf("{")
+	out.Println()
 	for i := 3; i < 32; i++ {
+		out.Printf("{")
 		for j := 3; j < 64; j++ {
-			out.Printf("LMR: depth: %2d moves searched: %2d r:%2d\n", i, j, lmp[i])
+			out.Printf("%2d, ", lmr[i][j])
 		}
+		out.Printf("},")
 		out.Println()
 	}
+	out.Printf("}")
+	out.Println()
 }
 
 var lmp [16]int
@@ -81,7 +87,7 @@ func init() {
 	for i := 1; i < 16; i++ {
 		// from Crafty
 		lmp[i] = 6 + int(math.Pow(float64(i)+0.5, 1.3))
-		// out.Printf("LMP: depth: %2d r:%2d\n", i, lmp[i])
+		out.Printf("%2d, ", lmp[i])
 	}
 }
 

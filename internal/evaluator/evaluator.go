@@ -38,7 +38,6 @@ import (
 	attacks2 "github.com/frankkopp/FrankyGo/internal/attacks"
 	. "github.com/frankkopp/FrankyGo/internal/config"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
-	"github.com/frankkopp/FrankyGo/internal/util"
 	"github.com/frankkopp/FrankyGo/pkg/position"
 	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
@@ -169,62 +168,65 @@ func (e *Evaluator) evaluate() Value {
 		e.score.EndGameValue += int16(e.position.PsqEndValue(White) - e.position.PsqEndValue(Black))
 	}
 
-	// early exit
-	// arbitrary threshold - in early phases (game phase = 1.0) this is doubled
-	// in late phases it stands as it is
-	if Settings.Eval.UseLazyEval {
-		valueFromScore := e.value()
-		th := threshold[e.position.GamePhase()]
-		value := util.Abs16(int16(valueFromScore))
-		if value > th {
-			return e.finalEval(valueFromScore)
+	/*
+
+			// early exit
+			// arbitrary threshold - in early phases (game phase = 1.0) this is doubled
+			// in late phases it stands as it is
+			if Settings.Eval.UseLazyEval {
+				valueFromScore := e.value()
+				th := threshold[e.position.GamePhase()]
+				value := util.Abs16(int16(valueFromScore))
+				if value > th {
+					return e.finalEval(valueFromScore)
+			}
 		}
-	}
 
-	// Get all attacks
-	// find out where this should be done to be most effective
-	// This is expensive and we should use this investment as often as
-	// possible. If we could use it in search as well we could move
-	// creating this to an earlier point in time in the search
-	if Settings.Eval.UseAttacksInEval {
-		e.attacks.Compute(e.position)
-	}
+			// Get all attacks
+		// find out where this should be done to be most effective
+		// This is expensive and we should use this investment as often as
+		// possible. If we could use it in search as well we could move
+		// creating this to an earlier point in time in the search
+		if Settings.Eval.UseAttacksInEval {
+			e.attacks.Compute(e.position)
+		}
 
-	// evaluate pawns
-	if Settings.Eval.UsePawnEval {
-		// white and black are handled in evaluatePawns()
-		e.score.Add(e.evaluatePawns())
-	}
+			// evaluate pawns
+		if Settings.Eval.UsePawnEval {
+			// white and black are handled in evaluatePawns()
+			e.score.Add(e.evaluatePawns())
+		}
 
-	// evaluate pieces - builds attacks and mobility
-	if Settings.Eval.UseAdvancedPieceEval {
-		e.score.Add(e.evalPiece(White, Knight))
-		e.score.Sub(e.evalPiece(Black, Knight))
-		e.score.Add(e.evalPiece(White, Bishop))
-		e.score.Sub(e.evalPiece(Black, Bishop))
-		e.score.Add(e.evalPiece(White, Rook))
-		e.score.Sub(e.evalPiece(Black, Rook))
-		e.score.Add(e.evalPiece(White, Queen))
-		e.score.Sub(e.evalPiece(Black, Queen))
-	}
+			// evaluate pieces - builds attacks and mobility
+		if Settings.Eval.UseAdvancedPieceEval {
+			e.score.Add(e.evalPiece(White, Knight))
+			e.score.Sub(e.evalPiece(Black, Knight))
+			e.score.Add(e.evalPiece(White, Bishop))
+			e.score.Sub(e.evalPiece(Black, Bishop))
+			e.score.Add(e.evalPiece(White, Rook))
+			e.score.Sub(e.evalPiece(Black, Rook))
+			e.score.Add(e.evalPiece(White, Queen))
+			e.score.Sub(e.evalPiece(Black, Queen))
+		}
 
-	// mobility
-	if Settings.Eval.UseAttacksInEval && Settings.Eval.UseMobility {
-		e.score.MidGameValue += (e.attacks.Mobility[White] - e.attacks.Mobility[Black]) * Settings.Eval.MobilityBonus
-		e.score.EndGameValue += e.score.MidGameValue
-	}
+			// mobility
+		if Settings.Eval.UseAttacksInEval && Settings.Eval.UseMobility {
+				e.score.MidGameValue += (e.attacks.Mobility[White] - e.attacks.Mobility[Black]) * Settings.Eval.MobilityBonus
+				e.score.EndGameValue += e.score.MidGameValue
+			}
 
-	// evaluate king
-	if Settings.Eval.UseKingEval {
-		e.score.Add(e.evalKing(White))
-		e.score.Sub(e.evalKing(Black))
-	}
+			// evaluate king
+			if Settings.Eval.UseKingEval {
+				e.score.Add(e.evalKing(White))
+				e.score.Sub(e.evalKing(Black))
+			}
+
+	*/
 
 	// TEMPO Bonus for the side to move (helps with evaluation alternation -
 	// less difference between side which makes aspiration search faster
 	// (not empirically tested)
 	e.score.MidGameValue += Settings.Eval.Tempo
-	// e.score.EndGameValue += Value(0) // can be ignored
 
 	// value is always from the view of the next player
 	valueFromScore := e.value()

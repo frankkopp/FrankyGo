@@ -143,10 +143,10 @@ func (s *Search) rootSearch(p *position.Position, depth int, alpha Value, beta V
 	for i, m := range *s.rootMoves {
 
 		p.DoMove(m)
+		s.nodesVisited++
 		s.statistics.CurrentVariation.PushBack(m)
 		s.statistics.CurrentRootMoveIndex = i
 		s.statistics.CurrentRootMove = m
-		s.nodesVisited++
 
 		// check repetition and 50 moves
 		if s.checkDrawRepAnd50(p, 2) {
@@ -266,7 +266,6 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 
 	// prepare node search
 	us := p.NextPlayer()
-	hasCheck := p.HasCheck()
 	bestNodeValue := ValueNA
 	bestNodeMove := MoveNone // used to store in the TT
 	ttMove := MoveNone
@@ -295,27 +294,22 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			ttMove = ttEntry.Move()
 			if int(ttEntry.Depth()) >= depth {
 				ttValue := valueFromTT(ttEntry.Value(), ply)
-				cut := false
-				switch {
-				case !ttValue.IsValid():
-					cut = false
-				case ttEntry.Vtype() == EXACT:
-					cut = true
-				case ttEntry.Vtype() == ALPHA && ttValue <= alpha:
-					cut = true
-				case ttEntry.Vtype() == BETA && ttValue >= beta:
-					cut = true
-				}
-				if cut && Settings.Search.UseTTValue {
+				if ttValue.IsValid() &&
+					(ttEntry.Vtype() == EXACT ||
+						(ttEntry.Vtype() == ALPHA && ttValue <= alpha) ||
+						(ttEntry.Vtype() == BETA && ttValue >= beta)) &&
+					Settings.Search.UseTTValue {
+					// get PV line from tt as we prune here
+					// and wouldn't have one otherwise
 					s.getPVLine(p, s.pv[ply], depth)
 					s.statistics.TTCuts++
 					return ttValue
-				} else {
-					s.statistics.TTNoCuts++
 				}
+				s.statistics.TTNoCuts++
 			}
 			// if we have a static eval stored we can reuse it
-			if Settings.Search.UseEvalTT && ttEntry.Eval() != ValueNA {
+			if Settings.Search.UseEvalTT &&
+				ttEntry.Eval() != ValueNA {
 				s.statistics.EvalFromTT++
 				staticEval = ttEntry.Eval()
 			}
@@ -323,6 +317,8 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 			s.statistics.TTMiss++
 		}
 	}
+
+	hasCheck := p.HasCheck()
 
 	// get an evaluation for the position
 	if !hasCheck && staticEval == ValueNA {
@@ -479,13 +475,12 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	// When we received a best move for the position from the
 	// TT or IID we set it as PV move in the movegen so it will
 	// be searched first.
-	if Settings.Search.UseTTMove {
-		if ttMove != MoveNone {
-			s.statistics.TTMoveUsed++
-			myMg.SetPvMove(ttMove)
-		} else {
-			s.statistics.NoTTMove++
-		}
+	if Settings.Search.UseTTMove &&
+		ttMove != MoveNone {
+		s.statistics.TTMoveUsed++
+		myMg.SetPvMove(ttMove)
+	} else {
+		s.statistics.NoTTMove++
 	}
 
 	// prepare move loop
@@ -653,6 +648,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 		// we only count legal moves
 		s.nodesVisited++
 		s.statistics.CurrentVariation.PushBack(move)
+
 		s.sendSearchUpdateToUci()
 
 		// check repetition and 50 moves
@@ -812,6 +808,8 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 // generates captures or promotions in qsearch (when not in check) and also
 // by SEE (Static Exchange Evaluation) to determine winning captured sequences.
 func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value, isPV bool) Value {
+	// s.slog.Debugf("QSearch {} {}", ply, s.statistics.CurrentVariation.StringUci())
+
 	if trace {
 		s.slog.Debugf("%0*s Ply %-2.d QSearch     a:%-6.d b:%-6.d pv:%-6.v start:  %s", ply, "", ply, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
 		defer s.slog.Debugf("%0*s Ply %-2.d QSearch     a:%-6.d b:%-6.d pv:%-6.v end  :  %s", ply, "", ply, alpha, beta, isPV, s.statistics.CurrentVariation.StringUci())
@@ -845,7 +843,6 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	ttType := ALPHA
 	ttMove := MoveNone
 	staticEval := ValueNA
-	hasCheck := p.HasCheck()
 
 	// TT Lookup
 	var ttEntry *transpositiontable.TtEntry
@@ -855,18 +852,11 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 			s.statistics.TTHit++
 			ttMove = ttEntry.Move()
 			ttValue := valueFromTT(ttEntry.Value(), ply)
-			cut := false
-			switch {
-			case !ttValue.IsValid():
-				cut = false
-			case ttEntry.Vtype() == EXACT:
-				cut = true
-			case ttEntry.Vtype() == ALPHA && ttValue <= alpha:
-				cut = true
-			case ttEntry.Vtype() == BETA && ttValue >= beta:
-				cut = true
-			}
-			if cut && Settings.Search.UseTTValue {
+			if ttValue.IsValid() &&
+				(ttEntry.Vtype() == EXACT ||
+					(ttEntry.Vtype() == ALPHA && ttValue <= alpha) ||
+					(ttEntry.Vtype() == BETA && ttValue >= beta)) &&
+				Settings.Search.UseTTValue {
 				s.statistics.TTCuts++
 				return ttValue
 			} else {
@@ -876,7 +866,8 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 			// maybe not necessary as we will have a staticEval
 			// if not in check. ANd for check we do another search
 			// anyway.
-			if Settings.Search.UseEvalTT && ttEntry.Eval() != ValueNA {
+			if Settings.Search.UseEvalTT &&
+				ttEntry.Eval() != ValueNA {
 				s.statistics.EvalFromTT++
 				staticEval = ttEntry.Eval()
 			}
@@ -884,6 +875,8 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 			s.statistics.TTMiss++
 		}
 	}
+
+	hasCheck := p.HasCheck()
 
 	// if in check we simply do a normal search (all moves) in qsearch
 	if !hasCheck {
@@ -919,13 +912,12 @@ func (s *Search) qsearch(p *position.Position, ply int, alpha Value, beta Value,
 	// When we received a best move for the position from the
 	// TT we set it as PV move in the movegen so it will be
 	// searched first.
-	if Settings.Search.UseQSTT {
-		if ttMove != MoveNone {
-			s.statistics.TTMoveUsed++
-			myMg.SetPvMove(ttMove)
-		} else {
-			s.statistics.NoTTMove++
-		}
+	if Settings.Search.UseQSTT &&
+		ttMove != MoveNone {
+		s.statistics.TTMoveUsed++
+		myMg.SetPvMove(ttMove)
+	} else {
+		s.statistics.NoTTMove++
 	}
 
 	// prepare move loop
@@ -1089,18 +1081,17 @@ func (s *Search) goodCapture(p *position.Position, move Move) bool {
 	if Settings.Search.UseSEE {
 		// Check SEE score of higher value pieces to low value pieces
 		return see(p, move) > 0
-	} else {
-		// Lower value piece captures higher value piece
-		// With a margin to also look at Bishop x Knight
-		return p.GetPiece(move.From()).ValueOf()+50 < p.GetPiece(move.To()).ValueOf() ||
-			// all recaptures should be looked at
-			(p.LastMove() != MoveNone && p.LastMove().To() == move.To() && p.LastCapturedPiece() != PieceNone) ||
-			// undefended pieces captures are good
-			// If the defender is "behind" the attacker this will not be recognized
-			// here This is not too bad as it only adds a move to qsearch which we
-			// could otherwise ignore
-			!p.IsAttacked(move.To(), p.NextPlayer().Flip())
 	}
+	// Lower value piece captures higher value piece
+	// With a margin to also look at Bishop x Knight
+	return p.GetPiece(move.From()).ValueOf()+50 < p.GetPiece(move.To()).ValueOf() ||
+		// all recaptures should be looked at
+		(p.LastMove() != MoveNone && p.LastCapturedPiece() != PieceNone && p.LastMove().To() == move.To()) ||
+		// undefended pieces captures are good
+		// If the defender is "behind" the attacker this will not be recognized
+		// here This is not too bad as it only adds a move to qsearch which we
+		// could otherwise ignore
+		!p.IsAttacked(move.To(), p.NextPlayer().Flip())
 }
 
 // savePV adds the given move as first move to a dest moveslice and the appends
