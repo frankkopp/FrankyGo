@@ -106,8 +106,8 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().Mdp
-	ptrToSpecial2 = &s.Statistics().Checkmates
+	ptrToSpecial = &s.Statistics().FpPrunings
+	ptrToSpecial2 = &s.Statistics().QFpPrunings
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "MiniMax"))
@@ -156,24 +156,42 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseSEE = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "QS SEE"))
 
-	//
-	// // Prunings
-	// Settings.Search.UseRazoring = true
-	// Settings.Search.UseRFP = true
-	// Settings.Search.UseNullMove = true
-	//
-	// // Extensions
-	// Settings.Search.UseExt = true
-	// Settings.Search.UseExtAddDepth = true
-	// Settings.Search.UseCheckExt = true
-	// Settings.Search.UseThreatExt = false
-	// // r.Tests = append(r.Tests, measure(s, sl, p, "CHECK"))
-	//
+	// Prunings
+	Settings.Search.UseRazoring = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "RAZOR"))
+
+	Settings.Search.UseRFP = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "RFP"))
+
+	Settings.Search.UseNullMove = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "NULL"))
+
+	Settings.Search.UseIID = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "IID"))
+
+	Settings.Search.UseFP = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "FP"))
+
+	Settings.Search.UseLmr = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "LMR"))
+
+	Settings.Search.UseLmp = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "LMP"))
+
+	Settings.Search.UseQFP = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "QFP"))
+
+	// Extensions
+	Settings.Search.UseExt = true
+	Settings.Search.UseExtAddDepth = true
+	Settings.Search.UseCheckExt = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "CEXT"))
+	Settings.Search.UseThreatExt = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "TEXT"))
+
 	// // Futility
-	// Settings.Search.UseFP = true
 	// Settings.Search.UseQFP = true
 	// // Late Moves
-	// Settings.Search.UseLmr = true
 	// Settings.Search.UseLmp = true
 	//
 	// // r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))

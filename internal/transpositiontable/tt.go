@@ -147,6 +147,7 @@ func (tt *TtTable) Probe(key Key) *TtEntry {
 	tt.Stats.numberOfProbes++
 	e := &tt.data[tt.hash(key)]
 	if e.key == key {
+		// e.vmeta = e.vmeta &^ 0b11 // set to 0
 		e.decreaseAge()
 		tt.Stats.numberOfHits++
 		return e

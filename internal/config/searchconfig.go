@@ -123,6 +123,7 @@ func init() {
 	Settings.Search.RazorMargin = 531
 	Settings.Search.UseRFP = true
 	Settings.Search.UseNullMove = true
+
 	Settings.Search.NmpDepth = 3
 	Settings.Search.NmpReduction = 2
 
