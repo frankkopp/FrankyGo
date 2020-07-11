@@ -302,7 +302,7 @@ func TestFullSearchProcess(t *testing.T) {
 	result = uh.Command("setoption name Hash value 512")
 	assert.Contains(t, result, "Hash resized")
 
-	result = uh.Command("setoption name Use_Book value false")
+	result = uh.Command("setoption name OwnBook value false")
 
 	uh.Command("position startpos moves e2e4 e7e5")
 	assert.EqualValues(t, "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2", uh.myPosition.StringFen())
