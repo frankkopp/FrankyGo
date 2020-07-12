@@ -446,9 +446,10 @@ func TestOnDemandKillerPv(t *testing.T) {
 	mg.SetPvMove(moveFromUci) // changes c2b1Q a2b1Q to a2b1Q c2b1Q
 	for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
 		moves.PushBack(move)
+		// fmt.Println(move.String())
 	}
 	assert.Equal(t, 86, moves.Len())
-	assert.Equal(t, "a2b1Q c2b1Q a2a1Q c2c1Q c2b1N a2b1N f4g3 a2a1N c2c1N f4e3 c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 g6e5 d7e5 b2e5 e6e5 c4e4 c6e4 b7b6 f4f3 h7h6 b7b5 h7h5 a2a1R c2c1R a2a1B c2c1B e8g8 e8c8 g6h4 d7c5 a8c8 a8d8 h8f8 d7f6 b2d4 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 g6e7 d7b6 e6e7 e6f7 c4d4 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 c4a4 c6a4 a8b8 h8g8 b2c1 c4f1 c4a6 c6a6 e6h3 e6g8 g6f8 d7f8 b2a1 d7b8 e8f8 e8e7 e8f7 e8d8", moves.StringUci())
+	assert.Equal(t, "a2b1Q c2b1Q a2a1Q c2c1Q c2b1N a2b1N a2a1N c2c1N f4g3 f4e3 c2b1R a2b1R c2b1B a2b1B b2a3 a8a3 g6e5 d7e5 b2e5 e6e5 c4e4 c6e4 b7b6 f4f3 h7h6 b7b5 h7h5 a2a1R c2c1R a2a1B c2c1B e8g8 e8c8 g6h4 d7c5 a8c8 a8d8 h8f8 d7f6 b2d4 b2c3 c4c5 c4d5 c6c5 c6d5 c6d6 e6d5 e6f5 e6d6 e6f6 g6e7 d7b6 e6e7 e6f7 c4d4 a8a4 a8a5 a8a6 a8a7 c4e2 c4b3 c4c3 c4d3 c4b4 c4b5 c6b5 c6b6 e6g4 c4a4 c6a4 a8b8 h8g8 b2c1 c4f1 c4a6 c6a6 e6h3 e6g8 g6f8 d7f8 b2a1 d7b8 e8f8 e8e7 e8f7 e8d8", moves.StringUci())
 	moves.Clear()
 
 	// 48 kiwipete
@@ -461,6 +462,7 @@ func TestOnDemandKillerPv(t *testing.T) {
 	mg.SetPvMove(moveFromUci)
 	for move := mg.GetNextMove(pos, GenAll, false); move != MoveNone; move = mg.GetNextMove(pos, GenAll, false) {
 		moves.PushBack(move)
+		// fmt.Println(move.String())
 	}
 	assert.Equal(t, 48, moves.Len())
 	assert.Equal(t, "e2a6 g2h3 d5e6 e5g6 e5d7 e5f7 f3f6 f3h3 b2b3 a2a3 d5d6 a2a4 g2g4 g2g3 e1g1 e1c1 d2g5 "+

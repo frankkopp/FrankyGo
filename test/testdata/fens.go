@@ -6,7 +6,7 @@
 // Copyright (c) 2018-2020 Frank Kopp
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
+// of this software and associated documentation files (the "Software", to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
@@ -27,12 +27,10 @@
 package testdata
 
 var Fens = []string{
+	// 1
 	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -",
 	"8/1P6/6k1/8/8/8/p1K5/8 w - -",
-	"4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -",
-	"r2r1n2/pp2bk2/2p1p2p/3q4/3PN1QP/2P3R1/P4PP1/5RK1 w - -",
 	"1kr4r/ppp2bq1/4n3/4P1pp/1NP2p2/2PP2PP/5Q1K/4R2R w - -",
-	"1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -", // DEBUG
 	"rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -",
 	"r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -",
 	"2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -",
@@ -42,17 +40,20 @@ var Fens = []string{
 	"8/8/6k1/8/8/8/P1K5/8 w - -",
 	"8/5k2/8/8/8/8/1BK5/1B6 w - -",
 	"5r1k/4Qpq1/4p3/1p1p2P1/2p2P2/1p2P3/1K1P4/B7 w - -",
-	"1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -",
-	"4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -",
-	"1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -",
 	"3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - -",
 	"2q1rr1k/3bbnnp/p2p1pp1/2pPp3/PpP1P1P1/1P2BNNP/2BQ1PRK/7R b - -",
-
-	"r3k2r/1ppn3p/2q1q1nb/4P2N/2q1Pp2/B5RP/pbp2PP1/1R4K1 w kq -",
-	// "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3",
-	"r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -",
-
 	"rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq -",
+
+	// 16
+	"1r3rk1/1pnnq1bR/p1pp2B1/P2P1p2/1PP1pP2/2B3P1/5PK1/2Q4R w - -",  // mate 2
+	"4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -", // mate 2
+	"4rk2/p5p1/1p2P2N/7R/nP5P/5PQ1/b6K/q7 w - -",                    // mate 3
+	"1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -",              // mate 3
+	"1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -",              // mate 3
+
+	// 21
+	"r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq -",
+	"r3k2r/1ppn3p/2q1q1nb/4P2N/2q1Pp2/B5RP/pbp2PP1/1R4K1 w kq -",
 	"r1b2rk1/2q1b1pp/p2ppn2/1p6/3QP3/1BN1B3/PPP3PP/R4RK1 w - -",
 	"2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - -",
 	"1nk1r1r1/pp2n1pp/4p3/q2pPp1N/b1pP1P2/B1P2R2/2P1B1PP/R2Q2K1 w - -",
@@ -74,7 +75,6 @@ var Fens = []string{
 	"r1bqk2r/pp2bppp/2p5/3pP3/P2Q1P2/2N1B3/1PP3PP/R4RK1 b kq -",
 	"r2qnrnk/p2b2b1/1p1p2pp/2pPpp2/1PP1P3/PRNBB3/3QNPPP/5RK1 w - -",
 	"r3qb1k/1b4p1/p2pr2p/3n4/Pnp1N1N1/6RP/1B3PP1/1B1QR1K1 w - -",
-
 	"rn2kb1r/pp3ppp/4pn2/2pq4/3P2b1/2P2N2/PP2BPPP/RNBQK2R w KQkq -",
 	"r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -",
 	"2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - -",
@@ -82,6 +82,8 @@ var Fens = []string{
 	"7k/2R2p1p/3N1q2/3Q4/3p4/PP3pPP/5n1K/4r3 w - -",
 	"r1bqkb1r/pp3ppp/2n1pn2/2p5/2pP4/5NP1/PP2PPBP/RNBQ1RK1 w kq -",
 	"1r1q1rk1/p2b1ppp/3bpn2/4N3/3p4/5QP1/PP2PPBP/R1B2RK1 w - -",
+
+	// 51
 	"1q3rk1/p4p1p/1r3p2/4p3/Qb1p4/6P1/P3PPBP/1R3RK1 w - -",
 	"1r6/2q2pkp/5p2/4p3/3pB3/2bQ2P1/P3PP1P/5RK1 w - -",
 	"5k1q/5p2/5p2/4p3/3pB1QP/6P1/4PP2/b5K1 w - -",
@@ -132,6 +134,8 @@ var Fens = []string{
 	"2rq1rk1/pb2bppp/1pn1pn2/4N3/P1BP4/2N1B3/1P3PPP/R2Q1RK1 w - -",
 	"q4rk1/pb2bppp/1p2p3/3nN3/P2P4/1B1QBP2/1P4PP/2R3K1 w - -",
 	"2q3k1/1br1b1pp/pp2pp2/3n1P2/P1BP2N1/1P1Q2P1/3B3P/2R3K1 w - -",
+
+	// 101
 	"q6k/2r1b1pp/5p2/1p3R2/3P4/1P1Q2P1/3B3P/6K1 w - -",
 	"rn1qkb1r/ppp2ppp/4pn2/8/2PP2b1/5N2/PP2BPPP/RNBQK2R w KQkq -",
 	"r2q1rk1/pp1nbppp/2p1pnb1/8/2PP2PN/P3B2P/1P1NBP2/R2Q1RK1 w - -",
@@ -232,6 +236,8 @@ var Fens = []string{
 	"6r1/1k1qb3/1pp1pp2/p2n2p1/3PN1P1/PB2P1Q1/1P3P2/1KR5 w - -",
 	"8/1k4r1/1pp1qbQ1/p2n1pp1/3P4/PB2P3/1P1N1P2/1K5R w - -",
 	"7Q/1k2b3/1pp1q3/p2nNp2/3P2p1/PB2P3/1P1K1P2/8 w - -",
+
+	// 201
 	"8/1kn5/1p6/p7/5PQ1/PB6/1P3q2/2K5 w - -",
 	"8/8/1p6/3k4/p4P2/P2K4/1P6/8 w - -",
 	"rnbqk2r/ppp1p1b1/3p1n1p/5pp1/3P4/2P1P1B1/PP3PPP/RN1QKBNR w KQkq -",
@@ -332,6 +338,8 @@ var Fens = []string{
 	"8/4k3/4p2R/3b1p2/4n3/6P1/1r2BP2/2R1K3 w - -",
 	"8/4k3/2n1p2R/8/8/1b1B2P1/5P2/1r3K2 w - -",
 	"8/5n2/2b2k2/4p3/5PPR/4K3/8/1B6 w - -",
+
+	// 301
 	"r1bqk2r/pp1n1ppp/2pb1n2/3pp3/8/3P1NP1/PPPNPPBP/R1BQ1RK1 w kq -",
 	"r2r2k1/pp3ppp/1qpbbn2/2n1p3/4P2N/5PP1/PPP3BP/R1BQRN1K w - -",
 	"r2r2k1/pp3pp1/2p1bn1p/q3p1B1/4P1PN/2b2P2/P1N1Q1BP/R3R2K w - -",
@@ -423,15 +431,16 @@ var Fens = []string{
 	"8/8/2B2P2/p1b1P1kp/1p2K3/8/P7/8 w - -",
 	"4B3/5K2/4PP2/p5k1/1p1b4/7p/P7/8 w - -",
 
+	// "r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3",
+
 	// Mates
-	// 3
-	// No392
 	// Mate 3
 	"4r1b1/1p4B1/pN2pR2/RB2k3/1P2N2p/2p3b1/n2P1p1r/5K1n w - -",
 	"b7/p1BR2pK/B1p5/pNk3p1/Pp4Pp/1P3n2/4R2r/7n w - -",
 	"6K1/n1P2N1p/6pr/b1pp3b/n2Bp1k1/1R2R1Pp/3p1P2/2qN1B2 w - -",
 	"8/2P1P1P1/3PkP2/8/4K3/8/8/8 w - -",
 	// Mate 4
+	"r2r1n2/pp2bk2/2p1p2p/3q4/3PN1QP/2P3R1/P4PP1/5RK1 w - -", // mate 4
 	"r4rk1/pppqbp1p/3pp1p1/8/4P3/1P1P3R/PBP2PPP/R2Q2K1 w - -",
 	"r4qrk/ppp1b1pp/3p1p2/4pPPQ/4P2P/3PB3/PPP5/1K4RR w - -",
 	"r3r3/p1p2p1k/3p2pp/2p5/2P2n2/2N2B2/PPR1PP1q/3RQK2 b - -",

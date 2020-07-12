@@ -153,8 +153,12 @@ func (m Move) String() string {
 	if m == MoveNone {
 		return "Move: { MoveNone }"
 	}
-	return fmt.Sprintf("Move: { %-5s  type:%1s  prom:%1s  value:%-6d  (%d) }",
-		m.StringUci(), m.MoveType().String(), m.PromotionType().Char(), m.ValueOf(), m)
+	promTp := ""
+	if m.MoveType() == Promotion {
+		promTp = m.PromotionType().Char()
+	}
+	return fmt.Sprintf("Move: %-5s  type:%1s  prom:%1s  value:%-6d  (%d)",
+		m.StringUci(), m.MoveType().String(), promTp, m.ValueOf(), m)
 }
 
 // StringUci string representation of a move which is UCI compatible

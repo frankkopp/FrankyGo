@@ -118,17 +118,18 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	Settings.Search.UsePVS = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "PVS"))
-	// Settings.Search.UseAspiration = true
+
+	Settings.Search.UseAspiration = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "ASP"))
 
 	// // Move Sorting
 	Settings.Search.UseKiller = true
 	Settings.Search.UseHistoryCounter = true
 	Settings.Search.UseCounterMoves = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "History"))
-	// Settings.Search.UseIID = true
 
-	Settings.Search.UseMDP = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "MDP"))
+	Settings.Search.UseIID = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "IID"))
 
 	// + TT
 	Settings.Search.UseTT = true
@@ -157,6 +158,9 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	r.Tests = append(r.Tests, measure(s, sl, p, "QS SEE"))
 
 	// Prunings
+	Settings.Search.UseMDP = true
+	r.Tests = append(r.Tests, measure(s, sl, p, "MDP"))
+
 	Settings.Search.UseRazoring = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "RAZOR"))
 
@@ -165,9 +169,6 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 
 	Settings.Search.UseNullMove = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "NULL"))
-
-	Settings.Search.UseIID = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "IID"))
 
 	Settings.Search.UseFP = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "FP"))
@@ -186,16 +187,9 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	Settings.Search.UseExtAddDepth = true
 	Settings.Search.UseCheckExt = true
 	r.Tests = append(r.Tests, measure(s, sl, p, "CEXT"))
-	Settings.Search.UseThreatExt = true
-	r.Tests = append(r.Tests, measure(s, sl, p, "TEXT"))
+	// Settings.Search.UseThreatExt = true
+	// r.Tests = append(r.Tests, measure(s, sl, p, "TEXT"))
 
-	// // Futility
-	// Settings.Search.UseQFP = true
-	// // Late Moves
-	// Settings.Search.UseLmp = true
-	//
-	// // r.Tests = append(r.Tests, measure(s, sl, p, "REFERENCE"))
-	//
 	// Settings.Eval.UseLazyEval = true
 	// Settings.Eval.UsePawnEval = true
 	// Settings.Eval.UsePawnCache = true
