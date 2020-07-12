@@ -53,7 +53,7 @@ func (s *Score) Sub(a *Score) {
 // ValueFromScore adds up the mid and end games scores after multiplying
 // them with the game phase factor
 func (s *Score) ValueFromScore(gpf float64) Value {
-	return Value(float64(s.MidGameValue)*gpf) + Value(float64(s.EndGameValue)*(1.0-gpf))
+	return Value(float64(s.MidGameValue)*gpf + float64(s.EndGameValue)*(1.0-gpf))
 }
 
 func (s *Score) String() string {

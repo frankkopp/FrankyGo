@@ -112,7 +112,7 @@ func init() {
 	Settings.Search.IIDReduction = 2
 
 	Settings.Search.UseTT = true
-	Settings.Search.TTSize = 256
+	Settings.Search.TTSize = 64
 	Settings.Search.UseTTMove = true
 	Settings.Search.UseTTValue = true
 	Settings.Search.UseQSTT = true
