@@ -102,7 +102,7 @@ func init() {
 
 	Settings.Search.UseAlphaBeta = true
 	Settings.Search.UsePVS = true
-	Settings.Search.UseAspiration = false
+	Settings.Search.UseAspiration = true
 
 	Settings.Search.UseIID = true
 	Settings.Search.UseKiller = true

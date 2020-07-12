@@ -43,6 +43,8 @@ import (
 	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
+const removeSortValue = true
+
 // Movegen data structure. Create new move generator via
 //  movegen.NewMoveGen()
 // Creating this directly will not work.
@@ -165,9 +167,11 @@ func (mg *Movegen) GeneratePseudoLegalMoves(p *position.Position, mode GenMode, 
 	mg.pseudoLegalMoves.Sort()
 
 	// remove internal sort value
-	mg.pseudoLegalMoves.ForEach(func(i int) {
-		mg.pseudoLegalMoves.Set(i, mg.pseudoLegalMoves.At(i).MoveOf())
-	})
+	if removeSortValue {
+		mg.pseudoLegalMoves.ForEach(func(i int) {
+			mg.pseudoLegalMoves.Set(i, mg.pseudoLegalMoves.At(i).MoveOf())
+		})
+	}
 
 	return mg.pseudoLegalMoves
 }
@@ -285,7 +289,12 @@ func (mg *Movegen) GetNextMove(p *position.Position, mode GenMode, evasion bool)
 		// we have at least one move in the list and it is not the
 		// pvMove. Increase the takeIndex and return the move.
 		// Also remove internal sort value before returning the move.
-		move := (*mg.onDemandMoves)[mg.takeIndex].MoveOf()
+		var move Move
+		if removeSortValue {
+			move = (*mg.onDemandMoves)[mg.takeIndex].MoveOf()
+		} else {
+			move = (*mg.onDemandMoves)[mg.takeIndex]
+		}
 		mg.takeIndex++
 		if mg.takeIndex >= mg.onDemandMoves.Len() {
 			mg.takeIndex = 0
@@ -721,9 +730,9 @@ func (mg *Movegen) updateSortValues(p *position.Position, moveList *moveslice.Mo
 		case move.MoveOf() == mg.pvMove: // PV move
 			(*move).SetValue(ValueMax)
 		case move.MoveOf() == mg.killerMoves[1]: // Killer 2
-			(*move).SetValue(-4001)
+			(*move).SetValue(1000)
 		case move.MoveOf() == mg.killerMoves[0]: // Killer 1
-			(*move).SetValue(-4000)
+			(*move).SetValue(1001)
 		case mg.historyData != nil: // historical search data
 
 			// History Count
@@ -830,12 +839,12 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 				// value is the delta of values from the two pieces involved minus the promoted pawn
 				value := position.GetPiece(toSquare).ValueOf() - (2 * Pawn.ValueOf())
 				// add the possible promotion moves to the move list and also add value of the promoted piece type
-				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Queen, value+Queen.ValueOf()))
-				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Knight, value+Knight.ValueOf()))
+				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Queen, value+Queen.ValueOf()+5000))
+				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Knight, value+Knight.ValueOf()+1500))
 				// rook and bishops are usually redundant to queen promotion (except in stale mate situations)
 				// therefore we give them a lower sort order
-				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Rook, value+Rook.ValueOf()-Value(2000)))
-				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Bishop, value+Bishop.ValueOf()-Value(2000)))
+				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Rook, value+Rook.ValueOf()-Value(5000)))
+				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Bishop, value+Bishop.ValueOf()-Value(5000)))
 			}
 
 			// non promotion pawn captures
@@ -859,8 +868,7 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 					fromSquare := tmpCaptures.PopLsb()
 					toSquare := fromSquare.To(nextPlayer.MoveDirection() - dir)
 					// value is the positional value of the piece at this game phase
-					value := PosValue(piece, toSquare, gamePhase)
-					ml.PushBack(CreateMoveValue(fromSquare, toSquare, EnPassant, PtNone, value))
+					ml.PushBack(CreateMoveValue(fromSquare, toSquare, EnPassant, PtNone, PosValue(piece, toSquare, gamePhase)))
 				}
 			}
 		}
@@ -873,9 +881,8 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 		for promMoves != 0 {
 			toSquare := promMoves.PopLsb()
 			fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection())
-			value := -Pawn.ValueOf()
-			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Queen, value+Queen.ValueOf()))
-			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Knight, value+Knight.ValueOf()))
+			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Queen, 2000-Pawn.ValueOf()+Queen.ValueOf()))
+			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Knight, 1500-Pawn.ValueOf()+Knight.ValueOf()))
 		}
 	}
 
@@ -907,18 +914,17 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 			toSquare := promMoves.PopLsb()
 			fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection())
 			// value for non captures is lowered by 10k
-			value := Value(-10_000)
 			// we treat Queen and Knight promotions as non quiet moves and they are generated above
 			// rook and bishops are usually redundant to queen promotion (except in stale mate situations)
 			// therefore we give them lower sort order
-			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Rook, value+Rook.ValueOf()-Value(2000)))
-			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Bishop, value+Bishop.ValueOf()-Value(2000)))
+			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Rook, Rook.ValueOf()-Value(6000)))
+			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Promotion, Bishop, Bishop.ValueOf()-Value(6000)))
 		}
 		// double pawn steps
 		for tmpMovesDouble != 0 {
 			toSquare := tmpMovesDouble.PopLsb()
 			fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection()).To(nextPlayer.Flip().MoveDirection())
-			value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
+			value := PosValue(piece, toSquare, gamePhase) - 2000
 			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 		}
 		// normal single pawn steps
@@ -926,7 +932,7 @@ func (mg *Movegen) generatePawnMoves(position *position.Position, mode GenMode, 
 		for tmpMoves != 0 {
 			toSquare := tmpMoves.PopLsb()
 			fromSquare := toSquare.To(nextPlayer.Flip().MoveDirection())
-			value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
+			value := PosValue(piece, toSquare, gamePhase) - 2000
 			ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 		}
 	}
@@ -943,17 +949,17 @@ func (mg *Movegen) generateCastling(position *position.Position, mode GenMode, m
 		cr := position.CastlingRights()
 		if nextPlayer == White { // white
 			if cr.Has(CastlingWhiteOO) && Intermediate(SqE1, SqH1)&occupiedBB == 0 {
-				ml.PushBack(CreateMoveValue(SqE1, SqG1, Castling, PtNone, Value(-5000)))
+				ml.PushBack(CreateMoveValue(SqE1, SqG1, Castling, PtNone, Value(0)))
 			}
 			if cr.Has(CastlingWhiteOOO) && Intermediate(SqE1, SqA1)&occupiedBB == 0 {
-				ml.PushBack(CreateMoveValue(SqE1, SqC1, Castling, PtNone, Value(-5000)))
+				ml.PushBack(CreateMoveValue(SqE1, SqC1, Castling, PtNone, Value(0)))
 			}
 		} else { // black
 			if cr.Has(CastlingBlackOO) && Intermediate(SqE8, SqH8)&occupiedBB == 0 {
-				ml.PushBack(CreateMoveValue(SqE8, SqG8, Castling, PtNone, Value(-5000)))
+				ml.PushBack(CreateMoveValue(SqE8, SqG8, Castling, PtNone, Value(0)))
 			}
 			if cr.Has(CastlingBlackOOO) && Intermediate(SqE8, SqA8)&occupiedBB == 0 {
-				ml.PushBack(CreateMoveValue(SqE8, SqC8, Castling, PtNone, Value(-5000)))
+				ml.PushBack(CreateMoveValue(SqE8, SqC8, Castling, PtNone, Value(0)))
 			}
 		}
 	}
@@ -978,7 +984,7 @@ func (mg *Movegen) generateKingMoves(p *position.Position, mode GenMode, evasion
 			// in case we are in check we only generate king moves to target squares which
 			// are not attacked by the opponent
 			if !evasion || attacks.AttacksTo(p, toSquare, them).PopCount() == 0 {
-				value := p.GetPiece(toSquare).ValueOf() - p.GetPiece(fromSquare).ValueOf() + PosValue(piece, toSquare, gamePhase)
+				value := 2000 + p.GetPiece(toSquare).ValueOf() - p.GetPiece(fromSquare).ValueOf() + PosValue(piece, toSquare, gamePhase)
 				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 			}
 		}
@@ -992,7 +998,7 @@ func (mg *Movegen) generateKingMoves(p *position.Position, mode GenMode, evasion
 			// in case we are in check we only generate king moves to target squares which
 			// are not attacked by the opponent
 			if !evasion || attacks.AttacksTo(p, toSquare, them).PopCount() == 0 {
-				value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
+				value := PosValue(piece, toSquare, gamePhase) - 2000
 				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 			}
 		}
@@ -1037,7 +1043,7 @@ func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, evas
 				}
 				for captures != 0 {
 					toSquare := captures.PopLsb()
-					value := position.GetPiece(toSquare).ValueOf() - position.GetPiece(fromSquare).ValueOf() + PosValue(piece, toSquare, gamePhase)
+					value := 2000 + position.GetPiece(toSquare).ValueOf() - position.GetPiece(fromSquare).ValueOf() + PosValue(piece, toSquare, gamePhase)
 					ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 				}
 			}
@@ -1050,7 +1056,7 @@ func (mg *Movegen) generateMoves(position *position.Position, mode GenMode, evas
 				}
 				for nonCaptures != 0 {
 					toSquare := nonCaptures.PopLsb()
-					value := Value(-10_000) + PosValue(piece, toSquare, gamePhase)
+					value := PosValue(piece, toSquare, gamePhase) - 2000
 					ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 				}
 			}
