@@ -106,8 +106,8 @@ func featureTest(depth int, movetime time.Duration, fen string) result {
 	// TESTS
 
 	// define which special data pointer to collect
-	ptrToSpecial = &s.Statistics().FpPrunings
-	ptrToSpecial2 = &s.Statistics().QFpPrunings
+	ptrToSpecial = &s.Statistics().TTHit
+	ptrToSpecial2 = &s.Statistics().TTMiss
 
 	// Base
 	// r.Tests = append(r.Tests, measure(s, sl, p, "MiniMax"))

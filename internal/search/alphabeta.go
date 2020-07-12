@@ -438,7 +438,7 @@ func (s *Search) search(p *position.Position, depth int, ply int, alpha Value, b
 	// order already is good.
 	if Settings.Search.UseIID {
 		if depth >= Settings.Search.IIDDepth &&
-			ttMove != MoveNone && // no move from TT
+			ttMove == MoveNone && // no move from TT
 			doNull && // avoid in null move search
 			isPV {
 

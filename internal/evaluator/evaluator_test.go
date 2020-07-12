@@ -27,6 +27,7 @@
 package evaluator
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"runtime"
@@ -41,6 +42,7 @@ import (
 	"github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/pkg/position"
 	. "github.com/frankkopp/FrankyGo/pkg/types"
+	"github.com/frankkopp/FrankyGo/test/testdata"
 )
 
 var logTest *logging2.Logger
@@ -388,4 +390,13 @@ func TestDevelopDebug(t *testing.T) {
 	e.InitEval(p)
 	v := e.evaluate()
 	out.Println("Value: ", v)
+}
+
+func TestAllFens(t *testing.T) {
+	e := NewEvaluator()
+	for _, f := range testdata.Fens {
+		p := position.NewPosition(f)
+		v := e.Evaluate(p)
+		fmt.Printf("Value: %-6d GPF: %-20v  Fen: %s\n", v, p.GamePhaseFactor(), f)
+	}
 }
