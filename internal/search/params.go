@@ -87,7 +87,7 @@ func init() {
 	for i := 1; i < 16; i++ {
 		// from Crafty
 		lmp[i] = 6 + int(math.Pow(float64(i)+0.5, 1.3))
-		out.Printf("%2d, ", lmp[i])
+		// out.Printf("%2d, ", lmp[i])
 	}
 }
 

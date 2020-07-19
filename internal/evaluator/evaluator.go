@@ -168,20 +168,29 @@ func (e *Evaluator) evaluate() Value {
 		e.score.EndGameValue += int16(e.position.PsqEndValue(White) - e.position.PsqEndValue(Black))
 	}
 
-	/*
+	// TEMPO Bonus for the side to move (helps with evaluation alternation -
+	// less difference between side which makes aspiration search faster
+	// (not empirically tested)
+	e.score.MidGameValue += Settings.Eval.Tempo
 
-			// early exit
-			// arbitrary threshold - in early phases (game phase = 1.0) this is doubled
-			// in late phases it stands as it is
-			if Settings.Eval.UseLazyEval {
-				valueFromScore := e.value()
-				th := threshold[e.position.GamePhase()]
-				value := util.Abs16(int16(valueFromScore))
-				if value > th {
-					return e.finalEval(valueFromScore)
-			}
+	// early exit
+	// arbitrary threshold - in early phases (game phase = 1.0) this is doubled
+	// in late phases it stands as it is
+	if Settings.Eval.UseLazyEval {
+		valueFromScore := e.value()
+		th := threshold[e.position.GamePhase()]
+		if valueFromScore > Value(th) {
+			return e.finalEval(valueFromScore)
 		}
+	}
 
+	// evaluate pawns
+	if Settings.Eval.UsePawnEval {
+		// white and black are handled in evaluatePawns()
+		e.score.Add(e.evaluatePawns())
+	}
+
+	/*
 			// Get all attacks
 		// find out where this should be done to be most effective
 		// This is expensive and we should use this investment as often as
@@ -191,11 +200,7 @@ func (e *Evaluator) evaluate() Value {
 			e.attacks.Compute(e.position)
 		}
 
-			// evaluate pawns
-		if Settings.Eval.UsePawnEval {
-			// white and black are handled in evaluatePawns()
-			e.score.Add(e.evaluatePawns())
-		}
+
 
 			// evaluate pieces - builds attacks and mobility
 		if Settings.Eval.UseAdvancedPieceEval {
@@ -222,11 +227,6 @@ func (e *Evaluator) evaluate() Value {
 			}
 
 	*/
-
-	// TEMPO Bonus for the side to move (helps with evaluation alternation -
-	// less difference between side which makes aspiration search faster
-	// (not empirically tested)
-	e.score.MidGameValue += Settings.Eval.Tempo
 
 	// value is always from the view of the next player
 	valueFromScore := e.value()

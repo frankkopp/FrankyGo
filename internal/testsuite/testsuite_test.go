@@ -96,10 +96,16 @@ func TestGetTest(t *testing.T) {
 }
 
 func TestNewTestSuite(t *testing.T) {
-	ts, err := NewTestSuite("test/testdata/testsets/franky_tests.epd", 2*time.Second, 0)
+	// ctx, task := trace.NewTask(context.Background(), "main start")
+	// r := trace.StartRegion(ctx, "reading file")
+	// defer r.End()
+	// defer task.End()
+
+	ts, err := NewTestSuite("test/testdata/testsets/franky_tests.epd", 200*time.Millisecond, 0)
 	assert.NotNil(t, ts)
 	assert.Nil(t, err)
 	assert.EqualValues(t, 13, len(ts.Tests))
+	ts.RunTests()
 }
 
 // Summary:

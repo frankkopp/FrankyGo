@@ -291,16 +291,14 @@ func directMateTest(s *search.Search, sl *search.Limits, p *position.Position, t
 	if s.LastSearchResult().BestValue.String() == fmt.Sprintf("mate %d", t.mateDepth) {
 		// success
 		log.Infof("TestSet: id = '%s' SUCCESS", t.id)
-		t.actual = s.LastSearchResult().BestMove
-		t.value = s.LastSearchResult().BestValue
 		t.rType = Success
-		return
+	} else {
+		log.Infof("TestSet: id = '%s' FAILED", t.id)
+		t.rType = Failed
 	}
 	// Failed
-	log.Infof("TestSet: id = '%s' FAILED", t.id)
 	t.actual = s.LastSearchResult().BestMove
 	t.value = s.LastSearchResult().BestValue
-	t.rType = Failed
 }
 
 func bestMoveTest(s *search.Search, sl *search.Limits, p *position.Position, t *Test) {

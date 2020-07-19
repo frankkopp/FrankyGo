@@ -34,9 +34,12 @@ import (
 	"runtime"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/op/go-logging"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 
 	"github.com/frankkopp/FrankyGo/internal/config"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
@@ -44,6 +47,8 @@ import (
 )
 
 var logTest *logging.Logger
+
+var out = message.NewPrinter(language.German)
 
 // make tests run in the projects root directory
 func init() {
@@ -381,4 +386,69 @@ func TestForEach(t *testing.T) {
 	// ma.ForEach(func(i int) {
 	// 	fmt.Printf("%d: %s\n", i, ma.At(i).String())
 	// })
+}
+
+// demonstrates that add at the back and taking at the front does not
+// lead to a memory leak
+func TestMoveArrayMemory(t *testing.T) {
+	t.Skip("only manual")
+
+	ma := NewMoveSlice(MaxMoves)
+	lock := sync.Mutex{}
+	wg := sync.WaitGroup{}
+
+	// worker to add to queen
+	wg.Add(1)
+	go func() {
+		for {
+			lock.Lock()
+			if ma.Len() < 20000 {
+				ma.PushBack(Move(rand.Int31()))
+			}
+			lock.Unlock()
+		}
+		wg.Done()
+	}()
+
+	// work to pop front from queen
+	wg.Add(1)
+	go func() {
+		for {
+			lock.Lock()
+			if ma.Len() > 0 {
+				_ = ma.PopFront()
+			}
+			lock.Unlock()
+		}
+		wg.Done()
+	}()
+
+	// worker to report memory usage
+	wg.Add(1)
+	go func() {
+		for {
+			out.Printf("Elements: %9d Cap: %9d ", ma.Len(), ma.Cap())
+			PrintMemUsage()
+			time.Sleep(500 * time.Millisecond)
+		}
+		wg.Done()
+	}()
+
+	wg.Wait()
+}
+
+// PrintMemUsage outputs the current, total and OS memory being used. As well as the number
+// of garage collection cycles completed.
+func PrintMemUsage() {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
+	out.Printf("Alloc = %9v MiB", bToMb(m.Alloc))
+	out.Printf("\tTotalAlloc = %9v MiB", bToMb(m.TotalAlloc))
+	out.Printf("\tSys = %9v MiB", bToMb(m.Sys))
+	out.Printf("\tNumGC = %9v\n", m.NumGC)
+}
+
+func bToMb(b uint64) uint64 {
+	return b / 1024 / 1024
 }
