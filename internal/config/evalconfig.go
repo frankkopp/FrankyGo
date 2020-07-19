@@ -82,7 +82,7 @@ func init() {
 	Settings.Eval.UseMaterialEval = true
 	Settings.Eval.UsePositionalEval = true
 
-	Settings.Eval.UseLazyEval = false
+	Settings.Eval.UseLazyEval = true
 	Settings.Eval.LazyEvalThreshold = 700
 
 	Settings.Eval.Tempo = 34

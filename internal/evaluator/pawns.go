@@ -77,9 +77,7 @@ func (e *Evaluator) evaluatePawns() *Score {
 			}
 
 			// doubled pawn
-			if ourPawns&rayForward != BbZero {
-				doubled |= square.Bb()
-			}
+			doubled |= ^square.Bb() & ourPawns & rayForward
 
 			// passed pawns - no opp pawns in front or on neighbouring
 			// files and also no own pawns in front
@@ -96,27 +94,26 @@ func (e *Evaluator) evaluatePawns() *Score {
 			phalanx |= ourPawns & neighbours & square.RankBb()
 
 			// pawn as neighbours in the row forward = supported pawns
-			if ourPawns&neighbours&square.To(-c.MoveDirection()).RankBb() != BbZero {
-				supported |= square.Bb()
-			}
+			supported |= ourPawns & neighbours & square.To(c.MoveDirection()).RankBb()
 		}
 
-		// out.Printf("Isolated :\n%s", isolated.StringBoard())
+		// out.Printf("Isolated : %d %s\n", isolated.PopCount(), isolated.StringGrouped())
+		// out.Printf("Doubled  : %d %s\n", doubled.PopCount(), doubled.StringGrouped())
+		// out.Printf("Passed   : %d %s\n", passed.PopCount(), passed.StringGrouped())
+		// out.Printf("Blocked  : %d %s\n", blocked.PopCount(), blocked.StringGrouped())
+		// out.Printf("Phalanx  : %d %s\n", phalanx.PopCount(), phalanx.StringGrouped())
+		// out.Printf("Supported: %d %s\n", supported.PopCount(), supported.StringGrouped())
+
 		tmpMid := int16(isolated.PopCount()) * Settings.Eval.PawnIsolatedMidMalus
 		tmpEnd := int16(isolated.PopCount()) * Settings.Eval.PawnIsolatedEndMalus
-		// out.Printf("Doubled  :\n%s", doubled.StringBoard())
 		tmpMid += int16(doubled.PopCount()) * Settings.Eval.PawnDoubledMidMalus
 		tmpEnd += int16(doubled.PopCount()) * Settings.Eval.PawnDoubledEndMalus
-		// out.Printf("Passed   :\n%s", passed.StringBoard())
 		tmpMid += int16(passed.PopCount()) * Settings.Eval.PawnPassedMidBonus
 		tmpEnd += int16(passed.PopCount()) * Settings.Eval.PawnPassedEndBonus
-		// out.Printf("Blocked  :\n%s", blocked.StringBoard())
 		tmpMid += int16(blocked.PopCount()) * Settings.Eval.PawnBlockedMidMalus
 		tmpEnd += int16(blocked.PopCount()) * Settings.Eval.PawnBlockedEndMalus
-		// out.Printf("Phalanx  :\n%s", phalanx.StringBoard())
 		tmpMid += int16(phalanx.PopCount()) * Settings.Eval.PawnPhalanxMidBonus
 		tmpEnd += int16(phalanx.PopCount()) * Settings.Eval.PawnPhalanxEndBonus
-		// out.Printf("Supported:\n%s", supported.StringBoard())
 		tmpMid += int16(supported.PopCount()) * Settings.Eval.PawnSupportedMidBonus
 		tmpEnd += int16(supported.PopCount()) * Settings.Eval.PawnSupportedEndBonus
 

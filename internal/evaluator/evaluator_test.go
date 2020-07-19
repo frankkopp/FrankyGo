@@ -393,6 +393,8 @@ func TestDevelopDebug(t *testing.T) {
 }
 
 func TestAllFens(t *testing.T) {
+	Settings.Eval.UsePawnEval = true
+	Settings.Eval.UsePawnCache = false
 	e := NewEvaluator()
 	for _, f := range testdata.Fens {
 		p := position.NewPosition(f)
