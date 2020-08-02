@@ -145,7 +145,7 @@ func (u *UciHandler) SendSearchUpdate(depth int, seldepth int, nodes uint64, nps
 
 // SendAspirationResearchInfo sends information about Aspiration researches to the UCI ui
 func (u *UciHandler) SendAspirationResearchInfo(depth int, seldepth int, value Value, bound string, nodes uint64, nps uint64, time time.Duration, pv moveslice.MoveSlice) {
-	u.send(fmt.Sprintf("info depth %d seldepth %d %s multipv 1 score %s nodes %d nps %d time %d pv %s",
+	u.send(fmt.Sprintf("info depth %d seldepth %d multipv 1 score %s %s nodes %d nps %d time %d pv %s",
 		depth, seldepth, value.String(), bound, nodes, nps, time.Milliseconds(), pv.StringUci()))
 }
 

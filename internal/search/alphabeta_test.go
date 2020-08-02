@@ -81,42 +81,42 @@ func TestDevelopAndTest(t *testing.T) {
 	config.Settings.Search.UsePonder = false
 
 	config.Settings.Search.UseQuiescence = true
-	config.Settings.Search.UseQSStandpat = false
+	config.Settings.Search.UseQSStandpat = true
 	config.Settings.Search.UseSEE = true
 
-	config.Settings.Search.UseTT = false
-	config.Settings.Search.UseTTMove = false
-	config.Settings.Search.UseTTValue = false
-	config.Settings.Search.UseQSTT = false
-	config.Settings.Search.UseEvalTT = false
+	config.Settings.Search.UseTT = true
+	config.Settings.Search.UseTTMove = true
+	config.Settings.Search.UseTTValue = true
+	config.Settings.Search.UseQSTT = true
+	config.Settings.Search.UseEvalTT = true
 
-	config.Settings.Search.UseAlphaBeta = false
-	config.Settings.Search.UsePVS = false
-	config.Settings.Search.UseAspiration = false
+	config.Settings.Search.UseAlphaBeta = true
+	config.Settings.Search.UsePVS = true
+	config.Settings.Search.UseAspiration = true
 
-	config.Settings.Search.UseIID = false
-	config.Settings.Search.UseKiller = false
-	config.Settings.Search.UseHistoryCounter = false
-	config.Settings.Search.UseCounterMoves = false
+	config.Settings.Search.UseIID = true
+	config.Settings.Search.UseKiller = true
+	config.Settings.Search.UseHistoryCounter = true
+	config.Settings.Search.UseCounterMoves = true
 
-	config.Settings.Search.UseMDP = false
-	config.Settings.Search.UseRazoring = false
-	config.Settings.Search.UseNullMove = false
-	config.Settings.Search.UseExt = false
-	config.Settings.Search.UseExtAddDepth = false
-	config.Settings.Search.UseCheckExt = false
+	config.Settings.Search.UseMDP = true
+	config.Settings.Search.UseRazoring = true
+	config.Settings.Search.UseNullMove = true
+	config.Settings.Search.UseExt = true
+	config.Settings.Search.UseExtAddDepth = true
+	config.Settings.Search.UseCheckExt = true
 	config.Settings.Search.UseThreatExt = false
-	config.Settings.Search.UseRFP = false
-	config.Settings.Search.UseFP = false
-	config.Settings.Search.UseQFP = false
-	config.Settings.Search.UseLmr = false
-	config.Settings.Search.UseLmp = false
+	config.Settings.Search.UseRFP = true
+	config.Settings.Search.UseFP = true
+	config.Settings.Search.UseQFP = true
+	config.Settings.Search.UseLmr = true
+	config.Settings.Search.UseLmp = true
 
-	config.Settings.Eval.UseMaterialEval = false
-	config.Settings.Eval.UsePositionalEval = false
-	config.Settings.Eval.UseLazyEval = false
-	config.Settings.Eval.UsePawnEval = false
-	config.Settings.Eval.UsePawnCache = false
+	config.Settings.Eval.UseMaterialEval = true
+	config.Settings.Eval.UsePositionalEval = true
+	config.Settings.Eval.UseLazyEval = true
+	config.Settings.Eval.UsePawnEval = true
+	config.Settings.Eval.UsePawnCache = true
 	config.Settings.Eval.PawnCacheSize = 32
 	config.Settings.Eval.UseAttacksInEval = false
 	config.Settings.Eval.UseMobility = false
@@ -132,11 +132,13 @@ func TestDevelopAndTest(t *testing.T) {
 	// 4k2r/1q1p1pp1/p3p3/1pb1P3/2r3P1/P1N1P2p/1PP1Q2P/2R1R1K1 b k -
 	// ASP Issue: r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq - 0 1
 	// 8/8/8/6k1/8/4K3/8/r7 b - - 23 94
-	p := position.NewPosition("2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - - 0 1")
+
+	// "2rr2k1/1p2qp1p/1pn1pp2/1N6/3P4/P6P/1P2QPP1/2R2RK1 w - - 0 1"
+	p := position.NewPosition("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 w kq - 0 1")
 	sl := NewSearchLimits()
-	sl.Depth = 1
-	// sl.TimeControl = true
-	// sl.MoveTime = 10 * time.Second
+	// sl.Depth = 12
+	sl.TimeControl = true
+	sl.MoveTime = 30 * time.Second
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
 	out.Println("NPS : ", util.Nps(s.nodesVisited, s.lastSearchResult.SearchTime))
