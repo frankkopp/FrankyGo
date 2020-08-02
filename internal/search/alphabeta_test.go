@@ -211,6 +211,5 @@ func TestTiming(t *testing.T) {
 	sl.MoveTime = 30 * time.Second
 	s.StartSearch(*p, *sl)
 	s.WaitWhileSearching()
-	out.Println("TT  : ", s.tt.String())
 	out.Println("NPS : ", util.Nps(s.nodesVisited, s.lastSearchResult.SearchTime))
 }
