@@ -35,8 +35,8 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
-	attacks2 "github.com/frankkopp/FrankyGo/internal/attacks"
-	. "github.com/frankkopp/FrankyGo/internal/config"
+	"github.com/frankkopp/FrankyGo/internal/attacks"
+	"github.com/frankkopp/FrankyGo/internal/config"
 	myLogging "github.com/frankkopp/FrankyGo/internal/logging"
 	"github.com/frankkopp/FrankyGo/pkg/position"
 	. "github.com/frankkopp/FrankyGo/pkg/types"
@@ -63,7 +63,7 @@ type Evaluator struct {
 
 	score Score
 
-	attacks *attacks2.Attacks
+	attack *attacks.Attacks
 
 	pawnCache *pawnCache
 }
@@ -79,7 +79,7 @@ var threshold [GamePhaseMax + 1]int16
 func init() {
 	for i := 0; i <= GamePhaseMax; i++ {
 		gamePhaseFactor := float64(i) / GamePhaseMax
-		threshold[i] = Settings.Eval.LazyEvalThreshold + int16(float64(Settings.Eval.LazyEvalThreshold)*gamePhaseFactor)
+		threshold[i] = config.Settings.Eval.LazyEvalThreshold + int16(float64(config.Settings.Eval.LazyEvalThreshold)*gamePhaseFactor)
 	}
 }
 
@@ -87,10 +87,10 @@ func init() {
 func NewEvaluator() *Evaluator {
 	e := &Evaluator{
 		log:       myLogging.GetLog(),
-		attacks:   attacks2.NewAttacks(),
+		attack:    attacks.NewAttacks(),
 		pawnCache: nil,
 	}
-	if Settings.Eval.UsePawnCache {
+	if config.Settings.Eval.UsePawnCache {
 		e.pawnCache = newPawnCache()
 	} else {
 		e.log.Info("Pawn Cache is disabled in configuration")
@@ -119,8 +119,8 @@ func (e *Evaluator) InitEval(p *position.Position) {
 	e.score.EndGameValue = 0
 
 	// reset attacks
-	if Settings.Eval.UseAttacksInEval {
-		e.attacks.Clear()
+	if config.Settings.Eval.UseAttacksInEval {
+		e.attack.Clear()
 	}
 }
 
@@ -157,13 +157,13 @@ func (e *Evaluator) evaluate() Value {
 	// have a dedicated configurable weight to adjust and test
 
 	// Material
-	if Settings.Eval.UseMaterialEval {
+	if config.Settings.Eval.UseMaterialEval {
 		e.score.MidGameValue = int16(e.position.Material(White) - e.position.Material(Black))
 		e.score.EndGameValue = e.score.MidGameValue
 	}
 
 	// Positional values
-	if Settings.Eval.UsePositionalEval {
+	if config.Settings.Eval.UsePositionalEval {
 		e.score.MidGameValue += int16(e.position.PsqMidValue(White) - e.position.PsqMidValue(Black))
 		e.score.EndGameValue += int16(e.position.PsqEndValue(White) - e.position.PsqEndValue(Black))
 	}
@@ -171,12 +171,12 @@ func (e *Evaluator) evaluate() Value {
 	// TEMPO Bonus for the side to move (helps with evaluation alternation -
 	// less difference between side which makes aspiration search faster
 	// (not empirically tested)
-	e.score.MidGameValue += Settings.Eval.Tempo
+	e.score.MidGameValue += config.Settings.Eval.Tempo
 
 	// early exit
 	// arbitrary threshold - in early phases (game phase = 1.0) this is doubled
 	// in late phases it stands as it is
-	if Settings.Eval.UseLazyEval {
+	if config.Settings.Eval.UseLazyEval {
 		valueFromScore := e.value()
 		th := threshold[e.position.GamePhase()]
 		if valueFromScore > Value(th) {
@@ -185,7 +185,7 @@ func (e *Evaluator) evaluate() Value {
 	}
 
 	// evaluate pawns
-	if Settings.Eval.UsePawnEval {
+	if config.Settings.Eval.UsePawnEval {
 		// white and black are handled in evaluatePawns()
 		e.score.Add(e.evaluatePawns())
 	}
@@ -252,29 +252,29 @@ func (e *Evaluator) evalKing(c Color) *Score {
 	// Higher bonus for middle game, lower or none in end game
 	if KingSideCastleMask(us).Has(e.position.KingSquare(us)) {
 		count := int16((ShiftBitboard(KingSideCastleMask(us), us.MoveDirection()) & e.position.PiecesBb(us, Pawn)).PopCount())
-		tmpScore.MidGameValue += count * Settings.Eval.KingCastlePawnShieldBonus
+		tmpScore.MidGameValue += count * config.Settings.Eval.KingCastlePawnShieldBonus
 	} else if QueenSideCastMask(us).Has(e.position.KingSquare(us)) {
 		count := int16((ShiftBitboard(QueenSideCastMask(us), us.MoveDirection()) & e.position.PiecesBb(us, Pawn)).PopCount())
-		tmpScore.MidGameValue += count * Settings.Eval.KingCastlePawnShieldBonus
+		tmpScore.MidGameValue += count * config.Settings.Eval.KingCastlePawnShieldBonus
 	}
 
 	// king safety / attacks to the king and king ring
-	if Settings.Eval.UseAttacksInEval {
-		enemyAttacks := e.kingRing[us] & e.attacks.All[them]
-		ourDefence := e.kingRing[us] & e.attacks.All[us]
+	if config.Settings.Eval.UseAttacksInEval {
+		enemyAttacks := e.kingRing[us] & e.attack.All[them]
+		ourDefence := e.kingRing[us] & e.attack.All[us]
 		// malus for difference between attacker and defender
 		if enemyAttacks > ourDefence {
-			tmpScore.MidGameValue -= int16(enemyAttacks.PopCount()-ourDefence.PopCount()) * Settings.Eval.KingDangerMalus
+			tmpScore.MidGameValue -= int16(enemyAttacks.PopCount()-ourDefence.PopCount()) * config.Settings.Eval.KingDangerMalus
 			tmpScore.EndGameValue -= tmpScore.MidGameValue
 		} else {
-			tmpScore.MidGameValue += int16(ourDefence.PopCount()-enemyAttacks.PopCount()) * Settings.Eval.KingDefenderBonus
+			tmpScore.MidGameValue += int16(ourDefence.PopCount()-enemyAttacks.PopCount()) * config.Settings.Eval.KingDefenderBonus
 			tmpScore.EndGameValue += tmpScore.MidGameValue
 		}
 
 		// king ring attacks
-		if a := e.attacks.All[us] & e.kingRing[them]; a > 0 {
-			tmpScore.MidGameValue += Settings.Eval.KingRingAttacksBonus
-			tmpScore.EndGameValue += Settings.Eval.KingRingAttacksBonus
+		if a := e.attack.All[us] & e.kingRing[them]; a > 0 {
+			tmpScore.MidGameValue += config.Settings.Eval.KingRingAttacksBonus
+			tmpScore.EndGameValue += config.Settings.Eval.KingRingAttacksBonus
 		}
 	}
 	return &tmpScore
@@ -296,8 +296,8 @@ func (e *Evaluator) evalPiece(c Color, pieceType PieceType) *Score {
 	case Bishop:
 		// bonus for pair
 		if pieceBb.PopCount() > 1 {
-			tmpScore.MidGameValue += Settings.Eval.BishopPairBonus
-			tmpScore.EndGameValue += Settings.Eval.BishopPairBonus
+			tmpScore.MidGameValue += config.Settings.Eval.BishopPairBonus
+			tmpScore.EndGameValue += config.Settings.Eval.BishopPairBonus
 		}
 	}
 
@@ -324,13 +324,13 @@ func (e *Evaluator) evalPiece(c Color, pieceType PieceType) *Score {
 func (e *Evaluator) rookEval(sq Square, us Color) {
 	// same file as queen
 	if sq.FileOf().Bb()&e.position.PiecesBb(us, Queen) > 0 {
-		tmpScore.MidGameValue += Settings.Eval.RookOnQueenFileBonus
-		tmpScore.EndGameValue += Settings.Eval.RookOnQueenFileBonus
+		tmpScore.MidGameValue += config.Settings.Eval.RookOnQueenFileBonus
+		tmpScore.EndGameValue += config.Settings.Eval.RookOnQueenFileBonus
 	}
 
 	// open file / semi open file (no own pawns on the file)
 	if sq.FileOf().Bb()&e.position.PiecesBb(us, Pawn) == 0 {
-		tmpScore.MidGameValue += Settings.Eval.RookOnOpenFileBonus
+		tmpScore.MidGameValue += config.Settings.Eval.RookOnOpenFileBonus
 		// s.EndGameValue += 0
 	}
 
@@ -339,11 +339,11 @@ func (e *Evaluator) rookEval(sq Square, us Color) {
 	kingSquare := e.position.KingSquare(us)
 	if KingSideCastleMask(us).Has(kingSquare) {
 		if sq.RankOf() == kingSquare.RankOf() && sq > kingSquare { // east of king
-			tmpScore.MidGameValue -= Settings.Eval.RookTrappedMalus
+			tmpScore.MidGameValue -= config.Settings.Eval.RookTrappedMalus
 		}
 	} else if QueenSideCastMask(us).Has(kingSquare) {
 		if sq.RankOf() == kingSquare.RankOf() && sq < kingSquare { // west of king
-			tmpScore.MidGameValue -= Settings.Eval.RookTrappedMalus
+			tmpScore.MidGameValue -= config.Settings.Eval.RookTrappedMalus
 		}
 	}
 }
@@ -352,7 +352,7 @@ func (e *Evaluator) bishopEval(us Color, them Color, sq Square) {
 	// behind a pawn
 	down := them.MoveDirection()
 	if ShiftBitboard(e.position.PiecesBb(us, Pawn), down)&sq.Bb() > 0 {
-		tmpScore.MidGameValue += Settings.Eval.MinorBehindPawnBonus
+		tmpScore.MidGameValue += config.Settings.Eval.MinorBehindPawnBonus
 		// s.EndGameValue += 0
 	}
 
@@ -360,23 +360,23 @@ func (e *Evaluator) bishopEval(us Color, them Color, sq Square) {
 	if SquaresBb(White).Has(sq) { // on white square
 		popCount := int16((e.position.PiecesBb(us, Pawn) & SquaresBb(White)).PopCount())
 		// s.MidGameValue -= 0
-		tmpScore.EndGameValue -= Settings.Eval.BishopPawnMalus * popCount
+		tmpScore.EndGameValue -= config.Settings.Eval.BishopPawnMalus * popCount
 	} else { // on black square
 		popCount := int16((e.position.PiecesBb(us, Pawn) & SquaresBb(Black)).PopCount())
 		// s.MidGameValue -= 0
-		tmpScore.EndGameValue -= Settings.Eval.BishopPawnMalus * popCount
+		tmpScore.EndGameValue -= config.Settings.Eval.BishopPawnMalus * popCount
 	}
 
 	// long diagonal / seeing center
 	popCount := int16((GetAttacksBb(Bishop, sq, BbZero) & CenterSquares).PopCount())
-	tmpScore.MidGameValue += Settings.Eval.BishopCenterAimBonus * popCount
+	tmpScore.MidGameValue += config.Settings.Eval.BishopCenterAimBonus * popCount
 	// s.EndGameValue += 0
 
 	// bishop blocked / mobility
 	if (us == White && sq.RankOf() == Rank1) || (us == Black && sq.RankOf() == Rank8) {
 		if GetAttacksBb(Bishop, sq, e.allPieces)&^e.position.OccupiedBb(us) == BbZero {
-			tmpScore.MidGameValue -= Settings.Eval.BishopBlockedMalus
-			tmpScore.EndGameValue -= Settings.Eval.BishopBlockedMalus
+			tmpScore.MidGameValue -= config.Settings.Eval.BishopBlockedMalus
+			tmpScore.EndGameValue -= config.Settings.Eval.BishopBlockedMalus
 		}
 	}
 }
@@ -385,7 +385,7 @@ func (e *Evaluator) knightEval(us Color, them Color, sq Square) {
 	// Knight behind pawn
 	down := them.MoveDirection()
 	if ShiftBitboard(e.position.PiecesBb(us, Pawn), down)&sq.Bb() > 0 {
-		tmpScore.MidGameValue += Settings.Eval.MinorBehindPawnBonus
+		tmpScore.MidGameValue += config.Settings.Eval.MinorBehindPawnBonus
 		// s.EndGameValue += 0
 	}
 }

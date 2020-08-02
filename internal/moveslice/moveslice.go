@@ -36,7 +36,7 @@ import (
 	. "github.com/frankkopp/FrankyGo/pkg/types"
 )
 
-// MoveSlice represents a data structure (go slice) for Move.
+// MoveSlice represents an array data structure (go slice) for Moves.
 type MoveSlice []Move
 
 // NewMoveSlice creates a new move slice with the given capacity
@@ -143,7 +143,7 @@ func (ms *MoveSlice) Set(i int, move Move) {
 }
 
 // Filter removes all elements from the MoveSlice for
-// which the given call to func will return false.
+// which the call to the given function  will return false.
 // Rebuilds the data slice by looping over all elements
 // and only re-adding elements for which the call to the
 // given func is true. Reuses the underlying array
