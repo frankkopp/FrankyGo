@@ -150,14 +150,14 @@ func (a *Attacks) pawnAttacks(p *position.Position) {
 
 // AttacksTo determines all attacks to the given square for the given color.
 func AttacksTo(p *position.Position, square Square, color Color) Bitboard {
+
 	// prepare en passant attacks
 	epAttacks := BbZero
 	enPassantSquare := p.GetEnPassantSquare()
-	if enPassantSquare != SqNone && enPassantSquare == square {
+	if enPassantSquare != SqNone {
 		pawnSquare := enPassantSquare.To(color.Flip().MoveDirection())
-		epAttacker := pawnSquare.NeighbourFilesMask() & pawnSquare.RankOf().Bb() & p.PiecesBb(color, Pawn)
-		if epAttacker != BbZero {
-			epAttacks |= pawnSquare.Bb()
+		if pawnSquare == square {
+			epAttacks |= pawnSquare.NeighbourFilesMask() & pawnSquare.RankOf().Bb() & p.PiecesBb(color, Pawn)
 		}
 	}
 

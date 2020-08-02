@@ -148,10 +148,15 @@ func TestAttacksTo(t *testing.T) {
 	logTest.Debug(attacksTo.StringGrouped())
 	assert.EqualValues(t, 40960, attacksTo)
 
+	attacksTo = AttacksTo(p, SqE3, Black)
+	logTest.Debug("\n", attacksTo.StringBoard())
+	logTest.Debug(attacksTo.StringGrouped())
+	assert.EqualValues(t, 536870912, attacksTo)
+
 	attacksTo = AttacksTo(p, SqE4, Black)
 	logTest.Debug("\n", attacksTo.StringBoard())
 	logTest.Debug(attacksTo.StringGrouped())
-	assert.EqualValues(t, 4398113619968, attacksTo)
+	assert.EqualValues(t, 4398650490880, attacksTo)
 }
 
 func TestRevealedAttacks(t *testing.T) {
