@@ -36,7 +36,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/frankkopp/FrankyGo/internal/attacks"
 	"github.com/frankkopp/FrankyGo/internal/history"
 	"github.com/frankkopp/FrankyGo/internal/moveslice"
 	"github.com/frankkopp/FrankyGo/pkg/position"
@@ -778,7 +777,7 @@ func (mg *Movegen) getEvasionTargets(p *position.Position) Bitboard {
 	us := p.NextPlayer()
 	ourKing := p.KingSquare(us)
 	// find all target squares which either capture or block the attacker
-	evasionTargets := attacks.AttacksTo(p, ourKing, us.Flip())
+	evasionTargets := p.AttacksTo(ourKing, us.Flip())
 	// we can only block attacks of sliders of there is not more
 	// than one attacker
 	popCount := evasionTargets.PopCount()
@@ -983,7 +982,7 @@ func (mg *Movegen) generateKingMoves(p *position.Position, mode GenMode, evasion
 			toSquare := captures.PopLsb()
 			// in case we are in check we only generate king moves to target squares which
 			// are not attacked by the opponent
-			if !evasion || attacks.AttacksTo(p, toSquare, them).PopCount() == 0 {
+			if !evasion || p.AttacksTo(toSquare, them).PopCount() == 0 {
 				value := 2000 + p.GetPiece(toSquare).ValueOf() - p.GetPiece(fromSquare).ValueOf() + PosValue(piece, toSquare, gamePhase)
 				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 			}
@@ -997,7 +996,7 @@ func (mg *Movegen) generateKingMoves(p *position.Position, mode GenMode, evasion
 			toSquare := nonCaptures.PopLsb()
 			// in case we are in check we only generate king moves to target squares which
 			// are not attacked by the opponent
-			if !evasion || attacks.AttacksTo(p, toSquare, them).PopCount() == 0 {
+			if !evasion || p.AttacksTo(toSquare, them).PopCount() == 0 {
 				value := PosValue(piece, toSquare, gamePhase) - 2000
 				ml.PushBack(CreateMoveValue(fromSquare, toSquare, Normal, PtNone, value))
 			}
