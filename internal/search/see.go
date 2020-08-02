@@ -54,7 +54,7 @@ func see(p *position.Position, move Move) Value {
 	occupiedBitboard := p.OccupiedAll()
 
 	// get all attacks to the square as a bitboard
-	remainingAttacks := attacks.AttacksTo(p, toSquare, White) | attacks.AttacksTo(p, toSquare, Black)
+	remainingAttacks := p.AttacksTo(toSquare, White) | p.AttacksTo(toSquare, Black)
 
 	// log := myLogging.GetLog()
 	// log.Debugf("Determine gain for %s %s", p.StringFen(), move.StringUci())

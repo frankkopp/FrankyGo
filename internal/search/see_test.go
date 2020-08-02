@@ -32,7 +32,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/frankkopp/FrankyGo/internal/attacks"
 	"github.com/frankkopp/FrankyGo/internal/config"
 	"github.com/frankkopp/FrankyGo/pkg/movegen"
 	"github.com/frankkopp/FrankyGo/pkg/position"
@@ -41,7 +40,7 @@ import (
 
 func TestLeastValuablePiece(t *testing.T) {
 	p := position.NewPosition("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3")
-	attacksTo := attacks.AttacksTo(p, SqE5, Black)
+	attacksTo := p.AttacksTo(SqE5, Black)
 
 	logTest.Debug("All attackers\n", attacksTo.StringBoard())
 	logTest.Debug(attacksTo.StringGrouped())

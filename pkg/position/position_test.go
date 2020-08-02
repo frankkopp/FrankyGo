@@ -343,6 +343,68 @@ func TestPosition_IsAttacked(t *testing.T) {
 	assert.False(t, position.IsAttacked(SqB3, White))
 }
 
+func TestAttacksTo(t *testing.T) {
+	var p *Position
+	var attacksTo Bitboard
+
+	p = NewPosition("2brr1k1/1pq1b1p1/p1np1p1p/P1p1p2n/1PNPPP2/2P1BNP1/4Q1BP/R2R2K1 w - -")
+	attacksTo = p.AttacksTo(SqE5, White)
+	logTest.Debug("\n", attacksTo.StringBoard())
+	logTest.Debug(attacksTo.StringGrouped())
+	assert.EqualValues(t, 740294656, attacksTo)
+
+	attacksTo = p.AttacksTo(SqF1, White)
+	logTest.Debug("\n", attacksTo.StringBoard())
+	logTest.Debug(attacksTo.StringGrouped())
+	assert.EqualValues(t, 20552, attacksTo)
+
+	attacksTo = p.AttacksTo(SqD4, White)
+	logTest.Debug("\n", attacksTo.StringBoard())
+	logTest.Debug(attacksTo.StringGrouped())
+	assert.EqualValues(t, 3407880, attacksTo)
+
+	attacksTo = p.AttacksTo(SqD4, Black)
+	logTest.Debug("\n", attacksTo.StringBoard())
+	logTest.Debug(attacksTo.StringGrouped())
+	assert.EqualValues(t, 4483945857024, attacksTo)
+
+	attacksTo = p.AttacksTo(SqD6, Black)
+	logTest.Debug("\n", attacksTo.StringBoard())
+	logTest.Debug(attacksTo.StringGrouped())
+	assert.EqualValues(t, 582090251837636608, attacksTo)
+
+	attacksTo = p.AttacksTo(SqF8, Black)
+	logTest.Debug("\n", attacksTo.StringBoard())
+	logTest.Debug(attacksTo.StringGrouped())
+	assert.EqualValues(t, 5769111122661605376, attacksTo)
+
+	p = NewPosition("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3")
+	attacksTo = p.AttacksTo(SqE5, Black)
+	logTest.Debug("\n", attacksTo.StringBoard())
+	logTest.Debug(attacksTo.StringGrouped())
+	assert.EqualValues(t, 2339760743907840, attacksTo)
+
+	attacksTo = p.AttacksTo(SqB1, Black)
+	logTest.Debug("\n", attacksTo.StringBoard())
+	logTest.Debug(attacksTo.StringGrouped())
+	assert.EqualValues(t, 1280, attacksTo)
+
+	attacksTo = p.AttacksTo(SqG3, White)
+	logTest.Debug("\n", attacksTo.StringBoard())
+	logTest.Debug(attacksTo.StringGrouped())
+	assert.EqualValues(t, 40960, attacksTo)
+
+	attacksTo = p.AttacksTo(SqE3, Black)
+	logTest.Debug("\n", attacksTo.StringBoard())
+	logTest.Debug(attacksTo.StringGrouped())
+	assert.EqualValues(t, 536870912, attacksTo)
+
+	attacksTo = p.AttacksTo(SqE4, Black)
+	logTest.Debug("\n", attacksTo.StringBoard())
+	logTest.Debug(attacksTo.StringGrouped())
+	assert.EqualValues(t, 4398650490880, attacksTo)
+}
+
 func TestPosition_IsLegalMoves(t *testing.T) {
 	var fen string
 	var position *Position

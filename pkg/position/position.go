@@ -396,6 +396,39 @@ func (p *Position) IsAttacked(sq Square, by Color) bool {
 	return false
 }
 
+// AttacksTo determines all attacks to the given square for the given color.
+func (p *Position) AttacksTo(square Square, color Color) Bitboard {
+
+	// prepare en passant attacks
+	epAttacks := BbZero
+	enPassantSquare := p.GetEnPassantSquare()
+	if enPassantSquare != SqNone {
+		pawnSquare := enPassantSquare.To(color.Flip().MoveDirection())
+		if pawnSquare == square {
+			epAttacks |= pawnSquare.NeighbourFilesMask() & pawnSquare.RankOf().Bb() & p.PiecesBb(color, Pawn)
+		}
+	}
+
+	occupiedAll := p.OccupiedAll()
+
+	// this uses a reverse approach - it uses the target square as from square
+	// to generate attacks for each type and then intersects the result with
+	// the piece bitboard.
+
+	//      Pawns
+	return (GetPawnAttacks(color.Flip(), square) & p.PiecesBb(color, Pawn)) |
+		// Knight
+		(GetAttacksBb(Knight, square, occupiedAll) & p.PiecesBb(color, Knight)) |
+		// King
+		(GetAttacksBb(King, square, occupiedAll) & p.PiecesBb(color, King)) |
+		// Sliding rooks and queens
+		(GetAttacksBb(Rook, square, occupiedAll) & (p.PiecesBb(color, Rook) | p.PiecesBb(color, Queen))) |
+		// Sliding bishops and queens
+		(GetAttacksBb(Bishop, square, occupiedAll) & (p.PiecesBb(color, Bishop) | p.PiecesBb(color, Queen))) |
+		// consider en passant attacks
+		epAttacks
+}
+
 // WasLegalMove tests if the last move was legal. Basically tests if
 // the king is now in check or if the king crossed an attacked square
 // during castling or if there was a castling although in check.
@@ -719,6 +752,10 @@ func (p *Position) StringFen() string {
 	return p.fen()
 }
 
+// //////////////////////////////////////////////////////////
+// Private
+// //////////////////////////////////////////////////////////
+
 // StringBoard returns a visual matrix of the board and pieces
 func (p *Position) StringBoard() string {
 	var os strings.Builder
@@ -733,10 +770,6 @@ func (p *Position) StringBoard() string {
 	}
 	return os.String()
 }
-
-// //////////////////////////////////////////////////////////
-// Private
-// //////////////////////////////////////////////////////////
 
 func (p *Position) doNormalMove(fromSq Square, toSq Square, targetPc Piece, fromPc Piece, myColor Color) {
 	// If we still have castling rights and the move touches castling squares then invalidate
@@ -952,6 +985,10 @@ var regexCastlingRights = regexp.MustCompile("^(K?Q?k?q?|-)$")
 // regex for en passant square in fen
 var regexEnPassant = regexp.MustCompile("^([a-h][1-8]|-)$")
 
+// //////////////////////////////////////////////////////
+// // Getter and Setter functions
+// //////////////////////////////////////////////////////
+
 // setupBoard sets up a board based on a fen. This is basically
 // the only way to get a valid Position instance. Internal state
 // will be setup as well as all struct data is initialized to 0.
@@ -1106,10 +1143,6 @@ func (p *Position) setupBoard(fen string) error {
 	return nil
 }
 
-// //////////////////////////////////////////////////////
-// // Getter and Setter functions
-// //////////////////////////////////////////////////////
-
 // ZobristKey returns the current zobrist key for this position
 func (p *Position) ZobristKey() Key {
 	return p.zobristKey
@@ -1229,3 +1262,4 @@ func (p *Position) LastCapturedPiece() Piece {
 func (p *Position) WasCapturingMove() bool {
 	return p.LastCapturedPiece() != PieceNone
 }
+
