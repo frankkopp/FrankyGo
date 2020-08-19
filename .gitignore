@@ -5,3 +5,5 @@
 bin/
 test/STS/STSRating/Stockfish.exe
 *.ser
+/assets/books/superbook_xl.pgn
+
