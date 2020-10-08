@@ -235,7 +235,7 @@ var sortOrderUciOptions []string
 // HandlerFunc for uci options changes
 // ////////////////////////////////////////////////////////////////
 
-func printConfig(handler *UciHandler, option *uciOption) {
+func printConfig(handler *UciHandler, _ *uciOption) {
 	s := reflect.ValueOf(&Settings.Eval).Elem()
 	typeOfT := s.Type()
 	for i := s.NumField() - 1; i >= 0; i-- {
@@ -254,12 +254,12 @@ func printConfig(handler *UciHandler, option *uciOption) {
 
 }
 
-func clearCache(u *UciHandler, o *uciOption) {
+func clearCache(u *UciHandler, _ *uciOption) {
 	u.mySearch.ClearHash()
 	log.Debug("Cleared Cache")
 }
 
-func useCache(u *UciHandler, o *uciOption) {
+func useCache(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseTT = v
 	log.Debugf("Set Use Hash to %v", Settings.Search.UseTT)
@@ -271,211 +271,211 @@ func cacheSize(u *UciHandler, o *uciOption) {
 	u.mySearch.ResizeCache()
 }
 
-func useBook(u *UciHandler, o *uciOption) {
+func useBook(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseBook = v
 	log.Debugf("Set Use Book to %v", Settings.Search.UseBook)
 }
 
-func usePonder(u *UciHandler, o *uciOption) {
+func usePonder(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UsePonder = v
 	log.Debugf("Set Use Ponder to %v", Settings.Search.UsePonder)
 }
 
-func useQuiescence(u *UciHandler, o *uciOption) {
+func useQuiescence(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseQuiescence = v
 	log.Debugf("Set Use Quiescence to %v", Settings.Search.UseQuiescence)
 }
 
-func useQSHash(u *UciHandler, o *uciOption) {
+func useQSHash(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseQSTT = v
 	log.Debugf("Set Use Hash in Quiescence to %v", Settings.Search.UseQSTT)
 }
 
-func useAlphaBeta(u *UciHandler, o *uciOption) {
+func useAlphaBeta(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseAlphaBeta = v
 	log.Debugf("Set Use AlphaBeta Search to %v", Settings.Search.UseAlphaBeta)
 }
 
-func usePvs(u *UciHandler, o *uciOption) {
+func usePvs(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UsePVS = v
 	log.Debugf("Set Use Principal Variation Search to %v", Settings.Search.UsePVS)
 }
 
-func useAsp(u *UciHandler, o *uciOption) {
+func useAsp(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseAspiration = v
 	log.Debugf("Set Use Aspiration Search to %v", Settings.Search.UseAspiration)
 }
 
-func useTTMove(u *UciHandler, o *uciOption) {
+func useTTMove(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseTTMove = v
 	log.Debugf("Set Use Hash Move to %v", Settings.Search.UseTTMove)
 }
 
-func useTTValue(u *UciHandler, o *uciOption) {
+func useTTValue(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseTTValue = v
 	log.Debugf("Set Use Hash Value to %v", Settings.Search.UseTTValue)
 }
 
-func useMdp(u *UciHandler, o *uciOption) {
+func useMdp(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseMDP = v
 	log.Debugf("Set Use MDP to %v", Settings.Search.UseMDP)
 }
 
-func useKiller(u *UciHandler, o *uciOption) {
+func useKiller(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseKiller = v
 	log.Debugf("Set Use Killer Moves to %v", Settings.Search.UseKiller)
 }
 
-func useHC(u *UciHandler, o *uciOption) {
+func useHC(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseHistoryCounter = v
 	log.Debugf("Set Use History Counter to %v", Settings.Search.UseHistoryCounter)
 }
 
-func useCM(u *UciHandler, o *uciOption) {
+func useCM(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseCounterMoves = v
 	log.Debugf("Set Use Counter Moves to %v", Settings.Search.UseCounterMoves)
 }
 
-func useRazor(u *UciHandler, o *uciOption) {
+func useRazor(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseRazoring = v
 	log.Debugf("Set Use Razoring to %v", Settings.Search.UseRazoring)
 }
 
-func razorMargin(u *UciHandler, o *uciOption) {
+func razorMargin(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.Atoi(o.CurrentValue)
 	Settings.Search.RazorMargin = v
 	log.Debugf("Set Razor Margin to %v", Settings.Search.RazorMargin)
 }
 
-func useNullMove(u *UciHandler, o *uciOption) {
+func useNullMove(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseNullMove = v
 	log.Debugf("Set Use Null Move Pruning to %v", Settings.Search.UseNullMove)
 }
 
-func useIID(u *UciHandler, o *uciOption) {
+func useIID(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseIID = v
 	log.Debugf("Set Use IID to %v", Settings.Search.UseIID)
 }
 
-func useLmr(u *UciHandler, o *uciOption) {
+func useLmr(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseLmr = v
 	log.Debugf("Set use Late Move Reduction to %v", Settings.Search.UseLmr)
 }
 
-func useLmp(u *UciHandler, o *uciOption) {
+func useLmp(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseLmp = v
 	log.Debugf("Set use Late Move Pruning to %v", Settings.Search.UseLmp)
 }
 
-func useQSStandpat(u *UciHandler, o *uciOption) {
+func useQSStandpat(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseQSStandpat = v
 	log.Debugf("Set use QS Standpat to %v", Settings.Search.UseQSStandpat)
 }
 
-func useSee(u *UciHandler, o *uciOption) {
+func useSee(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseSEE = v
 	log.Debugf("Set use SEE to %v", Settings.Search.UseSEE)
 }
 
-func useExt(u *UciHandler, o *uciOption) {
+func useExt(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseExt = v
 	log.Debugf("Set use Extensions to %v", Settings.Search.UseExt)
 }
 
-func useExtAddDepth(u *UciHandler, o *uciOption) {
+func useExtAddDepth(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseExtAddDepth = v
 	log.Debugf("Set use Extensions Add to Depth to %v", Settings.Search.UseExtAddDepth)
 }
 
-func useCheckExt(u *UciHandler, o *uciOption) {
+func useCheckExt(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseCheckExt = v
 	log.Debugf("Set use Check Extension to %v", Settings.Search.UseCheckExt)
 }
 
-func useThreatExt(u *UciHandler, o *uciOption) {
+func useThreatExt(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseThreatExt = v
 	log.Debugf("Set use Threat Extension to %v", Settings.Search.UseThreatExt)
 }
 
-func useRfp(u *UciHandler, o *uciOption) {
+func useRfp(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseRFP = v
 	log.Debugf("Set use Reverse Futility Pruning (RFP) to %v", Settings.Search.UseRFP)
 }
 
-func useFp(u *UciHandler, o *uciOption) {
+func useFp(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseFP = v
 	log.Debugf("Set use Futility Pruning (FP) to %v", Settings.Search.UseFP)
 }
 
-func useQfp(u *UciHandler, o *uciOption) {
+func useQfp(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseQFP = v
 	log.Debugf("Set use Quiescence Futility Pruning (QFP) to %v", Settings.Search.UseQFP)
 }
 
-func useEvalHash(u *UciHandler, o *uciOption) {
+func useEvalHash(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Search.UseEvalTT = v
 	log.Debugf("Set use Eval Hash to %v", Settings.Search.UseEvalTT)
 }
 
-func evalLazy(u *UciHandler, o *uciOption) {
+func evalLazy(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Eval.UseLazyEval = v
 	log.Debugf("Set use Lazy Eval to %v", Settings.Eval.UseLazyEval)
 }
 
-func evalPawns(u *UciHandler, o *uciOption) {
+func evalPawns(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Eval.UsePawnEval = v
 	log.Debugf("Set use Eval Pawns to %v", Settings.Eval.UsePawnEval)
 }
 
-func evalPawnCache(u *UciHandler, o *uciOption) {
+func evalPawnCache(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Eval.UsePawnCache = v
 	log.Debugf("Set use Eval Pawn Cache to %v", Settings.Eval.UsePawnCache)
 }
 
-func pawnCacheSize(u *UciHandler, o *uciOption) {
+func pawnCacheSize(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.Atoi(o.CurrentValue)
 	Settings.Eval.PawnCacheSize = v
 	log.Debugf("Set use Pawn Cache Size to %v", Settings.Eval.PawnCacheSize)
 }
 
-func evalMob(u *UciHandler, o *uciOption) {
+func evalMob(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Eval.UseMobility = v
 	log.Debugf("Set use Eval Mobility to %v", Settings.Eval.UseMobility)
 }
 
-func evalAdv(u *UciHandler, o *uciOption) {
+func evalAdv(_ *UciHandler, o *uciOption) {
 	v, _ := strconv.ParseBool(o.CurrentValue)
 	Settings.Eval.UseAdvancedPieceEval = v
 	log.Debugf("Set use Adv Piece Eval to %v", Settings.Eval.UseAdvancedPieceEval)

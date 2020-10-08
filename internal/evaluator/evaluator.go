@@ -190,43 +190,37 @@ func (e *Evaluator) evaluate() Value {
 		e.score.Add(e.evaluatePawns())
 	}
 
-	/*
-			// Get all attacks
-		// find out where this should be done to be most effective
-		// This is expensive and we should use this investment as often as
-		// possible. If we could use it in search as well we could move
-		// creating this to an earlier point in time in the search
-		if Settings.Eval.UseAttacksInEval {
-			e.attacks.Compute(e.position)
+	// Get all attacks
+	// find out where this should be done to be most effective
+	// This is expensive and we should use this investment as often as
+	// possible. If we could use it in search as well we could move
+	// creating this to an earlier point in time in the search
+	if config.Settings.Eval.UseAttacksInEval {
+		e.attack.Compute(e.position)
+		// mobility
+		if config.Settings.Eval.UseMobility {
+			e.score.MidGameValue += (e.attack.Mobility[White] - e.attack.Mobility[Black]) * config.Settings.Eval.MobilityBonus
+			e.score.EndGameValue += e.score.MidGameValue
 		}
+	}
 
+	// evaluate pieces - builds attacks and mobility
+	if config.Settings.Eval.UseAdvancedPieceEval {
+		e.score.Add(e.evalPiece(White, Knight))
+		e.score.Sub(e.evalPiece(Black, Knight))
+		e.score.Add(e.evalPiece(White, Bishop))
+		e.score.Sub(e.evalPiece(Black, Bishop))
+		e.score.Add(e.evalPiece(White, Rook))
+		e.score.Sub(e.evalPiece(Black, Rook))
+		e.score.Add(e.evalPiece(White, Queen))
+		e.score.Sub(e.evalPiece(Black, Queen))
+	}
 
-
-			// evaluate pieces - builds attacks and mobility
-		if Settings.Eval.UseAdvancedPieceEval {
-			e.score.Add(e.evalPiece(White, Knight))
-			e.score.Sub(e.evalPiece(Black, Knight))
-			e.score.Add(e.evalPiece(White, Bishop))
-			e.score.Sub(e.evalPiece(Black, Bishop))
-			e.score.Add(e.evalPiece(White, Rook))
-			e.score.Sub(e.evalPiece(Black, Rook))
-			e.score.Add(e.evalPiece(White, Queen))
-			e.score.Sub(e.evalPiece(Black, Queen))
-		}
-
-			// mobility
-		if Settings.Eval.UseAttacksInEval && Settings.Eval.UseMobility {
-				e.score.MidGameValue += (e.attacks.Mobility[White] - e.attacks.Mobility[Black]) * Settings.Eval.MobilityBonus
-				e.score.EndGameValue += e.score.MidGameValue
-			}
-
-			// evaluate king
-			if Settings.Eval.UseKingEval {
-				e.score.Add(e.evalKing(White))
-				e.score.Sub(e.evalKing(Black))
-			}
-
-	*/
+	// evaluate king
+	if config.Settings.Eval.UseKingEval {
+		e.score.Add(e.evalKing(White))
+		e.score.Sub(e.evalKing(Black))
+	}
 
 	// value is always from the view of the next player
 	valueFromScore := e.value()
@@ -240,6 +234,116 @@ func (e *Evaluator) finalEval(value Value) Value {
 	// we can use the Direction factor to avoid an if statement
 	// Direction returns positive 1 for White and negative 1 (-1) for Black
 	return value * Value(e.position.NextPlayer().Direction())
+}
+
+// evalPiece is the evaluation function for all pieces except pawns and kings.
+func (e *Evaluator) evalPiece(c Color, pieceType PieceType) *Score {
+	tmpScore.MidGameValue = 0
+	tmpScore.EndGameValue = 0
+
+	// get bitboard with all pieces of this color and type
+	pieceBb := e.position.PiecesBb(c, pieceType)
+	if pieceBb == BbZero {
+		return &tmpScore
+	}
+
+	us := c
+	them := us.Flip()
+
+	// piece type specific evaluation which are done once
+	// for all pieces of one type
+	switch pieceType {
+	case Knight:
+		for pieceBb != BbZero {
+			e.knightEval(us, them, pieceBb.PopLsb())
+		}
+	case Bishop:
+		// bonus for pair
+		if pieceBb.PopCount() > 1 {
+			tmpScore.MidGameValue += config.Settings.Eval.BishopPairBonus
+			tmpScore.EndGameValue += config.Settings.Eval.BishopPairBonus
+		}
+		for pieceBb != BbZero {
+			e.bishopEval(us, them, pieceBb.PopLsb())
+		}
+	case Rook:
+		for pieceBb != BbZero {
+			e.rookEval(us, pieceBb.PopLsb())
+		}
+	case Queen:
+		// none yet
+	}
+
+	return &tmpScore
+}
+
+func (e *Evaluator) knightEval(us Color, them Color, sq Square) {
+	// Knight behind pawn
+	down := them.MoveDirection()
+	if ShiftBitboard(e.position.PiecesBb(us, Pawn), down)&sq.Bb() > 0 {
+		tmpScore.MidGameValue += config.Settings.Eval.MinorBehindPawnBonus
+		// s.EndGameValue += 0
+	}
+}
+
+func (e *Evaluator) bishopEval(us Color, them Color, sq Square) {
+	// behind a pawn
+	down := them.MoveDirection()
+	if ShiftBitboard(e.position.PiecesBb(us, Pawn), down)&sq.Bb() > 0 {
+		tmpScore.MidGameValue += config.Settings.Eval.MinorBehindPawnBonus
+		// s.EndGameValue += 0
+	}
+
+	// malus for pawns on same color - worse in end game
+	if SquaresBb(White).Has(sq) { // on white square
+		popCount := int16((e.position.PiecesBb(us, Pawn) & SquaresBb(White)).PopCount())
+		// s.MidGameValue -= 0
+		tmpScore.EndGameValue -= config.Settings.Eval.BishopPawnMalus * popCount
+	} else { // on black square
+		popCount := int16((e.position.PiecesBb(us, Pawn) & SquaresBb(Black)).PopCount())
+		// s.MidGameValue -= 0
+		tmpScore.EndGameValue -= config.Settings.Eval.BishopPawnMalus * popCount
+	}
+
+	// long diagonal / seeing center
+	popCount := int16((GetAttacksBb(Bishop, sq, BbZero) & CenterSquares).PopCount())
+	tmpScore.MidGameValue += config.Settings.Eval.BishopCenterAimBonus * popCount
+	// s.EndGameValue += 0
+
+	// bishop blocked / mobility
+	if (us == White && sq.RankOf() == Rank1) || (us == Black && sq.RankOf() == Rank8) {
+		if GetAttacksBb(Bishop, sq, e.allPieces)&^e.position.OccupiedBb(us) == BbZero {
+			tmpScore.MidGameValue -= config.Settings.Eval.BishopBlockedMalus
+			tmpScore.EndGameValue -= config.Settings.Eval.BishopBlockedMalus
+		}
+	}
+}
+
+func (e *Evaluator) rookEval(us Color, sq Square) {
+	// same file as queen
+	if sq.FileOf().Bb()&e.position.PiecesBb(us, Queen) > 0 {
+		tmpScore.MidGameValue += config.Settings.Eval.RookOnQueenFileBonus
+		tmpScore.EndGameValue += config.Settings.Eval.RookOnQueenFileBonus
+	}
+
+	// open file / semi open file (no own pawns on the file)
+	if sq.FileOf().Bb()&e.position.PiecesBb(us, Pawn) == 0 {
+		tmpScore.MidGameValue += config.Settings.Eval.RookOnOpenFileBonus
+		// s.EndGameValue += 0
+	}
+
+	// trapped by king
+	// on same row as king but on the outside from king
+	kingSquare := e.position.KingSquare(us)
+	if KingSideCastleMask(us).Has(kingSquare) {
+		if sq.RankOf() == kingSquare.RankOf() && sq > kingSquare { // east of king
+			tmpScore.MidGameValue -= config.Settings.Eval.RookTrappedMalus
+		}
+	} else if QueenSideCastMask(us).Has(kingSquare) {
+		if sq.RankOf() == kingSquare.RankOf() && sq < kingSquare { // west of king
+			tmpScore.MidGameValue -= config.Settings.Eval.RookTrappedMalus
+		}
+	}
 }
 
 func (e *Evaluator) evalKing(c Color) *Score {
@@ -278,116 +382,6 @@ func (e *Evaluator) evalKing(c Color) *Score {
 		}
 	}
 	return &tmpScore
-}
-
-// evalPiece is the evaluation function for all pieces except pawns and kings.
-func (e *Evaluator) evalPiece(c Color, pieceType PieceType) *Score {
-	tmpScore.MidGameValue = 0
-	tmpScore.EndGameValue = 0
-	us := c
-	them := us.Flip()
-
-	// get bitboard with all pieces of this color and type
-	pieceBb := e.position.PiecesBb(us, pieceType)
-
-	// piece type specific evaluation which are done once
-	// for all pieces of one type
-	switch pieceType {
-	case Bishop:
-		// bonus for pair
-		if pieceBb.PopCount() > 1 {
-			tmpScore.MidGameValue += config.Settings.Eval.BishopPairBonus
-			tmpScore.EndGameValue += config.Settings.Eval.BishopPairBonus
-		}
-	}
-
-	// loop over all pieces of the given piece type
-	for pieceBb != BbZero {
-		sq := pieceBb.PopLsb()
-
-		// piece type specific evaluations per piece of piece type
-		switch pieceType {
-		case Knight:
-			e.knightEval(us, them, sq)
-		case Bishop:
-			e.bishopEval(us, them, sq)
-		case Rook:
-			e.rookEval(sq, us)
-		case Queen:
-			// none yet
-		}
-	}
-
-	return &tmpScore
-}
-
-func (e *Evaluator) rookEval(sq Square, us Color) {
-	// same file as queen
-	if sq.FileOf().Bb()&e.position.PiecesBb(us, Queen) > 0 {
-		tmpScore.MidGameValue += config.Settings.Eval.RookOnQueenFileBonus
-		tmpScore.EndGameValue += config.Settings.Eval.RookOnQueenFileBonus
-	}
-
-	// open file / semi open file (no own pawns on the file)
-	if sq.FileOf().Bb()&e.position.PiecesBb(us, Pawn) == 0 {
-		tmpScore.MidGameValue += config.Settings.Eval.RookOnOpenFileBonus
-		// s.EndGameValue += 0
-	}
-
-	// trapped by king
-	// on same row as king but on the outside from king
-	kingSquare := e.position.KingSquare(us)
-	if KingSideCastleMask(us).Has(kingSquare) {
-		if sq.RankOf() == kingSquare.RankOf() && sq > kingSquare { // east of king
-			tmpScore.MidGameValue -= config.Settings.Eval.RookTrappedMalus
-		}
-	} else if QueenSideCastMask(us).Has(kingSquare) {
-		if sq.RankOf() == kingSquare.RankOf() && sq < kingSquare { // west of king
-			tmpScore.MidGameValue -= config.Settings.Eval.RookTrappedMalus
-		}
-	}
-}
-
-func (e *Evaluator) bishopEval(us Color, them Color, sq Square) {
-	// behind a pawn
-	down := them.MoveDirection()
-	if ShiftBitboard(e.position.PiecesBb(us, Pawn), down)&sq.Bb() > 0 {
-		tmpScore.MidGameValue += config.Settings.Eval.MinorBehindPawnBonus
-		// s.EndGameValue += 0
-	}
-
-	// malus for pawns on same color - worse in end game
-	if SquaresBb(White).Has(sq) { // on white square
-		popCount := int16((e.position.PiecesBb(us, Pawn) & SquaresBb(White)).PopCount())
-		// s.MidGameValue -= 0
-		tmpScore.EndGameValue -= config.Settings.Eval.BishopPawnMalus * popCount
-	} else { // on black square
-		popCount := int16((e.position.PiecesBb(us, Pawn) & SquaresBb(Black)).PopCount())
-		// s.MidGameValue -= 0
-		tmpScore.EndGameValue -= config.Settings.Eval.BishopPawnMalus * popCount
-	}
-
-	// long diagonal / seeing center
-	popCount := int16((GetAttacksBb(Bishop, sq, BbZero) & CenterSquares).PopCount())
-	tmpScore.MidGameValue += config.Settings.Eval.BishopCenterAimBonus * popCount
-	// s.EndGameValue += 0
-
-	// bishop blocked / mobility
-	if (us == White && sq.RankOf() == Rank1) || (us == Black && sq.RankOf() == Rank8) {
-		if GetAttacksBb(Bishop, sq, e.allPieces)&^e.position.OccupiedBb(us) == BbZero {
-			tmpScore.MidGameValue -= config.Settings.Eval.BishopBlockedMalus
-			tmpScore.EndGameValue -= config.Settings.Eval.BishopBlockedMalus
-		}
-	}
-}
-
-func (e *Evaluator) knightEval(us Color, them Color, sq Square) {
-	// Knight behind pawn
-	down := them.MoveDirection()
-	if ShiftBitboard(e.position.PiecesBb(us, Pawn), down)&sq.Bb() > 0 {
-		tmpScore.MidGameValue += config.Settings.Eval.MinorBehindPawnBonus
-		// s.EndGameValue += 0
-	}
 }
 
 // Report prints a report about the evaluations done. Used in debugging.

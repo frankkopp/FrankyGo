@@ -32,6 +32,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+	"time"
 
 	logging2 "github.com/op/go-logging"
 	"github.com/stretchr/testify/assert"
@@ -64,15 +65,6 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestReadingFile(t *testing.T) {
-	b := NewBook()
-	folder, _ := util.ResolveFolder(config.Settings.Search.BookPath)
-	file := filepath.Join(folder, "superbook.pgn")
-	lines, err := b.readFile(file)
-	assert.NoError(t, err, "Reading file threw error: %s", err)
-	assert.Equal(t, 2_620_133, len(*lines))
-}
-
 func TestReadingNonExistingFile(t *testing.T) {
 	b := NewBook()
 	folder, _ := util.ResolveFolder(config.Settings.Search.BookPath)
@@ -95,6 +87,24 @@ func TestProcessingEmpty(t *testing.T) {
 	entry, ok = book.GetEntry(Key(1234))
 	assert.False(t, ok)
 	assert.True(t, entry.ZobristKey == 0)
+}
+
+func TestReadingFile(t *testing.T) {
+	b := NewBook()
+	folder, _ := util.ResolveFolder(config.Settings.Search.BookPath)
+	file := filepath.Join(folder, "superbook.pgn")
+	startReading := time.Now()
+	lines, err := b.readFile(file)
+	elapsedReading := time.Since(startReading)
+	if err != nil {
+		t.Fail()
+		return
+	}
+	out.Printf("Read %d lines from file in %d ms\n", len(*lines), elapsedReading.Milliseconds())
+	assert.NoError(t, err, "Reading file threw error: %s", err)
+	// assert.Equal(t, 2_238_553, len(*lines)) // without empty lines
+	assert.Equal(t, 2_620_080, len(*lines))
+	// assert.Equal(t, 52_401_581, len(*lines)) // XL file
 }
 
 func TestProcessingSimpleSmall(t *testing.T) {
@@ -153,10 +163,12 @@ func TestProcessingSimple(t *testing.T) {
 	assert.Equal(t, 11, len(entry.Moves))
 	assert.Equal(t, 24_350, entry.Counter)
 
-	for _, p := range entry.Moves {
-		ne, _ := book.GetEntry(Key(p.NextEntry))
-		out.Printf("%s ==> %#v (%d)\n", Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter)
-	}
+	out.Printf("Memory statistics: %s\n", util.MemStat())
+
+	// for _, p := range entry.Moves {
+	// 	ne, _ := book.GetEntry(Key(p.NextEntry))
+	// 	out.Printf("%s ==> %#v (%d)\n", Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter)
+	// }
 }
 
 func TestProcessingSANSmall(t *testing.T) {
@@ -236,7 +248,7 @@ func TestProcessingPGNLarge(t *testing.T) {
 	logTest.Debugf(util.GcWithStats())
 
 	assert.NoError(t, err, "Initialize book threw error: %s", err)
-	assert.Equal(t, 4_821_316, book.NumberOfEntries())
+	assert.Equal(t, 4_821_285, book.NumberOfEntries())
 
 	// get root entry
 	pos := position.NewPosition()
@@ -246,7 +258,7 @@ func TestProcessingPGNLarge(t *testing.T) {
 	assert.Equal(t, book.rootEntry, entry.ZobristKey)
 	assert.EqualValues(t, entry.ZobristKey, pos.ZobristKey())
 	assert.Equal(t, 20, len(entry.Moves))
-	assert.Equal(t, 190_775, entry.Counter)
+	assert.Equal(t, 190_771, entry.Counter)
 
 	pos.DoMove(CreateMove(SqE2, SqE4, Normal, PtNone))
 	entry, found = book.GetEntry(pos.ZobristKey())
@@ -254,12 +266,12 @@ func TestProcessingPGNLarge(t *testing.T) {
 	assert.NotNil(t, entry)
 	assert.EqualValues(t, entry.ZobristKey, pos.ZobristKey())
 	assert.Equal(t, 18, len(entry.Moves))
-	assert.Equal(t, 89_615, entry.Counter)
+	assert.Equal(t, 89_611, entry.Counter)
 
-	for _, p := range entry.Moves {
-		ne, _ := book.GetEntry(Key(p.NextEntry))
-		out.Printf("%s ==> %#v (%d)\n", Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter)
-	}
+	// for _, p := range entry.Moves {
+	// 	ne, _ := book.GetEntry(Key(p.NextEntry))
+	// 	out.Printf("%s ==> %#v (%d)\n", Move(p.Move).StringUci(), ne.ZobristKey, ne.Counter)
+	// }
 }
 
 func TestProcessingPGNCacheSmall(t *testing.T) {
