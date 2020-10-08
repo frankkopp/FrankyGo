@@ -39,9 +39,9 @@
 package openingbook
 
 import (
-	"bufio"
 	"encoding/gob"
 	"errors"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -150,7 +150,7 @@ func (b *Book) initialize(bookFilePath string, bookFormat BookFormat, useCache b
 		return err
 	}
 
-	b.log.Debugf("Memory statistics: %s", util.MemStat())
+	// b.log.Debugf("Memory statistics: %s", util.MemStat())
 
 	// if cache enabled check if we have a cache file and load from cache
 	if useCache && !recreateCache {
@@ -167,7 +167,7 @@ func (b *Book) initialize(bookFilePath string, bookFormat BookFormat, useCache b
 		} // else no cache file just load the data from original file
 	}
 
-	b.log.Debugf("Memory statistics: %s", util.MemStat())
+	// b.log.Debugf("Memory statistics: %s", util.MemStat())
 
 	// read book from file
 	b.log.Infof("Reading opening book file: %s\n", bookFilePath)
@@ -179,14 +179,14 @@ func (b *Book) initialize(bookFilePath string, bookFormat BookFormat, useCache b
 	}
 	elapsedReading := time.Since(startReading)
 	b.log.Infof("Finished reading %d lines from file in: %d ms\n", len(*lines), elapsedReading.Milliseconds())
-	b.log.Debugf("Memory statistics: %s", util.MemStat())
+	// b.log.Debugf("Memory statistics: %s", util.MemStat())
 
 	// add root position
 	startPosition := position.NewPosition()
 	b.bookMap = make(map[uint64]BookEntry)
 	b.rootEntry = uint64(startPosition.ZobristKey())
 	b.bookMap[uint64(startPosition.ZobristKey())] = BookEntry{ZobristKey: uint64(startPosition.ZobristKey()), Counter: 0, Moves: []Successor{}}
-	b.log.Debugf("Memory statistics: %s", util.MemStat())
+	// b.log.Debugf("Memory statistics: %s", util.MemStat())
 
 	// process lines
 	if parallel {
@@ -202,7 +202,7 @@ func (b *Book) initialize(bookFilePath string, bookFormat BookFormat, useCache b
 	}
 	elapsedProcessing := time.Since(startProcessing)
 	b.log.Infof("Finished processing %d lines in: %d ms\n", len(*lines), elapsedProcessing.Milliseconds())
-	b.log.Debugf("Memory statistics: %s", util.MemStat())
+	// b.log.Debugf("Memory statistics: %s", util.MemStat())
 
 	// finished
 	elapsedTotal := time.Since(startTotal)
@@ -222,7 +222,7 @@ func (b *Book) initialize(bookFilePath string, bookFormat BookFormat, useCache b
 		bytes := out.Sprintf("%d", nBytes/1_024)
 		b.log.Infof("Saved %s kB to cache %s in %d ms\n", bytes, cacheFile, elapsedSave.Milliseconds())
 	}
-	b.log.Debugf("Memory statistics: %s", util.MemStat())
+	// b.log.Debugf("Memory statistics: %s", util.MemStat())
 
 	b.initialized = true
 	return nil
@@ -256,26 +256,12 @@ func (b *Book) Reset() {
 
 // reads a complete file into a slice of strings
 func (b *Book) readFile(bookPath string) (*[]string, error) {
-	f, err := os.Open(bookPath)
+	bytes, err := ioutil.ReadFile(bookPath)
 	if err != nil {
 		b.log.Errorf("File \"%s\" could not be read; %s\n", bookPath, err)
 		return nil, err
 	}
-	defer func() {
-		if err = f.Close(); err != nil {
-			b.log.Errorf("File \"%s\" could not be closed: %s\n", bookPath, err)
-		}
-	}()
-	var lines []string
-	s := bufio.NewScanner(f)
-	for s.Scan() {
-		lines = append(lines, s.Text())
-	}
-	err = s.Err()
-	if err != nil {
-		b.log.Errorf("Error while reading file \"%s\": %s\n", bookPath, err)
-		return nil, err
-	}
+	lines := strings.Split(string(bytes), "\n")
 	return &lines, nil
 }
 
@@ -321,10 +307,10 @@ func (b *Book) processSimpleLine(line string) {
 	line = strings.TrimSpace(line)
 
 	// find Uci moves
-	matches := regexSimpleUciMove.FindAllString(line, -1)
+	game := regexSimpleUciMove.FindAllString(line, -1)
 
-	// skip lines without matches
-	if len(matches) == 0 {
+	// skip lines without moves
+	if len(game) == 0 {
 		return
 	}
 
@@ -346,10 +332,10 @@ func (b *Book) processSimpleLine(line string) {
 	// movegen is not thread safe therefore we create a new instance for every line
 	var mg = movegen.NewMoveGen()
 
-	// add all matches to book
-	for _, moveString := range matches {
+	// add all game to book
+	for _, moveString := range game {
 		err := b.processSingleMove(moveString, mg, pos)
-		// stop processing further matches when we had an error as it
+		// stop processing further game when we had an error as it
 		// would probably be fruitless as position will be wrong
 		if err != nil {
 			break

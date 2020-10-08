@@ -123,3 +123,27 @@ func GcWithStats() string {
 	os.WriteString(fmt.Sprintf("Mem stats: %s", MemStat()))
 	return os.String()
 }
+
+// IsAlpha checks if the char is a letter
+func IsAlpha(l uint8) bool {
+	if (l < 'a' || l > 'z') && (l < 'A' || l > 'Z') {
+		return false
+	}
+	return true
+}
+
+// IsLower checks if the char is a lower case letter
+func IsLower(l uint8) bool {
+	if l < 'a' || l > 'z' {
+		return false
+	}
+	return true
+}
+
+// IsDigit checks if the char is a digit 0-9
+func IsDigit(l uint8) bool {
+	if l < '0' || l > '9' {
+		return false
+	}
+	return true
+}

@@ -73,18 +73,17 @@ type Position struct {
 	// Board State
 	// unique chess position (exception is 3-fold repetition
 	// which is also not represented in a FEN string)
-	board           [SqLength]Piece
-	castlingRights  CastlingRights
-	enPassantSquare Square
-	halfMoveClock   int
-	nextPlayer      Color
+	board              [SqLength]Piece
+	nextPlayer         Color
+	castlingRights     CastlingRights
+	enPassantSquare    Square
+	halfMoveClock      int
+	nextHalfMoveNumber int
 
 	// Extended Board State
 	// not necessary for a unique position
 	// special for king squares
 	kingSquare [ColorLength]Square
-	// half move number - the actual half move number to determine the full move number
-	nextHalfMoveNumber int
 	// piece bitboards
 	piecesBb [ColorLength][PtLength]Bitboard
 	// occupied bitboards
@@ -1262,4 +1261,3 @@ func (p *Position) LastCapturedPiece() Piece {
 func (p *Position) WasCapturingMove() bool {
 	return p.LastCapturedPiece() != PieceNone
 }
-

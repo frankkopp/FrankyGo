@@ -540,6 +540,8 @@ func (s *Search) iterativeDeepening(p *position.Position) *Result {
 		}
 	}
 
+	// TODO: check ponder move - see cpp version
+
 	return result
 }
 

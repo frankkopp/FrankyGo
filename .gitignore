@@ -1,9 +1,9 @@
+bin/
 /~$*
 *.pprof
-*.cache
 *.log
-bin/
-test/STS/STSRating/Stockfish.exe
+*.cache
 *.ser
+test/STS/STSRating/Stockfish.exe
 /assets/books/superbook_xl.pgn
 
