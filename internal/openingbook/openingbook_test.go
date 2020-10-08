@@ -103,7 +103,7 @@ func TestReadingFile(t *testing.T) {
 	out.Printf("Read %d lines from file in %d ms\n", len(*lines), elapsedReading.Milliseconds())
 	assert.NoError(t, err, "Reading file threw error: %s", err)
 	// assert.Equal(t, 2_238_553, len(*lines)) // without empty lines
-	assert.Equal(t, 2_620_080, len(*lines))
+	assert.Equal(t, 2_620_134, len(*lines))
 	// assert.Equal(t, 52_401_581, len(*lines)) // XL file
 }
 
