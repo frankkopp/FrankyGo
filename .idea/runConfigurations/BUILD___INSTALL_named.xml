@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="BUILD &amp; INSTALL named" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="FrankyGo" />
+    <working_directory value="$PROJECT_DIR$" />
+    <go_parameters value=" -tags release -o D:\_DEV\go\src\github.com\frankkopp\FrankyGo\bin\FrankyGo$Prompt$.exe -v -x" />
+    <kind value="FILE" />
+    <filePath value="$PROJECT_DIR$/cmd/FrankyGo/main.go" />
+    <package value="github.com/frankkopp/FrankyGo" />
+    <directory value="$PROJECT_DIR$/" />
+    <output_directory value="$PROJECT_DIR$/bin" />
+    <option name="run" value="false" />
+    <method v="2" />
+  </configuration>
+</component>
