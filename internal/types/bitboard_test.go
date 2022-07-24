@@ -54,7 +54,7 @@ func TestBitboardType(t *testing.T) {
 		if got != test.expected {
 			t.Errorf("Bit count of %d should be %d. Got %d", test.value, test.expected, got)
 		} else {
-			//t.Logf("Bit count %d of %d is correct.", got, test.value)
+			// t.Logf("Bit count %d of %d is correct.", got, test.value)
 		}
 	}
 }
@@ -78,7 +78,7 @@ func TestBitboardStr(t *testing.T) {
 		if got != test.expected {
 			t.Errorf("Bit String of %d should be %s. Got %s", test.value, test.expected, got)
 		} else {
-			//t.Logf("Bit String %s of %d is correct.", got, test.value)
+			// t.Logf("Bit String %s of %d is correct.", got, test.value)
 		}
 	}
 }
@@ -104,7 +104,7 @@ func TestBitboardPutRemove(t *testing.T) {
 		if got != test.expected {
 			t.Errorf("Bit String of %d should be %s. Got %s", test.value, test.expected, got)
 		} else {
-			//t.Logf("Bit String %s of %d is correct.", got, test.value)
+			// t.Logf("Bit String %s of %d is correct.", got, test.value)
 		}
 	}
 }
@@ -197,7 +197,6 @@ func TestBitboardDiagDown(t *testing.T) {
 
 func TestBitboardLsbMsb(t *testing.T) {
 
-
 	tests := []struct {
 		bitboard Bitboard
 		lsb      Square
@@ -275,7 +274,7 @@ func TestBitboardShift(t *testing.T) {
 		shift     Direction
 		postShift Bitboard
 	}{
-		//Vertical and horizontal shifts
+		// Vertical and horizontal shifts
 		{DiagUpA2, North, DiagUpA3},
 		{DiagUpA3, North, DiagUpA4},
 		{DiagUpB1, South, DiagUpC1},
@@ -364,7 +363,6 @@ func TestBitboardShift(t *testing.T) {
 
 func TestBitboardInit(t *testing.T) {
 
-
 	// Square bitboards
 	assert.Equal(t, SqA1.bitboard().String(), "0000000000000000000000000000000000000000000000000000000000000001")
 	assert.Equal(t, SqH8.bitboard().String(), "1000000000000000000000000000000000000000000000000000000000000000")
@@ -396,7 +394,6 @@ func TestBitboardInit(t *testing.T) {
 
 func TestBitboardFileDistance(t *testing.T) {
 
-
 	tests := []struct {
 		f1   File
 		f2   File
@@ -422,7 +419,6 @@ func TestBitboardFileDistance(t *testing.T) {
 }
 
 func TestBitboardSquareDistance(t *testing.T) {
-
 
 	tests := []struct {
 		s1   Square
@@ -450,7 +446,6 @@ func TestBitboardSquareDistance(t *testing.T) {
 }
 
 func TestBitboardRotateBb(t *testing.T) {
-
 
 	bitboard := FileA_Bb | Rank8_Bb | DiagDownH1
 

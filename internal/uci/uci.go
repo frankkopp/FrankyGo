@@ -200,8 +200,8 @@ func (u *UciHandler) handleReceivedCommand(cmd string) bool {
 	u.uciLog.Infof("<< %s", cmd)
 	// find command and execute by calling command function
 	tokens := regexWhiteSpace.Split(cmd, -1)
-	strings.TrimSpace(tokens[0])
-	switch tokens[0] {
+	firstToken := strings.TrimSpace(tokens[0])
+	switch firstToken {
 	case "quit":
 		return true
 	case "uci":
