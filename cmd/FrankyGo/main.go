@@ -57,8 +57,8 @@ func main() {
 	// command line args
 	versionInfo := flag.Bool("version", false, "prints version and exits")
 	configFile := flag.String("config", "./config.toml", "path to configuration settings file")
-	logLvl := flag.String("loglvl", "", "standard log level\n(critical|error|warning|notice|info|debug)")
-	searchlogLvl := flag.String("searchloglvl", "", "search log level\n(critical|error|warning|notice|info|debug)")
+	logLvl := flag.String("loglvl", "", "standard log level\n(off|critical|error|warning|notice|info|debug)")
+	searchlogLvl := flag.String("searchloglvl", "", "search log level\n(off|critical|error|warning|notice|info|debug)")
 	logPath := flag.String("logpath", ".", "path where to write log files to")
 	bookPath := flag.String("bookpath", ".", "path to opening book files")
 	bookFile := flag.String("bookfile", "", "opening book file\nprovide path if file is not in same directory as executable\nPlease also provide bookFormat otherwise this will be ignored")
